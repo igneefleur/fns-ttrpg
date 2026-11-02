@@ -282,6 +282,30 @@ const server=http.createServer((req,res)=> {
   assert.notEqual(sizes.roleColors.action,sizes.roleColors.field);
   assert.match(sizes.fieldLine,/inset/);
   assert.equal(sizes.editable,sizes.input);
+  // OFF et ACTION partagent exactement le même fond, la même encre et le
+  // même filet : les deux sont des boutons disponibles. INPUT reprend leur
+  // fond ; INFO reste le seul rôle neutre et gris.
+  const roles=await frame.evaluate(()=>{
+    const root=document.querySelector('.perso-fiche');
+    const off=document.querySelector('.pc-effort-temperature > button.pc-toggle');
+    const action=document.querySelector('.pc-temps-rapide > button.pc-action');
+    const field=document.querySelector('.pc-temps-segs > input.pc-field');
+    const info=document.querySelector('.pc-effort-temperature > .pc-info');
+    const style=n=>{const s=getComputedStyle(n);return {background:s.backgroundColor,color:s.color,line:s.boxShadow}};
+    return {off:style(off),action:style(action),field:style(field),info:style(info),accent:getComputedStyle(root).getPropertyValue('--accent').trim()};
+  });
+  assert.equal(roles.off.background,roles.action.background);
+  assert.equal(roles.off.color,roles.action.color);
+  assert.equal(roles.off.line,roles.action.line);
+  assert.equal(roles.field.background,roles.action.background);
+  assert.notEqual(roles.info.color,roles.action.color);
+  // ON est le seul état doré et n'a aucun filet inférieur.
+  const mondeBouton=effort.locator('.pc-effort-temperature > button.pc-toggle');
+  await mondeBouton.click();
+  const onStyle=await mondeBouton.evaluate(n=>({background:getComputedStyle(n).backgroundColor,line:getComputedStyle(n).boxShadow}));
+  assert.notEqual(onStyle.background,roles.off.background);
+  assert.equal(onStyle.line,'none');
+  await mondeBouton.click();
   // Les sous-titres reprennent STRICTEMENT le style des titres des autres modules :
   // même couleur de texte (blanc en nuit), même filet fin et même typographie.
   const titresStyle=await effort.locator('.pc-effort-section > .pc-block-title').first().evaluate(n=>{
@@ -299,14 +323,40 @@ const server=http.createServer((req,res)=> {
   });
   for(const key of ['color','border','width','style','fontFamily','fontSize','fontWeight','letterSpacing'])
     assert.equal(titresStyle[key],titresStyle['module'+key[0].toUpperCase()+key.slice(1)],'style de titre différent : '+key);
-  // INPUT et ACTION ont exactement le même filet au repos et au focus.
+  // ACTION garde son filet normal même lorsqu'elle reçoit le focus ; seul
+  // INPUT passe au filet doré de saisie.
   const actionRonde=effort.locator('.pc-temps-rapide > button').first();
   const saisieRonde=effort.locator('.pc-temps-segs > input').first();
+  const actionRepos=await actionRonde.evaluate(n=>getComputedStyle(n).boxShadow);
   await actionRonde.focus();
   const actionFocus=await actionRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+  assert.equal(actionFocus,actionRepos);
+  const saisieRepos=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
   await saisieRonde.focus();
   const saisieFocus=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
-  assert.equal(actionFocus,saisieFocus);
+  assert.notEqual(saisieFocus,saisieRepos);
+  assert.match(saisieFocus,/inset/);
+  // Une action réussie anime SEULEMENT son filet inférieur pendant 1,5 s.
+  // Le fond ne change jamais ; la classe disparaît d'elle-même à la fin.
+  const fondAction=await actionRonde.evaluate(n=>getComputedStyle(n).backgroundColor);
+  await actionRonde.click();
+  const animation=await actionRonde.evaluate(n=>({
+    active:n.classList.contains('is-confirming'),
+    background:getComputedStyle(n).backgroundColor,
+    underline:getComputedStyle(n,'::after').backgroundColor,
+    name:getComputedStyle(n,'::after').animationName,
+    duration:getComputedStyle(n,'::after').animationDuration,
+    easing:getComputedStyle(n,'::after').animationTimingFunction
+  }));
+  assert.equal(animation.active,true);
+  assert.equal(animation.background,fondAction);
+  assert.equal(animation.underline,roles.accent==='#ffd77f'?'rgb(255, 215, 127)':'rgb(122, 92, 16)');
+  assert.equal(animation.name,'pc-action-underline-progress');
+  assert.equal(animation.duration,'1.5s');
+  assert.equal(animation.easing,'ease-out');
+  await page.waitForTimeout(1600);
+  assert.equal(await actionRonde.evaluate(n=>n.classList.contains('is-confirming')),false);
+  assert.equal(await actionRonde.evaluate(n=>getComputedStyle(n).backgroundColor),fondAction);
   // Le champ B devient réellement verrouillé et gris lorsque MONDE est ON.
   const mondeTemp=effort.getByLabel('Température en °C');
   await effort.getByRole('button',{name:'MONDE'}).click();
@@ -321,6 +371,17 @@ const server=http.createServer((req,res)=> {
   await effort.getByRole('button',{name:'MONDE'}).click();
   assert.equal(await mondeTemp.isEditable(),true);
   assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'false');
+  // APPLIQUER utilise le même retour temporaire du filet que les raccourcis.
+  const champRound=effort.locator('.pc-temps-segs').first().locator('input');
+  const appliquerRound=effort.locator('.pc-temps-appliquer').first();
+  const fondAppliquer=await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor);
+  await champRound.fill('+1');
+  await appliquerRound.click();
+  assert.equal(await appliquerRound.evaluate(n=>n.classList.contains('is-confirming')),true);
+  assert.equal(await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor),fondAppliquer);
+  await page.waitForTimeout(1600);
+  assert.equal(await appliquerRound.evaluate(n=>n.classList.contains('is-confirming')),false);
+  assert.equal(await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor),fondAppliquer);
   // Les trois commandes avancent la même horloge de 3 s, 60 s et 3600 s.
   const secondesHorloge=()=>state().then(s=>s.horloge.jours*86400+s.horloge.heures*3600+s.horloge.minutes*60+s.horloge.secondes);
   let avantRapide=await secondesHorloge();
@@ -341,9 +402,12 @@ const server=http.createServer((req,res)=> {
   }
   for(const night of [true,false]){
    await frame.evaluate(n=>document.documentElement.classList.toggle('night',n),night);await page.waitForTimeout(50);
+   const actionRestTheme=await actionRonde.evaluate(n=>{n.blur();return getComputedStyle(n).boxShadow;});
    await actionRonde.focus();const actionFocusTheme=await actionRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+   const fieldRestTheme=await saisieRonde.evaluate(n=>{n.blur();return getComputedStyle(n).boxShadow;});
    await saisieRonde.focus();const saisieFocusTheme=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
-   assert.equal(actionFocusTheme,saisieFocusTheme);
+   assert.equal(actionFocusTheme,actionRestTheme);
+   assert.notEqual(saisieFocusTheme,fieldRestTheme);
    await page.mouse.move(0,0);
    await capture(collapse,'/tmp/owd-effondrement-'+(night?'night':'day')+'.png');
    await capture(sheet.locator('[data-module="pi"]'),'/tmp/owd-innocence-'+(night?'night':'day')+'.png');

@@ -46,6 +46,23 @@
     }
   }
   function buildEffort() {
+    // Une action réussie remplit uniquement son filet inférieur. L'animation
+    // se relance à chaque clic et retire sa classe à la fin du mouvement.
+    function boutonAction(libelle, classe) {
+      var bt = el("button", classe || "c pc-action", libelle);
+      bt.type = "button";
+      bt.addEventListener("animationend", function (ev) {
+        if (ev.animationName === "pc-action-underline-progress")
+          bt.classList.remove("is-confirming");
+      });
+      return bt;
+    }
+    function confirmeAction(bt) {
+      if (!bt) return;
+      bt.classList.remove("is-confirming");
+      void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
+      bt.classList.add("is-confirming");
+    }
     // Le module n'a plus de titre général : ses trois sous-sections portent
     // chacune le bandeau normal d'un module de la fiche.
     var b = el("div", "pc-block");
@@ -149,14 +166,13 @@
       { nom: "MIN", secondes: 60, titre: "Avancer le temps d'une minute", message: "1 minute écoulée." },
       { nom: "HR", secondes: 3600, titre: "Avancer le temps d'une heure", message: "1 heure écoulée." }
     ].forEach(function (pas) {
-      var bt = el("button", "c pc-action", pas.nom);
-      bt.type = "button";
+      var bt = boutonAction(pas.nom, "c pc-action");
       bt.title = pas.titre;
       bt.setAttribute("aria-label", pas.titre);
       bt.addEventListener("click", function () {
         var fait = avancerSecondes(pas.secondes);
         refresh();
-        if (fait) flash(pas.message);
+        if (fait) { confirmeAction(bt); flash(pas.message); }
       });
       rapide.appendChild(bt);
     });
@@ -177,6 +193,7 @@
         nb.value = "";
         refresh();
         if (!sec) return;
+        confirmeAction(appliquer);
         var abs = Math.abs(sec), compte, texte, accord;
         if (abs % 3600 === 0) {
           compte = abs / 3600; texte = compte + (compte === 1 ? " heure" : " heures");
@@ -198,8 +215,7 @@
       });
       cmd.appendChild(nb);
       cmd.appendChild(el("span", "c pc-info pc-temps-unite", unite));
-      var appliquer = el("button", "c pc-action pc-temps-appliquer", "APPLIQUER");
-      appliquer.type = "button";
+      var appliquer = boutonAction("APPLIQUER", "c pc-action pc-temps-appliquer");
       appliquer.title = "Faire passer ce temps";
       appliquer.addEventListener("click", applique);
       cmd.appendChild(appliquer);
