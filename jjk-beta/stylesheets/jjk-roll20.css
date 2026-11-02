@@ -22,9 +22,12 @@
 html, html:has(#perso-atelier) { font-size: 18px !important; }
 html, body { margin: 0; padding: 0; }
 body {
-  background: #e4ddcd;   /* plan de travail (côtés), comme le site */
-  font-family: 'Alegreya', 'EB Garamond', Garamond, serif;
+  /* Même enveloppe Roll20 qu'Outward : le gris appartient au cadre ; la
+     feuille JJK conserve sa typographie et sa palette propres dans .perso-atelier. */
+  background: #e9e7e2;
+  font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
+html.night body { background: #000000; }
 .perso-atelier { min-height: 100vh; overflow-x: hidden; }
 
 /* La feuille garde sa largeur NATIVE (50rem) et se centre (margin auto du
@@ -44,10 +47,60 @@ body {
   .pc-arts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
-/* message d'attente, d'orientation ou d'avertissement, posé par l'amorceur et
-   retiré par l'amorce à l'hydratation */
+/* Message d'attente : même hiérarchie que l'écran Outward, sans dépendre du
+   bundle de la fiche. L'amorceur le retire après validation du montage. */
 #jjk-roll20-note {
   max-width: 24rem; margin: 2.2rem auto; padding: 0 1rem;
-  font-size: .72rem; line-height: 1.5; color: #4c463a; text-align: center;
+  font-size: .72rem; line-height: 1.5; color: #5f5f5f; text-align: center;
 }
-#jjk-roll20-note a { color: #667861; }
+#jjk-roll20-note h1 {
+  margin: 0 0 .5rem; color: inherit;
+  font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-size: 1.05rem; line-height: 1.25;
+}
+#jjk-roll20-note p { margin: .35rem 0; }
+#jjk-roll20-note a { color: #7a5c10; }
+html.night #jjk-roll20-note { color: #9a9384; }
+html.night #jjk-roll20-note a { color: #ffd77f; }
+
+/* Barre supérieure Roll20 : reproduction des jetons, dimensions et densité
+   Outward. Seule la feuille qui vient après conserve l'identité visuelle JJK. */
+#jjk-mode-bar {
+  --panel: #f5f2ea; --card: #ffffff; --line: #ddd6c6;
+  --ink: #1a1a1a; --ink-2: #5f5f5f; --accent: #7a5c10;
+  box-sizing: border-box; display: flex; align-items: center;
+  justify-content: space-between; gap: .3rem .8rem; flex-wrap: wrap;
+  flex: none; width: 50rem; max-width: 100%; margin: 0 auto;
+  padding: .3rem .7rem; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-top: 0; border-radius: 0 0 5px 5px;
+  font: inherit; font-size: .65rem; line-height: 1.25;
+}
+#jjk-mode-bar .jjk-mode-controls {
+  display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; min-width: 0;
+}
+#jjk-mode-bar .jjk-mode-label {
+  font-family: 'Proxima Nova Condensed', 'Nunito Sans', sans-serif;
+  font-size: .7rem; font-weight: 800; color: var(--ink); white-space: nowrap;
+}
+#jjk-mode-toggle.pc-btn {
+  padding: .18rem .45rem; border-color: var(--line); background: var(--card); color: var(--ink-2);
+  font-size: .65rem; line-height: 1.25;
+}
+#jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #fff3d9; border-color: #7a5c10; color: #1a1a1a; }
+#jjk-mode-toggle[disabled] { opacity: .6; cursor: wait; }
+#jjk-mode-bar .jjk-mode-presence {
+  display: flex; flex-wrap: wrap; justify-content: flex-end;
+  gap: .15rem .7rem; margin-left: auto; min-width: 0;
+  font-size: .58rem; color: var(--ink-2); overflow-wrap: anywhere;
+}
+#jjk-mode-bar .jjk-presence-edition { color: var(--accent); }
+#jjk-mode-bar #jjk-save-status { padding: 0; font-size: .58rem; color: var(--ink-2); }
+html.night #jjk-mode-bar {
+  --panel: #262626; --card: #1a1a1a; --line: #3a3a3a;
+  --ink: #e6e6e6; --ink-2: #9a9384; --accent: #ffd77f;
+}
+html.night #jjk-mode-toggle.pc-btn { background: #1a1a1a; color: #e6e6e6; border-color: #6b5a2e; }
+html.night #jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #332d20; border-color: #6b5a2e; color: #e6e6e6; }
+html.jjk-consultation .pc-editable .pc-gear { opacity: .45; cursor: not-allowed; }
+html.jjk-consultation .pc-editable .pc-edit-only { display: none !important; }
+

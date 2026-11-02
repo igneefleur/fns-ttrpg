@@ -27,7 +27,7 @@
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
-  <div id="jjk-roll20-note">Connexion à Roll20…</div>
+  <div id="jjk-roll20-note" role="status"><h1>Chargement du personnage</h1><p>Vérification de l’extension…</p></div>
   <div id="perso-atelier"><noscript>La fiche a besoin de JavaScript.</noscript></div>
   <script>
   // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
@@ -82,22 +82,43 @@
       note.textContent = "";
       note.setAttribute("role", "alertdialog");
       note.setAttribute("aria-live", "assertive");
-      note.style.cssText = "position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;" +
-        "justify-content:center;align-items:center;gap:.8rem;padding:1.5rem;box-sizing:border-box;" +
-        "background:#f5ecdc;color:#3a2c1c;font:16px/1.5 Georgia,serif;text-align:center";
+      note.style.cssText = "position:fixed;inset:0;z-index:999999;overflow:auto;" +
+        "box-sizing:border-box;padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
+        "font-family:'Proxima Nova','Nunito Sans','IBM Plex Sans',Helvetica,Arial,sans-serif;" +
+        "font-size:.8rem;line-height:1.5;text-align:left";
+      var boite = document.createElement("div");
+      boite.style.cssText = "box-sizing:border-box;max-width:34rem;margin:0 auto;" +
+        "padding:.9rem 1rem;background:#fff;border:1px solid #e0cfa0;border-radius:.3rem";
       var h = document.createElement("h1");
       h.textContent = titre;
-      h.style.cssText = "max-width:36rem;margin:0;font-size:1.35rem";
+      h.style.cssText = "margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Nunito Sans','IBM Plex Sans',sans-serif;" +
+        "font-size:1.15rem;line-height:1.25";
       var p = document.createElement("p");
       p.textContent = message;
-      p.style.cssText = "max-width:36rem;margin:0";
-      var b = document.createElement("button");
-      b.type = "button";
-      b.textContent = "Recharger la fiche";
-      b.style.cssText = "padding:.55rem 1rem;border:1px solid #806548;border-radius:4px;" +
-        "background:#4c3a24;color:#fffaf0;font:700 .9rem Georgia,serif;cursor:pointer";
-      b.addEventListener("click", function () { try { location.reload(); } catch (e) {} });
-      note.appendChild(h); note.appendChild(p); note.appendChild(b);
+      p.style.cssText = "margin:.35rem 0";
+      var actions = document.createElement("div");
+      actions.style.cssText = "display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem";
+      var retry = document.createElement("button");
+      retry.type = "button";
+      retry.textContent = "Réessayer";
+      retry.setAttribute("data-jjk-act", "reessayer-amorce");
+      retry.style.cssText = "padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
+        "background:#ffd77f;color:#1a1a1a;font:inherit;cursor:pointer";
+      retry.addEventListener("click", function () { try { location.reload(); } catch (e) {} });
+      var exportButton = document.createElement("button");
+      exportButton.type = "button";
+      exportButton.textContent = "Exporter les données disponibles";
+      exportButton.disabled = true;
+      exportButton.title = "Aucune donnée du personnage n'a été lue.";
+      exportButton.style.cssText = "padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
+        "background:#fff;color:#1a1a1a;font:inherit;opacity:.45;cursor:not-allowed";
+      var noteExport = document.createElement("p");
+      noteExport.textContent = "Aucune donnée du personnage disponible à exporter.";
+      noteExport.style.cssText = "margin:.35rem 0;font-size:.72rem;opacity:.85";
+      actions.appendChild(retry);
+      actions.appendChild(exportButton);
+      boite.appendChild(h); boite.appendChild(p); boite.appendChild(actions); boite.appendChild(noteExport);
+      note.appendChild(boite);
       document.documentElement.setAttribute("data-jjk-opening-error", "1");
     }
     function chargerCss(urls, fini) {

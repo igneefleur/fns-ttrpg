@@ -62,7 +62,10 @@
   var VIEW_ID = "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
   var modePartage = "consultation", presenceRecu = false, presenceTimer = null, presenceDead = false;
   window.__jjkGlobalMode = modePartage;
-  window.__jjkCanEdit = function () { return window.__jjkGlobalMode === "edition"; };
+  window.__jjkCanEdit = function () {
+    return window.__jjkGlobalMode === "edition" && ready && !gele && !versionBloquee &&
+      !pontRefuse && !STANDALONE && !!CHAR_ID && !document.getElementById("jjk-ecran");
+  };
 
   var mem = {};                 // cache localStorage
   var SAVE_KEYS = { "jjk-perso": 1, "jjk-cards": 1 };
@@ -364,12 +367,12 @@
     compactPollEnCours = true;
     sonde(function (attrs) {
       compactPollEnCours = false;
-      if (!attrs) { planifieCompactPoll(compactRecovering ? 2600 : 2200); return; }
+      if (!attrs) { planifieCompactPoll(compactRecovering ? 2600 : 1200); return; }
       try {
         var distant = window.JjkSync.Compact.read(attrs);
         if (distant && !distant.incomplete && verrouilleVersionFuture(distant.state)) return;
         var resultat = compactSession.receive(attrs);
-        if (!resultat) { planifieCompactPoll(1800); return; }
+        if (!resultat) { planifieCompactPoll(1200); return; }
         actualiseStatutEnregistrement();
         if (resultat.incomplete) throw new Error("Des blocs référencés par le journal ne sont pas encore arrivés.");
         var stockagePret = appliqueCycleStockage(attrs);
@@ -403,7 +406,7 @@
       } catch (eCompact) {
         erreurCompact("Le journal Compact est incomplet ou illisible : " + String(eCompact && eCompact.message || eCompact));
       }
-      planifieCompactPoll(compactRecovering ? 2600 : 1600);
+      planifieCompactPoll(compactRecovering ? 2600 : 1200);
     });
   }
   function demarreStockageCompact(spec) {
@@ -1166,60 +1169,123 @@
   }
 
   // ---------- mode Consultation / Édition partagé ----------
-  function appliqueMode(mode, vues, nomMode) {
-    modePartage = mode === "edition" ? "edition" : "consultation";
+  // Le pont Roll20 est l'autorité : le bouton demande le changement, mais la
+  // fiche ne déverrouille rien avant le retour presence-state confirmé.
+  var presenceRows = [], presencePlayer = null, sharedModeState = null, modePending = null, modePendingTimer = null;
+  function appliqueMode(state) {
+    if (!state || typeof state !== "object") return;
+    var at = Number(state.modeAt) || 0, by = String(state.modeBy || "");
+    if (sharedModeState && (at < sharedModeState.modeAt ||
+        at === sharedModeState.modeAt && by < sharedModeState.modeBy)) return;
+    sharedModeState = { mode: state.mode === "edition" ? "edition" : "consultation", modeAt: at, modeBy: by };
+    var bar = document.getElementById("jjk-mode-bar");
+    // Comme Outward, un état peut être mémorisé pendant le chargement, mais
+    // il ne déverrouille la fiche qu'une fois le montage réellement terminé.
+    if (!ready || !bundleCharge || !bar) return;
+    modePartage = sharedModeState.mode;
     window.__jjkGlobalMode = modePartage;
     document.documentElement.classList.toggle("jjk-consultation", modePartage !== "edition");
-    var btn = document.getElementById("jjk-mode-toggle"), label = document.getElementById("jjk-mode-label"), users = document.getElementById("jjk-mode-presence");
-    if (btn) {
-      btn.textContent = modePartage === "edition" ? "PASSER EN MODE CONSULTATION" : "PASSER EN MODE ÉDITION";
-      btn.setAttribute("aria-pressed", modePartage === "edition" ? "true" : "false");
-      btn.classList.toggle("edition", modePartage === "edition");
+
+    if (modePending && modePartage === modePending.mode && at >= modePending.requestedAt) {
+      modePending = null;
+      if (modePendingTimer) clearTimeout(modePendingTimer);
+      modePendingTimer = null;
     }
-    if (label) label.textContent = modePartage === "edition" ? "Modifications autorisées" : "Lecture seule · modifications verrouillées";
-    if (users) {
-      var list = [];
-      Object.keys(vues || {}).forEach(function (id) { var v = vues[id]; if (v && v.name && list.indexOf(v.name) < 0) list.push(v.name); });
-      users.textContent = list.length ? list.length + " vue" + (list.length > 1 ? "s" : "") + " ouverte" + (list.length > 1 ? "s" : "") + " : " + list.join(", ") : "Aucune autre vue détectée";
+    if (bar) {
+      var label = bar.querySelector(".jjk-mode-label"), btn = document.getElementById("jjk-mode-toggle");
+      if (label) label.textContent = modePartage === "edition" ? "Mode Edition" : "Mode Consultation";
+      if (btn) {
+        btn.textContent = modePending ? "Enregistrement…" :
+          (modePartage === "edition" ? "Passer en Mode Consultation" : "Passer en Mode Edition");
+        btn.setAttribute("aria-pressed", modePartage === "edition" ? "true" : "false");
+        btn.disabled = !!modePending;
+      }
     }
     if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
+    renderPresence();
   }
+
+  function renderPresence() {
+    var bar = document.getElementById("jjk-mode-bar");
+    if (!bar) return;
+    var byPlayer = {};
+    (presenceRows || []).forEach(function (row) {
+      if (!row || row.left || !row.player || Date.now() - Number(row.at || 0) >= 30000) return;
+      var id = String(row.player), name = String(row.name || id);
+      if (!byPlayer[id]) byPlayer[id] = { name: name, edition: false };
+      if (row.mode === "edition") byPlayer[id].edition = true;
+    });
+    var edit = [], read = [];
+    if (presencePlayer && presencePlayer.id) {
+      var mine = String(presencePlayer.id);
+      if (!byPlayer[mine]) byPlayer[mine] = { name: String(presencePlayer.name || mine), edition: false };
+      if (modePartage === "edition") byPlayer[mine].edition = true;
+    }
+    Object.keys(byPlayer).sort().forEach(function (id) {
+      (byPlayer[id].edition ? edit : read).push(byPlayer[id].name);
+    });
+    var e = bar.querySelector(".jjk-presence-edition"), c = bar.querySelector(".jjk-presence-consultation");
+    if (e) e.textContent = "En édition : " + (edit.join(", ") || "—");
+    if (c) c.textContent = "En consultation : " + (read.join(", ") || "—");
+  }
+
+  function envoyerPresence(action) {
+    if (!ready || !bundleCharge || presenceDead || pontRefuse || !CHAR_ID) return;
+    post({ type: "presence", action: action || "heartbeat", viewId: VIEW_ID });
+  }
+
+  function demanderMode() {
+    if (modePending || !ready || !bundleCharge || gele || versionBloquee || pontRefuse ||
+        STANDALONE || !CHAR_ID || document.getElementById("jjk-ecran")) return;
+    var next = modePartage === "edition" ? "consultation" : "edition";
+    var requestedAt = Date.now();
+    modePending = { mode: next, requestedAt: requestedAt };
+    var btn = document.getElementById("jjk-mode-toggle");
+    if (btn) { btn.disabled = true; btn.textContent = "Enregistrement…"; }
+    post({ type: "presence", action: "mode", mode: next, requestedAt: requestedAt, viewId: VIEW_ID });
+    if (modePendingTimer) clearTimeout(modePendingTimer);
+    modePendingTimer = setTimeout(function () {
+      if (!modePending || modePending.requestedAt !== requestedAt) return;
+      modePending = null; modePendingTimer = null;
+      appliqueMode(sharedModeState || { mode: modePartage, modeAt: 0, modeBy: "" });
+      bandeau("Roll20 n’a pas confirmé le changement de mode. La fiche conserve le mode précédent ; vérifiez vos droits puis réessayez.");
+    }, 6000);
+  }
+
   function poserModeBar() {
     if (document.getElementById("jjk-mode-bar")) return;
     var app = document.querySelector(".perso-atelier");
     if (!app || !app.parentNode) return;
-    var style = document.getElementById("jjk-mode-css");
-    if (!style) {
-      style = document.createElement("style"); style.id = "jjk-mode-css";
-      style.textContent = "#jjk-mode-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.32rem .5rem;margin:0 0 .35rem;background:var(--panel,#f6f0e5);border:1px solid var(--line-2,#c9bda8);border-radius:5px;color:var(--ink,#33271a);font:600 .66rem/1.3 'Alegreya',serif}#jjk-mode-toggle{border:1px solid var(--line-2,#c9bda8);border-radius:4px;padding:.3rem .6rem;background:var(--stripe,#eee4d4);color:var(--ink,#33271a);font:700 .65rem/1.2 inherit;letter-spacing:.05em;cursor:pointer}#jjk-mode-toggle[aria-pressed=true]{background:var(--accent,#8b3027);border-color:var(--accent,#8b3027);color:#fff}#jjk-mode-label{flex:1 1 auto;color:var(--ink-2,#786b59)}#jjk-mode-presence{flex:0 1 100%;font-size:.58rem;color:var(--ink-3,#8b806f)}#jjk-save-status{padding:.2rem .6rem;font-size:12px}html.night #jjk-mode-bar{background:#33271a;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle[aria-pressed=true]{background:#c66d54;color:#1c130d}html.jjk-consultation .pc-editable .pc-gear{opacity:.45;cursor:not-allowed}html.jjk-consultation .pc-editable .pc-edit-only{display:none!important}";
-      document.head.appendChild(style);
-    }
     var bar = document.createElement("div"); bar.id = "jjk-mode-bar";
-    var button = document.createElement("button"); button.id = "jjk-mode-toggle"; button.type = "button"; button.setAttribute("aria-pressed", "false");
-    button.addEventListener("click", function () {
-      var next = modePartage === "edition" ? "consultation" : "edition";
-      appliqueMode(next, presenceViews, "");
-      post({ type: "presence", action: "mode", mode: next, viewId: VIEW_ID });
-    });
-    var label = document.createElement("span"); label.id = "jjk-mode-label";
-    var users = document.createElement("span"); users.id = "jjk-mode-presence";
+    var controls = document.createElement("div"); controls.className = "jjk-mode-controls";
+    var label = document.createElement("strong"); label.className = "jjk-mode-label"; label.id = "jjk-mode-label";
+    label.textContent = "Mode Consultation";
+    var button = document.createElement("button"); button.id = "jjk-mode-toggle"; button.className = "pc-btn";
+    button.type = "button"; button.setAttribute("aria-pressed", "false");
+    button.textContent = "Passer en Mode Edition";
+    button.addEventListener("click", demanderMode);
     var status = document.createElement("span"); status.id = "jjk-save-status";
     status.setAttribute("role", "status"); status.hidden = true;
-    bar.appendChild(button); bar.appendChild(label); bar.appendChild(status); bar.appendChild(users);
+    controls.appendChild(label); controls.appendChild(button); controls.appendChild(status);
+    var presence = document.createElement("div"); presence.className = "jjk-mode-presence";
+    var edition = document.createElement("div"); edition.className = "jjk-presence-edition";
+    var consultation = document.createElement("div"); consultation.className = "jjk-presence-consultation";
+    presence.appendChild(edition); presence.appendChild(consultation);
+    bar.appendChild(controls); bar.appendChild(presence);
     app.parentNode.insertBefore(bar, app);
-    appliqueMode(modePartage, presenceViews, "");
+    document.documentElement.classList.add("jjk-consultation");
+    appliqueMode(sharedModeState || { mode: "consultation", modeAt: 0, modeBy: "" });
     actualiseStatutEnregistrement();
-    post({ type: "presence", action: "hello", viewId: VIEW_ID });
-    if (!presenceTimer) presenceTimer = setInterval(function () {
-      if (!presenceDead) post({ type: "presence", action: "heartbeat", viewId: VIEW_ID });
-    }, 12000);
+    envoyerPresence("join");
+    if (!presenceTimer) presenceTimer = setInterval(function () { envoyerPresence("heartbeat"); }, 10000);
   }
-  var presenceViews = {};
+
   window.addEventListener("pagehide", function () {
     presenceDead = true;
     try { post({ type: "storage-release", storage: "fiche", viewId: VIEW_ID }); } catch (e) {}
     try { post({ type: "presence", action: "leave", viewId: VIEW_ID }); } catch (e) {}
     if (presenceTimer) clearInterval(presenceTimer);
+    if (modePendingTimer) clearTimeout(modePendingTimer);
   });
 
   // ---------- chargement du bundle ----------
@@ -1828,17 +1894,20 @@
       }
       if (versionBloquee) return;
       d.attrs = completeOmis(d.attrs || {}, d.omis);
+      // Une réponse non fraîche ne constitue jamais un accusé : elle peut
+      // provenir de la photographie Backbone locale, antérieure aux écritures
+      // d'un autre joueur. Comme Outward, toutes les voies d'ouverture,
+      // récupération et confirmation attendent une lecture serveur fraîche.
+      if (d.fresh !== true) return;
       if (relectureOuverture) {
         relectureOuverture = false;
         hydrate(d.attrs, true);
-      } else if (d.fresh === true && hydrated) {
-        // Le pont ne répond qu'après un fetch Roll20 complet. Cette même
-        // lecture actualise Compact ET doit acquitter les sondes en attente
+      } else if (hydrated) {
+        // La même lecture fraîche actualise Compact ET acquitte les sondes
         // (confirmation de sauvegarde, restauration et polling).
         appliqueLectureCompact(d.attrs);
         sondeReponse(d.attrs);
-      } else if (hydrated) sondeReponse(d.attrs);
-      else hydrate(d.attrs);
+      } else hydrate(d.attrs);
     }
     // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien est
     // public, chaque client décide s'il le prend), d'où l'absence de filtre
@@ -1856,8 +1925,17 @@
       } else if (!gele) bandeau("Roll20 n'a pas pu actualiser la lecture distante. Les dernières données vérifiées restent affichées ; nouvelle tentative automatique en cours.");
     }
     else if (d.type === "presence-state" && (!d.charId || d.charId === CHAR_ID)) {
-      presenceRecu = true; presenceViews = d.views || {};
-      appliqueMode(d.mode, presenceViews, d.modeName || "");
+      presenceRecu = true;
+      if (d.player && typeof d.player.id === "string") presencePlayer = d.player;
+      if (Array.isArray(d.presence)) presenceRows = d.presence;
+      else {
+        presenceRows = Object.keys(d.views || {}).map(function (key) {
+          var row = d.views[key];
+          return Object.assign({ view: key }, row || {}, { mode: d.mode === "edition" ? "edition" : "consultation" });
+        });
+      }
+      appliqueMode(d.modeState || { mode: d.mode, modeAt: d.modeAt, modeBy: d.modeBy });
+      renderPresence();
     }
     else if (d.type === "backup-restore-start" && (!d.charId || d.charId === CHAR_ID)) {
       // Geler cette vue : une session Compact ancienne ne doit pas republier
