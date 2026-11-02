@@ -12,7 +12,7 @@
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
     { id: "caracs",       titre: "CARACTÉRISTIQUES", onglet: "fiche", colonne: "gauche", build: buildCaracs },
-    { id: "effort",       titre: "EFFORT ET TEMPS",  onglet: "fiche", colonne: "gauche", build: buildEffort },
+    { id: "effort",       titre: "EFFORT / TEMPS / ÉCOULEMENT", onglet: "fiche", colonne: "gauche", build: buildEffort },
     { id: "exposition",   titre: "EXPOSITION",       onglet: "fiche", colonne: "gauche", build: buildExposition },
     { id: "survie",       titre: "SURVIE",           onglet: "fiche", colonne: "gauche", build: buildSurvie },
     { id: "pi",           titre: "INNOCENCE",        onglet: "fiche", colonne: "gauche", build: buildPi },

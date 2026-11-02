@@ -54,7 +54,7 @@
     // effort, lire la température, puis faire avancer l'horloge.
     function section(titre) {
       var groupe = el("div", "pc-effort-section");
-      groupe.appendChild(el("div", "pc-block-title pc-effort-section-title", titre));
+      groupe.appendChild(el("div", "pc-block-title", titre));
       b.appendChild(groupe);
       return groupe;
     }
