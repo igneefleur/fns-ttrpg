@@ -82,7 +82,7 @@
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres, et c'est
   // exactement ce que fait OwdMods.compareVersions.
-  var RELEASE_DEFAUT = "4.31.3b";
+  var RELEASE_DEFAUT = "4.32.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Ajouter une clé
   // racine avec un défaut n'en est PAS un : normalize() complète une clé
@@ -143,7 +143,7 @@
     ["effAutre", "eff_autre", "n"],
     ["effDesactive", "eff_desactive", "b"],
     ["effAlcool", "eff_alcool", "n"], ["effAlcoolSecondes", "eff_alcool_secondes", "n"],
-    ["effort", "effort", "s"], ["temperature", "temperature", "n"],
+    ["effort", "effort", "s"], ["temperature", "temperature", "n"], ["temperatureMonde", "temperature_monde", "b"],
     ["qualiteSommeil", "qualite_sommeil", "s"],
     ["allure", "allure", "s"], ["allureCran", "allure_cran", "n"],
     ["argent", "argent", "n"],
@@ -266,7 +266,7 @@
       xpTotal: 0,
 
       // ---- l'effort et l'air ----
-      effort: "leger", temperature: 20, qualiteSommeil: "confortable",
+      effort: "leger", temperature: 20, temperatureMonde: false, qualiteSommeil: "confortable",
       horloge: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
       horlogeDigestion: { jours: 0, heures: 0, minutes: 0, secondes: 0 },
       horlogeExposition: { jours: 0, heures: 0, minutes: 0, secondes: 0, regime: "" },

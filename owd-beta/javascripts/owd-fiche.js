@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.31.3b";
+  var RELEASE = "4.32.0b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -405,7 +405,7 @@
       // sommeil, repos, leger, intermediaire, lourd) et la température de
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
-      effort: "leger", temperature: 20, qualiteSommeil: "confortable",
+      effort: "leger", temperature: 20, temperatureMonde: false, qualiteSommeil: "confortable",
       // Trois horloges internes invisibles, toutes normalisées J/H/M/S.
       // `horloge` est le temps du monde. Les deux autres ne tournent que tant
       // que leur processus est actif : ventre non vide pour la digestion,
@@ -721,6 +721,7 @@
         })
       : [];
     s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
+    s.temperatureMonde = s.temperatureMonde === true;
     // Les horloges sont stockées en J/H/M/S, jamais en total de secondes. Une
     // valeur débordante est reportée vers l'unité supérieure. Digestion et
     // Exposition utilisent exactement la même forme que l'horloge du monde.
@@ -2033,6 +2034,16 @@
   function ruptureDepense() { return ruptureComps() + ruptureTechs(); }
   function ruptureRestante() { return ruptureMax() - ruptureDepense(); }
 
+  // Température lue dans le personnage partagé « Monde ». Elle reste en
+  // mémoire (jamais copiée dans la température manuelle du personnage) et
+  // n'est utilisée que si le joueur a activé le lien et qu'une valeur existe.
+  var temperatureMondeValeur = null, temperatureMondeDisponible = false;
+  var temperatureMondeEtat = "attente";
+  function temperatureCourante() {
+    return state.temperatureMonde === true && temperatureMondeDisponible
+      ? temperatureMondeValeur : num(state.temperature, 0);
+  }
+
   // ---- climat ----
   // La zone de confort du personnage HABILLÉ : les deux bornes du corps nu
   // viennent des règles (owd-creation.json), les degrés de protection de ce
@@ -2258,7 +2269,7 @@
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
     if (!t || !z || !e) return 0;
-    var ressenti = num(state.temperature, 0) + num(e.degres, 0);
+    var ressenti = temperatureCourante() + num(e.degres, 0);
     var div = Math.max(1, num(t.paliers.diviseur, 1));
     var arr = t.paliers.arrondi === "bas" ? Math.floor : Math.ceil;
     // l'intensité ne dépasse pas le maximum des règles
@@ -2741,7 +2752,7 @@
     enregistrementEtat=json;
     var out={},caps=card.capacites,caracs=card.caracs;
     function set(id,parts){out[id]=JSON.stringify(parts);}
-    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
+    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','temperatureMonde','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
     Object.keys(own).forEach(function(id){set(id,own[id].map(function(k){return state[k];}));});
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}
@@ -5164,6 +5175,44 @@
   // taux et les paliers viennent des données.
   // l'affichage d'un effort dont le nom ne tient pas dans sa case
   var EFFORT_COURT = { intermediaire: "Inter" };
+  var temperatureMondeSondeTimer = null, temperatureMondeSondeEcoute = false;
+  function recoitTemperatureMonde(ev) {
+    if (ev.source !== window.top) return;
+    var d = ev.data;
+    if (!d || d.ns !== "owd" || d.type !== "monde-temperature-result") return;
+    var valeur = d.available === true && typeof d.temperature === "number" &&
+      Number.isFinite(d.temperature) && Math.abs(d.temperature) <= 999 ? d.temperature : null;
+    var disponible = valeur !== null;
+    var etat = !d.found ? "absent" : d.status === "echec" ? "echec" :
+      d.status !== "sur" ? "attente" : disponible ? "disponible" : "sans-valeur";
+    if (temperatureMondeValeur === valeur && temperatureMondeDisponible === disponible && temperatureMondeEtat === etat) return;
+    temperatureMondeValeur = valeur;
+    temperatureMondeDisponible = disponible;
+    temperatureMondeEtat = etat;
+    if (state.temperatureMonde === true) refresh();
+  }
+  function demandeTemperatureMonde() {
+    try { window.top.postMessage({ ns: "owd", type: "monde-temperature" }, "*"); } catch (e) {}
+  }
+  function demarreSondeTemperatureMonde() {
+    if (!COMPACT || window.top === window) return;
+    if (!temperatureMondeSondeEcoute) {
+      window.addEventListener("message", recoitTemperatureMonde);
+      temperatureMondeSondeEcoute = true;
+    }
+    if (temperatureMondeSondeTimer !== null) return;
+    temperatureMondeValeur = null;
+    temperatureMondeDisponible = false;
+    temperatureMondeEtat = "attente";
+    demandeTemperatureMonde();
+    temperatureMondeSondeTimer = window.setInterval(demandeTemperatureMonde, 2000);
+  }
+  function arreteSondeTemperatureMonde() {
+    if (temperatureMondeSondeTimer !== null) {
+      window.clearInterval(temperatureMondeSondeTimer);
+      temperatureMondeSondeTimer = null;
+    }
+  }
   function buildEffort() {
     var b = block("Effort et Temps");
 
@@ -5209,13 +5258,47 @@
     sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
     b.appendChild(sommeilQualite);
 
-    var air = el("div", "pc-crow-bot pc-effort-temperature");
-    air.appendChild(el("span", "lbl", "Température"));
-    air.appendChild(stepper(
-      function () { return num(state.temperature, 0); },
-      function (v) { state.temperature = clamp(Math.round(v * 10) / 10, -999, 999); },
-      1, "°C"));
+    // TEMPÉRATURE : [ Monde | valeur ]. Le premier segment active/désactive
+    // la lecture de la température partagée ; le second reste la saisie locale
+    // lorsqu'il est désactivé, et devient une lecture seule lorsque lié.
+    var air = el("div", "pc-segs pc-effort-temperature");
+    var monde = el("button", "c", "Monde");
+    monde.type = "button";
+    monde.setAttribute("aria-pressed", state.temperatureMonde === true ? "true" : "false");
+    monde.addEventListener("click", function () {
+      state.temperatureMonde = state.temperatureMonde !== true;
+      if (state.temperatureMonde) demarreSondeTemperatureMonde();
+      else arreteSondeTemperatureMonde();
+      refresh();
+    });
+    air.appendChild(monde);
+
+    var temperature = el("input", "pc-effort-temperature-input");
+    temperature.type = "number";
+    temperature.step = "0.1";
+    temperature.min = "-999";
+    temperature.max = "999";
+    temperature.setAttribute("aria-label", "Température en °C");
+    var valeurAir = el("label", "c pc-effort-temperature-value");
+    valeurAir.appendChild(temperature);
+    valeurAir.appendChild(el("span", "pc-effort-temperature-unit", "°C"));
+    temperature.addEventListener("input", function () {
+      if (state.temperatureMonde === true || temperature.value === "") return;
+      var v = Number(temperature.value);
+      if (!Number.isFinite(v) || Math.abs(v) > 999) return;
+      state.temperature = clamp(Math.round(v * 10) / 10, -999, 999);
+      refresh();
+    });
+    temperature.addEventListener("change", function () {
+      if (state.temperatureMonde === true) return;
+      var v = Number(temperature.value);
+      if (temperature.value !== "" && Number.isFinite(v) && Math.abs(v) <= 999)
+        state.temperature = clamp(Math.round(v * 10) / 10, -999, 999);
+      refresh();
+    });
+    air.appendChild(valeurAir);
     b.appendChild(air);
+    if (state.temperatureMonde === true) demarreSondeTemperatureMonde();
 
     // TROIS GESTES, tous branchés sur la même horloge à la seconde.
     function geste(unite, secondesParUnite, etiquette) {
@@ -5258,6 +5341,26 @@
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
       sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
       boutonsQualite.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.qualiteSommeil); });
+      var liee = state.temperatureMonde === true;
+      monde.classList.toggle("on", liee);
+      monde.setAttribute("aria-pressed", liee ? "true" : "false");
+      monde.title = liee ? "Utiliser la température de Monde — activé" : "Utiliser la température de Monde — désactivé";
+      temperature.readOnly = liee;
+      if (liee) {
+        if (document.activeElement !== temperature || temperature.readOnly)
+          temperature.value = temperatureMondeDisponible ? String(temperatureMondeValeur) : "";
+        temperature.placeholder = temperatureMondeDisponible ? "" : "—";
+        temperature.title = temperatureMondeDisponible
+          ? "Température actuelle du personnage Monde"
+          : (temperatureMondeEtat === "absent" ? "Personnage Monde introuvable ; la température manuelle est utilisée pour les calculs."
+            : temperatureMondeEtat === "echec" ? "Impossible de lire le personnage Monde ; la température manuelle est utilisée pour les calculs."
+            : temperatureMondeEtat === "sans-valeur" ? "Aucune température définie dans Monde ; la température manuelle est utilisée pour les calculs."
+            : "En attente de la température du personnage Monde ; la température manuelle est utilisée pour les calculs.");
+      } else {
+        if (document.activeElement !== temperature) temperature.value = String(num(state.temperature, 0));
+        temperature.placeholder = "";
+        temperature.title = "Température manuelle du personnage";
+      }
     });
     return b;
   }
@@ -11644,7 +11747,7 @@
     var changes=Object.keys(state).concat(Object.keys(s).filter(function(k){return !Object.prototype.hasOwnProperty.call(state,k);})).filter(function(k){return JSON.stringify(s[k])!==JSON.stringify(state[k]);});
     if(!changes.length)return;
     var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
-    var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
+    var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','temperatureMonde','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
     var oldData=state.modData||{},newData=s.modData||{};
     if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=['recuperation'];
     var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
