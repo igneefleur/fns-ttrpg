@@ -259,6 +259,7 @@
   // restent dans A_BG : ils ne transitent jamais dans les journaux d'opérations.
   var narrationCompact = null, narrationSession = null, narrationCompactActive = false;
   var narrationMigrationEnvoyee = 0, narrationSessionId = null;
+  var narrationStorageReady = false, narrationCleanupAt = 0;
   function etatNarrationCompact() { return { v: 1, conf: conf, points: points, modData: {} }; }
   function appliqueEtatNarrationCompact(s) {
     if (!s || !s.conf || !s.points || typeof s.points !== "object") throw new Error("État du plateau Compact incomplet.");
@@ -280,6 +281,10 @@
       if (Date.now() - narrationMigrationEnvoyee < 2800) return;
       narrationMigrationEnvoyee = Date.now();
       post({ type: "save", charId: charId, attrs: narrationSession.migration || {} });
+      return;
+    }
+    if (!narrationStorageReady) {
+      post({ type: "storage-activate", storage: "narration", charId: charId });
       return;
     }
     var operations = narrationSession.outgoing(), ids = Object.keys(operations);
@@ -308,9 +313,23 @@
       // Tester hasBase avant receive() empêchait cette confirmation et
       // renvoyait indéfiniment la même photographie.
       if (attrs && attrs[A_STORAGE]) {
+        var distant = narrationCompact.read(attrs);
+        if (distant && !distant.incomplete && (Number(distant.state.v) > 1)) {
+          refuse = true; montreEtat("perdu");
+          trace("version-compact-future", { version: distant.state.v });
+          return;
+        }
         var resultat = narrationSession.receive(attrs);
         if (!resultat) return;
         if (resultat.incomplete) throw new Error("Le journal du plateau référence des données absentes.");
+        var phaseNarr = "";
+        try { phaseNarr = JSON.parse(String(attrs[A_STORAGE].current || "{}")).phase; } catch (ePhaseNarr) {}
+        narrationStorageReady = phaseNarr === "ready";
+        if (!narrationStorageReady) post({ type: "storage-activate", storage: "narration", charId: charId });
+        else if (Date.now() - narrationCleanupAt > 15000) {
+          narrationCleanupAt = Date.now();
+          post({ type: "storage-cleanup", storage: "narration", charId: charId });
+        }
         appliqueEtatNarrationCompact(resultat.state);
         narrationCompactActive = true;
         if (resultat.conflict) trace("conflit-compact", { conflicts: resultat.conflicts || [] });
@@ -416,6 +435,7 @@
           annuleEnvoi();
           narrationCompact = null; narrationSession = null; narrationCompactActive = false;
           narrationMigrationEnvoyee = 0; narrationSessionId = null;
+          narrationStorageReady = false; narrationCleanupAt = 0;
           montreEtat("attente");
         }
         charId = d.charId;
@@ -426,9 +446,23 @@
         demandeEtat();
       } else if (d.type === "hydrate" && d.charId === charId) {
         applique(d.attrs || {}, d);
+      } else if (d.type === "backup-status" && d.charId === charId && d.ok === true) {
+        narrationCleanupAt = 0;
+        demandeEtat();
+      } else if (d.type === "backup-status" && d.charId === charId && d.ok === false) {
+        trace("sauvegarde-locale-refusee", { message: String(d.error || "Sauvegarde locale non confirmée") });
+      } else if (d.type === "storage-error" && d.charId === charId && d.storage === "narration") {
+        refuse = true; trace("erreur-stockage", { message: String(d.error || "Erreur de stockage") }); montreEtat("perdu");
+      } else if (d.type === "storage-cleanup-status" && d.charId === charId && d.storage === "narration" && d.report && d.report.status === "error") {
+        trace("erreur-nettoyage", { message: String(d.report.error || "Nettoyage interrompu") });
       }
     } catch (e) {}
   }, false);
+
+  window.addEventListener("pagehide", function () {
+    if (!charId) return;
+    try { post({ type: "storage-release", storage: "narration", charId: charId, viewId: VIEW_ID }); } catch (e) {}
+  });
 
   // Le pont ne rend que la matière : qui je suis, si je suis MJ, et la liste
   // brute des contrôleurs du personnage. La conclusion se tire ICI, côté site,

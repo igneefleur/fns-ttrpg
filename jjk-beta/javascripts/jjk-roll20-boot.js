@@ -34,14 +34,11 @@
  *     donne exactement la même reconstruction amputée, et vaut donc le même
  *     gel : sans lui, vider l'attribut le plus lourd de l'onglet Attributes
  *     serait PLUS destructeur que le corrompre.
- *  7. ÉCRAN DE VERSION. Entre 2 et 3, quand la fiche trouvée dans le
- *     personnage n'a pas la FORME que le site sait lire — son SCHÉMA diffère —,
- *     on n'ouvre RIEN : on montre ce qui change et on laisse choisir (mettre à
- *     niveau, ouvrir avec sa version, exporter). Le NUMÉRO de version, lui, ne
- *     barre plus le passage : un correctif de CSS aurait sorti l'écran chez
- *     toute une table alors qu'aucune donnée n'avait changé de forme. C'est le
- *     seul endroit du dispositif où ready vaut encore false alors que l'état
- *     est déjà connu : aucune écriture ne peut partir d'ici.
+ *  7. ÉCRAN DE VERSION. Entre 2 et 3, toute fiche versionnée dont la release
+ *     OU le schéma diffère de la version servie reste fermée. Le joueur choisit
+ *     explicitement la mise à niveau ou l'ouverture avec une archive ; il peut
+ *     exporter avant de trancher. C'est le seul endroit où ready vaut encore
+ *     false alors que l'état est déjà connu : aucune écriture ne peut partir.
  *
  * Chemin des messages : cette page est imbriquée sous la page d'extension
  * creator.html, elle-même sous la frame de la feuille Roll20. Le pont d20 vit
@@ -73,6 +70,7 @@
   var enVol = null;             // lot posté, pas encore relu : ni oublié, ni tenu pour acquis
   var enVolTimer = null;
   var echecs = 0;               // confirmations manquées d'affilée
+  var premierPendingAt = 0, saveStatusTimer = null, saveFailure = "";
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
@@ -81,6 +79,8 @@
   var gele = false;             // fiche lue à moitié ou transport non fiable : aucune écriture
   var compactActif = false, compactSession = null, compactPoll = null, compactPollEnCours = false;
   var compactRecovering = false, compactErrorMessage = "";
+  var compactStorageReady = false, compactCleanupAt = 0, versionBloquee = false;
+  var backupLastAt = 0, backupPendingRequest = null, backupPendingAt = 0, backupRetryAt = 0;
   var pontVerifie = false, pontRefuse = false, relectureOuverture = false;
 
   window.__jjkLocalStorage = {
@@ -103,8 +103,17 @@
       } catch (e) {}
     }
     if (!state || typeof state !== "object" || !Number.isSafeInteger(state.v) || state.degrade) return;
-    post({ type: "backup-snapshot", request: VIEW_ID + "-" + Date.now(), reason: reason || "autosave",
-      state: state, attrs: attrs });
+    var now = Date.now();
+    if (backupPendingRequest && now - backupPendingAt <= 30000) return;
+    if (backupPendingRequest) { backupPendingRequest = null; backupRetryAt = now + 30000; }
+    if (now < backupRetryAt) return;
+    if (reason !== "opening" && backupLastAt && now - backupLastAt < 3600000) return;
+    var request = VIEW_ID + "-backup-" + now;
+    backupPendingRequest = request; backupPendingAt = now;
+    // Le pont ne reçoit jamais les attributs fournis par la page : il reconstruit
+    // la photographie depuis sa dernière lecture Roll20 confirmée. viewId lie
+    // cette demande au document qui a réellement été hydraté.
+    post({ type: "backup-snapshot", request: request, reason: reason || "autosave", state: state, viewId: VIEW_ID });
   }
 
   // ---------- mode jour / nuit ----------
@@ -192,12 +201,13 @@
   }, 400);
 
   function scheduleSave() {
-    if (gele) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
+    if (gele || versionBloquee) return;           // rien ne sort d'une fiche qu'on n'a pas su lire en entier
     if (saveTimer) clearTimeout(saveTimer);
     saveTimer = setTimeout(doSave, 400);
   }
   function doSave() {
     saveTimer = null;
+    if (versionBloquee) return;
     var state;
     try { state = JSON.parse(mem["jjk-perso"] || "null"); } catch (e) { return; }
     if (!state) return;
@@ -220,6 +230,7 @@
     if (taillesPostees.length > 5) taillesPostees.shift();
     armerConfirmation();
     armerGarde();
+    actualiseStatutEnregistrement();
   }
   function erreurCompact(message) {
     gele = true;
@@ -237,7 +248,9 @@
 
   function doSaveCompact(state, card) {
     try {
+      if (versionBloquee) return;
       compactSession.capture(state);
+      actualiseStatutEnregistrement();
       var mirrors = M.mirrorAttrs ? M.mirrorAttrs(state, card) : {};
       if (!compactSession.hasBase) {
         // Première écriture : tous les blocs de la photographie sont postés
@@ -252,6 +265,17 @@
           if (taillesPostees.length > 5) taillesPostees.shift();
           armerConfirmation(); armerGarde();
         }
+        actualiseStatutEnregistrement();
+        return;
+      }
+      // La photographie n'est utilisable qu'après le marqueur ready confirmé
+      // par une lecture fraîche. Les saisies peuvent être capturées en mémoire,
+      // mais aucun journal ne part avant cette bascule.
+      var phase = null;
+      try { phase = JSON.parse(String(val(lastAttrs.jjk_storage, "current") || "{}")).phase; } catch (ePhase) {}
+      if (phase !== "ready" || !compactStorageReady) {
+        post({ type: "storage-activate", storage: "fiche", viewId: VIEW_ID });
+        planifieCompactPoll(1400);
         return;
       }
       // Après l'activation, les modifications vont dans le journal append-only.
@@ -264,10 +288,11 @@
       }
       var operations = compactSession.outgoing(), ids = Object.keys(operations);
       if (ids.length || Object.keys(compactSession.payloads || {}).length) {
-        post({ type: "storage-ops", session: VIEW_ID, epoch: compactSession.epoch,
+        post({ type: "storage-ops", session: VIEW_ID, viewId: VIEW_ID, epoch: compactSession.epoch,
           ops: ids.map(function (id) { return operations[id]; }), payloads: compactSession.payloads });
         planifieCompactPoll(900);
       }
+      actualiseStatutEnregistrement();
     } catch (e) {
       erreurCompact("La synchronisation par blocs a rencontré une erreur : " + String(e && e.message || e));
     }
@@ -276,12 +301,47 @@
     if (!compactActif || compactPoll !== null) return;
     compactPoll = setTimeout(function () { compactPoll = null; pollCompact(); }, delai || 1400);
   }
+  function verrouilleVersionFuture(state) {
+    if (!state || versionBloquee) return versionBloquee;
+    var schemaDistant = Number(state.v), releaseDistante = String(state.rel || "");
+    var plusRecent = (isFinite(schemaDistant) && schemaDistant > schemaSite()) || compare(releaseDistante, releaseSite()) === 1;
+    if (!plusRecent) return false;
+    versionBloquee = true; gele = true;
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    if (compactPoll) { clearTimeout(compactPoll); compactPoll = null; }
+    post({ type: "storage-release", storage: "fiche", viewId: VIEW_ID });
+    ecranMiseAJourObligatoire({ schema: schemaDistant, release: releaseDistante }, releaseSite(), schemaSite());
+    return true;
+  }
+  function phaseStockage(attrs) {
+    try { return JSON.parse(String(val(attrs && attrs.jjk_storage, "current") || "{}")).phase || ""; }
+    catch (e) { return ""; }
+  }
+  function appliqueCycleStockage(attrs) {
+    if (!attrs || !attrs.jjk_storage) return false;
+    var phase = phaseStockage(attrs);
+    if (phase !== "ready") {
+      compactStorageReady = false;
+      post({ type: "storage-activate", storage: "fiche", viewId: VIEW_ID });
+      return false;
+    }
+    compactStorageReady = true;
+    if (Date.now() - compactCleanupAt > 15000) {
+      compactCleanupAt = Date.now();
+      post({ type: "storage-cleanup", storage: "fiche", viewId: VIEW_ID });
+    }
+    return true;
+  }
   function appliqueLectureCompact(attrs) {
-    if (!compactActif || !compactSession || !ready || gele || !attrs) return;
+    if (!compactActif || !compactSession || !ready || gele || versionBloquee || !attrs) return;
     try {
+      var distant = window.JjkSync.Compact.read(attrs);
+      if (distant && !distant.incomplete && verrouilleVersionFuture(distant.state)) return;
       var resultat = compactSession.receive(attrs);
       if (!resultat) return;
+      actualiseStatutEnregistrement();
       if (resultat.incomplete) throw new Error("La lecture actualisée contient des blocs ou des journaux incomplets.");
+      appliqueCycleStockage(attrs);
       lastAttrs = attrs;
       if (resultat.conflict) bandeau("La synchronisation a détecté une modification concurrente sur les mêmes données. Vérifiez le personnage et ses sauvegardes avant de poursuivre.");
       if (resultat.lost) bandeauPerte();
@@ -290,23 +350,29 @@
         mem["jjk-perso"] = prochain;
         try { window.dispatchEvent(new CustomEvent("jjk-compact-sync", { detail: resultat.state })); } catch (e) {}
       }
-      if (!Object.keys(compactSession.pending).length && !Object.keys(compactSession.payloads || {}).length)
+      if (!Object.keys(compactSession.pending).length && !Object.keys(compactSession.payloads || {}).length) {
+        saveFailure = "";
         sauvegardeLocale(attrs, "autosave", resultat.state);
+      }
     } catch (e) {
       erreurCompact("La relecture des modifications distantes a échoué : " + String(e && e.message || e));
     }
   }
 
   function pollCompact() {
-    if (!compactActif || !compactSession || compactPollEnCours || !ready || (gele && !compactRecovering)) return;
+    if (!compactActif || !compactSession || compactPollEnCours || !ready || versionBloquee || (gele && !compactRecovering)) return;
     compactPollEnCours = true;
     sonde(function (attrs) {
       compactPollEnCours = false;
       if (!attrs) { planifieCompactPoll(compactRecovering ? 2600 : 2200); return; }
       try {
+        var distant = window.JjkSync.Compact.read(attrs);
+        if (distant && !distant.incomplete && verrouilleVersionFuture(distant.state)) return;
         var resultat = compactSession.receive(attrs);
         if (!resultat) { planifieCompactPoll(1800); return; }
+        actualiseStatutEnregistrement();
         if (resultat.incomplete) throw new Error("Des blocs référencés par le journal ne sont pas encore arrivés.");
+        var stockagePret = appliqueCycleStockage(attrs);
         // La fiche ne se déverrouille qu'après une lecture Compact COMPLETE,
         // reconstruite par le même lecteur que celui qui applique les journaux.
         lastAttrs = attrs;
@@ -324,12 +390,14 @@
           mem["jjk-perso"] = prochain;
           try { window.dispatchEvent(new CustomEvent("jjk-compact-sync", { detail: resultat.state })); } catch (e) {}
         }
-        if (!Object.keys(compactSession.pending).length && !Object.keys(compactSession.payloads || {}).length)
+        if (!Object.keys(compactSession.pending).length && !Object.keys(compactSession.payloads || {}).length) {
+          saveFailure = "";
           sauvegardeLocale(attrs, "autosave", resultat.state);
-        else {
+        }
+        else if (stockagePret) {
           var operations = compactSession.outgoing(), ids = Object.keys(operations);
           if (ids.length || Object.keys(compactSession.payloads || {}).length)
-            post({ type: "storage-ops", session: VIEW_ID, epoch: compactSession.epoch,
+            post({ type: "storage-ops", session: VIEW_ID, epoch: compactSession.epoch, viewId: VIEW_ID,
               ops: ids.map(function (id) { return operations[id]; }), payloads: compactSession.payloads });
         }
       } catch (eCompact) {
@@ -346,6 +414,7 @@
     try {
       compactSession = new window.JjkSync.Compact.Session(lastAttrs || {}, state, Date.now,
         { id: VIEW_ID, actor: { id: VIEW_ID } });
+      compactStorageReady = false; compactCleanupAt = 0;
       compactActif = true;
       planifieCompactPoll(1200);
       if (!compactSession.hasBase) scheduleSave();
@@ -456,17 +525,19 @@
       confirme(lot, function (ok) {
         if (lot !== enVol) return;   // un save plus récent a repris la main
         if (ok) {
-          lastAttrs = fusion(lastAttrs, lot); enVol = null; echecs = 0;
+          lastAttrs = fusion(lastAttrs, lot); enVol = null; echecs = 0; saveFailure = "";
           if (compactActif && compactSession && !compactSession.hasBase) {
             try { compactSession.receive(lastAttrs); planifieCompactPoll(700); scheduleSave(); }
             catch (eCompact) { gele = true; bandeau("La photographie Compact a été écrite mais n'a pas pu être reconstruite : " + String(eCompact && eCompact.message || eCompact)); return; }
           }
+          actualiseStatutEnregistrement();
           sauvegardeLocale(lastAttrs, "autosave"); return;
         }
         // Échec : le lot QUITTE la base du diff. Il redevient donc une
         // différence, et le prochain doSave le repostera de lui-même.
         enVol = null;
         echecs++;
+        actualiseStatutEnregistrement();
         if (echecs < 2) { scheduleSave(); return; }   // une relance discrète suffit souvent
         // Deux fois de suite : ce n'est plus un contretemps. On prévient, et
         // on cesse de relancer tout seul — le lot part quand même à la
@@ -509,54 +580,51 @@
   // précisément dans ces moments qu'il a quelque chose à dire.
   var CSS_BANDEAU =
     "#jjk-bandeau{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;" +
-    "gap:.5rem;padding:.5rem .7rem;background:#f6e2c8;color:#4c3a24;border-bottom:1px solid #c9a97c;" +
-    "font-family:'Alegreya','EB Garamond',Garamond,serif;font-size:.72rem;line-height:1.45}" +
+    "gap:.5rem;padding:.5rem .7rem;background:#262626;color:#ffd77f;border-bottom:1px solid #6b5a2e;" +
+    "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
+    "font-size:.72rem;line-height:1.45}" +
     "#jjk-bandeau .jjk-bandeau-txt{flex:1 1 14rem;min-width:0}" +
-    "#jjk-bandeau .jjk-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #c9a97c;" +
-    "border-radius:.2rem;background:#fffaf0;color:#4c3a24;font:inherit;cursor:pointer}" +
-    "#jjk-bandeau .jjk-bandeau-btn:hover{background:#fff}" +
-    "html.night #jjk-bandeau{background:#3a2c1c;color:#e8dcc6;border-bottom-color:#6b5636}" +
-    "html.night #jjk-bandeau .jjk-bandeau-btn{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}" +
-    // Écran de version : il RECOUVRE la page (position fixed, z-index au-dessus
-    // du bandeau) parce qu'il n'annonce pas, il barre le passage. La fiche
-    // n'est pas derrière : elle n'est pas encore chargée.
+    "#jjk-bandeau .jjk-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #6b5a2e;" +
+    "border-radius:.2rem;background:#0d0d0d;color:#ffd77f;font:inherit;cursor:pointer}" +
+    "#jjk-bandeau .jjk-bandeau-btn:hover{background:#3a3a3a}" +
+    "html.night #jjk-bandeau{background:#262626;color:#ffd77f;border-bottom-color:#6b5a2e}" +
+    "html.night #jjk-bandeau .jjk-bandeau-btn{background:#0d0d0d;color:#ffd77f;border-color:#6b5a2e}" +
     "#jjk-ecran{position:fixed;top:0;left:0;right:0;bottom:0;z-index:80;overflow:auto;" +
-    "padding:1rem;background:#f5ecdc;color:#3a2c1c;" +
-    "font-family:'Alegreya','EB Garamond',Garamond,serif;font-size:.8rem;line-height:1.5}" +
-    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#fffaf0;" +
-    "border:1px solid #c9a97c;border-radius:.3rem;padding:.9rem 1rem}" +
-    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#a5342c;background:#fff3f0}" +
-    "#jjk-ecran h1{margin:0 0 .5rem;font-family:'Cinzel',serif;font-size:1.15rem;line-height:1.25}" +
+    "padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
+    "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
+    "font-size:.8rem;line-height:1.5}" +
+    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#ffffff;" +
+    "border:1px solid #e0cfa0;border-radius:.3rem;padding:.9rem 1rem}" +
+    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#a5342c;background:#fdf1ec}" +
+    "#jjk-ecran h1{margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Proxima Nova',proxima-nova," +
+    "'Nunito Sans',Helvetica,Arial,sans-serif;font-size:1.15rem;line-height:1.25}" +
     "#jjk-ecran h2{margin:.85rem 0 .25rem;font-size:.88rem}" +
-    "#jjk-ecran p{margin:.35rem 0}" +
-    "#jjk-ecran ul{margin:.3rem 0;padding-left:1.1rem}" +
+    "#jjk-ecran p{margin:.35rem 0}#jjk-ecran ul{margin:.3rem 0;padding-left:1.1rem}" +
     "#jjk-ecran li{margin:.25rem 0}" +
     "#jjk-ecran .jjk-ecran-vers{display:flex;flex-wrap:wrap;gap:.2rem 1.4rem;margin:.5rem 0;" +
-    "padding:.35rem .6rem;background:#f6e2c8;border-radius:.2rem}" +
+    "padding:.35rem .6rem;background:#f5f2ea;border-radius:.2rem}" +
     "#jjk-ecran .jjk-ecran-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem}" +
-    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #c9a97c;border-radius:.2rem;" +
-    "background:#fffaf0;color:#4c3a24;font:inherit;cursor:pointer}" +
-    "#jjk-ecran button:hover:not([disabled]){background:#fff}" +
-    "#jjk-ecran button.jjk-ecran-primaire{background:#4c3a24;color:#fffaf0;border-color:#4c3a24}" +
+    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
+    "background:#ffffff;color:#1a1a1a;font:inherit;cursor:pointer}" +
+    "#jjk-ecran button:hover:not([disabled]){background:#f5f2ea}" +
+    "#jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#1a1a1a;border-color:#ffd77f}" +
     "#jjk-ecran button[disabled]{opacity:.45;cursor:not-allowed}" +
     "#jjk-ecran .jjk-ecran-note{font-size:.72rem;opacity:.85}" +
     "#jjk-ecran label.jjk-ecran-epingle{display:block;margin:.2rem 0}" +
-    // box-sizing explicite : sans lui le textarea déborde de la boîte dans
-    // l'iframe Roll20, où la feuille de la fiche n'est pas toujours chargée.
     "#jjk-ecran textarea{box-sizing:border-box;width:100%;min-height:8rem;margin-top:.3rem;" +
     "font-family:'Roboto Mono',monospace;font-size:.66rem}" +
-    "html.night #jjk-ecran{background:#241b12;color:#e8dcc6}" +
-    "html.night #jjk-ecran .jjk-ecran-boite{background:#33271a;border-color:#6b5636}" +
-    "html.night #jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{background:#3a231f;border-color:#a5342c}" +
-    "html.night #jjk-ecran .jjk-ecran-vers{background:#4a3a26}" +
-    "html.night #jjk-ecran button{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}" +
-    "html.night #jjk-ecran button.jjk-ecran-primaire{background:#e8dcc6;color:#33271a;border-color:#e8dcc6}" +
-    "html.night #jjk-ecran textarea{background:#241b12;color:#e8dcc6;border-color:#6b5636}";
+    "html.night #jjk-ecran{background:#000000;color:#e6e6e6}" +
+    "html.night #jjk-ecran .jjk-ecran-boite{background:#0d0d0d;border-color:#6b5a2e}" +
+    "html.night #jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{background:#2e1d1a;border-color:#a5342c}" +
+    "html.night #jjk-ecran .jjk-ecran-vers{background:#1a1a1a}" +
+    "html.night #jjk-ecran button{background:#1a1a1a;color:#e6e6e6;border-color:#6b5a2e}" +
+    "html.night #jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#0d0d0d;border-color:#ffd77f}" +
+    "html.night #jjk-ecran textarea{background:#0d0d0d;color:#e6e6e6;border-color:#3a3a3a}";
   function poserStyles() {
     if (document.getElementById("jjk-bandeau-css")) return;
     var s = document.createElement("style");
     s.id = "jjk-bandeau-css";
-    s.textContent = CSS_BANDEAU;
+    s.textContent = CSS_BANDEAU + "#jjk-save-status{padding:.2rem .6rem;font-size:12px}";
     document.head.appendChild(s);
   }
   // txt : texte brut (jamais de HTML, il peut venir d'un message d'erreur).
@@ -569,9 +637,13 @@
     if (!b) {
       b = document.createElement("div");
       b.id = "jjk-bandeau";
+      b.setAttribute("role", "alert");
+      b.setAttribute("aria-live", "assertive");
+      b.setAttribute("aria-atomic", "true");
       document.body.insertBefore(b, document.body.firstChild);
     }
     b.innerHTML = "";
+    if (b.dataset) delete b.dataset.jjkRaison;
     var p = document.createElement("span");
     p.className = "jjk-bandeau-txt";
     p.textContent = txt;
@@ -591,21 +663,61 @@
     var b = document.getElementById("jjk-bandeau");
     if (b && b.parentNode) b.parentNode.removeChild(b);
   }
-  function bandeauPerte() {
-    bandeau("Roll20 n'enregistre pas cette fiche. Les modifications restent dans cette fenêtre " +
-            "et seront perdues en la fermant. Si la fiche est ouverte dans une fenêtre séparée, " +
-            "garder la fenêtre principale de la partie ouverte ; sinon, vérifier que le " +
-            "personnage n'est pas en lecture seule.", [
-      { texte: "Réessayer", action: function () {
-          fermerBandeau();
-          echecs = 0;
-          enVol = null;
-          lastAttrs = {};        // on ne sait plus ce que Roll20 tient : tout réémettre
-          gardeArmee = false;    // et refaire surveiller la première écriture qui suit
-          scheduleSave();
+  function statutEnregistrement(texte) {
+    var n = document.getElementById("jjk-save-status");
+    if (!n) return;
+    n.textContent = texte || "";
+    n.hidden = !texte;
+    if (saveStatusTimer) clearTimeout(saveStatusTimer);
+    if (texte === "Enregistré") saveStatusTimer = setTimeout(function () {
+      var status = document.getElementById("jjk-save-status");
+      if (status && status.textContent === "Enregistré") status.hidden = true;
+    }, 2500);
+  }
+  function afficheErreurEnregistrement(failed) {
+    if (!ready) return;
+    var titre = failed ? "Impossible d'enregistrer le personnage" : "Enregistrement en attente";
+    var texte = failed
+      ? "Une erreur empêche l'enregistrement des dernières modifications. Réessayez dans quelques instants."
+      : "Roll20 n'a pas confirmé les dernières modifications. Elles restent dans cette fenêtre et seront perdues si vous la fermez ou la rechargez. Réessayez dans quelques instants.";
+    var b = bandeau(titre + " — " + texte, [
+      { texte: "Réessayer", acte: "reessayer-enregistrement", action: function () {
+          fermerBandeau(); saveFailure = ""; echecs = 0; premierPendingAt = Date.now();
+          enVol = null; lastAttrs = {}; gardeArmee = false;
+          post({ type: "load", resync: true, viewId: VIEW_ID });
+          if (compactActif) planifieCompactPoll(0); else scheduleSave();
         } },
-      { texte: "Masquer", action: fermerBandeau }
+      { texte: "Exporter le personnage (JSON)", acte: "export", action: exporter }
     ]);
+    if (b.dataset) b.dataset.jjkRaison = "recording";
+  }
+  function compteEnAttente() {
+    var n = enVol ? Object.keys(enVol).length : 0;
+    if (compactActif && compactSession) {
+      n += Object.keys(compactSession.pending || {}).length;
+      n += Object.keys(compactSession.payloads || {}).length;
+    }
+    return n;
+  }
+  function actualiseStatutEnregistrement() {
+    if (!ready) return;
+    var count = compteEnAttente();
+    if (count) {
+      if (!premierPendingAt) premierPendingAt = Date.now();
+      statutEnregistrement("Enregistrement en cours…");
+      if (Date.now() - premierPendingAt >= 12000 && !saveFailure) afficheErreurEnregistrement(false);
+      return;
+    }
+    if (!saveFailure && premierPendingAt) {
+      premierPendingAt = 0;
+      var banner = document.getElementById("jjk-bandeau");
+      if (banner && banner.dataset.jjkRaison === "recording") fermerBandeau();
+      statutEnregistrement("Enregistré");
+    }
+  }
+  function bandeauPerte() {
+    saveFailure = "confirmation";
+    afficheErreurEnregistrement(true);
   }
 
   // Fiche à moitié lue, dans les deux cas où cela arrive (voir hydrate).
@@ -616,41 +728,6 @@
   // « Masquer » ici : un bandeau caché laisserait croire que la fiche
   // s'enregistre. Le seul geste offert est explicite et dit ce qu'il coûte, et
   // c'est le même quelle que soit la façon dont la lecture a échoué.
-  function bandeauGel(txt) {
-    bandeau(txt, [
-      { texte: "Écraser avec ce qui a pu être lu", acte: "ecraser", action: function () {
-          fermerBandeau();
-          gele = false;
-          lastAttrs = {};      // la base du diff ne vaut plus rien : tout réémettre
-          enVol = null;
-          scheduleSave();
-        } }
-    ]);
-  }
-  // jjk_state est là mais ne se lit pas : un caractère tapé dans l'onglet
-  // Attributes de Roll20 suffit. L'original cassé est encore dans le
-  // personnage, et c'est lui qu'il faut récupérer.
-  function bandeauGelIllisible(raison) {
-    bandeauGel("Cette fiche n'a pas pu être lue en entier (" + (raison || "état illisible") + "). " +
-               "Ce qui s'affiche est une reconstruction incomplète : rien n'est enregistré, pour ne " +
-               "pas écraser ce que Roll20 contient encore. Récupérer l'attribut jjk_state du " +
-               "personnage avant toute chose ; il porte la fiche entière.");
-  }
-  // jjk_state a disparu alors que le reste de la fiche est là. Rien n'est
-  // « cassé » à l'écran : la fiche s'affiche, presque complète, ce qui rend ce
-  // cas plus traître que le précédent. Le bandeau doit donc nommer ce qui
-  // manque, sinon le joueur croit à un simple oubli et se remet à taper.
-  function bandeauGelDisparu() {
-    bandeauGel("La fiche entière de ce personnage est introuvable : l'attribut jjk_state, qui la " +
-               "porte en un seul morceau, est vide, alors que les autres attributs jjk_ sont " +
-               "toujours là. Ce qui s'affiche a été reconstruit à partir d'eux, et il y manque des " +
-               "choses : le code des mods, les images de l'inventaire, et tout ce qui n'a pas " +
-               "d'attribut à lui. Rien n'est enregistré, pour ne pas remplacer la fiche par cette " +
-               "reconstruction. Si jjk_state a été vidé par erreur, y remettre son contenu puis " +
-               "rouvrir cet onglet ; sinon, le bouton ci-dessous repart de ce qui a pu être lu, en " +
-               "acceptant ces pertes.");
-  }
-
   // ================= écran de version =================
   /* La fiche vit dans le personnage Roll20, le code vit sur le site, et les
    * deux ne bougent pas ensemble : une table peut ne pas rouvrir une fiche
@@ -686,7 +763,9 @@
   function manifeste() { return window.__jjkManifeste || null; }
   function manifesteValide(m) {
     if (!m || typeof m !== "object" || !m.release || !lire(m.release) ||
-        !Number.isInteger(m.schema) || m.schema < 1 || !Array.isArray(m.amorce) || !m.amorce.length) return false;
+        !Number.isInteger(m.schema) || m.schema < 1 ||
+        (m.blocage !== "release" && m.blocage !== "schema") ||
+        !Array.isArray(m.amorce) || !m.amorce.length) return false;
     var b = m.bundle, x = m.extension;
     if (!b || !Array.isArray(b.js) || !b.js.length || !Array.isArray(b.css) || !b.css.length || b.compactStorage !== true) return false;
     if (!x || !x.minVersion || !lire(x.minVersion) || x.bridgeProtocol !== 2 ||
@@ -712,13 +791,15 @@
     var s = M && M.SCHEMA;
     return (typeof s === "number" && isFinite(s)) ? s : 1;
   }
-  // Décision produit : l'écran ne paraît qu'au désaccord de SCHÉMA. Le défaut
-  // vaut aussi quand le manifeste manque ou tarde, car c'est là que l'écran est
-  // le moins utile : bloquer sur le NUMÉRO le sortirait chez un joueur dont le
-  // réseau a hoqueté. Le manifeste peut redemander l'ancien réglage.
-  function blocage() {
-    var m = manifeste();
-    return (m && m.blocage === "release") ? "release" : "schema";
+  // Le manifeste choisit explicitement la politique. « release » impose un
+  // choix dès qu'un numéro de release diffère ; « schema » autorise les
+  // correctifs compatibles tant que la structure des données est identique.
+  // Une release illisible n'est jamais considérée compatible par défaut.
+  function accordVersionFiche(f, relSite, schSite, politique) {
+    if (!f || !Number.isInteger(f.schema) || f.schema !== schSite) return false;
+    politique = politique === "release" ? "release" : "schema";
+    if (politique === "schema") return !f.release || !!lire(f.release);
+    return !!(f.release && lire(f.release) && memeRang(f.release, relSite));
   }
 
   // LA lecture d'un numéro, seule de tout le fichier, et celle du contrat :
@@ -1110,7 +1191,7 @@
     var style = document.getElementById("jjk-mode-css");
     if (!style) {
       style = document.createElement("style"); style.id = "jjk-mode-css";
-      style.textContent = "#jjk-mode-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.32rem .5rem;margin:0 0 .35rem;background:var(--panel,#f6f0e5);border:1px solid var(--line-2,#c9bda8);border-radius:5px;color:var(--ink,#33271a);font:600 .66rem/1.3 'Alegreya',serif}#jjk-mode-toggle{border:1px solid var(--line-2,#c9bda8);border-radius:4px;padding:.3rem .6rem;background:var(--stripe,#eee4d4);color:var(--ink,#33271a);font:700 .65rem/1.2 inherit;letter-spacing:.05em;cursor:pointer}#jjk-mode-toggle[aria-pressed=true]{background:var(--accent,#8b3027);border-color:var(--accent,#8b3027);color:#fff}#jjk-mode-label{flex:1 1 auto;color:var(--ink-2,#786b59)}#jjk-mode-presence{flex:0 1 100%;font-size:.58rem;color:var(--ink-3,#8b806f)}html.night #jjk-mode-bar{background:#33271a;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle[aria-pressed=true]{background:#c66d54;color:#1c130d}html.jjk-consultation .pc-editable .pc-gear{opacity:.45;cursor:not-allowed}html.jjk-consultation .pc-editable .pc-edit-only{display:none!important}";
+      style.textContent = "#jjk-mode-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.32rem .5rem;margin:0 0 .35rem;background:var(--panel,#f6f0e5);border:1px solid var(--line-2,#c9bda8);border-radius:5px;color:var(--ink,#33271a);font:600 .66rem/1.3 'Alegreya',serif}#jjk-mode-toggle{border:1px solid var(--line-2,#c9bda8);border-radius:4px;padding:.3rem .6rem;background:var(--stripe,#eee4d4);color:var(--ink,#33271a);font:700 .65rem/1.2 inherit;letter-spacing:.05em;cursor:pointer}#jjk-mode-toggle[aria-pressed=true]{background:var(--accent,#8b3027);border-color:var(--accent,#8b3027);color:#fff}#jjk-mode-label{flex:1 1 auto;color:var(--ink-2,#786b59)}#jjk-mode-presence{flex:0 1 100%;font-size:.58rem;color:var(--ink-3,#8b806f)}#jjk-save-status{padding:.2rem .6rem;font-size:12px}html.night #jjk-mode-bar{background:#33271a;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle[aria-pressed=true]{background:#c66d54;color:#1c130d}html.jjk-consultation .pc-editable .pc-gear{opacity:.45;cursor:not-allowed}html.jjk-consultation .pc-editable .pc-edit-only{display:none!important}";
       document.head.appendChild(style);
     }
     var bar = document.createElement("div"); bar.id = "jjk-mode-bar";
@@ -1122,17 +1203,21 @@
     });
     var label = document.createElement("span"); label.id = "jjk-mode-label";
     var users = document.createElement("span"); users.id = "jjk-mode-presence";
-    bar.appendChild(button); bar.appendChild(label); bar.appendChild(users);
+    var status = document.createElement("span"); status.id = "jjk-save-status";
+    status.setAttribute("role", "status"); status.hidden = true;
+    bar.appendChild(button); bar.appendChild(label); bar.appendChild(status); bar.appendChild(users);
     app.parentNode.insertBefore(bar, app);
     appliqueMode(modePartage, presenceViews, "");
+    actualiseStatutEnregistrement();
     post({ type: "presence", action: "hello", viewId: VIEW_ID });
     if (!presenceTimer) presenceTimer = setInterval(function () {
       if (!presenceDead) post({ type: "presence", action: "heartbeat", viewId: VIEW_ID });
     }, 12000);
   }
   var presenceViews = {};
-  window.addEventListener("beforeunload", function () {
+  window.addEventListener("pagehide", function () {
     presenceDead = true;
+    try { post({ type: "storage-release", storage: "fiche", viewId: VIEW_ID }); } catch (e) {}
     try { post({ type: "presence", action: "leave", viewId: VIEW_ID }); } catch (e) {}
     if (presenceTimer) clearInterval(presenceTimer);
   });
@@ -1411,9 +1496,27 @@
   // rapport. Les identifiants, eux, gardent « site » (relSite, releaseSite) :
   // ils nomment l'endroit d'où la version est lue, personne ne les lit en jeu,
   // et les renommer ne changerait rien pour un joueur.
+  function ecranMiseAJourObligatoire(f, relSite, schSite) {
+    var b = ecran("Mise à jour obligatoire de la fiche", true);
+    var v = noeud("div", "jjk-ecran-vers");
+    v.appendChild(noeud("span", null, "Version du personnage : " + texteVersion(f.release, f.schema)));
+    v.appendChild(noeud("span", null, "Version installée : " + texteVersion(relSite, schSite)));
+    b.appendChild(v);
+    b.appendChild(noeud("p", null,
+      "Cette fiche a été enregistrée par une version plus récente. Cette version de JJK ne peut pas garantir " +
+      "qu'elle saura conserver toutes ses données. Elle ne sera pas ouverte et aucune écriture ne partira."));
+    b.appendChild(noeud("p", null,
+      "Rechargez la fiche depuis la version la plus récente publiée. Exportez les données ci-dessous avant de quitter cette page."));
+    var z = zoneActions(b);
+    bouton(z, "Réessayer", "reessayer-version", function () { location.reload(); });
+    boutonExport(z);
+    b.appendChild(noeud("p", "jjk-ecran-note",
+      "Cet écran ne propose pas de rétrogradation : ouvrir avec un code plus ancien pourrait supprimer des données récentes."));
+  }
+
   function ecranVersion(f, relSite, schSite) {
     var relFiche = f.release || null;
-    var duFutur = (f.schema != null && f.schema > schSite);
+    var duFutur = (f.schema != null && f.schema > schSite) || compare(f.release, relSite) === 1;
     var b = ecran(duFutur ? "Cette fiche vient d'une version plus récente que celle servie ici"
                           : "Cette fiche n'a pas la version servie ici", false);
     var v = noeud("div", "jjk-ecran-vers");
@@ -1480,7 +1583,7 @@
       if (!arch) return;   // bouton grisé : ceinture, au cas où un clic passe quand même
       if (caseEp.checked && relFiche) epinglagePoser(relFiche);
       chargerBundle(arch, true);
-    }, duFutur);
+    });
     boutonExport(z);
 
     if (duFutur) {
@@ -1528,27 +1631,21 @@
     // 1. personnage sans fiche JJK : rien à dire, la fiche du jour se monte.
     if (!f || f.schema === null) { chargerBundle(courant); return; }
 
-    var relSite = releaseSite(), schSite = schemaSite();
+    var relSite = releaseSite(), schSite = schemaSite(), politique = manifeste().blocage;
+    var plusRecente = (f.schema != null && f.schema > schSite) ||
+      (politique === "release" && compare(f.release, relSite) === 1);
+    if (plusRecente) {
+      // Comme OWD, une fiche plus récente n'est jamais ouverte avec le bundle
+      // courant. L'écran peut proposer l'archive de sa ligne si elle existe ;
+      // contrairement à une fiche ancienne, aucune migration ascendante n'est
+      // proposée. Sans archive, seul l'export et le rechargement restent possibles.
+      avecMigrations(function () { ecranVersion(f, relSite, schSite); });
+      return;
+    }
 
-    // ACCORD : ce que ce site aurait fait sans le moindre épinglage, c'est-à-dire
-    // aucun écran et le bundle du jour.
-    //
-    // UN SEUL JUGE À LA FOIS, ET C'EST CELUI QUE LE MANIFESTE DÉSIGNE. Sous
-    // « blocage: schema », le schéma décide seul : le rang de release ne doit
-    // PAS pouvoir accorder par-dessus un désaccord de schéma. Une disjonction
-    // laissait passer le cas mesuré {v: 2, rel: "3.6.0b"} sur un site 3.6.0b en
-    // schéma 3 — même rang, donc accord — et la fiche du jour réécrivait en
-    // silence un état d'un autre schéma, sans écran et sans sauvegarde de
-    // secours. Le numéro de release d'un personnage n'est qu'une étiquette ;
-    // seul le schéma dit ce que ses données valent.
-    //
-    // Le suffixe de la beta ne compte pas dans le rang : « 3.6.0b » et
-    // « 3.6.0 » sont la même version, et une fiche écrite sur la beta ne doit
-    // pas paraître venue d'ailleurs une fois rouverte sur le site stable du
-    // même numéro.
-    var accord = blocage() === "schema"
-      ? f.schema === schSite
-      : !!(f.release && memeRang(f.release, relSite));
+    // La politique de blocage est une donnée du manifeste validé : ne pas la
+    // recopier en dur ici, sinon le contrat publié et le comportement divergent.
+    var accord = accordVersionFiche(f, relSite, schSite, politique);
 
     // 2. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
     // redemande pas. Comparé LIGNE à ligne des deux côtés, parce que le bundle
@@ -1585,13 +1682,11 @@
       return;
     }
 
-    // 4. Parc historique : tout ce qui a été écrit avant le versionnage porte
-    // le schéma 1. Personne n'a CHOISI d'être en v1, donc pas d'écran : montée
-    // silencieuse (le moteur la fait dans normalize) et un bandeau qui le dit,
-    // avec de quoi revenir en arrière.
-    if (f.schema === 1 && schSite > 1) { monter(true, f); return; }
+    // Toute fiche versionnée qui ne correspond pas exactement au contrat courant
+    // passe par l'écran de version. Même les anciennes fiches doivent faire
+    // l'objet d'un choix explicite avant migration ou ouverture sur archive.
 
-    // 5. l'écran.
+    // 4. l'écran.
     avecMigrations(function () { ecranVersion(f, relSite, schSite); });
   }
 
@@ -1693,6 +1788,31 @@
     if (ev.source !== window.top) return;
     var d = ev.data;
     if (!d || d.ns !== "jjk") return;
+    if (d.type === "backup-status" && d.charId === CHAR_ID) {
+      if (d.viewId !== VIEW_ID || d.request !== backupPendingRequest) return;
+      backupPendingRequest = null;
+      if (d.ok === true) {
+        backupLastAt = Date.now(); backupRetryAt = 0; compactCleanupAt = 0;
+        if (compactActif) planifieCompactPoll(0);
+      } else {
+        backupRetryAt = Date.now() + 30000;
+        bandeau("La sauvegarde locale n'a pas été confirmée : " + String(d.error || "l'extension n'a pas répondu") + ". Les données Roll20 ne sont pas supprimées.", [
+          { texte: "Réessayer", acte: "backup-retry", action: function () { backupRetryAt = 0; sauvegardeLocale(lastAttrs, "manual"); } },
+          { texte: "Exporter le personnage (JSON)", acte: "export", action: exporter }
+        ]);
+      }
+      return;
+    }
+    if (d.type === "storage-cleanup-status" && (!d.charId || d.charId === CHAR_ID)) {
+      var report = d.report || {};
+      if (report.status === "error") bandeau("Le nettoyage du stockage " + (d.storage === "narration" ? "Narration" : "de la fiche") +
+        " a été interrompu : " + String(report.error || "erreur inconnue") + ". Les données non vérifiées sont conservées.");
+      return;
+    }
+    if (d.type === "storage-error" && (!d.charId || d.charId === CHAR_ID)) {
+      erreurCompact(String(d.error || "Le pont a refusé une opération Compact."));
+      return;
+    }
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
     if (d.type === "hydrate" && (!d.charId || d.charId === CHAR_ID)) {
       // ROUTAGE CRITIQUE. Une fois la fiche hydratée, un « hydrate » n'hydrate
@@ -1706,6 +1826,7 @@
         if (!pontCompatible(d)) { ecranPontIncompatible(d); return; }
         pontVerifie = true;
       }
+      if (versionBloquee) return;
       d.attrs = completeOmis(d.attrs || {}, d.omis);
       if (relectureOuverture) {
         relectureOuverture = false;
