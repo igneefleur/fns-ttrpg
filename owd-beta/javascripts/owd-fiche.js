@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.32.3b";
+  var RELEASE = "4.32.4b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5214,13 +5214,15 @@
     }
   }
   function buildEffort() {
-    var b = block("Effort et Temps");
+    // Le module n'a plus de titre général : ses trois sous-sections portent
+    // chacune le bandeau normal d'un module de la fiche.
+    var b = el("div", "pc-block");
 
     // Trois fonctions distinctes, toujours dans le même module : choisir un
     // effort, lire la température, puis faire avancer l'horloge.
     function section(titre) {
       var groupe = el("div", "pc-effort-section");
-      groupe.appendChild(el("div", "pc-effort-section-title", titre));
+      groupe.appendChild(el("div", "pc-block-title pc-effort-section-title", titre));
       b.appendChild(groupe);
       return groupe;
     }
