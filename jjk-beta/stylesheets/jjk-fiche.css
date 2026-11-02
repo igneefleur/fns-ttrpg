@@ -455,6 +455,21 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-big .pc-mmods { display: flex; justify-content: center; margin-top: .12rem; }
 
 /* ligne du maximum de PV : override « Forcé » (vide = calculé) + divers */
+/* Jauge PV : la barre Outward, ramenée à l'accent carmin JJK. Elle reste
+   une lecture proportionnelle ; les valeurs négatives demeurent dans le nombre. */
+.pc-pv-bar {
+  width: 100%; height: .46rem; margin: .16rem 0 .22rem;
+  overflow: hidden; border-radius: 999px; background: var(--line-2);
+}
+.pc-pv-bar-fill {
+  width: 0; height: 100%; border-radius: inherit;
+  background: var(--red-deep); transition: width .16s ease, background-color .16s ease;
+}
+.pc-pv-bar.low .pc-pv-bar-fill { background: #b36a2e; }
+.pc-pv-bar.critical .pc-pv-bar-fill { background: var(--red); }
+html.night .pc-pv-bar-fill { background: #c86b58; }
+html.night .pc-pv-bar.low .pc-pv-bar-fill { background: #d49a54; }
+html.night .pc-pv-bar.critical .pc-pv-bar-fill { background: #e16b5d; }
 .pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .05rem 0; font-size: .62rem; color: var(--ink-3); }
 .pc-pvmax .lbl { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
 .pc-pvmax input.force {
@@ -755,6 +770,28 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-obj-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
 .pc-obj-ph { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; color: var(--line); font-size: 1.1rem; background: var(--panel); }
 .pc-obj-ph.big { font-size: 2rem; }
+/* Menu contextuel de l'inventaire : actions ponctuelles, au clic droit ou
+   avec Maj+F10. Il reprend les couleurs de la fiche et reste dans le viewport. */
+.pc-obj-context {
+  z-index: 90; display: flex; flex-direction: column; gap: .08rem;
+  min-width: 11rem; max-width: min(18rem, calc(100vw - 12px));
+  padding: .24rem; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 5px 18px rgba(20, 16, 10, .24);
+  font-family: inherit; font-size: .66rem;
+}
+.pc-obj-context-action {
+  display: block; width: 100%; min-width: 0; padding: .32rem .48rem;
+  border: 0; border-radius: 3px; background: transparent; color: var(--ink);
+  font: inherit; text-align: left; line-height: 1.25; cursor: pointer;
+}
+.pc-obj-context-action:hover,
+.pc-obj-context-action:focus-visible { outline: none; background: var(--wash); color: var(--ink); }
+.pc-obj-context-action:disabled { color: var(--ink-3); cursor: default; opacity: .55; }
+.pc-obj-context-action.danger { color: var(--red); }
+.pc-obj-context-action.danger:hover,
+.pc-obj-context-action.danger:focus-visible { background: var(--wash); color: var(--red-deep); }
+.pc-obj-context-sep { height: 1px; margin: .14rem .24rem; background: var(--hair); }
 /* LE NOM PASSE AVANT LES CHIFFRES. À huit tuiles par ligne, la tuile tombe à
    78 px et le nom n'avait plus que 28 px : trois lettres. Le pied peut donc
    passer à la ligne, et le nom garde une largeur lisible — ce sont la quantité

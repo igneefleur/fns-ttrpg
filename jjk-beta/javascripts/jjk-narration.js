@@ -71,6 +71,10 @@
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
   var A_BG = PREF + "bg_";  // le fond importé d'une place, un attribut chacun
+  var A_STORAGE = PREF + "storage";
+  var A_BLOCK = PREF + "block_";
+  var A_STACK = PREF + "stack_";
+  var A_OPS = PREF + "ops_";
   var POLL = 1200;          // ms entre deux relectures
   // ms entre deux RESYNCHRONISATIONS, c'est-à-dire entre deux vraies questions
   // posées au serveur de Roll20. Relire ne suffit pas : la collection
@@ -242,7 +246,83 @@
   // condamnerait tout nom qu'on se mettrait à écrire plus tard, puisque cette
   // page-ci change sans signature. On envoie donc la liste, et le pont ne
   // détruit rien sans elle.
-  var MENAGE_GARDE = [A_CONF, A_PT, A_BG];
+  var MENAGE_GARDE = [A_CONF, A_PT, A_BG, A_STORAGE, A_BLOCK, A_STACK, A_OPS];
+
+  // Le plateau partage le même moteur Compact que la fiche, mais possède son
+  // espace d'attributs, son journal et son état propres. Les fonds base64
+  // restent dans A_BG : ils ne transitent jamais dans les journaux d'opérations.
+  var narrationCompact = null, narrationSession = null, narrationCompactActive = false;
+  var narrationMigrationEnvoyee = 0, narrationSessionId = null;
+  function etatNarrationCompact() { return { v: 1, conf: conf, points: points, modData: {} }; }
+  function appliqueEtatNarrationCompact(s) {
+    if (!s || !s.conf || !s.points || typeof s.points !== "object") throw new Error("État du plateau Compact incomplet.");
+    conf = litConf(JSON.stringify(s.conf));
+    var p = {};
+    Object.keys(s.points).forEach(function (id) {
+      var v = s.points[id];
+      if (!/^[A-Za-z0-9_-]{1,16}$/.test(id) || !v || !isFinite(v.x) || !isFinite(v.y)) return;
+      p[id] = { x: clamp(Number(v.x), 0, MILLE), y: clamp(Number(v.y), 0, MILLE) };
+    });
+    points = p;
+  }
+  function envoieEtatCompact() {
+    if (!narrationSession || !charId || !peutPousser()) return;
+    narrationSession.capture(etatNarrationCompact());
+    if (!narrationSession.hasBase) {
+      // La photographie de migration est re-postée à intervalle borné tant
+      // qu'une relecture Roll20 ne l'a pas confirmée.
+      if (Date.now() - narrationMigrationEnvoyee < 2800) return;
+      narrationMigrationEnvoyee = Date.now();
+      post({ type: "save", charId: charId, attrs: narrationSession.migration || {} });
+      return;
+    }
+    var operations = narrationSession.outgoing(), ids = Object.keys(operations);
+    if (!ids.length && !Object.keys(narrationSession.payloads || {}).length) return;
+    post({ type: "storage-ops", storage: "narration", charId: charId,
+      session: narrationSessionId, epoch: narrationSession.epoch,
+      ops: ids.map(function (id) { return operations[id]; }), payloads: narrationSession.payloads });
+  }
+  function synchroniseNarrationCompact(attrs) {
+    if (!window.JjkSync || typeof window.JjkSync.createCompact !== "function") return;
+    try {
+      if (!narrationCompact) {
+        narrationCompact = window.JjkSync.createCompact({
+          meta: A_STORAGE, block: A_BLOCK, stack: A_STACK, ops: A_OPS,
+          inventory: false, reserves: false,
+          owners: { narration: ["conf", "points"] }
+        }).Compact;
+      }
+      if (!narrationSession) {
+        narrationSessionId = "narr-" + String(charId || "table").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 32) + "-" + Date.now().toString(36);
+        narrationSession = new narrationCompact.Session(attrs || {}, etatNarrationCompact(), Date.now,
+          { id: narrationSessionId, actor: { id: narrationSessionId, name: "Narration" } });
+      }
+      // La première relecture arrive alors que hasBase vaut encore false :
+      // c'est précisément elle qui confirme la photographie de migration.
+      // Tester hasBase avant receive() empêchait cette confirmation et
+      // renvoyait indéfiniment la même photographie.
+      if (attrs && attrs[A_STORAGE]) {
+        var resultat = narrationSession.receive(attrs);
+        if (!resultat) return;
+        if (resultat.incomplete) throw new Error("Le journal du plateau référence des données absentes.");
+        appliqueEtatNarrationCompact(resultat.state);
+        narrationCompactActive = true;
+        if (resultat.conflict) trace("conflit-compact", { conflicts: resultat.conflicts || [] });
+        if (resultat.lost) { refuse = true; montreEtat("perdu"); }
+        if (Object.keys(narrationSession.pending || {}).length || Object.keys(narrationSession.payloads || {}).length)
+          envoieEtatCompact();
+      } else if (!narrationSession.hasBase) {
+        narrationSession.capture(etatNarrationCompact());
+        envoieEtatCompact();
+      } else {
+        throw new Error("La photographie Compact du plateau a disparu.");
+      }
+    } catch (eCompact) {
+      refuse = true;
+      trace("erreur-compact", { message: String(eCompact && eCompact.message || eCompact) });
+      montreEtat("perdu");
+    }
+  }
   // ON DEMANDE À VOIR LES AUTRES. « load » seul ne rend que ce que ce client-ci
   // tient déjà ; « resync » lui fait d'abord poser la question au serveur. Deux
   // choses distinctes, et c'est toute la réparation : sans la seconde, un
@@ -271,6 +351,10 @@
   // remettrait le jeton là où il était avant notre geste.
   function ecrire(attrs) {
     if (!charId || !peutPousser()) return;
+    // Compact est la source canonique, mais les attributs historiques restent
+    // des miroirs pour les anciennes pages encore ouvertes dans la campagne.
+    // Les images de fond, elles, restent toujours des attributs autonomes.
+    if (narrationSession) envoieEtatCompact();
     var lot = {}, t = Date.now();
     var noms = Object.keys(attrs);
     // Le pont écrit un attribut à la fois, espacés : le dernier d'un gros lot
@@ -324,6 +408,8 @@
           confFuture = false; points = {}; conf = confVide(); fonds = {};
           attente = {}; connus = {}; prise = null;
           annuleEnvoi();
+          narrationCompact = null; narrationSession = null; narrationCompactActive = false;
+          narrationMigrationEnvoyee = 0; narrationSessionId = null;
           montreEtat("attente");
         }
         charId = d.charId;
@@ -623,6 +709,10 @@
     // le jeton qu'on tient reste sous le doigt, quoi qu'en dise Roll20
     if (prise && points[prise.id]) neuf[prise.id] = points[prise.id];
     points = neuf;
+    // La photographie Compact (puis ses journaux d'opérations) devient la
+    // source canonique après relecture. Les anciens jjk_narr_conf / pt_* restent
+    // présents pour les pages antérieures, mais ne pilotent plus les nouvelles.
+    synchroniseNarrationCompact(attrs);
     rend();
   }
 
