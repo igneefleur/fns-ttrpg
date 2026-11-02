@@ -264,9 +264,13 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* variante « dépense » : l'XP et la rupture ne mesurent pas une santé mais ce
    qui a été payé. L'or les distingue d'un coup d'œil des jauges de vie. */
 .pc-meter.or .bar > i { background: var(--or); }
-/* LES EFFORTS, en CASES SOUDÉES : le trio de MIA (un cadre sur le fond de
-   panneau, des cases égales séparées d'un filet, le mot en petites capitales)
-   dont une case est choisie. Une ligne par rang d'efforts. */
+/* CONTRÔLES SEGMENTÉS : chaque type d'élément a son langage propre.
+   - pc-toggle : choix persistant, le cran retenu prend l'accent ;
+   - pc-action : action ponctuelle, surface de bouton sans état retenu ;
+   - pc-field : saisie, surface de champ et filet au focus ;
+   - pc-info : information ou unité, neutre et jamais cliquable.
+   Les puces pc-chip sont les interrupteurs compacts ; pc-mini et pc-btn sont
+   les actions ponctuelles hors d'un cadre segmenté. */
 .pc-segs {
   display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
@@ -285,6 +289,35 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-segs > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
 .pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
+/* Les quatre rôles ne se confondent pas, même dans une seule rangée. */
+.pc-segs > button.pc-toggle { cursor: pointer; }
+.pc-segs > button.pc-action {
+  background: var(--card); color: var(--accent-deep); font-weight: 800;
+  box-shadow: inset 0 -2px 0 var(--line-2);
+}
+.pc-segs > .c + button.pc-action { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -2px 0 var(--line-2); }
+.pc-segs > button.pc-action:hover { background: var(--wash); color: var(--ink); }
+.pc-segs > input.c.pc-field {
+  background: var(--card); color: var(--ink); cursor: text;
+  box-shadow: inset 0 -1px 0 var(--line-2);
+}
+.pc-segs > .c + input.c.pc-field { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2); }
+.pc-segs > input.c.pc-field:focus {
+  background: var(--card); box-shadow: inset 0 -2px 0 var(--accent);
+}
+.pc-segs > .c + input.c.pc-field:focus { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -2px 0 var(--accent); }
+.pc-segs > input.c.pc-field:read-only,
+.pc-segs > input.c.pc-field:read-only:focus {
+  background: var(--stripe); color: var(--ink-3); cursor: default; box-shadow: inset 0 -1px 0 var(--line-2);
+}
+.pc-segs > .c + input.c.pc-field:read-only,
+.pc-segs > .c + input.c.pc-field:read-only:focus {
+  box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2);
+}
+.pc-segs > .pc-info {
+  background: var(--stripe); color: var(--ink-2); cursor: default; font-weight: 700;
+}
+.pc-segs > .pc-info:hover { background: var(--stripe); color: var(--ink-2); }
 /* Effort et Temps : les cinq qualités de sommeil réemploient STRICTEMENT
    les crans « Foncer » de Mouvement (même taille, même typo, même rythme). */
 /* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
@@ -567,15 +600,27 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    passe à la ligne entier, et chaque rang se partage sa largeur. */
 .pc-tabs.mini.pc-efforts { display: flex; flex-wrap: wrap; }
 .pc-tabs.mini.pc-efforts > .pc-tab { flex: 1 1 auto; white-space: nowrap; padding-inline: .35rem; }
-/* TEMPS : chaque unité porte la même largeur minimale, calculée pour RND.
-   Les champs prennent tout l'espace qui reste ; MONDE et APPLIQUER occupent
-   chacun une moitié de rangée. Le sélecteur rapide garde trois parts égales. */
-.pc-effort-temperature { margin-top: .48rem; }
+/* EFFORT / TEMPS / ÉCOULEMENT : trois sous-sections du même module.
+   Le filet reprend la hiérarchie des titres de groupes de la fiche. Chaque
+   rangée revient à l'espacement standard de .pc-segs (.3rem), sans exception. */
+.pc-effort-section + .pc-effort-section { margin-top: .38rem; }
+.pc-effort-section-title {
+  margin: .25rem 0 .08rem; padding: 0 0 .09rem;
+  border-bottom: 1px solid var(--hair);
+  color: var(--ink-2); font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif;
+  font-size: .62rem; font-weight: 800; letter-spacing: .08em; line-height: 1.1;
+  text-transform: uppercase;
+}
+.pc-block-title + .pc-effort-section > .pc-effort-section-title { margin-top: .08rem; }
+
+/* TEMPS : chaque unité porte la même largeur, suffisante pour RND.
+   Les champs prennent tout l'espace restant ; MONDE occupe la moitié du rang. */
+.pc-effort-temperature { margin-top: .3rem; }
 .pc-effort-temperature > button.c { flex: 0 0 50%; }
 .pc-effort-temperature > input.c {
   flex: 1 1 0; width: 0; min-width: 0; height: 1.25rem; box-sizing: border-box;
   padding: 0 .2rem; border: 0; border-radius: 0; outline: 0;
-  background: var(--card); box-shadow: none; color: var(--ink);
+  background: var(--card); color: var(--ink);
   font: inherit; font-size: .66rem; font-weight: 700; line-height: 1;
   text-align: center; font-variant-numeric: tabular-nums; cursor: text;
   -moz-appearance: textfield; appearance: textfield;
@@ -583,11 +628,6 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-effort-temperature > input.c::-webkit-inner-spin-button,
 .pc-effort-temperature > input.c::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-effort-temperature > input.c::placeholder { color: var(--ink-3); opacity: 1; }
-.pc-effort-temperature > input.c:focus:not(:read-only) { background: var(--card); color: var(--ink); }
-.pc-effort-temperature > input.c:read-only,
-.pc-effort-temperature > input.c:read-only:focus {
-  background: var(--panel); color: var(--ink-2); cursor: default;
-}
 .pc-effort-temperature > .pc-effort-temperature-unit,
 .pc-temps-segs > .pc-temps-unite {
   flex: 0 0 2.2rem; box-sizing: border-box; padding: 0 .2rem;
@@ -595,7 +635,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap;
 }
 .pc-effort-temperature > .pc-effort-temperature-unit:hover,
-.pc-temps-segs > .pc-temps-unite:hover { background: transparent; color: var(--ink-2); }
+.pc-temps-segs > .pc-temps-unite:hover { background: var(--stripe); color: var(--ink-2); }
 .pc-temps-rapide { margin-top: .3rem; }
 .pc-temps-rapide > .c { flex: 1 1 0; font-size: .66rem; }
 .pc-temps-segs { margin-top: .3rem; }
@@ -603,7 +643,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-temps-segs > input.c {
   flex: 1 1 0; width: 0; min-width: 0; height: 1.25rem; box-sizing: border-box;
   padding: 0 .2rem; border: 0; border-radius: 0; outline: 0;
-  background: var(--card); box-shadow: none; color: var(--ink);
+  background: var(--card); color: var(--ink);
   font: inherit; font-size: .66rem; font-weight: 700; line-height: 1;
   cursor: text; font-variant-numeric: tabular-nums;
   -moz-appearance: textfield; appearance: none;
@@ -611,7 +651,19 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-temps-segs > input.c::-webkit-inner-spin-button,
 .pc-temps-segs > input.c::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-temps-segs > input.c::placeholder { color: var(--ink-3); opacity: 1; }
-.pc-temps-segs > input.c:focus { background: var(--card); color: var(--ink); }
+/* Le champ reste distinct d'un bouton ; le focus est un filet, pas un halo. */
+.pc-effort-temperature > input.c.pc-field:focus:not(:read-only),
+.pc-temps-segs > input.c.pc-field:focus {
+  background: var(--card); box-shadow: inset 0 -2px 0 var(--accent); color: var(--ink);
+}
+.pc-effort-temperature > input.c.pc-field:read-only,
+.pc-effort-temperature > input.c.pc-field:read-only:focus {
+  background: var(--stripe); color: var(--ink-3); cursor: default; box-shadow: none;
+}
+.pc-effort-temperature > .pc-info,
+.pc-temps-segs > .pc-info { background: var(--stripe); color: var(--ink-2); }
+.pc-effort-temperature > .pc-info:hover,
+.pc-temps-segs > .pc-info:hover { background: var(--stripe); color: var(--ink-2); }
 .pc-temps-segs > .pc-temps-appliquer { flex: 0 0 50%; cursor: pointer; }
 /* ---- Actions : les dés d'action ----
    Une colonne par dé, à parts égales : le dé en volume, puis sa taille entre
@@ -904,6 +956,9 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 }
 .pc-chip:hover { border-color: var(--line); color: var(--ink); }
 .pc-chip.on { background: var(--accent); border-color: var(--accent-deep); color: #fff; }
+/* Les pc-mini qui gardent un choix actif (pinceau, gomme, miroir…) prennent
+   le même accent que les autres interrupteurs, et non le style d'une action. */
+.pc-mini.on { background: var(--accent); border-color: var(--accent-deep); color: var(--card); }
 /* titre de groupe, suivi d'un filet qui court jusqu'au bord. Le groupe est du
    TEXTE LIBRE du joueur : ce n'est pas une règle, c'est son rangement. */
 .pc-comp-champ {
@@ -1814,6 +1869,7 @@ html.night .perso-fiche, html.night #owd-mode-bar {
 html.night .pc-tab.on,
 html.night .pc-tab.on:hover,
 html.night .pc-chip.on,
+html.night .pc-mini.on,
 html.night .pc-envoi-segs .seg.on,
 html.night .pc-envoi-segs .seg.on:hover,
 html.night .pc-mini.primary,
@@ -1830,6 +1886,18 @@ html.night .pc-top .pc-lib select { background: #1a1a1a; border-color: #3a3a3a; 
 html.night .pc-sheet { box-shadow: 0 6px 26px rgba(0, 0, 0, .5); }
 html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
 html.night .pc-mini:hover { background: #332d20; }
+html.night .pc-segs > button.pc-action { background: var(--card); color: var(--accent-deep); box-shadow: inset 0 -2px 0 var(--line-2); }
+html.night .pc-segs > .c + button.pc-action { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -2px 0 var(--line-2); }
+html.night .pc-segs > button.pc-action:hover { background: #332d20; color: var(--ink); }
+html.night .pc-segs > input.c.pc-field { box-shadow: inset 0 -1px 0 var(--line-2); }
+html.night .pc-segs > .c + input.c.pc-field { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2); }
+html.night .pc-segs > input.c.pc-field:focus { background: var(--card); box-shadow: inset 0 -2px 0 var(--accent); }
+/* Même en nuit, une saisie verrouillée reste distincte d'une saisie éditable :
+   le panneau est un ton plus clair que la surface du champ. */
+html.night .pc-segs > input.c.pc-field:read-only,
+html.night .pc-segs > input.c.pc-field:read-only:focus {
+  background: var(--panel); color: var(--ink-3); cursor: default;
+}
 html.night .pc-block-title { color: var(--ink); }
 /* la pastille du sigle garde un FOND sombre : --accent-deep, clair de nuit,
    n'en ferait plus un pavé mais un aplat lumineux dans une colonne dense */

@@ -38,9 +38,10 @@
       if (!rang.length) return;
       var bloc = el("div", "pc-segs");
       rang.forEach(function (e) {
-        var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
+        var bt = el("button", "c pc-toggle", EFFORT_COURT[e.cle] || e.nom);
         bt.title = e.nom;
         bt.type = "button";
+        bt.setAttribute("aria-pressed", "false");
         bt.addEventListener("click", function () { state.allure = e.cle; refresh(); });
         bloc.appendChild(bt);
         boutons.push([bt, e.cle]);
@@ -74,7 +75,11 @@
     var cout = cases("pc-mouv-cout", [["da", "dés d'action"], ["pe", "PE"]]);
 
     hooks.push(function () {
-      boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.allure); });
+      boutons.forEach(function (x) {
+        var actif = x[1] === state.allure;
+        x[0].classList.toggle("on", actif);
+        x[0].setAttribute("aria-pressed", actif ? "true" : "false");
+      });
       var a = allureCourante();
       crans.innerHTML = "";
       var lourd = !!a && a.crans.length > 1;
@@ -89,9 +94,10 @@
           var liste = mouvementListe(), avant = liste[liste.indexOf(a) - 1];
           var base = avant ? avant.crans[avant.crans.length - 1].pas : 0;
           a.crans.forEach(function (x, i) {
-            var bt = el("button", "c" + (i + 1 === k ? " on" : ""), "+" + (x.pas - base));
+            var bt = el("button", "c pc-toggle" + (i + 1 === k ? " on" : ""), "+" + (x.pas - base));
             bt.title = x.des + "DA" + (x.pe ? " · " + x.pe + " PE" : "");
             bt.type = "button";
+            bt.setAttribute("aria-pressed", i + 1 === k ? "true" : "false");
             bt.addEventListener("click", function () { state.allureCran = i + 1; refresh(); });
             crans.appendChild(bt);
           });

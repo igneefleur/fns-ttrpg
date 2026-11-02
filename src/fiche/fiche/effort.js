@@ -48,19 +48,27 @@
   function buildEffort() {
     var b = block("Effort et Temps");
 
-    // LES EFFORTS, en cases soudées comme le trio de MIA, sur deux lignes
-    // arrêtées par l'auteur : [sommeil | repos], puis [léger | intermédiaire |
-    // lourd]. Les deux premiers efforts des règles font la première ligne.
+    // Trois fonctions distinctes, toujours dans le même module : choisir un
+    // effort, lire la température, puis faire avancer l'horloge.
+    function section(titre) {
+      var groupe = el("div", "pc-effort-section");
+      groupe.appendChild(el("div", "pc-effort-section-title", titre));
+      b.appendChild(groupe);
+      return groupe;
+    }
+
+    // EFFORT : [sommeil | repos], puis [léger | intermédiaire | lourd].
+    var effortSection = section("Effort");
     var boutons = [];
     var liste = effortsListe();
     [liste.slice(0, 2), liste.slice(2)].forEach(function (rang) {
       if (!rang.length) return;
       var bloc = el("div", "pc-segs");
       rang.forEach(function (e) {
-        // l'étiquette courte voulue par l'auteur ; le nom entier au survol
-        var bt = el("button", "c", EFFORT_COURT[e.cle] || e.nom);
+        var bt = el("button", "c pc-toggle", EFFORT_COURT[e.cle] || e.nom);
         bt.title = e.nom;
         bt.type = "button";
+        bt.setAttribute("aria-pressed", "false");
         bt.addEventListener("click", function () {
           if (state.effort !== e.cle) { state.effort = e.cle; recupSynchroniseSuivi(); }
           refresh();
@@ -68,17 +76,17 @@
         bloc.appendChild(bt);
         boutons.push([bt, e.cle]);
       });
-      b.appendChild(bloc);
+      effortSection.appendChild(bloc);
     });
 
-    // QUALITÉ DU SOMMEIL : comme les crans « Foncer » de Mouvement, une
-    // seule ligne segmentée, visible uniquement lorsque Sommeil est choisi.
+    // Qualité du sommeil : les mêmes crans que « Foncer » dans Mouvement.
     var qualites = tempsDef() && Array.isArray(tempsDef().qualitesSommeil) ? tempsDef().qualitesSommeil : [];
     var sommeilQualite = el("div", "pc-segs pc-crans pc-sommeil-qualite");
     var boutonsQualite = [];
     qualites.forEach(function (q) {
-      var bt = el("button", "c", (q.mod > 0 ? "+" : "") + q.mod);
+      var bt = el("button", "c pc-toggle", (q.mod > 0 ? "+" : "") + q.mod);
       bt.type = "button";
+      bt.setAttribute("aria-pressed", "false");
       bt.title = q.nom + (num(q.mod, 0) ? " (" + (q.mod > 0 ? "+" : "") + q.mod + " niveaux)" : " (niveau normal)");
       bt.addEventListener("click", function () {
         if (state.qualiteSommeil !== q.cle) { state.qualiteSommeil = q.cle; recupSynchroniseSuivi(); }
@@ -88,13 +96,13 @@
       boutonsQualite.push([bt, q.cle]);
     });
     sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
-    b.appendChild(sommeilQualite);
+    effortSection.appendChild(sommeilQualite);
 
-    // TEMPÉRATURE : [ MONDE | valeur | °C ]. Le premier segment active ou
-    // coupe la lecture partagée ; B reste saisissable hors liaison, puis prend
-    // l'aspect d'un champ verrouillé lorsque la température vient de Monde.
+    // TEMPS : [ MONDE | saisie ou valeur partagée | °C ]. MONDE occupe la
+    // moitié du rang ; le champ prend ce qui reste après la case d'unité.
+    var tempsSection = section("Temps");
     var air = el("div", "pc-segs pc-effort-temperature");
-    var monde = el("button", "c", "MONDE");
+    var monde = el("button", "c pc-toggle", "MONDE");
     monde.type = "button";
     monde.setAttribute("aria-pressed", state.temperatureMonde === true ? "true" : "false");
     monde.addEventListener("click", function () {
@@ -105,7 +113,7 @@
     });
     air.appendChild(monde);
 
-    var temperature = el("input", "c pc-effort-temperature-input");
+    var temperature = el("input", "c pc-field pc-effort-temperature-input");
     temperature.type = "number";
     temperature.step = "0.1";
     temperature.min = "-999";
@@ -126,19 +134,20 @@
       refresh();
     });
     air.appendChild(temperature);
-    air.appendChild(el("span", "c pc-effort-temperature-unit", "°C"));
-    b.appendChild(air);
+    air.appendChild(el("span", "c pc-info pc-effort-temperature-unit", "°C"));
+    tempsSection.appendChild(air);
     if (state.temperatureMonde === true) demarreSondeTemperatureMonde();
 
-    // AVANCE RAPIDE : trois boutons d'un tiers chacun, reliés à la même
-    // horloge et au même moteur que les champs RND / MIN / HR ci-dessous.
+    // ÉCOULEMENT : trois actions ponctuelles, puis les saisies qui permettent
+    // de faire passer ou reculer une durée choisie par le joueur.
+    var ecoulementSection = section("Écoulement");
     var rapide = el("div", "pc-segs pc-temps-rapide");
     [
       { nom: "RND", secondes: 3, titre: "Avancer le temps d'un round (3 secondes)", message: "1 round écoulé." },
       { nom: "MIN", secondes: 60, titre: "Avancer le temps d'une minute", message: "1 minute écoulée." },
       { nom: "HR", secondes: 3600, titre: "Avancer le temps d'une heure", message: "1 heure écoulée." }
     ].forEach(function (pas) {
-      var bt = el("button", "c", pas.nom);
+      var bt = el("button", "c pc-action", pas.nom);
       bt.type = "button";
       bt.title = pas.titre;
       bt.setAttribute("aria-label", pas.titre);
@@ -149,12 +158,13 @@
       });
       rapide.appendChild(bt);
     });
-    b.appendChild(rapide);
+    ecoulementSection.appendChild(rapide);
 
-    // TROIS CHAMPS DE DURÉE, tous branchés sur la même horloge à la seconde.
+    // Trois champs de durée : la saisie, l'unité informative et l'action sont
+    // trois objets visuellement distincts (champ / information / bouton).
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
-      var nb = el("input", "c pc-temps-val");
+      var nb = el("input", "c pc-field pc-temps-val");
       champNombreSigne(nb); nb.step = "1";
       nb.placeholder = "±";
       nb.setAttribute("aria-label", etiquette);
@@ -185,22 +195,33 @@
         if (e.key === "Enter") { e.preventDefault(); applique(); }
       });
       cmd.appendChild(nb);
-      cmd.appendChild(el("span", "c pc-temps-unite", unite));
-      var appliquer = el("button", "c pc-temps-appliquer", "APPLIQUER");
+      cmd.appendChild(el("span", "c pc-info pc-temps-unite", unite));
+      var appliquer = el("button", "c pc-action pc-temps-appliquer", "APPLIQUER");
       appliquer.type = "button";
       appliquer.title = "Faire passer ce temps";
       appliquer.addEventListener("click", applique);
       cmd.appendChild(appliquer);
-      b.appendChild(cmd);
+      ecoulementSection.appendChild(cmd);
     }
     geste("RND", 3, "Rounds de 3 secondes, en plus ou en moins");
     geste("MIN", 60, "Minutes, en plus ou en moins");
     geste("HR", 3600, "Heures, en plus ou en moins");
 
+    // Les raccourcis restent en dernier : ils avancent l'horloge d'une unité.
+    ecoulementSection.appendChild(rapide);
+
     hooks.push(function () {
-      boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
+      boutons.forEach(function (x) {
+        var actif = x[1] === state.effort;
+        x[0].classList.toggle("on", actif);
+        x[0].setAttribute("aria-pressed", actif ? "true" : "false");
+      });
       sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
-      boutonsQualite.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.qualiteSommeil); });
+      boutonsQualite.forEach(function (x) {
+        var actif = x[1] === state.qualiteSommeil;
+        x[0].classList.toggle("on", actif);
+        x[0].setAttribute("aria-pressed", actif ? "true" : "false");
+      });
       var liee = state.temperatureMonde === true;
       monde.classList.toggle("on", liee);
       monde.setAttribute("aria-pressed", liee ? "true" : "false");

@@ -247,21 +247,36 @@ const server=http.createServer((req,res)=> {
   const packed=M.stateToAttrs(sample,null);delete packed.owd_state;
   const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.deepEqual(back.horlogeAlcool,sample.horlogeAlcool);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
-  // Effort et Temps : structure [MONDE | valeur | °C], boutons rapides à
-  // parts égales, et trois entrées [valeur | unité | APPLIQUER].
+  // Effort et Temps : trois sous-sections ordonnées, avec des contrôles dont
+  // l'apparence annonce le rôle (toggle, champ, information ou action).
   const effort=sheet.locator('[data-module="effort"]');
+  assert.deepEqual(await effort.locator('.pc-effort-section-title').evaluateAll(ns=>ns.map(n=>n.textContent)),['Effort','Temps','Écoulement']);
   assert.deepEqual(await effort.locator('.pc-effort-temperature').evaluate(n=>Array.from(n.children).map(x=>[x.tagName,x.textContent.trim()])),[['BUTTON','MONDE'],['INPUT',''],['SPAN','°C']]);
-  assert.deepEqual(await effort.locator('.pc-temps-rapide > button').evaluateAll(ns=>ns.map(n=>n.textContent)),['RND','MIN','HR']);
   assert.deepEqual(await effort.locator('.pc-temps-segs .pc-temps-unite').evaluateAll(ns=>ns.map(n=>n.textContent)),['RND','MIN','HR']);
   assert.deepEqual(await effort.locator('.pc-temps-appliquer').evaluateAll(ns=>ns.map(n=>n.textContent)),['APPLIQUER','APPLIQUER','APPLIQUER']);
+  assert.deepEqual(await effort.locator('.pc-effort-section:last-child > .pc-segs').evaluateAll(ns=>ns.map(n=>n.classList.contains('pc-temps-rapide')?'rapide':n.classList.contains('pc-temps-segs')?'saisie':'autre')),['saisie','saisie','saisie','rapide']);
+  assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'false');
+  assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('class').then(x=>x.includes('pc-toggle')),true);
+  assert.equal(await effort.locator('.pc-effort-temperature > input').getAttribute('class').then(x=>x.includes('pc-field')),true);
+  assert.equal(await effort.locator('.pc-effort-temperature > .pc-info').textContent(),'°C');
+  assert.equal(await effort.locator('.pc-temps-rapide > .pc-action').count(),3);
+  assert.equal(await effort.locator('.pc-temps-segs > .pc-action').count(),3);
+  assert.equal(await effort.locator('.pc-temps-segs > .pc-field').count(),3);
   const sizes=await frame.evaluate(()=>{
     const rect=n=>n.getBoundingClientRect();
     const air=document.querySelector('.pc-effort-temperature'), a=Array.from(air.children);
     const rows=Array.from(document.querySelectorAll('.pc-temps-segs'));
-    return {world:rect(a[0]).width/rect(air).width,temperature:rect(a[1]).width,units:[rect(a[2]).width,...rows.map(r=>rect(r.children[1]).width)],apply:rows.map(r=>rect(r.children[2]).width/rect(r).width),editable:getComputedStyle(a[1]).backgroundColor,input:getComputedStyle(rows[0].children[0]).backgroundColor};
+    const quick=Array.from(document.querySelectorAll('.pc-temps-rapide > button')).map(rect);
+    const styles={action:getComputedStyle(rows[0].children[2]),field:getComputedStyle(rows[0].children[0]),info:getComputedStyle(rows[0].children[1]),toggle:getComputedStyle(a[0])};
+    return {world:rect(a[0]).width/rect(air).width,temperature:rect(a[1]).width,units:[rect(a[2]).width,...rows.map(r=>rect(r.children[1]).width)],apply:rows.map(r=>rect(r.children[2]).width/rect(r).width),editable:getComputedStyle(a[1]).backgroundColor,input:getComputedStyle(rows[0].children[0]).backgroundColor,quick:quick.map(r=>r.width),roleColors:{action:styles.action.color,field:styles.field.color,info:styles.info.color},fieldLine:styles.field.boxShadow};
   });
   assert.ok(Math.abs(sizes.world-.5)<.02);assert.ok(sizes.temperature>0);
   assert.ok(sizes.units.every(w=>Math.abs(w-sizes.units[0])<.5));assert.ok(sizes.apply.every(w=>Math.abs(w-.5)<.02));
+  assert.ok(sizes.quick.every(w=>Math.abs(w-sizes.quick[0])<.5));
+  assert.ok(sizes.quick[0]>0);
+  assert.notEqual(sizes.roleColors.action,sizes.roleColors.info);
+  assert.notEqual(sizes.roleColors.action,sizes.roleColors.field);
+  assert.match(sizes.fieldLine,/inset/);
   assert.equal(sizes.editable,sizes.input);
   // Le champ B devient réellement verrouillé et gris lorsque MONDE est ON.
   const mondeTemp=effort.getByLabel('Température en °C');
@@ -269,8 +284,10 @@ const server=http.createServer((req,res)=> {
   assert.equal(await mondeTemp.isEditable(),false);
   const readonlyColor=await mondeTemp.evaluate(n=>getComputedStyle(n).backgroundColor);
   assert.notEqual(readonlyColor,sizes.editable);
+  assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'true');
   await effort.getByRole('button',{name:'MONDE'}).click();
   assert.equal(await mondeTemp.isEditable(),true);
+  assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'false');
   // Les trois commandes avancent la même horloge de 3 s, 60 s et 3600 s.
   const secondesHorloge=()=>state().then(s=>s.horloge.jours*86400+s.horloge.heures*3600+s.horloge.minutes*60+s.horloge.secondes);
   let avantRapide=await secondesHorloge();
@@ -279,6 +296,8 @@ const server=http.createServer((req,res)=> {
     assert.equal(await secondesHorloge(),avantRapide+pas);
     avantRapide+=pas;
   }
+  // KM/H reste la notation conventionnelle de la vitesse dans Mouvement.
+  assert.equal(await sheet.locator('[data-module="mouvement"] .pc-mouv-dist .k').nth(2).textContent(),'km / h');
   // Preview representative values, check bounds in both themes and compact width.
   await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){
@@ -323,7 +342,7 @@ const server=http.createServer((req,res)=> {
    await readonly.hover();await page.waitForTimeout(200);assert.deepEqual(await appearance(),normal);
    assert.ok(await collapse.locator('.pc-eff-partie .pc-vital-max').evaluateAll(ns=>ns.every(n=>n.textContent==='/ 10')));
    assert.ok(await collapse.locator('.pc-eff-champs').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.left-b.left)<=1&&Math.abs(a.right-b.right)<=1;})));
-   assert.ok(await sheet.locator('.pc-temps-val').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).boxShadow==='none'&&getComputedStyle(n).borderTopWidth==='0px')));
+   assert.ok(await sheet.locator('.pc-temps-val').evaluateAll(ns=>ns.every(n=>getComputedStyle(n).boxShadow.includes('inset')&&getComputedStyle(n).borderTopWidth==='0px')));
    assert.ok(await action.locator('.pc-desaction-bascule').evaluateAll(ns=>ns.every(n=>{const a=n.getBoundingClientRect(),b=n.parentElement.getBoundingClientRect();return Math.abs(a.top-b.top)<1&&Math.abs(a.right-b.right)<1&&a.width>20;})));
    assert.ok(!(await collapse.textContent()).includes('Aucune'));
    const ticks=await sheet.locator('[data-module="pi"] .pc-vital-palier').evaluateAll(ns=>ns.map(n=>({filled:n.classList.contains('plein'),color:getComputedStyle(n).backgroundColor})));
