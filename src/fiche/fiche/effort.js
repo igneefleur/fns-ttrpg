@@ -46,13 +46,15 @@
     }
   }
   function buildEffort() {
-    var b = block("Effort et Temps");
+    // Le module n'a plus de titre général : ses trois sous-sections portent
+    // chacune le bandeau normal d'un module de la fiche.
+    var b = el("div", "pc-block");
 
     // Trois fonctions distinctes, toujours dans le même module : choisir un
     // effort, lire la température, puis faire avancer l'horloge.
     function section(titre) {
       var groupe = el("div", "pc-effort-section");
-      groupe.appendChild(el("div", "pc-effort-section-title", titre));
+      groupe.appendChild(el("div", "pc-block-title pc-effort-section-title", titre));
       b.appendChild(groupe);
       return groupe;
     }

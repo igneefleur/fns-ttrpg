@@ -251,6 +251,9 @@ const server=http.createServer((req,res)=> {
   // l'apparence annonce le rôle (toggle, champ, information ou action).
   const effort=sheet.locator('[data-module="effort"]');
   assert.deepEqual(await effort.locator('.pc-effort-section-title').evaluateAll(ns=>ns.map(n=>n.textContent)),['Effort','Temps','Écoulement']);
+  assert.equal(await effort.evaluate(n=>Array.from(n.children).filter(c=>c.classList.contains('pc-block-title')).length),0);
+  assert.equal(await effort.locator('.pc-effort-section-title.pc-block-title').count(),3);
+  assert.equal(await effort.locator('.pc-block-title').count(),3);
   assert.deepEqual(await effort.locator('.pc-effort-temperature').evaluate(n=>Array.from(n.children).map(x=>[x.tagName,x.textContent.trim()])),[['BUTTON','MONDE'],['INPUT',''],['SPAN','°C']]);
   assert.deepEqual(await effort.locator('.pc-temps-segs .pc-temps-unite').evaluateAll(ns=>ns.map(n=>n.textContent)),['RND','MIN','HR']);
   assert.deepEqual(await effort.locator('.pc-temps-appliquer').evaluateAll(ns=>ns.map(n=>n.textContent)),['APPLIQUER','APPLIQUER','APPLIQUER']);
@@ -278,12 +281,41 @@ const server=http.createServer((req,res)=> {
   assert.notEqual(sizes.roleColors.action,sizes.roleColors.field);
   assert.match(sizes.fieldLine,/inset/);
   assert.equal(sizes.editable,sizes.input);
+  // Les titres gardent la couleur atténuée qu'ils avaient auparavant,
+  // reprennent la typographie des titres de modules et portent un vrai filet doré.
+  const titresStyle=await effort.locator('.pc-effort-section-title').first().evaluate(n=>{
+    const s=getComputedStyle(n), module=getComputedStyle(document.querySelector('[data-module="caracs"] .pc-block-title'));
+    const root=getComputedStyle(document.querySelector('.perso-fiche'));
+    return {color:s.color,ancienneCouleur:root.getPropertyValue('--ink-2').trim(),
+      border:s.borderBottomColor,orTitre:root.getPropertyValue('--or-titre').trim(),width:s.borderBottomWidth,
+      fontFamily:s.fontFamily,moduleFontFamily:module.fontFamily,fontSize:s.fontSize,moduleFontSize:module.fontSize,
+      fontWeight:s.fontWeight,moduleFontWeight:module.fontWeight,letterSpacing:s.letterSpacing,moduleLetterSpacing:module.letterSpacing};
+  });
+  assert.equal(titresStyle.color,titresStyle.ancienneCouleur);
+  assert.equal(titresStyle.border,titresStyle.orTitre === '#7a5c10' ? 'rgb(122, 92, 16)' : 'rgb(255, 215, 127)');
+  assert.equal(titresStyle.width,'1px');
+  assert.equal(titresStyle.fontFamily,titresStyle.moduleFontFamily);
+  assert.equal(titresStyle.fontSize,titresStyle.moduleFontSize);
+  assert.equal(titresStyle.fontWeight,titresStyle.moduleFontWeight);
+  assert.equal(titresStyle.letterSpacing,titresStyle.moduleLetterSpacing);
+  // INPUT et ACTION ont exactement le même filet au repos et au focus.
+  const actionRonde=effort.locator('.pc-temps-rapide > button').first();
+  const saisieRonde=effort.locator('.pc-temps-segs > input').first();
+  await actionRonde.focus();
+  const actionFocus=await actionRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+  await saisieRonde.focus();
+  const saisieFocus=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+  assert.equal(actionFocus,saisieFocus);
   // Le champ B devient réellement verrouillé et gris lorsque MONDE est ON.
   const mondeTemp=effort.getByLabel('Température en °C');
   await effort.getByRole('button',{name:'MONDE'}).click();
   assert.equal(await mondeTemp.isEditable(),false);
-  const readonlyColor=await mondeTemp.evaluate(n=>getComputedStyle(n).backgroundColor);
-  assert.notEqual(readonlyColor,sizes.editable);
+  const readonlyStyle=await mondeTemp.evaluate(n=>({
+    color:getComputedStyle(n).backgroundColor,
+    shadow:getComputedStyle(n).boxShadow
+  }));
+  assert.notEqual(readonlyStyle.color,sizes.editable);
+  assert.doesNotMatch(readonlyStyle.shadow,/-[12]px/);
   assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'true');
   await effort.getByRole('button',{name:'MONDE'}).click();
   assert.equal(await mondeTemp.isEditable(),true);
@@ -308,6 +340,9 @@ const server=http.createServer((req,res)=> {
   }
   for(const night of [true,false]){
    await frame.evaluate(n=>document.documentElement.classList.toggle('night',n),night);await page.waitForTimeout(50);
+   await actionRonde.focus();const actionFocusTheme=await actionRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+   await saisieRonde.focus();const saisieFocusTheme=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
+   assert.equal(actionFocusTheme,saisieFocusTheme);
    await page.mouse.move(0,0);
    await capture(collapse,'/tmp/owd-effondrement-'+(night?'night':'day')+'.png');
    await capture(sheet.locator('[data-module="pi"]'),'/tmp/owd-innocence-'+(night?'night':'day')+'.png');
