@@ -45,7 +45,7 @@
     enregistrementEtat=json;
     var out={},caps=card.capacites,caracs=card.caracs;
     function set(id,parts){out[id]=JSON.stringify(parts);}
-    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
+    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','temperatureMonde','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
     Object.keys(own).forEach(function(id){set(id,own[id].map(function(k){return state[k];}));});
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}

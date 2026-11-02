@@ -126,6 +126,7 @@
         })
       : [];
     s.temperature = clamp(Math.round(num(s.temperature, b.temperature) * 10) / 10, -999, 999);
+    s.temperatureMonde = s.temperatureMonde === true;
     // Les horloges sont stockées en J/H/M/S, jamais en total de secondes. Une
     // valeur débordante est reportée vers l'unité supérieure. Digestion et
     // Exposition utilisent exactement la même forme que l'horloge du monde.

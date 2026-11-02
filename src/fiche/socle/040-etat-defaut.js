@@ -64,7 +64,7 @@
       // sommeil, repos, leger, intermediaire, lourd) et la température de
       // l'air en °C. Le module Temps s'en sert pour faire
       // passer le temps ; rien d'autre ne les lit.
-      effort: "leger", temperature: 20, qualiteSommeil: "confortable",
+      effort: "leger", temperature: 20, temperatureMonde: false, qualiteSommeil: "confortable",
       // Trois horloges internes invisibles, toutes normalisées J/H/M/S.
       // `horloge` est le temps du monde. Les deux autres ne tournent que tant
       // que leur processus est actif : ventre non vide pour la digestion,

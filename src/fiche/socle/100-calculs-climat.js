@@ -1,3 +1,13 @@
+  // Température lue dans le personnage partagé « Monde ». Elle reste en
+  // mémoire (jamais copiée dans la température manuelle du personnage) et
+  // n'est utilisée que si le joueur a activé le lien et qu'une valeur existe.
+  var temperatureMondeValeur = null, temperatureMondeDisponible = false;
+  var temperatureMondeEtat = "attente";
+  function temperatureCourante() {
+    return state.temperatureMonde === true && temperatureMondeDisponible
+      ? temperatureMondeValeur : num(state.temperature, 0);
+  }
+
   // ---- climat ----
   // La zone de confort du personnage HABILLÉ : les deux bornes du corps nu
   // viennent des règles (owd-creation.json), les degrés de protection de ce
@@ -223,7 +233,7 @@
   function paliersClimat() {
     var t = tempsDef(), z = confort(), e = effortDe(state.effort);
     if (!t || !z || !e) return 0;
-    var ressenti = num(state.temperature, 0) + num(e.degres, 0);
+    var ressenti = temperatureCourante() + num(e.degres, 0);
     var div = Math.max(1, num(t.paliers.diviseur, 1));
     var arr = t.paliers.arrondi === "bas" ? Math.floor : Math.ceil;
     // l'intensité ne dépasse pas le maximum des règles

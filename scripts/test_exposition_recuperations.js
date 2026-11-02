@@ -12,6 +12,7 @@ function setup(x=0,p=0,max=100){
  vm.createContext(ctx);vm.runInContext(code,ctx);ctx.paliersClimat=()=>p;
  return {ctx,state,tick:(n=1)=>ctx.appliqueExpositionSecondes(n*600,1),seconds:n=>ctx.appliqueExpositionSecondes(n,1),climate:v=>p=v};
 }
+test('température liée : valeur de Monde prioritaire, valeur manuelle conservée en repli',()=>{const w=setup();w.state.temperature=14;w.state.temperatureMonde=true;assert.equal(w.ctx.temperatureCourante(),14);w.ctx.temperatureMondeValeur=-8.5;w.ctx.temperatureMondeDisponible=true;assert.equal(w.ctx.temperatureCourante(),-8.5);w.ctx.temperatureMondeDisponible=false;assert.equal(w.ctx.temperatureCourante(),14);w.state.temperatureMonde=false;w.ctx.temperatureMondeValeur=35;w.ctx.temperatureMondeDisponible=true;assert.equal(w.ctx.temperatureCourante(),14);});
 test('35 conditions de récupération naturelle conformes aux règles',()=>{
  assert.equal(data.recuperations.length,35);const expected={sommeil:[5,11,-5,7,-3,-3,0],repos:[0,10,0,-4,-4,-4,0],leger:[0,9,0,-5,-5,-5,0],intermediaire:[0,8,0,-6,-6,-6,0],lourd:[0,7,0,-7,-7,-7,0]};
  for(const [i,key] of ['pv','pe','pm','pr','ps','ph','pi'].entries()){for(const activity in expected)assert.equal(data.recuperations.find(r=>r.id===key+':'+activity).niveau,expected[activity][i]);}

@@ -1,0 +1,11 @@
+'use strict';
+const fs = require('node:fs');
+const assert = require('node:assert/strict');
+const css = fs.readFileSync('docs/stylesheets/owd-fiche.css', 'utf8');
+const header = fs.readFileSync('src/fiche/socle/190-entete.js', 'utf8');
+assert.match(header, /pc-id-progression/);
+assert.match(css, /\.pc-id-meters\.pc-id-progression[^\{]*\{\s*flex-wrap:\s*nowrap;/);
+assert.match(css, /\.pc-id-progression > \.pc-meter\.pc-meter-pieces\s*\{\s*flex:\s*0 1 auto;\s*\}/);
+assert.match(css, /\.pc-id-progression > \.pc-meter:not\(\.pc-meter-pieces\)\s*\{\s*flex:\s*1 1 0;\s*min-width:\s*0;\s*\}/);
+assert.doesNotMatch(css, /\.pc-id-progression > \.pc-meter\.pc-meter-pieces\s*\{\s*flex:\s*1 1 0;/);
+console.log('OK en-tête : Rupture garde sa largeur naturelle, XP prend le reste.');

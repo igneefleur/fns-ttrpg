@@ -567,10 +567,23 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    passe à la ligne entier, et chaque rang se partage sa largeur. */
 .pc-tabs.mini.pc-efforts { display: flex; flex-wrap: wrap; }
 .pc-tabs.mini.pc-efforts > .pc-tab { flex: 1 1 auto; white-space: nowrap; padding-inline: .35rem; }
-/* TEMPS : même contrôle [ A | B | C ] que les efforts. Le champ, l'unité et
-   Appliquer ont donc STRICTEMENT la même hauteur que Sommeil/Repos et
-   Léger/Inter/Lourd. */
+/* TEMPS : contrôle [ MONDE | TEMPÉRATURE ] de même hauteur que les
+   autres rangées segmentées. La seconde case contient la valeur en °C. */
 .pc-effort-temperature { margin-top: .48rem; }
+.pc-effort-temperature-value { gap: .12rem; cursor: text; }
+.pc-effort-temperature-value input {
+  width: 3.5rem; min-width: 0; max-width: 100%; height: 100%; padding: 0;
+  border: 0; border-radius: 0; outline: 0; background: transparent;
+  color: var(--ink); font: inherit; font-size: .66rem; font-weight: 700;
+  line-height: 1; text-align: right; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-effort-temperature-value input::-webkit-inner-spin-button,
+.pc-effort-temperature-value input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-effort-temperature-value input[readonly] { color: var(--ink-2); cursor: default; }
+.pc-effort-temperature-value input:focus { background: transparent; color: var(--ink); }
+.pc-effort-temperature-value input::placeholder { color: var(--ink-3); opacity: 1; }
+.pc-effort-temperature-unit { flex: 0 0 auto; color: var(--ink-2); font-size: .58rem; font-weight: 700; }
 .pc-temps-segs { margin-top: .3rem; }
 .pc-temps-segs > .c { box-sizing: border-box; font-size: .66rem; letter-spacing: 0; text-transform: none; }
 .pc-temps-segs > .c:nth-child(1), .pc-temps-segs > .c:nth-child(2) { flex: 0 0 25%; }
@@ -2391,8 +2404,8 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 
 /* En-tête : deux compteurs par ligne ; la création appartient aux caractéristiques. */
 .pc-id-meters.pc-id-progression, .pc-id-meters.pc-id-portage { flex-wrap: nowrap; }
-.pc-id-progression > .pc-meter.pc-meter-pieces { flex: 1 1 0; }
-.pc-id-progression > .pc-meter:not(.pc-meter-pieces) { flex: 2 1 0; }
+.pc-id-progression > .pc-meter.pc-meter-pieces { flex: 0 1 auto; }
+.pc-id-progression > .pc-meter:not(.pc-meter-pieces) { flex: 1 1 0; min-width: 0; }
 .pc-id-portage > .pc-meter { flex: 1 1 0; }
 .pc-id-xp-total {
   width: 5ch; min-width: 3ch; padding: .03rem .1rem .08rem; border: 0;

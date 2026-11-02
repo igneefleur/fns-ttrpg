@@ -7,6 +7,44 @@
   // taux et les paliers viennent des données.
   // l'affichage d'un effort dont le nom ne tient pas dans sa case
   var EFFORT_COURT = { intermediaire: "Inter" };
+  var temperatureMondeSondeTimer = null, temperatureMondeSondeEcoute = false;
+  function recoitTemperatureMonde(ev) {
+    if (ev.source !== window.top) return;
+    var d = ev.data;
+    if (!d || d.ns !== "owd" || d.type !== "monde-temperature-result") return;
+    var valeur = d.available === true && typeof d.temperature === "number" &&
+      Number.isFinite(d.temperature) && Math.abs(d.temperature) <= 999 ? d.temperature : null;
+    var disponible = valeur !== null;
+    var etat = !d.found ? "absent" : d.status === "echec" ? "echec" :
+      d.status !== "sur" ? "attente" : disponible ? "disponible" : "sans-valeur";
+    if (temperatureMondeValeur === valeur && temperatureMondeDisponible === disponible && temperatureMondeEtat === etat) return;
+    temperatureMondeValeur = valeur;
+    temperatureMondeDisponible = disponible;
+    temperatureMondeEtat = etat;
+    if (state.temperatureMonde === true) refresh();
+  }
+  function demandeTemperatureMonde() {
+    try { window.top.postMessage({ ns: "owd", type: "monde-temperature" }, "*"); } catch (e) {}
+  }
+  function demarreSondeTemperatureMonde() {
+    if (!COMPACT || window.top === window) return;
+    if (!temperatureMondeSondeEcoute) {
+      window.addEventListener("message", recoitTemperatureMonde);
+      temperatureMondeSondeEcoute = true;
+    }
+    if (temperatureMondeSondeTimer !== null) return;
+    temperatureMondeValeur = null;
+    temperatureMondeDisponible = false;
+    temperatureMondeEtat = "attente";
+    demandeTemperatureMonde();
+    temperatureMondeSondeTimer = window.setInterval(demandeTemperatureMonde, 2000);
+  }
+  function arreteSondeTemperatureMonde() {
+    if (temperatureMondeSondeTimer !== null) {
+      window.clearInterval(temperatureMondeSondeTimer);
+      temperatureMondeSondeTimer = null;
+    }
+  }
   function buildEffort() {
     var b = block("Effort et Temps");
 
@@ -52,13 +90,47 @@
     sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
     b.appendChild(sommeilQualite);
 
-    var air = el("div", "pc-crow-bot pc-effort-temperature");
-    air.appendChild(el("span", "lbl", "Température"));
-    air.appendChild(stepper(
-      function () { return num(state.temperature, 0); },
-      function (v) { state.temperature = clamp(Math.round(v * 10) / 10, -999, 999); },
-      1, "°C"));
+    // TEMPÉRATURE : [ Monde | valeur ]. Le premier segment active/désactive
+    // la lecture de la température partagée ; le second reste la saisie locale
+    // lorsqu'il est désactivé, et devient une lecture seule lorsque lié.
+    var air = el("div", "pc-segs pc-effort-temperature");
+    var monde = el("button", "c", "Monde");
+    monde.type = "button";
+    monde.setAttribute("aria-pressed", state.temperatureMonde === true ? "true" : "false");
+    monde.addEventListener("click", function () {
+      state.temperatureMonde = state.temperatureMonde !== true;
+      if (state.temperatureMonde) demarreSondeTemperatureMonde();
+      else arreteSondeTemperatureMonde();
+      refresh();
+    });
+    air.appendChild(monde);
+
+    var temperature = el("input", "pc-effort-temperature-input");
+    temperature.type = "number";
+    temperature.step = "0.1";
+    temperature.min = "-999";
+    temperature.max = "999";
+    temperature.setAttribute("aria-label", "Température en °C");
+    var valeurAir = el("label", "c pc-effort-temperature-value");
+    valeurAir.appendChild(temperature);
+    valeurAir.appendChild(el("span", "pc-effort-temperature-unit", "°C"));
+    temperature.addEventListener("input", function () {
+      if (state.temperatureMonde === true || temperature.value === "") return;
+      var v = Number(temperature.value);
+      if (!Number.isFinite(v) || Math.abs(v) > 999) return;
+      state.temperature = clamp(Math.round(v * 10) / 10, -999, 999);
+      refresh();
+    });
+    temperature.addEventListener("change", function () {
+      if (state.temperatureMonde === true) return;
+      var v = Number(temperature.value);
+      if (temperature.value !== "" && Number.isFinite(v) && Math.abs(v) <= 999)
+        state.temperature = clamp(Math.round(v * 10) / 10, -999, 999);
+      refresh();
+    });
+    air.appendChild(valeurAir);
     b.appendChild(air);
+    if (state.temperatureMonde === true) demarreSondeTemperatureMonde();
 
     // TROIS GESTES, tous branchés sur la même horloge à la seconde.
     function geste(unite, secondesParUnite, etiquette) {
@@ -101,6 +173,26 @@
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
       sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
       boutonsQualite.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.qualiteSommeil); });
+      var liee = state.temperatureMonde === true;
+      monde.classList.toggle("on", liee);
+      monde.setAttribute("aria-pressed", liee ? "true" : "false");
+      monde.title = liee ? "Utiliser la température de Monde — activé" : "Utiliser la température de Monde — désactivé";
+      temperature.readOnly = liee;
+      if (liee) {
+        if (document.activeElement !== temperature || temperature.readOnly)
+          temperature.value = temperatureMondeDisponible ? String(temperatureMondeValeur) : "";
+        temperature.placeholder = temperatureMondeDisponible ? "" : "—";
+        temperature.title = temperatureMondeDisponible
+          ? "Température actuelle du personnage Monde"
+          : (temperatureMondeEtat === "absent" ? "Personnage Monde introuvable ; la température manuelle est utilisée pour les calculs."
+            : temperatureMondeEtat === "echec" ? "Impossible de lire le personnage Monde ; la température manuelle est utilisée pour les calculs."
+            : temperatureMondeEtat === "sans-valeur" ? "Aucune température définie dans Monde ; la température manuelle est utilisée pour les calculs."
+            : "En attente de la température du personnage Monde ; la température manuelle est utilisée pour les calculs.");
+      } else {
+        if (document.activeElement !== temperature) temperature.value = String(num(state.temperature, 0));
+        temperature.placeholder = "";
+        temperature.title = "Température manuelle du personnage";
+      }
     });
     return b;
   }

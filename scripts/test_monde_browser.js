@@ -36,6 +36,15 @@ const server=http.createServer((req,res)=> {
     const frames=pages.map(p=>p.frameLocator('iframe'));
     await Promise.all(frames.map(f=>f.locator('input[aria-label="Température en °C"]:enabled').waitFor()));
     const [a,b]=frames;
+    const litTemperatureDuPont=f=>f.locator('body').evaluate(()=>new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>{window.removeEventListener('message',recu);reject(new Error('Délai de lecture de la température Monde'));},5000);
+      function recu(ev){if(ev.source!==window.top||!ev.data||ev.data.ns!=='owd'||ev.data.type!=='monde-temperature-result')return;
+        clearTimeout(timer);window.removeEventListener('message',recu);resolve(ev.data);}
+      window.addEventListener('message',recu);window.top.postMessage({ns:'owd',type:'monde-temperature'},'*');
+    }));
+    const mondeInitial=await litTemperatureDuPont(a);
+    assert.equal(mondeInitial.found,true);assert.equal(mondeInitial.ready,true);assert.equal(mondeInitial.available,true);assert.equal(mondeInitial.temperature,18);
+    console.log('OK le pont Roll20 expose en lecture seule la température partagée');
     const temp=f=>f.locator('input[aria-label="Température en °C"]');
     assert.equal(await a.locator('input[aria-label="Jours"]').inputValue(),'7');
     assert.equal(await a.locator('input[aria-label="Heures"]').inputValue(),'23');
@@ -52,7 +61,9 @@ const server=http.createServer((req,res)=> {
     assert.equal(await a.locator('input[aria-label="Heures"]').inputValue(),'0');
     assert.equal(await a.locator('input[aria-label="Minutes"]').inputValue(),'10');
     assert.equal(D.read(attrs).temperature,-8.5);
-    console.log('OK horloge et température simultanées, minuit et focus conservé');
+    const mondeMisAJour=await litTemperatureDuPont(b);
+    assert.equal(mondeMisAJour.available,true);assert.equal(mondeMisAJour.temperature,-8.5);
+    console.log('OK horloge et température simultanées, minuit, focus et lecture Monde actualisée');
     // Le dernier serveur gagne, même si chacun gardait son champ sous les doigts.
     await temp(a).fill('12');await temp(b).fill('30');
     await pages[0].waitForTimeout(5500);

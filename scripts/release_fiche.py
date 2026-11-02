@@ -380,8 +380,14 @@ def main():
     if not lancer("modes partagés des vues", ["node", "scripts/test_shared_mode.js"], racine):
         return 1
 
+    # En-tête : les compteurs de progression gardent leur répartition voulue.
+    if not lancer("largeur XP dans l’en-tête", ["node", "scripts/test_header_xp.js"], racine):
+        return 1
+
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
+        return 1
+    if not lancer("lecture de la température Monde par le pont Roll20", ["node", "scripts/test_temperature_monde_bridge.js"], racine):
         return 1
     if not lancer("caches et transport", ["node", "scripts/test_performance_sync.js"], racine):
         return 1
