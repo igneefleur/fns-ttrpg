@@ -247,6 +247,38 @@ const server=http.createServer((req,res)=> {
   const packed=M.stateToAttrs(sample,null);delete packed.owd_state;
   const back=M.attrsToState(packed);assert.deepEqual(back.desUtilises,sample.desUtilises);assert.deepEqual(back.effParties,sample.effParties);assert.equal(back.effAlcool,1);assert.deepEqual(back.horlogeAlcool,sample.horlogeAlcool);
   assert.deepEqual(C.rebuild(C.flatten(sample)),sample);
+  // Effort et Temps : structure [MONDE | valeur | °C], boutons rapides à
+  // parts égales, et trois entrées [valeur | unité | APPLIQUER].
+  const effort=sheet.locator('[data-module="effort"]');
+  assert.deepEqual(await effort.locator('.pc-effort-temperature').evaluate(n=>Array.from(n.children).map(x=>[x.tagName,x.textContent.trim()])),[['BUTTON','MONDE'],['INPUT',''],['SPAN','°C']]);
+  assert.deepEqual(await effort.locator('.pc-temps-rapide > button').evaluateAll(ns=>ns.map(n=>n.textContent)),['RND','MIN','HR']);
+  assert.deepEqual(await effort.locator('.pc-temps-segs .pc-temps-unite').evaluateAll(ns=>ns.map(n=>n.textContent)),['RND','MIN','HR']);
+  assert.deepEqual(await effort.locator('.pc-temps-appliquer').evaluateAll(ns=>ns.map(n=>n.textContent)),['APPLIQUER','APPLIQUER','APPLIQUER']);
+  const sizes=await frame.evaluate(()=>{
+    const rect=n=>n.getBoundingClientRect();
+    const air=document.querySelector('.pc-effort-temperature'), a=Array.from(air.children);
+    const rows=Array.from(document.querySelectorAll('.pc-temps-segs'));
+    return {world:rect(a[0]).width/rect(air).width,temperature:rect(a[1]).width,units:[rect(a[2]).width,...rows.map(r=>rect(r.children[1]).width)],apply:rows.map(r=>rect(r.children[2]).width/rect(r).width),editable:getComputedStyle(a[1]).backgroundColor,input:getComputedStyle(rows[0].children[0]).backgroundColor};
+  });
+  assert.ok(Math.abs(sizes.world-.5)<.02);assert.ok(sizes.temperature>0);
+  assert.ok(sizes.units.every(w=>Math.abs(w-sizes.units[0])<.5));assert.ok(sizes.apply.every(w=>Math.abs(w-.5)<.02));
+  assert.equal(sizes.editable,sizes.input);
+  // Le champ B devient réellement verrouillé et gris lorsque MONDE est ON.
+  const mondeTemp=effort.getByLabel('Température en °C');
+  await effort.getByRole('button',{name:'MONDE'}).click();
+  assert.equal(await mondeTemp.isEditable(),false);
+  const readonlyColor=await mondeTemp.evaluate(n=>getComputedStyle(n).backgroundColor);
+  assert.notEqual(readonlyColor,sizes.editable);
+  await effort.getByRole('button',{name:'MONDE'}).click();
+  assert.equal(await mondeTemp.isEditable(),true);
+  // Les trois commandes avancent la même horloge de 3 s, 60 s et 3600 s.
+  const secondesHorloge=()=>state().then(s=>s.horloge.jours*86400+s.horloge.heures*3600+s.horloge.minutes*60+s.horloge.secondes);
+  let avantRapide=await secondesHorloge();
+  for(const [i,pas] of [3,60,3600].entries()){
+    await effort.locator('.pc-temps-rapide > button').nth(i).click();
+    assert.equal(await secondesHorloge(),avantRapide+pas);
+    avantRapide+=pas;
+  }
   // Preview representative values, check bounds in both themes and compact width.
   await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){
