@@ -265,13 +265,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* variante « dépense » : l'XP et la rupture ne mesurent pas une santé mais ce
    qui a été payé. L'or les distingue d'un coup d'œil des jauges de vie. */
 .pc-meter.or .bar > i { background: var(--or); }
-/* CONTRÔLES SEGMENTÉS : chaque type d'élément a son langage propre.
-   - pc-toggle : choix persistant, le cran retenu prend l'accent ;
-   - pc-action : action ponctuelle, surface de bouton sans état retenu ;
-   - pc-field : saisie, surface de champ et filet au focus ;
-   - pc-info : information ou unité, neutre et jamais cliquable.
-   Les puces pc-chip sont les interrupteurs compacts ; pc-mini et pc-btn sont
-   les actions ponctuelles hors d'un cadre segmenté. */
+/* CONTRÔLES SEGMENTÉS : trois états et deux gestes, un langage unique.
+   - ON : fond doré, sans filet inférieur ;
+   - OFF et ACTION : fond de contrôle, filet inférieur ordinaire ;
+   - ACTION après réussite : seul le filet se remplit d'or, de gauche à droite ;
+   - FIELD : fond de contrôle, filet doré au focus ;
+   - INFO : fond gris, jamais interactif.
+   OFF et ACTION partagent volontairement le même aspect : tous deux sont
+   des boutons disponibles. Le doré plein reste réservé à l'état ON. */
 .pc-segs {
   display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
@@ -289,27 +290,47 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 }
 .pc-segs > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-segs > .c:hover { background: var(--stripe); color: var(--ink); }
+/* ON : l'accent remplit le cran ; aucun filet inférieur n'est nécessaire. */
 .pc-segs > .c.on { background: var(--accent); color: var(--card); box-shadow: none; }
-/* Les quatre rôles ne se confondent pas, même dans une seule rangée. */
-.pc-segs > button.pc-toggle { cursor: pointer; }
+/* OFF et ACTION : même fond, même encre, même filet inférieur. */
+.pc-segs > button.pc-toggle:not(.on),
 .pc-segs > button.pc-action {
+  position: relative;
   background: var(--card); color: var(--accent-deep); font-weight: 800;
   box-shadow: inset 0 -1px 0 var(--line-2);
 }
-.pc-segs > .c + button.pc-action { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2); }
+.pc-segs > .c + button.pc-toggle:not(.on),
+.pc-segs > .c + button.pc-action {
+  box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2);
+}
+.pc-segs > button.pc-toggle:not(.on):hover,
 .pc-segs > button.pc-action:hover { background: var(--wash); color: var(--ink); }
+/* Seul le filet inférieur de l'action progresse. Le fond reste celui du
+   bouton pendant toute l'animation. La durée/courbe reprend le flash de
+   confirmation du livre (1,5 s, ease-out). */
+.perso-fiche { --pc-action-confirmation-duration: 1.5s; }
+@keyframes pc-action-underline-progress {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.pc-segs > button.pc-action::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left center;
+  pointer-events: none;
+}
+.pc-segs > button.pc-action.is-confirming::after {
+  animation: pc-action-underline-progress var(--pc-action-confirmation-duration, 1.5s) ease-out forwards;
+}
 .pc-segs > input.c.pc-field {
   background: var(--card); color: var(--ink); cursor: text;
   box-shadow: inset 0 -1px 0 var(--line-2);
 }
 .pc-segs > .c + input.c.pc-field { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2); }
-/* INPUT et ACTION portent le même filet au repos et le même filet doré au
-   focus. La séparation verticale du segment reste indépendante. */
-.pc-segs > button.pc-action:focus,
+/* Le filet de focus doré est réservé à la saisie, pas aux actions : l'action
+   dispose de son animation temporaire, qui revient ensuite au filet normal. */
 .pc-segs > input.c.pc-field:focus {
   background: var(--card); box-shadow: inset 0 -2px 0 var(--accent); outline: 0;
 }
-.pc-segs > .c + button.pc-action:focus,
 .pc-segs > .c + input.c.pc-field:focus {
   box-shadow: inset 1px 0 0 var(--line-2), inset 0 -2px 0 var(--accent);
 }
@@ -325,6 +346,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   background: var(--stripe); color: var(--ink-2); cursor: default; font-weight: 700;
 }
 .pc-segs > .pc-info:hover { background: var(--stripe); color: var(--ink-2); }
+@media (prefers-reduced-motion: reduce) {
+  .pc-segs > button.pc-action.is-confirming::after { animation-duration: .01ms; }
+}
 /* Effort et Temps : les cinq qualités de sommeil réemploient STRICTEMENT
    les crans « Foncer » de Mouvement (même taille, même typo, même rythme). */
 /* MOUVEMENT : les pas par round en grand, le coût du cran à droite */
@@ -1886,17 +1910,8 @@ html.night .pc-top .pc-lib select { background: #1a1a1a; border-color: #3a3a3a; 
 html.night .pc-sheet { box-shadow: 0 6px 26px rgba(0, 0, 0, .5); }
 html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
 html.night .pc-mini:hover { background: #332d20; }
-html.night .pc-segs > button.pc-action { background: var(--card); color: var(--accent-deep); box-shadow: inset 0 -1px 0 var(--line-2); }
-html.night .pc-segs > .c + button.pc-action { box-shadow: inset 1px 0 0 var(--line-2), inset 0 -1px 0 var(--line-2); }
-html.night .pc-segs > button.pc-action:hover { background: #332d20; color: var(--ink); }
-html.night .pc-segs > button.pc-action:focus,
-html.night .pc-segs > input.c.pc-field:focus {
-  background: var(--card); box-shadow: inset 0 -2px 0 var(--accent); outline: 0;
-}
-html.night .pc-segs > .c + button.pc-action:focus,
-html.night .pc-segs > .c + input.c.pc-field:focus {
-  box-shadow: inset 1px 0 0 var(--line-2), inset 0 -2px 0 var(--accent);
-}
+/* Les rôles des segments reposent sur les jetons : aucune recoloration
+   spécifique à la nuit ne doit séparer OFF de ACTION. */
 /* Même en nuit, une saisie verrouillée reste distincte d'une saisie éditable
    et ne conserve aucun filet de focus ou de saisie. */
 html.night .pc-segs > input.c.pc-field:read-only,
