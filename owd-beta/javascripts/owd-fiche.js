@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.32.0b";
+  var RELEASE = "4.32.1b";
   var SCHEMA = 18;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5258,11 +5258,11 @@
     sommeilQualite.style.display = (state.effort === "sommeil" && qualites.length) ? "" : "none";
     b.appendChild(sommeilQualite);
 
-    // TEMPÉRATURE : [ Monde | valeur ]. Le premier segment active/désactive
-    // la lecture de la température partagée ; le second reste la saisie locale
-    // lorsqu'il est désactivé, et devient une lecture seule lorsque lié.
+    // TEMPÉRATURE : [ MONDE | valeur | °C ]. Le premier segment active ou
+    // coupe la lecture partagée ; B reste saisissable hors liaison, puis prend
+    // l'aspect d'un champ verrouillé lorsque la température vient de Monde.
     var air = el("div", "pc-segs pc-effort-temperature");
-    var monde = el("button", "c", "Monde");
+    var monde = el("button", "c", "MONDE");
     monde.type = "button";
     monde.setAttribute("aria-pressed", state.temperatureMonde === true ? "true" : "false");
     monde.addEventListener("click", function () {
@@ -5273,15 +5273,12 @@
     });
     air.appendChild(monde);
 
-    var temperature = el("input", "pc-effort-temperature-input");
+    var temperature = el("input", "c pc-effort-temperature-input");
     temperature.type = "number";
     temperature.step = "0.1";
     temperature.min = "-999";
     temperature.max = "999";
     temperature.setAttribute("aria-label", "Température en °C");
-    var valeurAir = el("label", "c pc-effort-temperature-value");
-    valeurAir.appendChild(temperature);
-    valeurAir.appendChild(el("span", "pc-effort-temperature-unit", "°C"));
     temperature.addEventListener("input", function () {
       if (state.temperatureMonde === true || temperature.value === "") return;
       var v = Number(temperature.value);
@@ -5296,11 +5293,33 @@
         state.temperature = clamp(Math.round(v * 10) / 10, -999, 999);
       refresh();
     });
-    air.appendChild(valeurAir);
+    air.appendChild(temperature);
+    air.appendChild(el("span", "c pc-effort-temperature-unit", "°C"));
     b.appendChild(air);
     if (state.temperatureMonde === true) demarreSondeTemperatureMonde();
 
-    // TROIS GESTES, tous branchés sur la même horloge à la seconde.
+    // AVANCE RAPIDE : trois boutons d'un tiers chacun, reliés à la même
+    // horloge et au même moteur que les champs RND / MIN / HR ci-dessous.
+    var rapide = el("div", "pc-segs pc-temps-rapide");
+    [
+      { nom: "RND", secondes: 3, titre: "Avancer le temps d'un round (3 secondes)", message: "1 round écoulé." },
+      { nom: "MIN", secondes: 60, titre: "Avancer le temps d'une minute", message: "1 minute écoulée." },
+      { nom: "HR", secondes: 3600, titre: "Avancer le temps d'une heure", message: "1 heure écoulée." }
+    ].forEach(function (pas) {
+      var bt = el("button", "c", pas.nom);
+      bt.type = "button";
+      bt.title = pas.titre;
+      bt.setAttribute("aria-label", pas.titre);
+      bt.addEventListener("click", function () {
+        var fait = avancerSecondes(pas.secondes);
+        refresh();
+        if (fait) flash(pas.message);
+      });
+      rapide.appendChild(bt);
+    });
+    b.appendChild(rapide);
+
+    // TROIS CHAMPS DE DURÉE, tous branchés sur la même horloge à la seconde.
     function geste(unite, secondesParUnite, etiquette) {
       var cmd = el("div", "pc-segs pc-temps-segs");
       var nb = el("input", "c pc-temps-val");
@@ -5314,28 +5333,37 @@
         nb.value = "";
         refresh();
         if (!sec) return;
-        var abs = Math.abs(sec), texte;
-        if (abs % 3600 === 0) texte = (abs / 3600) + " h";
-        else if (abs % 60 === 0) texte = (abs / 60) + " m";
-        else if (abs % 3 === 0) texte = (abs / 3) + " r";
-        else texte = abs + " s";
-        flash(texte + (sec > 0 ? " écoulé" : " reculé") + (abs > secondesParUnite ? "s." : "."));
+        var abs = Math.abs(sec), compte, texte, accord;
+        if (abs % 3600 === 0) {
+          compte = abs / 3600; texte = compte + (compte === 1 ? " heure" : " heures");
+          accord = compte === 1 ? "ée" : "ées";
+        } else if (abs % 60 === 0) {
+          compte = abs / 60; texte = compte + (compte === 1 ? " minute" : " minutes");
+          accord = compte === 1 ? "ée" : "ées";
+        } else if (abs % 3 === 0) {
+          compte = abs / 3; texte = compte + (compte === 1 ? " round" : " rounds");
+          accord = compte === 1 ? "é" : "és";
+        } else {
+          compte = abs; texte = compte + (compte === 1 ? " seconde" : " secondes");
+          accord = compte === 1 ? "ée" : "ées";
+        }
+        flash(texte + (sec > 0 ? " écoul" : " recul") + accord + ".");
       }
       nb.addEventListener("keydown", function (e) {
         if (e.key === "Enter") { e.preventDefault(); applique(); }
       });
       cmd.appendChild(nb);
       cmd.appendChild(el("span", "c pc-temps-unite", unite));
-      var appliquer = el("button", "c pc-temps-appliquer", "Appliquer");
+      var appliquer = el("button", "c pc-temps-appliquer", "APPLIQUER");
       appliquer.type = "button";
       appliquer.title = "Faire passer ce temps";
       appliquer.addEventListener("click", applique);
       cmd.appendChild(appliquer);
       b.appendChild(cmd);
     }
-    geste("1 r", 3, "Rounds de 3 secondes, en plus ou en moins");
-    geste("1 m", 60, "Minutes, en plus ou en moins");
-    geste("1 h", 3600, "Heures, en plus ou en moins");
+    geste("RND", 3, "Rounds de 3 secondes, en plus ou en moins");
+    geste("MIN", 60, "Minutes, en plus ou en moins");
+    geste("HR", 3600, "Heures, en plus ou en moins");
 
     hooks.push(function () {
       boutons.forEach(function (x) { x[0].classList.toggle("on", x[1] === state.effort); });
