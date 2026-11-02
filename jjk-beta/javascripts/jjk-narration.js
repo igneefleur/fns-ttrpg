@@ -67,6 +67,11 @@
   "use strict";
 
   var NS = "jjk";
+  // Roll20 peut conserver le même WindowProxy lorsqu'une iframe de panneau
+  // est rechargée. Le pont d20 utilise cet identifiant pour purger le cache
+  // des gros attributs omis (notamment les fonds), sinon une nouvelle page
+  // pourrait recevoir une hydratation incomplète.
+  var VIEW_ID = "narr-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
   var PREF = "jjk_narr_";
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
@@ -216,6 +221,7 @@
   // ---------- dialogue avec le pont ----------
   function post(msg) {
     msg.ns = NS;
+    msg.viewId = VIEW_ID;
     try { window.top.postMessage(msg, "*"); } catch (e) {}
   }
   // Le pont d20 n'est injecté par l'extension que sur demande, et rien ne dit

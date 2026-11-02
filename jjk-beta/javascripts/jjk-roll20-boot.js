@@ -1,4 +1,4 @@
-﻿/* Amorce Roll20 de la fiche JJK — chargée UNIQUEMENT par roll20-fiche.html,
+/* Amorce Roll20 de la fiche JJK — chargée UNIQUEMENT par roll20-fiche.html,
  * la page que l'extension Roll20 affiche dans son iframe.
  *
  * Architecture « coquille » : l'extension signée ne contient plus la fiche.
@@ -78,8 +78,10 @@
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
   var taillesPostees = [];      // tailles récentes de jjk_state posté (repère du chien de garde)
-  var gele = false;             // fiche lue à moitié : on n'écrit plus rien (voir hydrate)
+  var gele = false;             // fiche lue à moitié ou transport non fiable : aucune écriture
   var compactActif = false, compactSession = null, compactPoll = null, compactPollEnCours = false;
+  var compactRecovering = false, compactErrorMessage = "";
+  var pontVerifie = false, pontRefuse = false, relectureOuverture = false;
 
   window.__jjkLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
@@ -219,6 +221,20 @@
     armerConfirmation();
     armerGarde();
   }
+  function erreurCompact(message) {
+    gele = true;
+    compactRecovering = true;
+    compactErrorMessage = String(message || "Erreur de synchronisation inconnue");
+    bandeau("Synchronisation suspendue pour protéger les données : " + compactErrorMessage + ". La fiche reste en lecture seule jusqu'à une relecture complète.", [
+      { texte: "Réessayer", acte: "compact-retry", action: function () {
+          fermerBandeau();
+          planifieCompactPoll(0);
+        } },
+      { texte: "Exporter", acte: "compact-export", action: exporter }
+    ]);
+    planifieCompactPoll(1800);
+  }
+
   function doSaveCompact(state, card) {
     try {
       compactSession.capture(state);
@@ -253,25 +269,54 @@
         planifieCompactPoll(900);
       }
     } catch (e) {
-      gele = true;
-      bandeau("La synchronisation par blocs a rencontré une erreur : " + String(e && e.message || e) + ". Les modifications locales restent dans cette fenêtre ; aucune autre écriture ne sera lancée.");
+      erreurCompact("La synchronisation par blocs a rencontré une erreur : " + String(e && e.message || e));
     }
   }
   function planifieCompactPoll(delai) {
     if (!compactActif || compactPoll !== null) return;
     compactPoll = setTimeout(function () { compactPoll = null; pollCompact(); }, delai || 1400);
   }
+  function appliqueLectureCompact(attrs) {
+    if (!compactActif || !compactSession || !ready || gele || !attrs) return;
+    try {
+      var resultat = compactSession.receive(attrs);
+      if (!resultat) return;
+      if (resultat.incomplete) throw new Error("La lecture actualisée contient des blocs ou des journaux incomplets.");
+      lastAttrs = attrs;
+      if (resultat.conflict) bandeau("La synchronisation a détecté une modification concurrente sur les mêmes données. Vérifiez le personnage et ses sauvegardes avant de poursuivre.");
+      if (resultat.lost) bandeauPerte();
+      var prochain = JSON.stringify(resultat.state), avant = mem["jjk-perso"] || "";
+      if (prochain !== avant) {
+        mem["jjk-perso"] = prochain;
+        try { window.dispatchEvent(new CustomEvent("jjk-compact-sync", { detail: resultat.state })); } catch (e) {}
+      }
+      if (!Object.keys(compactSession.pending).length && !Object.keys(compactSession.payloads || {}).length)
+        sauvegardeLocale(attrs, "autosave", resultat.state);
+    } catch (e) {
+      erreurCompact("La relecture des modifications distantes a échoué : " + String(e && e.message || e));
+    }
+  }
+
   function pollCompact() {
-    if (!compactActif || !compactSession || compactPollEnCours || !ready || gele) return;
+    if (!compactActif || !compactSession || compactPollEnCours || !ready || (gele && !compactRecovering)) return;
     compactPollEnCours = true;
     sonde(function (attrs) {
       compactPollEnCours = false;
-      if (!attrs) { planifieCompactPoll(2200); return; }
+      if (!attrs) { planifieCompactPoll(compactRecovering ? 2600 : 2200); return; }
       try {
         var resultat = compactSession.receive(attrs);
         if (!resultat) { planifieCompactPoll(1800); return; }
         if (resultat.incomplete) throw new Error("Des blocs référencés par le journal ne sont pas encore arrivés.");
+        // La fiche ne se déverrouille qu'après une lecture Compact COMPLETE,
+        // reconstruite par le même lecteur que celui qui applique les journaux.
         lastAttrs = attrs;
+        if (compactRecovering) {
+          compactRecovering = false;
+          compactErrorMessage = "";
+          gele = false;
+          fermerBandeau();
+          scheduleSave();
+        }
         if (resultat.conflict) bandeau("La synchronisation a détecté une modification concurrente sur les mêmes données. Vérifiez le personnage et ses sauvegardes avant de poursuivre.");
         if (resultat.lost) bandeauPerte();
         var prochain = JSON.stringify(resultat.state), avant = mem["jjk-perso"] || "";
@@ -288,26 +333,27 @@
               ops: ids.map(function (id) { return operations[id]; }), payloads: compactSession.payloads });
         }
       } catch (eCompact) {
-        gele = true;
-        bandeau("Le journal de synchronisation est incomplet ou illisible : " + String(eCompact && eCompact.message || eCompact) + ". Les écritures sont gelées pour protéger les données.");
+        erreurCompact("Le journal Compact est incomplet ou illisible : " + String(eCompact && eCompact.message || eCompact));
       }
-      planifieCompactPoll(1600);
+      planifieCompactPoll(compactRecovering ? 2600 : 1600);
     });
   }
   function demarreStockageCompact(spec) {
-    if (!spec || spec.compactStorage !== true || !window.JjkSync || !window.JjkSync.Compact || !M) return;
+    if (!spec || spec.compactStorage !== true || !window.JjkSync || !window.JjkSync.Compact || !M) return false;
     var state;
     try { state = JSON.parse(mem["jjk-perso"] || "null"); } catch (e) {}
-    if (!state) return;
+    if (!state || typeof state !== "object") return false;
     try {
       compactSession = new window.JjkSync.Compact.Session(lastAttrs || {}, state, Date.now,
         { id: VIEW_ID, actor: { id: VIEW_ID } });
       compactActif = true;
       planifieCompactPoll(1200);
       if (!compactSession.hasBase) scheduleSave();
+      return true;
     } catch (e) {
       compactActif = false; compactSession = null; gele = true;
-      bandeau("Impossible d'activer le stockage Compact : " + String(e && e.message || e) + ". La fiche reste en lecture seule pour protéger les données.");
+      compactErrorMessage = String(e && e.message || e);
+      return false;
     }
   }
 
@@ -335,18 +381,28 @@
   var sondes = [];
   function sonde(cb) {
     var s = { cb: cb, t: null };
+    // Le pont doit d'abord rafraîchir la collection Roll20 depuis le serveur.
+    // Ce fetch peut prendre jusqu'à 36 s ; une sonde courte ferait déclarer
+    // perdu tout accusé de réception avant même que le pont ait répondu.
     s.t = setTimeout(function () {
       var i = sondes.indexOf(s);
       if (i >= 0) sondes.splice(i, 1);
       cb(null);
-    }, 1500);
+    }, 40000);
     sondes.push(s);
-    post({ type: "load" });
+    post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
+  }
+  function completeOmis(attrs, noms) {
+    var out = fusion({}, attrs || {});
+    (noms || []).forEach(function (nom) {
+      if (!Object.prototype.hasOwnProperty.call(out, nom) && lastAttrs && lastAttrs[nom]) out[nom] = lastAttrs[nom];
+    });
+    return out;
   }
   function sondeReponse(attrs) {
     var q = sondes.slice();
     sondes.length = 0;
-    q.forEach(function (s) { clearTimeout(s.t); s.cb(attrs || {}); });
+    q.forEach(function (s) { clearTimeout(s.t); s.cb(attrs || null); });
   }
 
   // Empreinte d'une valeur : longueur, 64 premiers et 64 derniers caractères.
@@ -378,7 +434,7 @@
   // relectures espacées jusqu'au délai maximum.
   function confirme(attrs, cb, delaiMax) {
     if (!attrs || !Object.keys(attrs).length) { cb(true); return; }
-    var fin = Date.now() + (delaiMax || 8000);
+    var fin = Date.now() + (delaiMax || 40000);
     (function essai() {
       sonde(function (recu) {
         if (recu && concorde(recu, attrs)) { cb(true); return; }
@@ -416,7 +472,7 @@
         // on cesse de relancer tout seul — le lot part quand même à la
         // prochaine modification, le diff ne l'a pas oublié.
         bandeauPerte();
-      }, 8000);
+      }, 40000);
     }, 400);
   }
 
@@ -628,6 +684,17 @@
   var boiteCourante = null;     // la boîte de l'écran affiché (pour y ajouter le JSON)
 
   function manifeste() { return window.__jjkManifeste || null; }
+  function manifesteValide(m) {
+    if (!m || typeof m !== "object" || !m.release || !lire(m.release) ||
+        !Number.isInteger(m.schema) || m.schema < 1 || !Array.isArray(m.amorce) || !m.amorce.length) return false;
+    var b = m.bundle, x = m.extension;
+    if (!b || !Array.isArray(b.js) || !b.js.length || !Array.isArray(b.css) || !b.css.length || b.compactStorage !== true) return false;
+    if (!x || !x.minVersion || !lire(x.minVersion) || x.bridgeProtocol !== 2 ||
+        !Array.isArray(x.requiredCapabilities) || !x.requiredCapabilities.length ||
+        !x.requiredCapabilities.every(function (nom) { return typeof nom === "string" && /^[A-Za-z][A-Za-z0-9]*$/.test(nom); })) return false;
+    return m.amorce.every(urlSure) && b.js.every(urlSure) && b.css.every(urlSure) &&
+      (!b.data || urlSure(b.data));
+  }
   function releaseSite() {
     var r = null;
     try { r = M.release ? M.release() : null; } catch (e) {}
@@ -705,11 +772,11 @@
   // recharge ici que les scripts.
   function specCourant() {
     var m = manifeste();
-    var b = (m && m.bundle) || null;
+    if (!manifesteValide(m)) return null;
+    var b = m.bundle;
     return {
-      js: (b && listeSure(b.js)) ? b.js : ["javascripts/jjk-fiche.js"],
-      css: (b && Array.isArray(b.css)) ? b.css : [],
-      data: (b && b.data) || null
+      js: b.js.slice(), css: b.css.slice(), data: b.data || null,
+      release: m.release, compactStorage: b.compactStorage === true
     };
   }
 
@@ -861,6 +928,80 @@
     return b;
   }
 
+  function ecranErreurOuverture(titre, message, options) {
+    options = options || {};
+    ready = false;
+    var b = ecran(titre, true);
+    b.appendChild(noeud("p", null, message));
+    var z = zoneActions(b);
+    if (options.reessayer) {
+      bouton(z, options.texteReessayer || "Réessayer la lecture", "reessayer", options.reessayer, true);
+    }
+    bouton(z, "Recharger la page", "recharger", function () { try { location.reload(); } catch (e) {} });
+    if (options.exporterAttrs && attrsVus) bouton(z, "Exporter les attributs Roll20", "export-attrs", exporterAttrsVus);
+    else if (!options.noExport && !options.exporterAttrs) boutonExport(z);
+    return b;
+  }
+  function exporterAttrsVus() {
+    var brut = "{}";
+    try { brut = JSON.stringify(attrsVus || {}, null, 2); } catch (e) {}
+    montrerJson(brut, "Attributs bruts reçus de Roll20. Ce fichier ne doit pas être réimporté avant vérification.");
+  }
+  function relireOuverture() {
+    if (relectureOuverture) return;
+    relectureOuverture = true;
+    ecranAttente("Relecture du personnage Roll20", "La fiche reste verrouillée. Attente d'une lecture complète et vérifiable avant toute ouverture.");
+    post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
+    setTimeout(function () {
+      if (!relectureOuverture) return;
+      relectureOuverture = false;
+      ecranErreurOuverture("Roll20 n'a pas répondu à la relecture",
+        "Aucune donnée n'a été modifiée. Vérifiez que le personnage est accessible et que la fenêtre principale de Roll20 est ouverte.",
+        { reessayer: relireOuverture, exporterAttrs: true });
+    }, 40000);
+  }
+  function ecranDonneesIncompletes(state) {
+    var raison = state && state.raison ? String(state.raison) : "la reconstruction est incomplète";
+    ecranErreurOuverture("La fiche n'a pas pu être lue intégralement",
+      "La lecture de Roll20 a détecté des données manquantes ou illisibles (" + raison + "). " +
+      "La fiche n'est PAS montée : aucune écriture ne partira et les données restantes ne seront pas écrasées. " +
+      "Relisez le personnage après avoir vérifié ses attributs ou restaurez une sauvegarde locale depuis l'extension.",
+      { reessayer: relireOuverture, texteReessayer: "Relire Roll20", exporterAttrs: true });
+  }
+  function versionCompare(a, b) {
+    var x = lire(a), y = lire(b);
+    if (!x || !y) return null;
+    for (var i = 0; i < 3; i++) if (x.rang[i] !== y.rang[i]) return x.rang[i] > y.rang[i] ? 1 : -1;
+    return 0;
+  }
+  function pontCompatible(d) {
+    var m = manifeste(), contrat = m && m.extension;
+    var ext = d && d.extension;
+    if (!contrat || !ext || ext.protocol !== contrat.bridgeProtocol) return false;
+    var comparaison = versionCompare(ext.version, contrat.minVersion);
+    if (comparaison === null || comparaison < 0) return false;
+    var caps = ext.capabilities || {};
+    return Array.isArray(contrat.requiredCapabilities) && contrat.requiredCapabilities.length > 0 &&
+      contrat.requiredCapabilities.every(function (nom) { return caps[nom] === 1; });
+  }
+  function ecranPontIncompatible(d) {
+    pontRefuse = true;
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+    // La lecture peut déjà contenir l'intégralité des attributs Roll20, même
+    // si le pont ne respecte pas notre contrat de capacités. Garder ces données
+    // brutes permet un export de secours ; ne jamais exporter le cache vide
+    // d'une fiche qui n'a pas encore été hydratée.
+    attrsVus = d && d.attrs && typeof d.attrs === "object" ? d.attrs : null;
+    var ext = d && d.extension || {}, m = manifeste() || {}, contrat = m.extension || {};
+    var version = ext.version || "inconnue";
+    ecranErreurOuverture("L'extension JJK doit être mise à jour",
+      "La fiche " + (releaseSite() || "actuelle") + " exige l'extension " + (contrat.minVersion || "récente") +
+      " (protocole " + (contrat.bridgeProtocol || "?") + "). L'extension détectée est " + version +
+      ". Ses capacités de synchronisation/sauvegarde ne correspondent pas. Rien n'a été chargé ni écrit. " +
+      "Installez le nouveau paquet signé Firefox/Chrome, puis rechargez Roll20.",
+      attrsVus ? { exporterAttrs: true } : { noExport: true });
+  }
+
   // ---------- export ----------
   // Le JSON du personnage TEL QU'IL A ÉTÉ LU, avant toute migration : c'est
   // lui qu'il faut pouvoir garder de côté avant d'accepter quoi que ce soit.
@@ -950,7 +1091,7 @@
     document.documentElement.classList.toggle("jjk-consultation", modePartage !== "edition");
     var btn = document.getElementById("jjk-mode-toggle"), label = document.getElementById("jjk-mode-label"), users = document.getElementById("jjk-mode-presence");
     if (btn) {
-      btn.textContent = modePartage === "edition" ? "MODE ÉDITION" : "MODE CONSULTATION";
+      btn.textContent = modePartage === "edition" ? "PASSER EN MODE CONSULTATION" : "PASSER EN MODE ÉDITION";
       btn.setAttribute("aria-pressed", modePartage === "edition" ? "true" : "false");
       btn.classList.toggle("edition", modePartage === "edition");
     }
@@ -997,76 +1138,100 @@
   });
 
   // ---------- chargement du bundle ----------
-  // Point d'arrivée de TOUTES les branches de decider() : c'est le seul endroit
-  // qui met `ready` à true, donc le seul qui rouvre le robinet des écritures.
-  var bundleCharge = false;
+  // Le bundle n'est déclaré monté qu'après chargement et contrôle de TOUS les
+  // fichiers essentiels. Une erreur arrête la chaîne : aucun faux « mounted ».
+  var bundleCharge = false, bundleEnCours = false;
   function chargerBundle(spec, remplacerCss) {
-    // Un double clic sur « mettre à niveau » lancerait deux protocoles, donc
-    // deux injections : la fiche se monterait deux fois dans la même page.
-    if (bundleCharge || !spec) return;
-    bundleCharge = true;
+    if (bundleCharge || bundleEnCours || !spec || !Array.isArray(spec.js) || !spec.js.length) return;
+    bundleEnCours = true;
+    ready = false;
     fermerEcran();
-    // data : le jjk-creation.json à lire. Une archive embarque le sien, gelé à
-    // sa date ; sans lui un ancien bundle lirait les règles d'aujourd'hui.
     window.__jjkDataUrl = spec.data || null;
-    // RELEASE EFFECTIVE : celle qui TOURNE, pas celle que le site publie. Sans
-    // ça, une archive enregistrerait jjk_version.max à la version du site, la
-    // fiche paraîtrait à jour, et sa prochaine ouverture repartirait sur le
-    // bundle du jour — « ouvrir avec sa version » ne tiendrait qu'une session.
-    // Posé AVANT toute écriture et avant l'attr-map de l'archive, qui lira le
-    // global (et non une variable de module, perdue au remplacement de M).
     if (M && M.setRelease) M.setRelease(spec.release || null);
-    if (remplacerCss) {
-      // Les feuilles du jour portent data-jjk (posé par l'amorceur) : une
-      // archive amène les siennes, et faire cohabiter les deux donnerait une
-      // fiche à moitié restylée.
-      var vieux = document.querySelectorAll("link[data-jjk]");
-      for (var k = 0; k < vieux.length; k++) {
-        if (vieux[k].parentNode) vieux[k].parentNode.removeChild(vieux[k]);
-      }
-      (spec.css || []).forEach(function (u) {
-        var l = document.createElement("link");
-        l.rel = "stylesheet";
-        l.href = u;
-        l.setAttribute("data-jjk", "1");
-        document.head.appendChild(l);
-      });
+
+    function echec(fichier, detail) {
+      bundleEnCours = false;
+      bundleCharge = false;
+      ready = false;
+      post({ type: "error", error: fichier || "bundle", detail: String(detail || "") });
+      ecranErreurOuverture("La fiche JJK n'a pas pu être montée",
+        "Le composant obligatoire « " + String(fichier || "inconnu") + " » n'a pas pu être chargé ou validé. " +
+        "La chaîne a été arrêtée : aucune fiche partielle n'est utilisable et aucune sauvegarde ne sera lancée. " +
+        "Vérifiez le déploiement puis rechargez la page.");
     }
-    var urls = spec.js || [];
-    var i = 0;
-    function serie() {
-      if (i >= urls.length) {
-        ready = true;
-        if (spec.compactStorage === true) demarreStockageCompact(spec);
-        poserModeBar(); post({ type: "mounted" }); return;
+    function poserCssArchives(urls, cb) {
+      var anciens = document.querySelectorAll("link[data-jjk]"), nouveaux = [], i = 0;
+      if (!urls || !urls.length) { cb(); return; }
+      function suivant() {
+        if (i >= urls.length) {
+          for (var k = 0; k < anciens.length; k++) if (anciens[k].parentNode) anciens[k].parentNode.removeChild(anciens[k]);
+          for (var n = 0; n < nouveaux.length; n++) nouveaux[n].setAttribute("data-jjk", "1");
+          cb(); return;
+        }
+        var u = urls[i++], l = document.createElement("link");
+        l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk-temp", "1");
+        l.onload = suivant;
+        l.onerror = function () { if (l.parentNode) l.parentNode.removeChild(l); echec(u, "feuille de style introuvable"); };
+        nouveaux.push(l); document.head.appendChild(l);
       }
-      var s = document.createElement("script");
-      var u = urls[i++];
-      s.src = u;
-      s.onload = serie;
-      s.onerror = function () { post({ type: "error", error: u }); serie(); };
-      document.body.appendChild(s);
+      suivant();
     }
-    // Une archive peut apporter SA correspondance état <-> Attributes. Elle
-    // compte autant que le bundle : c'est elle qui décomposera l'état à chaque
-    // sauvegarde, et la version du jour ne connaît pas forcément les champs
-    // d'alors. `M` est capturé une fois pour toutes au démarrage de l'amorce :
-    // charger le fichier ne suffit donc pas, il faut REPOINTER M dessus. On ne
-    // le fait que si le module chargé expose bien ce que l'amorce lui demande,
-    // sinon on garde celui du jour plutôt que de casser les sauvegardes.
+    function chargerScripts() {
+      var urls = spec.js, i = 0;
+      if (!Array.isArray(urls) || !urls.length) { echec("bundle.js", "liste de scripts vide"); return; }
+      function suivant() {
+        if (i >= urls.length) {
+          if (spec.compactStorage === true && (!window.JjkSync || !window.JjkSync.Compact || !window.JjkSync.Compact.Session)) {
+            echec("jjk-sync.js", "API Compact absente après téléchargement"); return;
+          }
+          if (urls.some(function (u) { return /jjk-migrations/.test(u); }) &&
+              (!window.JjkMigr || typeof window.JjkMigr.resume !== "function" || typeof window.JjkMigr.appliquer !== "function")) {
+            echec("jjk-migrations.js", "moteur de migration absent après téléchargement"); return;
+          }
+          if (!M || typeof M.attrsToState !== "function" || typeof M.stateToAttrs !== "function") {
+            echec("jjk-attr-map.js", "correspondance des attributs invalide"); return;
+          }
+          ready = true;
+          if (spec.compactStorage === true && !demarreStockageCompact(spec)) {
+            ready = false;
+            echec("stockage Compact", compactErrorMessage || "impossible d'activer la session Compact");
+            return;
+          }
+          bundleEnCours = false;
+          bundleCharge = true;
+          poserModeBar();
+          post({ type: "mounted" });
+          return;
+        }
+        var u = urls[i++], script = document.createElement("script");
+        script.src = u;
+        script.onload = suivant;
+        script.onerror = function () { echec(u, "script obligatoire introuvable"); };
+        document.body.appendChild(script);
+      }
+      suivant();
+    }
+    function chargerApresAttrMap() {
+      if (remplacerCss) poserCssArchives(spec.css || [], chargerScripts);
+      else chargerScripts();
+    }
     if (spec.attrmap) {
+      if (!urlSure(spec.attrmap)) { echec("attrmap", "URL d'archive invalide"); return; }
       var sm = document.createElement("script");
       sm.src = spec.attrmap;
       sm.onload = function () {
         var neuf = window.JjkAttrMap;
-        if (neuf && typeof neuf.stateToAttrs === "function" && neuf.PREFIX) M = neuf;
-        serie();
+        if (!neuf || typeof neuf.stateToAttrs !== "function" || typeof neuf.attrsToState !== "function" || !neuf.PREFIX) {
+          echec(spec.attrmap, "correspondance des attributs invalide"); return;
+        }
+        M = neuf;
+        chargerApresAttrMap();
       };
-      sm.onerror = function () { post({ type: "error", error: spec.attrmap }); serie(); };
+      sm.onerror = function () { echec(spec.attrmap, "correspondance des attributs introuvable"); };
       document.body.appendChild(sm);
       return;
     }
-    serie();
+    chargerApresAttrMap();
   }
 
   // Le moteur de migration est livré avec le BUNDLE, pas avec l'amorce : au
@@ -1075,18 +1240,31 @@
   // poser window.JjkMigr, il ne touche à rien) ; s'il manque, l'écran le dit au
   // lieu d'inventer un « rien à signaler ».
   function avecMigrations(cb) {
-    if (window.JjkMigr && window.JjkMigr.resume) { cb(); return; }
+    if (window.JjkMigr && typeof window.JjkMigr.resume === "function" && typeof window.JjkMigr.appliquer === "function") {
+      cb(); return;
+    }
     var u = null;
     (specCourant().js || []).forEach(function (x) { if (!u && /jjk-migrations/.test(x)) u = x; });
-    if (!u) { cb(); return; }
-    var fini = false;
-    function une() { if (fini) return; fini = true; cb(); }
-    var s = document.createElement("script");
+    if (!u || !urlSure(u)) {
+      ecranErreurOuverture("Moteur de migration indisponible",
+        "Le bundle publié ne déclare pas le moteur nécessaire pour expliquer et exécuter la migration. Aucune mise à niveau ne sera proposée.");
+      return;
+    }
+    var fini = false, s = document.createElement("script");
+    function echec() {
+      if (fini) return; fini = true;
+      ecranErreurOuverture("Impossible de charger les migrations JJK",
+        "Le fichier « " + u + " » n'a pas pu être chargé ou ne fournit pas l'API attendue. La fiche reste fermée et aucune donnée n'a été modifiée.");
+    }
     s.src = u;
-    s.onload = une;
-    s.onerror = une;
+    s.onload = function () {
+      if (fini) return;
+      if (!window.JjkMigr || typeof window.JjkMigr.resume !== "function" || typeof window.JjkMigr.appliquer !== "function") { echec(); return; }
+      fini = true; cb();
+    };
+    s.onerror = echec;
     document.body.appendChild(s);
-    setTimeout(une, 3000);
+    setTimeout(echec, 5000);
   }
 
   // ---------- protocole de mise à niveau ----------
@@ -1124,7 +1302,7 @@
       fermerEcran();
       if (silencieux) bandeauMisAJour();
       chargerBundle(specCourant());
-    }, 8000);
+    }, 40000);
   }
   function ecranRouge(lot, silencieux) {
     var b = ecran("Roll20 n'a pas confirmé la sauvegarde de secours", true);
@@ -1191,7 +1369,7 @@
                 "de cette fenêtre.", [
           { texte: "Exporter (JSON)", acte: "export", action: exporter }
         ]);
-      }, 8000);
+      }, 40000);
     });
   }
 
@@ -1287,8 +1465,8 @@
 
     var z = zoneActions(b);
     var bMonter = bouton(z, "Mettre la fiche à niveau (" + relSite + ")", "monter", function () {
-      monter(false, f);
-    }, !duFutur);
+      if (!duFutur && window.JjkMigr && window.JjkMigr.resume) monter(false, f);
+    }, !duFutur && !!window.JjkMigr && typeof window.JjkMigr.resume === "function");
     var arch = archiveDe(relFiche);
     // Le libellé dit ce qui va OUVRIR, pas ce que le joueur espère : une ligne
     // ne gèle qu'une archive, donc un personnage écrit en 3.6.4 s'ouvrira avec
@@ -1309,6 +1487,8 @@
       griser(bMonter, "La mise à niveau est indisponible : la fiche est plus récente que la version " +
                       "servie ici, la rétrograder lui ferait perdre ce qui n'existe pas encore de ce " +
                       "côté.", b);
+    } else if (!window.JjkMigr || typeof window.JjkMigr.resume !== "function" || typeof window.JjkMigr.appliquer !== "function") {
+      griser(bMonter, "La mise à niveau est indisponible : le moteur de migration n'a pas pu être vérifié.", b);
     }
     if (!arch) {
       griser(bArch, relFiche
@@ -1330,13 +1510,19 @@
     var attrs = attrsVus || {};
     var courant = specCourant();
 
-    // 0. Fiche à moitié lue : le gel a déjà tranché et son bandeau dit tout.
-    // Proposer de migrer un état qu'on n'a pas su lire serait exactement le
-    // geste que le gel existe pour empêcher. Depuis que le gel couvre aussi le
-    // jjk_state disparu, c'est ici que s'arrête le personnage qui n'a plus que
-    // ses attributs de repli : la montée silencieuse du cas 4 écrirait, elle
-    // aussi, et écrirait cette reconstruction amputée.
-    if (gele) { chargerBundle(courant); return; }
+    if (!manifesteValide(manifeste())) {
+      ecranErreurOuverture("Manifeste JJK absent ou invalide",
+        "Le contrat de version et de chargement n'est pas vérifiable. La fiche reste fermée ; aucune donnée ne sera écrite.");
+      return;
+    }
+
+    // 0. Une lecture partielle ne doit jamais monter la fiche : une apparence
+    // utilisable mais gelée a déjà été confondue avec une fiche opérationnelle.
+    if (gele) {
+      var etatGel = null;
+      try { etatGel = mem["jjk-perso"] ? JSON.parse(mem["jjk-perso"]) : null; } catch (eGel) {}
+      ecranDonneesIncompletes(etatGel); return;
+    }
 
     var f = versionFiche(attrs);
     // 1. personnage sans fiche JJK : rien à dire, la fiche du jour se monte.
@@ -1414,9 +1600,16 @@
   // l'attend donc un temps borné, puis on décide sans lui (les valeurs par
   // défaut de jjk-attr-map font foi).
   function attendreManifeste() {
-    var fin = Date.now() + 3500;
+    var fin = Date.now() + 5000;
     (function voir() {
-      if (manifeste() || Date.now() > fin) { manifPret = true; decider(); return; }
+      var m = manifeste();
+      if (manifesteValide(m)) { manifPret = true; decider(); return; }
+      if (Date.now() > fin) {
+        ecranErreurOuverture("Le manifeste JJK ne peut pas être vérifié",
+          "Le fichier de version n'est pas arrivé ou ne respecte pas le contrat attendu. La fiche n'a pas été montée et aucune donnée n'a été modifiée.",
+          { noExport: true });
+        return;
+      }
       setTimeout(voir, 100);
     })();
   }
@@ -1428,10 +1621,15 @@
   }
 
   var hydrated = false;
-  function hydrate(attrs) {
-    if (hydrated) return;         // une seule hydratation par vie de page
+  function hydrate(attrs, relecture) {
+    if (hydrated && !relecture) return;
+    if (!pontVerifie) return;
     hydrated = true;
-    if (askTimer) { clearTimeout(askTimer); askTimer = null; }   // plus rien à réclamer
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+    if (relecture) {
+      ready = false; gele = false; decide = false; attrsPrets = false;
+      attrsVus = null; fermerEcran(); fermerBandeau();
+    }
     note(null);
     attrs = attrs || {};
     var state = M.attrsToState(attrs);
@@ -1476,8 +1674,8 @@
     enVol = null;
     // le bandeau vient APRÈS le cache : son bouton « écraser » déclenche une
     // sauvegarde, qui lit mem["jjk-perso"]
-    if (illisible) bandeauGelIllisible(state.raison);
-    else if (disparu) bandeauGelDisparu();
+    // Les fiches partielles sont interceptées dans decider() et restent sous
+    // écran bloquant. Aucun bundle ni champ d'édition n'est monté dans ce cas.
     // POINT D'INSERTION DE L'ÉCRAN DE VERSION. Les attributs sont là, le bundle
     // n'est pas encore chargé, `ready` vaut false : c'est le seul instant où
     // l'on connaît la fiche sans pouvoir l'écrire. decider() choisit quoi
@@ -1489,6 +1687,10 @@
   }
 
   window.addEventListener("message", function (ev) {
+    // Les réponses du pont proviennent du cadre Roll20 parent uniquement.
+    // Sans cette garde, un autre iframe de la page pourrait injecter un
+    // hydrate, une présence ou un objet « take » falsifié dans cette fiche.
+    if (ev.source !== window.top) return;
     var d = ev.data;
     if (!d || d.ns !== "jjk") return;
     // on n'accepte que l'hydratation de NOTRE personnage (plusieurs fiches peuvent être ouvertes)
@@ -1500,7 +1702,21 @@
       // cours, par un état lu il y a une seconde. Les réponses tardives à la
       // relance d'ouverture arrivent par ce même chemin et se perdent sans
       // dommage : aucune sonde ne les attend.
-      if (hydrated) sondeReponse(d.attrs);
+      if (!pontVerifie) {
+        if (!pontCompatible(d)) { ecranPontIncompatible(d); return; }
+        pontVerifie = true;
+      }
+      d.attrs = completeOmis(d.attrs || {}, d.omis);
+      if (relectureOuverture) {
+        relectureOuverture = false;
+        hydrate(d.attrs, true);
+      } else if (d.fresh === true && hydrated) {
+        // Le pont ne répond qu'après un fetch Roll20 complet. Cette même
+        // lecture actualise Compact ET doit acquitter les sondes en attente
+        // (confirmation de sauvegarde, restauration et polling).
+        appliqueLectureCompact(d.attrs);
+        sondeReponse(d.attrs);
+      } else if (hydrated) sondeReponse(d.attrs);
       else hydrate(d.attrs);
     }
     // objet pris au tchat : diffusé à TOUTES les fiches ouvertes (le lien est
@@ -1509,6 +1725,15 @@
     else if (d.type === "take" && d.payload) window.__jjkTake(d.payload);
     // liste des joueurs connectés, en réponse à __jjkPlayers
     else if (d.type === "players-result") playersReply(d.players || []);
+    else if (d.type === "hydrate-refresh-error" && d.charId === CHAR_ID) {
+      sondeReponse(null);
+      if (relectureOuverture) {
+        relectureOuverture = false;
+        ecranErreurOuverture("La relecture distante a échoué",
+          "Roll20 n'a pas pu confirmer une lecture complète. Aucune donnée n'a été modifiée ; la fiche reste fermée et verrouillée.",
+          { reessayer: relireOuverture, texteReessayer: "Relire Roll20", exporterAttrs: true });
+      } else if (!gele) bandeau("Roll20 n'a pas pu actualiser la lecture distante. Les dernières données vérifiées restent affichées ; nouvelle tentative automatique en cours.");
+    }
     else if (d.type === "presence-state" && (!d.charId || d.charId === CHAR_ID)) {
       presenceRecu = true; presenceViews = d.views || {};
       appliqueMode(d.mode, presenceViews, d.modeName || "");
@@ -1544,6 +1769,9 @@
   // imbriquée, ce qui n'a rien à y voir. Démarrer l'attente ici ne coûte qu'un
   // drapeau quand personne n'hydrate.
   attendreManifeste();
+  // Le chargeur ne considère pas le script prêt sur son seul événement onload :
+  // il attend cette sentinelle, qui doit aussi être posée avant le retour standalone.
+  window.__jjkRoll20BootReady = true;
 
   if (STANDALONE) {
     note("Cette page est le cœur de l'extension « Fiche JJK sur Roll20 » : elle " +
@@ -1564,14 +1792,14 @@
     askTimer = null;
     if (hydrated) return;
     tries++;
-    if (tries > 40) {             // ~20 s sans réponse : le pont n'est pas là
-      note("Roll20 n'a pas répondu. Fermer et rouvrir l'onglet « Fiche JJK » ; " +
-           "si rien ne change, recharger la page Roll20 (F5). Si la fiche est " +
-           "dans une fenêtre séparée (popout), garder la fenêtre principale de " +
-           "la partie ouverte, ou rouvrir la fiche depuis celle-ci.");
+    if (pontRefuse) return;
+    if (tries > 80) {
+      ecranErreurOuverture("Le pont Roll20 ne répond pas",
+        "La fiche n'a pas pu lire les attributs du personnage. Vérifiez que la partie est ouverte, que le personnage existe et que la fenêtre principale de Roll20 reste ouverte en cas de popout.",
+        { reessayer: function () { tries = 0; ask(); }, noExport: true });
       return;
     }
-    post({ type: "load" });
+    post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
     askTimer = setTimeout(ask, 500);
   })();
 })();

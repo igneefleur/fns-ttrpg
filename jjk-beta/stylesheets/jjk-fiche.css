@@ -263,6 +263,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding-left: 0;
 }
 .pc-editable:not(.editing) .pc-edit-field::placeholder { color: transparent; }
+/* Champs globaux de l'en-tête : ils n'appartiennent à aucun module, mais
+   restent soumis au mode Consultation/Édition partagé. */
+html.jjk-consultation .pc-global-edit-field {
+  pointer-events: none; border-color: transparent !important;
+  background: transparent !important; box-shadow: none !important;
+  color: var(--ink); opacity: 1;
+}
+html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 /* divers : fantômes au survol en temps normal, pleinement visibles en édition */
 .pc-editable.editing .pc-mmods { opacity: 1; }
 /* rouage flottant : chaque tuile Vitesse / Régén est son propre module */

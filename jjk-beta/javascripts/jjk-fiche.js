@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.0.2b";
+  var RELEASE = "4.0.6b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -1749,7 +1749,7 @@
   // fabrique un champ APRÈS son montage passe le sien, sinon sa fonction
   // atterrirait chez le voisin et échapperait à sa muselière).
   function textInput(get, set, placeholder, reg) {
-    var i = el("input");
+    var i = el("input", "pc-edit-field");
     i.type = "text";
     if (placeholder) i.placeholder = placeholder;
     i.value = get() || "";
@@ -1777,7 +1777,7 @@
   function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
     w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
-    var i = el("input", "pc-num");
+    var i = el("input", "pc-num pc-edit-field");
     i.type = "number";
     i.value = get();
     i.addEventListener("input", function () {
@@ -1799,7 +1799,7 @@
       return map[key];
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
-      var inp = el("input", "pc-mmod");
+      var inp = el("input", "pc-mmod pc-edit-field");
       inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";
@@ -1863,22 +1863,86 @@
     hooks.push(function () { applyEdit(scope, id); });
     return g;
   }
+  function appliqueChampsHorsModule(root) {
+    var base = root && root.querySelectorAll ? root : document;
+    Array.prototype.forEach.call(base.querySelectorAll(".pc-global-edit-field"), function (f) {
+      f.disabled = !ficheModifiable();
+      f.setAttribute("aria-disabled", f.disabled ? "true" : "false");
+    });
+    Array.prototype.forEach.call(base.querySelectorAll(".pc-edit-field[data-jjk-requires-edit]"), function (f) {
+      var id = f.getAttribute("data-jjk-requires-edit") || "";
+      f.disabled = !isEdit(id);
+      f.setAttribute("aria-disabled", f.disabled ? "true" : "false");
+    });
+  }
   window.__jjkApplyMode = function (scope) {
     if (scope && scope.querySelectorAll) {
       if (scope.classList && scope.classList.contains("pc-editable")) applyEdit(scope, scope.dataset.module || "");
       Array.prototype.forEach.call(scope.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
+      appliqueChampsHorsModule(scope);
       return;
     }
     Array.prototype.forEach.call(document.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
+    // L'identité et l'XP de l'en-tête ne sont pas rangés dans un module ; les
+    // champs de mods sans bloc éditable ont, eux, un propriétaire explicite.
+    // Le mode global doit donc les verrouiller/déverrouiller lui aussi.
+    appliqueChampsHorsModule(document);
   };
-  // Une protection en capture complète le verrou des champs : une extension
-  // ancienne ou un bouton reconstruit ne peut pas déclencher une action de
-  // construction par clic clavier pendant la Consultation.
+  // Toutes les interactions de CONSTRUCTION repassent par le même garde.
+  // Les actions de jeu restent libres : clic sur une tuile, Montrer, Donner,
+  // lancer un jet ou consulter une note ne sont pas des modifications de fiche.
+  function scopeEdition(target) {
+    return target && target.closest ? target.closest(".pc-editable") : null;
+  }
+  function autoriseConstruction(target) {
+    if (!ficheModifiable()) return false;
+    var explicite = target && target.getAttribute ? target.getAttribute("data-jjk-requires-edit") : null;
+    if (explicite && explicite !== "1") return isEdit(explicite);
+    var scope = scopeEdition(target);
+    // Les champs d'identité hors module sont modifiables dès que le mode global
+    // est en Édition. Les champs de mods portent un propriétaire explicite et
+    // ont été traités plus haut par isEdit(id).
+    if (!scope) return ficheModifiable();
+    return isEdit(scope.dataset.module || "");
+  }
+  function annuleEdition(ev) {
+    ev.preventDefault();
+    ev.stopPropagation();
+    if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
+  }
   document.addEventListener("click", function (ev) {
-    if (ficheModifiable()) return;
-    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-only, .pc-gear") : null;
+    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-only, .pc-gear, [data-jjk-requires-edit]") : null;
     if (!target) return;
-    ev.preventDefault(); ev.stopImmediatePropagation();
+    if (target.classList.contains("pc-gear")) {
+      if (!ficheModifiable()) annuleEdition(ev);
+      return;
+    }
+    if (!autoriseConstruction(target)) annuleEdition(ev);
+  }, true);
+  // Le clic droit sur une tuile d'inventaire reste disponible (Détails,
+  // Montrer, Donner). Seuls les éléments explicitement marqués comme outils de
+  // construction peuvent être ouverts ou activés en mode Consultation.
+  document.addEventListener("contextmenu", function (ev) {
+    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-gear, .pc-edit-only, [data-jjk-requires-edit]") : null;
+    if (target && (target.classList.contains("pc-gear") ? !ficheModifiable() : !autoriseConstruction(target))) annuleEdition(ev);
+  }, true);
+  ["dragstart", "dragover", "drop"].forEach(function (type) {
+    document.addEventListener(type, function (ev) {
+      var scope = scopeEdition(ev.target);
+      if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
+    }, true);
+  });
+  ["beforeinput", "paste", "cut"].forEach(function (type) {
+    document.addEventListener(type, function (ev) {
+      var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-field, [contenteditable='true'], .pc-edit-only") : null;
+      if (!target) return;
+      if (target.matches(".pc-edit-field") && target.disabled) return annuleEdition(ev);
+      if (!autoriseConstruction(target)) annuleEdition(ev);
+    }, true);
+  });
+  document.addEventListener("submit", function (ev) {
+    var scope = scopeEdition(ev.target);
+    if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
   }, true);
 
   function block(title, small, editId, onToggle) {
@@ -2201,7 +2265,9 @@
     });
     var pedit = null;
     pbox.addEventListener("click", function () {
-      if (pedit) return;
+      // Le portrait fait partie de la construction de la fiche : le mode
+      // Consultation global doit empêcher l'ouverture même de son champ URL.
+      if (!ficheModifiable() || pedit) return;
       pedit = el("input", "pc-portrait-edit");
       pedit.type = "text";
       pedit.placeholder = "URL de l'image…";
@@ -2211,7 +2277,8 @@
         else if (e.key === "Escape") { pedit.value = state.portrait || ""; pedit.blur(); }
       });
       pedit.addEventListener("blur", function () {
-        state.portrait = pedit.value.trim();
+        // Le verrou peut être activé pendant que le champ est ouvert.
+        if (ficheModifiable()) state.portrait = pedit.value.trim();
         if (pedit) { pedit.remove(); pedit = null; }
         refresh();
       });
@@ -2245,11 +2312,16 @@
     try { new ResizeObserver(function () { carrePortrait(0); }).observe(idBox); } catch (e) {}
 
     var id = idBox;
-    id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
-    id.appendChild(fld("Espèce", textInput(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
-    id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
-    id.appendChild(fld("Sexe", textInput(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
-    id.appendChild(fld("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
+    function champEntete(get, set, placeholder) {
+      var champ = textInput(get, set, placeholder);
+      champ.classList.add("pc-global-edit-field");
+      return champ;
+    }
+    id.appendChild(fld("Nom", champEntete(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
+    id.appendChild(fld("Espèce", champEntete(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
+    id.appendChild(fld("Âge", champEntete(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
+    id.appendChild(fld("Sexe", champEntete(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
+    id.appendChild(fld("Genre", champEntete(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
 
     // 2e ligne : compteurs de budgets + XP total
     var mrow = el("div", "pc-id-meters");
@@ -2274,7 +2346,7 @@
     }
     mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
-    var xpIn = el("input", null);
+    var xpIn = el("input", "pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
     xpIn.value = state.xpTotal;
     xpIn.addEventListener("input", function () {
@@ -2746,9 +2818,23 @@
       // briques. Tout ce qui prend un GESTE du joueur passe par aNous() : le
       // code appelé au clic doit rester attribué à son mod, sinon ce qu'il
       // installe alors n'a plus d'ayant droit et survit à son refus.
-      texte: function (lire, ecrire, indication) { return textInput(lire, aNous(ecrire), indication, reg); },
-      bouton: function (libelle, infobulle, action) { return miniBtn(libelle, infobulle, aNous(action)); },
-      pas: function (lire, ecrire, pas) { return stepper(lire, aNous(ecrire), pas || 1, null, reg); },
+      texte: function (lire, ecrire, indication) {
+        var champ = textInput(lire, aNous(ecrire), indication, reg);
+        champ.setAttribute("data-jjk-requires-edit", id);
+        return champ;
+      },
+      bouton: function (libelle, infobulle, action) {
+        var bouton = miniBtn(libelle, infobulle, aNous(action));
+        bouton.setAttribute("data-jjk-requires-edit", id);
+        return bouton;
+      },
+      pas: function (lire, ecrire, pas) {
+        var champ = stepper(lire, aNous(ecrire), pas || 1, null, reg);
+        champ.setAttribute("data-jjk-requires-edit", id);
+        var saisie = champ.querySelector(".pc-edit-field");
+        if (saisie) saisie.setAttribute("data-jjk-requires-edit", id);
+        return champ;
+      },
       tuile: function (libelle, valeur, action) { return bigTile(libelle, valeur, aNous(action), reg); },
       ligneComp: function (carac, nom) {
         return compRow({ key: carac + "/" + nom, name: nom, carac: carac, custom: false },
@@ -2896,7 +2982,7 @@
   function tuileForce(tile, champ, auto, dec) {
     var row = el("div", "pc-bigedit pc-edit-only");
     row.appendChild(el("span", "lbl", "Forcé"));
-    var inp = el("input", "force");
+    var inp = el("input", "force pc-edit-field");
     inp.type = "number"; inp.min = "0";
     inp.step = dec ? "0.5" : "1";
     inp.title = "Vide = valeur calculée (modificateurs compris) ; une valeur la force.";
@@ -3336,7 +3422,7 @@
     // maximum : valeur forcée (vide = calculée) + divers — les leviers HxH
     var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
     mrow.appendChild(el("span", "lbl", "Forcé"));
-    var force = el("input", "force");
+    var force = el("input", "force pc-edit-field");
     force.type = "number"; force.step = "1"; force.min = "0";
     force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; " +
                   "une valeur le force.";
@@ -4360,14 +4446,15 @@
       menu.setAttribute("aria-label", "Actions de l'objet " + (it.nom || "sans nom"));
       menuContexte = menu;
       function separateur() { menu.appendChild(el("div", "pc-obj-context-sep")); }
-      function action(libelle, fn, disabled, danger) {
+      function action(libelle, fn, disabled, danger, construction) {
         var bt = el("button", "pc-obj-context-action" + (danger ? " danger" : ""), libelle);
         bt.type = "button";
         bt.setAttribute("role", "menuitem");
+        if (construction) bt.setAttribute("data-jjk-requires-edit", "inv");
         bt.disabled = !!disabled;
         bt.addEventListener("click", function (ev) {
           ev.preventDefault(); ev.stopPropagation();
-          if (bt.disabled) return;
+          if (bt.disabled || (construction && !isEdit("inv"))) return;
           fermeMenuContexte();
           fn();
         });
@@ -4384,17 +4471,18 @@
             if (gi === it.groupe) return;
             action("Déplacer vers « " + nom + " »", function () {
               var actuel = items.indexOf(it);
-              if (actuel < 0) return;
+              if (actuel < 0 || !isEdit("inv")) return;
               moveTo(actuel, gi, null);
               render(); refresh();
-            });
+            }, false, false, true);
           });
         }
         action("Retirer", function () {
-          function confirmerRetrait() { retireObjet(it); }
+          if (!isEdit("inv")) return;
+          function confirmerRetrait() { if (isEdit("inv")) retireObjet(it); }
           if (!(it.nom || it.desc)) { confirmerRetrait(); return; }
           confirmer("Retirer un objet", "Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?", "Retirer", confirmerRetrait);
-        }, false, true);
+        }, false, true, true);
       }
       (appEl || rootEl || document.body).appendChild(menu);
       menu.style.position = "fixed";
@@ -4442,7 +4530,11 @@
         // afficher, donc le retrait y était annulé en silence dès que l'objet
         // portait un nom. La modale de la fiche, elle, s'affiche partout.
         function retire() {
+          // La confirmation peut rester ouverte pendant un changement global
+          // vers Consultation : le garde du clic initial ne suffit pas.
+          if (!isEdit("inv")) return;
           var here = items.indexOf(it);
+          if (here < 0) return;
           items.splice(here, 1);
           if (sel === here) sel = null;
           else if (sel !== null && sel > here) sel--;
@@ -4497,6 +4589,7 @@
       t.addEventListener("dragend", function () { dragIdx = null; render(); });
       t.addEventListener("dragover", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; return; }
         // lâcher sur soi-même : cible invalide, et on N'EN LAISSE PAS le
         // conteneur du groupe la valider (sinon l'objet saute en fin de groupe)
         if (dragIdx === idx) { e.stopPropagation(); return; }
@@ -4511,6 +4604,7 @@
       t.addEventListener("dragleave", function () { t.classList.remove("over-l", "over-r"); });
       t.addEventListener("drop", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; render(); return; }
         if (dragIdx === idx) { e.stopPropagation(); return; }
         e.preventDefault();
         e.stopPropagation();
@@ -4569,7 +4663,7 @@
       pdsG.title = "Poids de ce groupe";
       head.appendChild(pdsG);
       var caseG = el("label", "pc-obj-cnt");
-      var boite = el("input");
+      var boite = el("input", "pc-edit-field");
       boite.type = "checkbox";
       boite.checked = invCompte(gi);
       boite.title = "Décoché, ce groupe est posé au sol : il ne compte plus dans le poids porté.";
@@ -4643,12 +4737,14 @@
       // déposer dans le vide du groupe : l'objet rejoint la fin de ce groupe
       tiles.addEventListener("dragover", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; return; }
         e.preventDefault();
         tiles.classList.add("over");
       });
       tiles.addEventListener("dragleave", function () { tiles.classList.remove("over"); });
       tiles.addEventListener("drop", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; render(); return; }
         e.preventDefault();
         var from = dragIdx; dragIdx = null;
         moveTo(from, gi, null);
@@ -6857,6 +6953,10 @@
     monteModules(buildTabs(sheet));
     enMontage = false;   // ce qui s'enregistre après (console) vaut pour le montage suivant
     refresh();
+    // Un message de présence peut être arrivé avant le bundle : appliquer le
+    // mode partagé une seconde fois après que tous les champs existent évite
+    // de laisser l'en-tête éditable à l'ouverture en Consultation.
+    if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
   }
 
   // Charger les données et MONTER sont deux pannes différentes, et elles ne se

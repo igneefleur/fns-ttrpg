@@ -21,8 +21,9 @@
        irréductiblement périmable du dispositif, et il n'a plus de raison de
        changer.
 
-       Le repli DEFAUT ci-dessous n'existe que pour le jour où le manifeste
-       serait absent, illisible ou trop lent : la fiche s'ouvre quand même. -->
+       Il n'existe AUCUN bundle de repli. Si le manifeste ou un fichier
+       obligatoire manque, un écran bloquant apparaît : ouvrir une fiche
+       partiellement chargée risquerait de réécrire des données sans les lire. -->
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
@@ -37,90 +38,145 @@
   // préférence locale, sinon le thème du navigateur. L'amorce la rejoue.
   (function () {
     "use strict";
-    try {
-      var h = location.hash || "";
-      var p = null;
-      try { p = localStorage.getItem("jjk-r20-night"); } catch (e) {}
-      var on = p === "1" ? true : p === "0" ? false
-             : /[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
-             : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches);
-      document.documentElement.classList.toggle("night", on);
-    } catch (e) {}
-  })();
-  (function () {
-    "use strict";
-    // Repli : ce que l'on charge si le manifeste ne répond pas. Volontairement
-    // sans ?v= — mieux vaut un fichier de cache qu'aucune fiche.
-    var DEFAUT = {
-      amorce: ["javascripts/jjk-sync.js", "javascripts/jjk-attr-map.js", "javascripts/jjk-roll20-boot.js"],
-      bundle: {
-        js: ["javascripts/jjk-fiche.js"],
-        css: ["stylesheets/jjk-fiche.css", "stylesheets/jjk-roll20.css"],
-        data: null
-      }
-    };
-    var DELAI = 3000;   // un fetch qui PEND ne rejette jamais : on le borne
+    var termine = false;
+    var delai = 8000;
+    var timer = null;
 
-    // Une URL de manifeste doit rester dans le site : relative, sans schéma ni
-    // « // », sans remontée de dossier. Sinon on refuse tout le manifeste.
-    function sure(u) {
-      return typeof u === "string" && u &&
-             !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) && u.indexOf("//") !== 0 &&
-             u.indexOf("..") < 0;
+    function urlSure(u) {
+      return typeof u === "string" && !!u &&
+        !/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(u) &&
+        u.indexOf("//") !== 0 && u.indexOf("..") < 0 &&
+        !/[\u0000-\u001f]/.test(u);
     }
-    function listeSure(l) {
-      return Array.isArray(l) && l.length && l.every(sure);
+    function listeSure(l, videAutorisee) {
+      return Array.isArray(l) && (videAutorisee || l.length > 0) && l.every(urlSure);
+    }
+    function versionSure(v) {
+      return typeof v === "string" && /^\d+\.\d+\.\d+b?$/.test(v);
     }
     function valide(m) {
-      if (!m || typeof m !== "object") return false;
-      if (!listeSure(m.amorce)) return false;
+      if (!m || typeof m !== "object" || !versionSure(m.release) ||
+          !Number.isInteger(m.schema) || m.schema < 1 ||
+          !listeSure(m.amorce, false)) return false;
       var b = m.bundle;
-      if (!b || typeof b !== "object" || !listeSure(b.js) || !listeSure(b.css)) return false;
-      return b.data == null || sure(b.data);
+      if (!b || typeof b !== "object" || !listeSure(b.js, false) ||
+          !listeSure(b.css, false) || (b.data != null && !urlSure(b.data)) ||
+          b.compactStorage !== true) return false;
+      var ext = m.extension;
+      if (!ext || !versionSure(ext.minVersion) || ext.bridgeProtocol !== 2 ||
+          !Array.isArray(ext.requiredCapabilities) || !ext.requiredCapabilities.length ||
+          !ext.requiredCapabilities.every(function (x) {
+            return typeof x === "string" && /^[a-zA-Z][a-zA-Z0-9]*$/.test(x);
+          })) return false;
+      return true;
     }
-
-    function css(u) {
-      var l = document.createElement("link");
-      l.rel = "stylesheet";
-      l.href = u;
-      l.setAttribute("data-jjk", "1");
-      document.head.appendChild(l);
+    function afficherErreur(titre, message) {
+      if (timer) clearTimeout(timer);
+      termine = true;
+      var note = document.getElementById("jjk-roll20-note");
+      if (!note) {
+        note = document.createElement("div");
+        note.id = "jjk-roll20-note";
+        document.body.insertBefore(note, document.body.firstChild);
+      }
+      note.textContent = "";
+      note.setAttribute("role", "alertdialog");
+      note.setAttribute("aria-live", "assertive");
+      note.style.cssText = "position:fixed;inset:0;z-index:999999;display:flex;flex-direction:column;" +
+        "justify-content:center;align-items:center;gap:.8rem;padding:1.5rem;box-sizing:border-box;" +
+        "background:#f5ecdc;color:#3a2c1c;font:16px/1.5 Georgia,serif;text-align:center";
+      var h = document.createElement("h1");
+      h.textContent = titre;
+      h.style.cssText = "max-width:36rem;margin:0;font-size:1.35rem";
+      var p = document.createElement("p");
+      p.textContent = message;
+      p.style.cssText = "max-width:36rem;margin:0";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "Recharger la fiche";
+      b.style.cssText = "padding:.55rem 1rem;border:1px solid #806548;border-radius:4px;" +
+        "background:#4c3a24;color:#fffaf0;font:700 .9rem Georgia,serif;cursor:pointer";
+      b.addEventListener("click", function () { try { location.reload(); } catch (e) {} });
+      note.appendChild(h); note.appendChild(p); note.appendChild(b);
+      document.documentElement.setAttribute("data-jjk-opening-error", "1");
     }
-    // Les scripts s'injectent EN SÉRIE : jjk-attr-map doit être là avant
-    // l'amorce, et l'amorce avant tout le reste.
-    function serie(urls, fini) {
+    function chargerCss(urls, fini) {
       var i = 0;
-      (function suivant() {
-        if (i >= urls.length) { if (fini) fini(); return; }
-        var s = document.createElement("script");
-        s.src = urls[i++];
-        s.onload = suivant;
-        s.onerror = suivant;   // un manquant ne doit pas geler la file
-        document.body.appendChild(s);
-      })();
+      function suivant() {
+        if (termine) return;
+        if (i >= urls.length) { fini(); return; }
+        var u = urls[i++], l = document.createElement("link");
+        l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk", "1");
+        l.onload = suivant;
+        l.onerror = function () {
+          afficherErreur("Impossible de charger la fiche JJK",
+            "La feuille de style obligatoire « " + u + " » n'a pas pu être chargée. Aucune fiche partielle ne sera ouverte.");
+        };
+        document.head.appendChild(l);
+      }
+      suivant();
     }
-
+    function chargerScripts(urls, fini) {
+      var i = 0;
+      function suivant() {
+        if (termine) return;
+        if (i >= urls.length) { fini(); return; }
+        var u = urls[i++], script = document.createElement("script");
+        script.src = u;
+        script.onload = suivant;
+        script.onerror = function () {
+          afficherErreur("Chargement interrompu",
+            "Le script obligatoire « " + u + " » n'a pas pu être chargé. Le montage a été arrêté pour éviter une fiche incomplète.");
+        };
+        document.body.appendChild(script);
+      }
+      suivant();
+    }
     function lancer(m) {
-      window.__jjkManifeste = m;   // l'amorce y lit le bundle, la version, les archives
-      (m.bundle.css || []).forEach(css);
-      serie(m.amorce);
+      if (termine) return;
+      window.__jjkManifeste = m;
+      chargerCss(m.bundle.css, function () {
+        chargerScripts(m.amorce, function () {
+          if (!window.JjkSync || !window.JjkSync.Compact ||
+              !window.JjkAttrMap || typeof window.JjkAttrMap.attrsToState !== "function" ||
+              typeof window.JjkAttrMap.stateToAttrs !== "function" ||
+              !window.JjkAttrMap.PREFIX || !window.__jjkRoll20BootReady) {
+            afficherErreur("Initialisation incomplète",
+              "Les fichiers ont été téléchargés, mais les composants essentiels de la fiche ne sont pas disponibles. Aucune donnée ne sera modifiée.");
+            return;
+          }
+          termine = true;
+          if (timer) clearTimeout(timer);
+        });
+      });
     }
-
-    var parti = false;
-    function une(m) {
-      if (parti) return;
-      parti = true;
-      lancer(valide(m) ? m : DEFAUT);
+    function recevoir(m) {
+      if (termine) return;
+      if (!valide(m)) {
+        afficherErreur("Impossible de vérifier la version de la fiche",
+          "Le manifeste de JJK est absent, incomplet ou invalide. La fiche n'a pas été ouverte et aucune donnée n'a été écrite. Vérifiez le déploiement du site puis rechargez.");
+        return;
+      }
+      lancer(m);
     }
-
-    setTimeout(function () { une(null); }, DELAI);
+    timer = setTimeout(function () {
+      afficherErreur("Le manifeste JJK ne répond pas",
+        "Le serveur n'a pas fourni le manifeste de version dans le délai prévu. Pour protéger les données, aucun ancien bundle de secours ne sera chargé.");
+    }, delai);
     try {
-      // ?t= : ne pas nettoyer. Il change la clé de cache du CDN, que
-      // « cache: no-store » seul ne contourne pas.
-      fetch("jjk-manifeste.json?t=" + new Date().getTime(), { cache: "no-store" })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(une, function () { une(null); });
-    } catch (e) { une(null); }
+      fetch("jjk-manifeste.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (r) {
+          if (!r || !r.ok) throw new Error("HTTP " + (r && r.status));
+          return r.json();
+        })
+        .then(recevoir, function () {
+          afficherErreur("Impossible de lire le manifeste JJK",
+            "Le manifeste de version est inaccessible ou son JSON est invalide. Aucune fiche ne sera montée sur un bundle de repli.");
+        });
+    } catch (e) {
+      afficherErreur("Impossible de lire le manifeste JJK",
+        "Le navigateur n'a pas pu démarrer la lecture du manifeste. Aucune donnée n'a été modifiée.");
+    }
   })();
   </script>
 </body>
