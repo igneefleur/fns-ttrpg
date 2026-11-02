@@ -607,11 +607,10 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    passe à la ligne entier, et chaque rang se partage sa largeur. */
 .pc-tabs.mini.pc-efforts { display: flex; flex-wrap: wrap; }
 .pc-tabs.mini.pc-efforts > .pc-tab { flex: 1 1 auto; white-space: nowrap; padding-inline: .35rem; }
-/* EFFORT / TEMPS / ÉCOULEMENT : sous-sections du même module. Elles
-   reprennent la typographie et la couleur des titres de modules ; le filet
-   est l'or de titre, lisible dans les deux thèmes. */
+/* EFFORT / TEMPS / ÉCOULEMENT : sous-sections du même module.
+   Le titre réemploie STRICTEMENT .pc-block-title, sans variante de couleur
+   ni de filet : même blanc/noir et même trait fin que les autres modules. */
 .pc-effort-section + .pc-effort-section { margin-top: .38rem; }
-.pc-effort-section-title { color: var(--ink-2); border-bottom-color: var(--or-titre); }
 
 /* TEMPS : chaque unité porte la même largeur, suffisante pour RND.
    Les champs prennent tout l'espace restant ; MONDE occupe la moitié du rang. */
@@ -1909,7 +1908,6 @@ html.night .pc-segs > .c + input.c.pc-field:read-only:focus {
   box-shadow: inset 1px 0 0 var(--line-2);
 }
 html.night .pc-block-title { color: var(--ink); }
-html.night .pc-effort-section-title { color: var(--ink-2); }
 /* la pastille du sigle garde un FOND sombre : --accent-deep, clair de nuit,
    n'en ferait plus un pavé mais un aplat lumineux dans une colonne dense */
 html.night .pc-abbr { background: #6b5a2e; color: #dfe7d2; }
