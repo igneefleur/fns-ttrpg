@@ -1523,6 +1523,9 @@
       bundleEnCours = false;
       bundleCharge = true;
       poserModeBar();
+      // Le message d'attente reste visible pendant l'hydratation et le montage.
+      // On ne le retire qu'une fois la fiche réellement prête.
+      note(null);
       if (!syncWatchdogTimer) syncWatchdogTimer = setInterval(verifieSilenceSynchronisation, 1200);
       post({ type: "mounted" });
     }
@@ -1799,12 +1802,15 @@
     if (hydrated && !relecture) return;
     if (!pontVerifie) return;
     hydrated = true;
+    // La première lecture fraîche confirme que l'ouverture progresse :
+    // neutraliser le watchdog initial sans masquer le message de chargement.
+    // Le message ne disparaît qu'à finalizeMontage(), lorsque le DOM est prêt.
+    window.__jjkOpeningDone = true;
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }
     if (relecture) {
       ready = false; gele = false; decide = false; attrsPrets = false;
       attrsVus = null; fermerEcran(); fermerBandeau();
     }
-    note(null);
     attrs = attrs || {};
     var state = M.attrsToState(attrs);
     // attrsToState DIT dans quel état il a trouvé la fiche (propriétés non
