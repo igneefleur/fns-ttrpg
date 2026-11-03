@@ -771,7 +771,7 @@
         !Array.isArray(m.amorce) || !m.amorce.length) return false;
     var b = m.bundle, x = m.extension;
     if (!b || !Array.isArray(b.js) || !b.js.length || !Array.isArray(b.css) || !b.css.length || b.compactStorage !== true) return false;
-    if (!x || !x.minVersion || !lire(x.minVersion) || x.bridgeProtocol !== 2 ||
+    if (!x || !x.minVersion || compareExtension(x.minVersion, x.minVersion) === null || x.bridgeProtocol !== 2 ||
         !Array.isArray(x.requiredCapabilities) || !x.requiredCapabilities.length ||
         !x.requiredCapabilities.every(function (nom) { return typeof nom === "string" && /^[A-Za-z][A-Za-z0-9]*$/.test(nom); })) return false;
     return m.amorce.every(urlSure) && b.js.every(urlSure) && b.css.every(urlSure) &&

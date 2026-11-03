@@ -5,28 +5,28 @@
   "schema": 4,
   "blocage": "release",
   "amorce": [
-    "javascripts/jjk-sync.js?v=70",
-    "javascripts/jjk-attr-map.js?v=70",
-    "javascripts/jjk-roll20-boot.js?v=70"
+    "javascripts/jjk-sync.js?v=71",
+    "javascripts/jjk-attr-map.js?v=71",
+    "javascripts/jjk-roll20-boot.js?v=71"
   ],
   "narration": {
     "js": [
-      "javascripts/jjk-sync.js?v=70",
-      "javascripts/jjk-narration.js?v=70"
+      "javascripts/jjk-sync.js?v=71",
+      "javascripts/jjk-narration.js?v=71"
     ],
     "css": [
-      "stylesheets/jjk-narration.css?v=70"
+      "stylesheets/jjk-narration.css?v=71"
     ]
   },
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=70",
-      "javascripts/jjk-mods.js?v=70",
-      "javascripts/jjk-fiche.js?v=70"
+      "javascripts/jjk-migrations.js?v=71",
+      "javascripts/jjk-mods.js?v=71",
+      "javascripts/jjk-fiche.js?v=71"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=70",
-      "stylesheets/jjk-roll20.css?v=70"
+      "stylesheets/jjk-fiche.css?v=71",
+      "stylesheets/jjk-roll20.css?v=71"
     ],
     "data": null,
     "compactStorage": true
@@ -203,7 +203,7 @@
     }
   },
   "extension": {
-    "minVersion": "4.2.1.2",
+    "minVersion": "4.2.1.1",
     "bridgeProtocol": 2,
     "requiredCapabilities": [
       "compactStorage",

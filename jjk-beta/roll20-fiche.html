@@ -51,8 +51,14 @@
     function listeSure(l, videAutorisee) {
       return Array.isArray(l) && (videAutorisee || l.length > 0) && l.every(urlSure);
     }
+    // La release de fiche reste en X.Y.Z[b]. L'extension possède son
+    // compteur de signature (X.Y.Z.N) : c'est une grammaire distincte,
+    // comme dans Outward, et elle ne doit pas passer par versionSure().
     function versionSure(v) {
       return typeof v === "string" && /^\d+\.\d+\.\d+b?$/.test(v);
+    }
+    function versionExtensionSure(v) {
+      return typeof v === "string" && /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(v);
     }
     function valide(m) {
       if (!m || typeof m !== "object" || !versionSure(m.release) ||
@@ -63,7 +69,7 @@
           !listeSure(b.css, false) || (b.data != null && !urlSure(b.data)) ||
           b.compactStorage !== true) return false;
       var ext = m.extension;
-      if (!ext || !versionSure(ext.minVersion) || ext.bridgeProtocol !== 2 ||
+      if (!ext || !versionExtensionSure(ext.minVersion) || ext.bridgeProtocol !== 2 ||
           !Array.isArray(ext.requiredCapabilities) || !ext.requiredCapabilities.length ||
           !ext.requiredCapabilities.every(function (x) {
             return typeof x === "string" && /^[a-zA-Z][a-zA-Z0-9]*$/.test(x);
