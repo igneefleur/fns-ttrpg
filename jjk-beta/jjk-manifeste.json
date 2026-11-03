@@ -218,7 +218,7 @@
     }
   },
   "extension": {
-    "minVersion": "4.2.1.1",
+    "minVersion": "4.3.2",
     "bridgeProtocol": 2,
     "requiredCapabilities": [
       "compactStorage",
