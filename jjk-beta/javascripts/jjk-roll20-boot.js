@@ -1058,15 +1058,38 @@
     for (var i = 0; i < 3; i++) if (x.rang[i] !== y.rang[i]) return x.rang[i] > y.rang[i] ? 1 : -1;
     return 0;
   }
+  // La version d'extension Roll20 suit sa propre grammaire : Firefox/Chrome
+  // peuvent exposer quatre nombres (ex. 4.2.1.1), contrairement aux releases
+  // de fiche qui restent strictement en X.Y.Z[b]. Outward sépare déjà ces deux
+  // comparateurs ; ne pas envoyer la version du paquet dans lire(), qui la
+  // rejetterait avant même que les capacités soient examinées.
+  function compareExtension(a, b) {
+    function parts(v) {
+      return /^\d+\.\d+\.\d+(?:\.\d+)?$/.test(String(v))
+        ? String(v).split('.').map(Number) : null;
+    }
+    var x = parts(a), y = parts(b);
+    if (!x || !y) return null;
+    for (var i = 0; i < 4; i++) {
+      var n = (x[i] || 0) - (y[i] || 0);
+      if (n) return n < 0 ? -1 : 1;
+    }
+    return 0;
+  }
+  function capacitesManquantes(ext, contrat) {
+    if (!contrat || !Array.isArray(contrat.requiredCapabilities) || !contrat.requiredCapabilities.length) {
+      return ["contrat de capacités absent"];
+    }
+    var caps = ext && ext.capabilities || {};
+    return contrat.requiredCapabilities.filter(function (nom) { return caps[nom] !== 1; });
+  }
   function pontCompatible(d) {
     var m = manifeste(), contrat = m && m.extension;
     var ext = d && d.extension;
     if (!contrat || !ext || ext.protocol !== contrat.bridgeProtocol) return false;
-    var comparaison = versionCompare(ext.version, contrat.minVersion);
+    var comparaison = compareExtension(ext.version, contrat.minVersion);
     if (comparaison === null || comparaison < 0) return false;
-    var caps = ext.capabilities || {};
-    return Array.isArray(contrat.requiredCapabilities) && contrat.requiredCapabilities.length > 0 &&
-      contrat.requiredCapabilities.every(function (nom) { return caps[nom] === 1; });
+    return capacitesManquantes(ext, contrat).length === 0;
   }
   function ecranPontIncompatible(d) {
     pontRefuse = true;
@@ -1078,11 +1101,23 @@
     attrsVus = d && d.attrs && typeof d.attrs === "object" ? d.attrs : null;
     var ext = d && d.extension || {}, m = manifeste() || {}, contrat = m.extension || {};
     var version = ext.version || "inconnue";
+    var comparaison = compareExtension(version, contrat.minVersion);
+    var manque = capacitesManquantes(ext, contrat);
+    var raison = "";
+    if (comparaison === null || comparaison < 0) {
+      raison = "La version installée est trop ancienne ou illisible.";
+    }
+    if (ext.protocol !== contrat.bridgeProtocol) {
+      raison += (raison ? " " : "") + "Le protocole du pont ne correspond pas.";
+    }
+    if (manque.length) {
+      raison += (raison ? " " : "") + "Capacités absentes : " + manque.join(", ") + ".";
+    }
+    if (!raison) raison = "Le contrat de compatibilité du pont n'a pas pu être validé.";
     ecranErreurOuverture("L'extension JJK doit être mise à jour",
       "La fiche " + (releaseSite() || "actuelle") + " exige l'extension " + (contrat.minVersion || "récente") +
       " (protocole " + (contrat.bridgeProtocol || "?") + "). L'extension détectée est " + version +
-      ". Ses capacités de synchronisation/sauvegarde ne correspondent pas. Rien n'a été chargé ni écrit. " +
-      "Installez le nouveau paquet signé Firefox/Chrome, puis rechargez Roll20.",
+      ". " + raison + " Rien n'a été chargé ni écrit. Installez le nouveau paquet signé Firefox/Chrome, puis rechargez Roll20.",
       attrsVus ? { exporterAttrs: true } : { noExport: true });
   }
 
