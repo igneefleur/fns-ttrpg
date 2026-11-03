@@ -24,10 +24,10 @@ html, body { margin: 0; padding: 0; }
 body {
   /* Même enveloppe Roll20 qu'Outward : le gris appartient au cadre ; la
      feuille JJK conserve sa typographie et sa palette propres dans .perso-atelier. */
-  background: #e9e7e2;
+  background: #080B0C; color-scheme: dark;
   font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
-html.night body { background: #000000; }
+html.night body { background: #050809; }
 .perso-atelier { min-height: 100vh; overflow-x: hidden; }
 
 /* La feuille garde sa largeur NATIVE (50rem) et se centre (margin auto du
@@ -51,7 +51,7 @@ html.night body { background: #000000; }
    bundle de la fiche. L'amorceur le retire après validation du montage. */
 #jjk-roll20-note {
   max-width: 24rem; margin: 2.2rem auto; padding: 0 1rem;
-  font-size: .72rem; line-height: 1.5; color: #5f5f5f; text-align: center;
+  font-size: .72rem; line-height: 1.5; color: #A3B2B3; text-align: center;
 }
 #jjk-roll20-note h1 {
   margin: 0 0 .5rem; color: inherit;
@@ -59,15 +59,15 @@ html.night body { background: #000000; }
   font-size: 1.05rem; line-height: 1.25;
 }
 #jjk-roll20-note p { margin: .35rem 0; }
-#jjk-roll20-note a { color: #7a5c10; }
-html.night #jjk-roll20-note { color: #9a9384; }
-html.night #jjk-roll20-note a { color: #ffd77f; }
+#jjk-roll20-note a { color: #78BBC0; }
+html.night #jjk-roll20-note { color: #829496; }
+html.night #jjk-roll20-note a { color: #78BBC0; }
 
 /* Barre supérieure Roll20 : reproduction des jetons, dimensions et densité
    Outward. Seule la feuille qui vient après conserve l'identité visuelle JJK. */
 #jjk-mode-bar {
-  --panel: #f5f2ea; --card: #ffffff; --line: #ddd6c6;
-  --ink: #1a1a1a; --ink-2: #5f5f5f; --accent: #7a5c10;
+  --panel: #121819; --card: #171D1E; --line: #344448;
+  --ink: #E4ECEC; --ink-2: #A3B2B3; --accent: #4A9FA8;
   box-sizing: border-box; display: flex; align-items: center;
   justify-content: space-between; gap: .3rem .8rem; flex-wrap: wrap;
   flex: none; width: 50rem; max-width: 100%; margin: 0 auto;
@@ -86,7 +86,7 @@ html.night #jjk-roll20-note a { color: #ffd77f; }
   padding: .18rem .45rem; border-color: var(--line); background: var(--card); color: var(--ink-2);
   font-size: .65rem; line-height: 1.25;
 }
-#jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #fff3d9; border-color: #7a5c10; color: #1a1a1a; }
+#jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #14282B; border-color: #4A9FA8; color: #E4ECEC; }
 #jjk-mode-toggle[disabled] { opacity: .6; cursor: wait; }
 #jjk-mode-bar .jjk-mode-presence {
   display: flex; flex-wrap: wrap; justify-content: flex-end;
@@ -96,11 +96,11 @@ html.night #jjk-roll20-note a { color: #ffd77f; }
 #jjk-mode-bar .jjk-presence-edition { color: var(--accent); }
 #jjk-mode-bar #jjk-save-status { padding: 0; font-size: .58rem; color: var(--ink-2); }
 html.night #jjk-mode-bar {
-  --panel: #262626; --card: #1a1a1a; --line: #3a3a3a;
-  --ink: #e6e6e6; --ink-2: #9a9384; --accent: #ffd77f;
+  --panel: #0D1213; --card: #141A1B; --line: #304044;
+  --ink: #E4ECEC; --ink-2: #A3B2B3; --accent: #4A9FA8;
 }
-html.night #jjk-mode-toggle.pc-btn { background: #1a1a1a; color: #e6e6e6; border-color: #6b5a2e; }
-html.night #jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #332d20; border-color: #6b5a2e; color: #e6e6e6; }
+html.night #jjk-mode-toggle.pc-btn { background: #141A1B; color: #E4ECEC; border-color: #285A60; }
+html.night #jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #1D292B; border-color: #4A9FA8; color: #E4ECEC; }
 html.jjk-consultation .pc-editable .pc-gear { opacity: .45; cursor: not-allowed; }
 html.jjk-consultation .pc-editable .pc-edit-only { display: none !important; }
 

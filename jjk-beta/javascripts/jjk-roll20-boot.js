@@ -635,47 +635,47 @@
   // précisément dans ces moments qu'il a quelque chose à dire.
   var CSS_BANDEAU =
     "#jjk-bandeau{position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;" +
-    "gap:.5rem;padding:.5rem .7rem;background:#262626;color:#ffd77f;border-bottom:1px solid #6b5a2e;" +
+    "gap:.5rem;padding:.5rem .7rem;background:#171D1E;color:#78BBC0;border-bottom:1px solid #285A60;" +
     "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
     "font-size:.72rem;line-height:1.45}" +
     "#jjk-bandeau .jjk-bandeau-txt{flex:1 1 14rem;min-width:0}" +
-    "#jjk-bandeau .jjk-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #6b5a2e;" +
-    "border-radius:.2rem;background:#0d0d0d;color:#ffd77f;font:inherit;cursor:pointer}" +
-    "#jjk-bandeau .jjk-bandeau-btn:hover{background:#3a3a3a}" +
-    "html.night #jjk-bandeau{background:#262626;color:#ffd77f;border-bottom-color:#6b5a2e}" +
-    "html.night #jjk-bandeau .jjk-bandeau-btn{background:#0d0d0d;color:#ffd77f;border-color:#6b5a2e}" +
+    "#jjk-bandeau .jjk-bandeau-btn{flex:0 0 auto;padding:.2rem .6rem;border:1px solid #285A60;" +
+    "border-radius:.2rem;background:#0F1415;color:#78BBC0;font:inherit;cursor:pointer}" +
+    "#jjk-bandeau .jjk-bandeau-btn:hover{background:#1D292B}" +
+    "html.night #jjk-bandeau{background:#141A1B;color:#78BBC0;border-bottom-color:#285A60}" +
+    "html.night #jjk-bandeau .jjk-bandeau-btn{background:#0D1213;color:#78BBC0;border-color:#285A60}" +
     "#jjk-ecran{position:fixed;top:0;left:0;right:0;bottom:0;z-index:80;overflow:auto;" +
-    "padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
+    "padding:1rem;background:#080B0C;color:#E4ECEC;" +
     "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
     "font-size:.8rem;line-height:1.5}" +
-    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#ffffff;" +
-    "border:1px solid #e0cfa0;border-radius:.3rem;padding:.9rem 1rem}" +
-    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#a5342c;background:#fdf1ec}" +
+    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#0F1415;" +
+    "border:1px solid #344448;border-radius:.3rem;padding:.9rem 1rem}" +
+    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#C96B62;background:#24191A}" +
     "#jjk-ecran h1{margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Proxima Nova',proxima-nova," +
-    "'Nunito Sans',Helvetica,Arial,sans-serif;font-size:1.15rem;line-height:1.25}" +
-    "#jjk-ecran h2{margin:.85rem 0 .25rem;font-size:.88rem}" +
+    "'Nunito Sans',Helvetica,Arial,sans-serif;font-size:1.15rem;line-height:1.25;color:#78BBC0}" +
+    "#jjk-ecran h2{margin:.85rem 0 .25rem;font-size:.88rem;color:#E4ECEC}" +
     "#jjk-ecran p{margin:.35rem 0}#jjk-ecran ul{margin:.3rem 0;padding-left:1.1rem}" +
     "#jjk-ecran li{margin:.25rem 0}" +
     "#jjk-ecran .jjk-ecran-vers{display:flex;flex-wrap:wrap;gap:.2rem 1.4rem;margin:.5rem 0;" +
-    "padding:.35rem .6rem;background:#f5f2ea;border-radius:.2rem}" +
+    "padding:.35rem .6rem;background:#171D1E;border-radius:.2rem;color:#B6C4C5}" +
     "#jjk-ecran .jjk-ecran-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem}" +
-    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
-    "background:#ffffff;color:#1a1a1a;font:inherit;cursor:pointer}" +
-    "#jjk-ecran button:hover:not([disabled]){background:#f5f2ea}" +
-    "#jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#1a1a1a;border-color:#ffd77f}" +
+    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #344448;border-radius:.2rem;" +
+    "background:#171D1E;color:#E4ECEC;font:inherit;cursor:pointer}" +
+    "#jjk-ecran button:hover:not([disabled]){background:#1D292B;border-color:#4A9FA8}" +
+    "#jjk-ecran button.jjk-ecran-primaire{background:#4A9FA8;color:#071113;border-color:#4A9FA8}" +
     "#jjk-ecran button[disabled]{opacity:.45;cursor:not-allowed}" +
-    "#jjk-ecran .jjk-ecran-note{font-size:.72rem;opacity:.85}" +
-    "#jjk-ecran label.jjk-ecran-epingle{display:block;margin:.2rem 0}" +
+    "#jjk-ecran .jjk-ecran-note{font-size:.72rem;color:#A3B2B3;opacity:1}" +
     "#jjk-ecran textarea{box-sizing:border-box;width:100%;min-height:8rem;margin-top:.3rem;" +
+    "background:#0D1213;color:#E4ECEC;border:1px solid #344448;" +
     "font-family:'Roboto Mono',monospace;font-size:.66rem}" +
-    "html.night #jjk-ecran{background:#000000;color:#e6e6e6}" +
-    "html.night #jjk-ecran .jjk-ecran-boite{background:#0d0d0d;border-color:#6b5a2e}" +
-    "html.night #jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{background:#2e1d1a;border-color:#a5342c}" +
-    "html.night #jjk-ecran .jjk-ecran-vers{background:#1a1a1a}" +
-    "html.night #jjk-ecran button{background:#1a1a1a;color:#e6e6e6;border-color:#6b5a2e}" +
-    "html.night #jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#0d0d0d;border-color:#ffd77f}" +
-    "html.night #jjk-ecran textarea{background:#0d0d0d;color:#e6e6e6;border-color:#3a3a3a}" +
-    "#jjk-ecran .jjk-ecran-telecharger{display:inline-block;padding:.35rem .7rem;border:1px solid #6b5a2e;border-radius:.2rem;color:inherit;text-decoration:none}";
+    "html.night #jjk-ecran{background:#050809;color:#E4ECEC}" +
+    "html.night #jjk-ecran .jjk-ecran-boite{background:#0D1213;border-color:#304044}" +
+    "html.night #jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{background:#24191A;border-color:#C96B62}" +
+    "html.night #jjk-ecran .jjk-ecran-vers{background:#141A1B}" +
+    "html.night #jjk-ecran button{background:#141A1B;color:#E4ECEC;border-color:#304044}" +
+    "html.night #jjk-ecran button.jjk-ecran-primaire{background:#4A9FA8;color:#071113;border-color:#4A9FA8}" +
+    "html.night #jjk-ecran textarea{background:#080B0C;color:#E4ECEC;border-color:#304044}" +
+    "#jjk-ecran .jjk-ecran-telecharger{display:inline-block;padding:.35rem .7rem;border:1px solid #285A60;border-radius:.2rem;color:#78BBC0;text-decoration:none}";
   function poserStyles() {
     if (document.getElementById("jjk-bandeau-css")) return;
     var s = document.createElement("style");
@@ -803,11 +803,7 @@
    * tant qu'il manque l'une des deux, et n'agit qu'une fois.
    */
 
-  // Épinglage : « ne plus me demander pour ce personnage ». Vrai localStorage
-  // de la page (pas le shim), donc PAR NAVIGATEUR : le choix d'un joueur
-  // d'ouvrir une vieille fiche avec son ancien code ne s'impose pas à la table.
-  var PIN_PREFIX = "jjk-r20-version:";
-  // Ce que la montée met à l'abri, dans le personnage lui-même.
+  // Les données de sauvegarde restent attachées au personnage.
   var BACKUP = "backup";
 
   var attrsVus = null;          // les attributs reçus, gardés pour la décision
@@ -973,23 +969,19 @@
     return spec;
   }
 
-  function epinglageLu() {
+  // Les anciennes préférences « ne plus demander » ne sont plus valides.
+  // Leur clé était propre à ce mécanisme : on purge les restes de ce stockage
+  // local pour qu'aucune ancienne version ne puisse les réutiliser.
+  (function purgeAncienEpinglage() {
     try {
-      var v = localStorage.getItem(PIN_PREFIX + CHAR_ID);
-      if (!v) return null;
-      var o = JSON.parse(v);
-      return (o && typeof o === "object" && typeof o.release === "string") ? o : null;
-    } catch (e) { return null; }
-  }
-  // On range la release EXACTE, jamais sa ligne : la clé et la forme rangées
-  // doivent rester lisibles pour les épinglages déjà posés chez les joueurs.
-  // C'est la comparaison, elle, qui se fait ligne à ligne (voir decider()).
-  function epinglagePoser(rel) {
-    try {
-      localStorage.setItem(PIN_PREFIX + CHAR_ID,
-        JSON.stringify({ release: String(rel), quand: new Date().toISOString() }));
+      var clefs = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf("jjk-r20-version:") === 0) clefs.push(k);
+      }
+      clefs.forEach(function (k) { localStorage.removeItem(k); });
     } catch (e) {}
-  }
+  })();
 
   // Version de la fiche trouvée dans le personnage, { schema, release } ou null.
   //
@@ -1796,17 +1788,6 @@
       b.appendChild(ul);
     }
 
-    // L'épinglage ne vaut QUE pour « ouvrir avec sa version » : la case est
-    // construite avant les boutons (leur gestionnaire la lit) mais posée après
-    // eux. Elle n'est jamais honorée par la montée, qui est destructive et ne
-    // se rejoue pas de mémoire.
-    var lab = noeud("label", "jjk-ecran-epingle");
-    var caseEp = document.createElement("input");
-    caseEp.type = "checkbox";
-    caseEp.id = "jjk-ecran-epingle";
-    lab.appendChild(caseEp);
-    lab.appendChild(document.createTextNode(" Ne plus me demander pour ce personnage"));
-
     var z = zoneActions(b);
     var bMonter = bouton(z, "Mettre la fiche à niveau (" + relSite + ")", "monter", function () {
       if (!duFutur && window.JjkMigr && window.JjkMigr.resume) monter(false, f);
@@ -1822,7 +1803,6 @@
       ? ("Ouvrir avec l'archive " + arch.release + " (la plus proche de sa version)")
       : ("Ouvrir avec sa version (" + (relFiche || "inconnue") + ")"), "archive", function () {
       if (!arch) return;   // bouton grisé : ceinture, au cas où un clic passe quand même
-      if (caseEp.checked && relFiche) epinglagePoser(relFiche);
       chargerBundle(arch, true);
     });
     boutonExport(z);
@@ -1841,10 +1821,6 @@
         : "« Ouvrir avec sa version » est indisponible : la fiche ne dit pas quelle version l'a écrite.", b);
     }
 
-    b.appendChild(lab);
-    b.appendChild(noeud("p", "jjk-ecran-note",
-      "La case ne vaut que pour « ouvrir avec sa version », et seulement dans ce navigateur. La mise à " +
-      "niveau, elle, se redemande toujours."));
   }
 
   // ---------- la décision ----------
@@ -1887,28 +1863,8 @@
     // recopier en dur ici, sinon le contrat publié et le comportement divergent.
     var accord = accordVersionFiche(f, relSite, schSite, politique);
 
-    // 2. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
-    // redemande pas. Comparé LIGNE à ligne des deux côtés, parce que le bundle
-    // d'archive réécrit state.rel avec SA constante dès la première
-    // sauvegarde : sur une égalité stricte, l'épinglage ne tenait qu'une
-    // session. L'épinglage ne vaut que si l'archive est toujours publiée ;
-    // sinon la question se repose.
-    //
-    // L'ACCORD LE SAUTE. /jjk/ et /jjk-beta/ sont servis par la même origine,
-    // donc partagent ce localStorage : le joueur qui coche « ne plus me
-    // demander » sur la beta, dont le schéma a pris un cran d'avance, posait
-    // aussi son épinglage pour le site stable, où sa fiche s'accorde et où RIEN
-    // ne lui aurait été demandé. Il y rouvrait alors une archive de la ligne
-    // précédente, sans écran pour le lui dire, et rejouait une vieille fiche
-    // sans le savoir. Partout ailleurs l'épinglage garde la tête, et doit la
-    // garder : là, l'écran reparaîtrait à chaque ouverture, et le test 3 est
-    // précisément celui qui, sur le schéma, rouvrirait la fiche avec le bundle
-    // du jour en silence, contre un choix explicite.
-    var pin = accord ? null : epinglageLu();
-    if (pin && f.release && memeRang(pin.release, f.release, true)) {
-      var arch = archiveDe(f.release);
-      if (arch) { chargerBundle(arch, true); return; }
-    }
+    // 2. Aucun choix de version n'est mémorisé. Toute divergence qui ne
+    // bénéficie pas de l'accord normal du manifeste repasse par ecranVersion().
 
     // 3. Accord avec le site : la fiche s'ouvre sans rien demander.
     if (accord) {
@@ -1922,9 +1878,9 @@
       return;
     }
 
-    // Toute fiche versionnée qui ne correspond pas exactement au contrat courant
-    // passe par l'écran de version. Même les anciennes fiches doivent faire
-    // l'objet d'un choix explicite avant migration ou ouverture sur archive.
+    // Toute fiche versionnée qui ne bénéficie pas de l'accord du contrat passe
+    // par l'écran de version à chaque ouverture. Aucun état local ne peut sauter
+    // cet écran ni charger une archive à la place du choix explicite.
 
     // 4. l'écran.
     avecMigrations(function () { ecranVersion(f, relSite, schSite); });

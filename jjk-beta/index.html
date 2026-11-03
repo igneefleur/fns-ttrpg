@@ -49,7 +49,7 @@
     
       <link rel="stylesheet" href="stylesheets/jjk.css?v=1">
     
-      <link rel="stylesheet" href="stylesheets/jjk-fiche.css?v=72">
+      <link rel="stylesheet" href="stylesheets/jjk-fiche.css?v=73">
     
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
@@ -71,13 +71,7 @@
   </script>
   
   <script>
-    (function () {
-      try {
-        if (localStorage.getItem("night") === "1") {
-          document.documentElement.classList.add("night");
-        }
-      } catch (e) {}
-    })();
+    document.documentElement.classList.add("night");
   </script>
 
   </head>
@@ -519,13 +513,11 @@
       
         <script src="javascripts/nav-drawer.js"></script>
       
-        <script src="javascripts/night.js"></script>
+        <script src="javascripts/jjk-migrations.js?v=73"></script>
       
-        <script src="javascripts/jjk-migrations.js?v=72"></script>
+        <script src="javascripts/jjk-mods.js?v=73"></script>
       
-        <script src="javascripts/jjk-mods.js?v=72"></script>
-      
-        <script src="javascripts/jjk-fiche.js?v=72"></script>
+        <script src="javascripts/jjk-fiche.js?v=73"></script>
       
         <script src="javascripts/copybtn.js"></script>
       

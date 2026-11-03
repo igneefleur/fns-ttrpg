@@ -1,6 +1,6 @@
 {
-  "version": "4.2.1.1",
-  "hash": "52e737cf8cf5b80e9e199919036b51709d2325bb7de445a2cdc724dd6804e5e9",
+  "version": "4.2.4",
+  "hash": "c8e0053605774c0fa6652ebc61ee5faee415b394a2c122212b38ee88b74ffdec",
   "parties": {
     "stable": {
       "version": "4.2.1.1",
