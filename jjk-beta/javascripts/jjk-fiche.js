@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.2.4b";
+  var RELEASE = "4.3.0b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -193,7 +193,7 @@
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, narration: 3,
+      pv: null, em: null, emMax: 0, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
       // module (le poids de JJK est un nombre SANS unité)
@@ -714,6 +714,9 @@
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
     if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
+    s.emMax = clamp(Math.floor(num(s.emMax, 0)), 0, 9999);
+    s.em = (s.em === null || s.em === undefined || s.em === "") ? null : parseFloat(s.em);
+    if (s.em !== null && !isFinite(s.em)) s.em = null;
     return s;
   }
 
@@ -1914,10 +1917,8 @@
     Array.prototype.forEach.call(scope.querySelectorAll(".pc-edit-field"), function (f) {
       f.disabled = !actif;
     });
-    Array.prototype.forEach.call(scope.querySelectorAll(".pc-gear"), function (g) {
-      g.disabled = !ficheModifiable();
-      g.setAttribute("aria-disabled", ficheModifiable() ? "false" : "true");
-    });
+    // Le rouage reste un bouton neutre (comme Outward) en Consultation :
+    // son écouteur refuse le geste, sans curseur interdit ni faux état disabled.
   }
   function gearBtn(scope, id, onToggle) {
     var g = el("button", "pc-gear", "⚙");
@@ -1936,11 +1937,15 @@
   }
   function appliqueChampsHorsModule(root) {
     var base = root && root.querySelectorAll ? root : document;
-    Array.prototype.forEach.call(base.querySelectorAll(".pc-global-edit-field"), function (f) {
+    function chaque(sel, fn) {
+      if (base.matches && base.matches(sel)) fn(base);
+      Array.prototype.forEach.call(base.querySelectorAll(sel), fn);
+    }
+    chaque(".pc-global-edit-field", function (f) {
       f.disabled = !ficheModifiable();
       f.setAttribute("aria-disabled", f.disabled ? "true" : "false");
     });
-    Array.prototype.forEach.call(base.querySelectorAll(".pc-edit-field[data-jjk-requires-edit]"), function (f) {
+    chaque(".pc-edit-field[data-jjk-requires-edit]", function (f) {
       var id = f.getAttribute("data-jjk-requires-edit") || "";
       f.disabled = !isEdit(id);
       f.setAttribute("aria-disabled", f.disabled ? "true" : "false");
@@ -1982,7 +1987,7 @@
     if (ev.stopImmediatePropagation) ev.stopImmediatePropagation();
   }
   document.addEventListener("click", function (ev) {
-    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-only, .pc-gear, [data-jjk-requires-edit]") : null;
+    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-only, .pc-gear, [data-jjk-requires-edit], [contenteditable='true']") : null;
     if (!target) return;
     if (target.classList.contains("pc-gear")) {
       if (!ficheModifiable()) annuleEdition(ev);
@@ -1994,7 +1999,7 @@
   // Montrer, Donner). Seuls les éléments explicitement marqués comme outils de
   // construction peuvent être ouverts ou activés en mode Consultation.
   document.addEventListener("contextmenu", function (ev) {
-    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-gear, .pc-edit-only, [data-jjk-requires-edit]") : null;
+    var target = ev.target && ev.target.closest ? ev.target.closest(".pc-gear, .pc-edit-only, [data-jjk-requires-edit], [contenteditable='true']") : null;
     if (target && (target.classList.contains("pc-gear") ? !ficheModifiable() : !autoriseConstruction(target))) annuleEdition(ev);
   }, true);
   ["dragstart", "dragover", "drop"].forEach(function (type) {
@@ -2003,9 +2008,9 @@
       if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
     }, true);
   });
-  ["beforeinput", "paste", "cut"].forEach(function (type) {
+  ["beforeinput", "input", "change", "paste", "cut", "keydown"].forEach(function (type) {
     document.addEventListener(type, function (ev) {
-      var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-field, [contenteditable='true'], .pc-edit-only") : null;
+      var target = ev.target && ev.target.closest ? ev.target.closest(".pc-edit-field, [contenteditable='true'], .pc-edit-only, [data-jjk-requires-edit]") : null;
       if (!target) return;
       if (target.matches(".pc-edit-field") && target.disabled) return annuleEdition(ev);
       if (!autoriseConstruction(target)) annuleEdition(ev);
@@ -2015,6 +2020,23 @@
     var scope = scopeEdition(ev.target);
     if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
   }, true);
+
+  // Les champs peuvent être recréés après un changement d'onglet, un remontage
+  // ou l'ajout dynamique d'un module. Les nouvelles commandes héritent aussitôt
+  // du verrou courant, sans attendre une prochaine sauvegarde ou un clic.
+  if (window.MutationObserver && document.documentElement) {
+    var verrouObserver = new MutationObserver(function (changes) {
+      if (ficheModifiable()) return;
+      changes.forEach(function (change) {
+        Array.prototype.forEach.call(change.addedNodes || [], function (node) {
+          if (!node || node.nodeType !== 1 || typeof window.__jjkApplyMode !== "function") return;
+          var owner = node.closest ? node.closest(".pc-editable") : null;
+          window.__jjkApplyMode(owner || node);
+        });
+      });
+    });
+    verrouObserver.observe(document.documentElement, { childList: true, subtree: true });
+  }
 
   function block(title, small, editId, onToggle) {
     var b = el("div", "pc-block");
@@ -2426,6 +2448,17 @@
     });
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     mrow.appendChild(fld("XP total", xpIn));
+    var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
+    emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
+    emMaxIn.setAttribute("aria-label", "Énergie maudite maximale");
+    emMaxIn.title = "Réserve totale d'énergie maudite";
+    emMaxIn.addEventListener("input", function () {
+      var v = parseInt(emMaxIn.value, 10);
+      state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
+      refresh();
+    });
+    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
+    mrow.appendChild(fld("EM max", emMaxIn));
     id.appendChild(mrow);
 
     head.appendChild(id);
@@ -3469,86 +3502,138 @@
     return b;
   }
 
-  function buildPv() {
-    // les PV COURANTS se jouent en temps réel (combat) : stepper et « Max »
-    // restent toujours actifs ; l'édition ne garde que le maximum forcé et
-    // les divers du maximum
-    var b = block("PV", null, "pv");
-    var pvRow = el("div", "pc-kv");
-    var pvStep = el("span", "pc-step");
-    pvStep.appendChild(stepBtn("−", null, function () { state.pv = pvCourant() - 1; refresh(); }));
-    var pvIn = el("input", "pc-num");
-    pvIn.type = "number"; pvIn.step = "1";
-    pvIn.addEventListener("input", function () {
-      var v = parseFloat(pvIn.value);
-      state.pv = isFinite(v) ? v : null;
+  // Réserve de ressource : même logique que les jauges Outward (courant,
+  // maximum, barre pleine largeur et variation à appliquer), dans les cartes
+  // et la palette JJK. Le courant reste un geste de jeu, même en Consultation.
+  function buildReserve(cfg) {
+    var b;
+    if (cfg.editId) {
+      b = block(cfg.title, null, cfg.editId);
+      b.classList.add("pc-vital-block");
+    } else {
+      b = el("div", "pc-block pc-vital-block");
+      b.dataset.module = cfg.moduleId;
+      b.appendChild(el("div", "pc-block-title", cfg.title));
+    }
+    b.classList.add(cfg.themeClass);
+
+    var head = el("div", "pc-vital-head");
+    var current = el("input", "pc-vital-num");
+    current.type = "number";
+    current.step = "1";
+    current.setAttribute("aria-label", cfg.accessibleName + " actuels");
+    current.addEventListener("input", function () {
+      var v = parseFloat(current.value);
+      cfg.setCurrent(isFinite(v) ? v : null);
       refresh();
     });
-    hooks.push(function () { if (document.activeElement !== pvIn) pvIn.value = pvCourant(); });
-    pvStep.appendChild(pvIn);
-    pvStep.appendChild(stepBtn("+", null, function () { state.pv = pvCourant() + 1; refresh(); }));
-    pvRow.appendChild(pvStep);
-    var pvM = el("span", "max", "");
-    hooks.push(function () {
-      var d = modSum(state.divers.pvMax);
-      pvM.textContent = "/ " + pvMax();
-      pvM.classList.toggle("adj", state.pvMaxOverride !== null || d !== 0);
-      pvM.title = state.pvMaxOverride !== null
-        ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
-        : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
-          (d ? " · modificateurs " + sign(d) : "");
-    });
-    pvRow.appendChild(pvM);
-    pvRow.appendChild(el("span", "sp"));
-    pvRow.appendChild(miniBtn("Max", "Revenir au maximum", function () { state.pv = null; refresh(); }));
-    b.appendChild(pvRow);
+    head.appendChild(current);
+    head.appendChild(el("span", "pc-vital-separator", "/"));
+    var maximum = el("span", "pc-vital-max", "");
+    head.appendChild(maximum);
+    b.appendChild(head);
 
-    // Jauge de PV : indication visuelle uniquement. Elle ne remplace ni le
-    // stepper ni les formules JJK, et les PV négatifs restent affichés dans la
-    // valeur chiffrée tandis que la barre se borne à zéro.
-    var pvBar = el("div", "pc-pv-bar");
-    pvBar.setAttribute("role", "progressbar");
-    pvBar.setAttribute("aria-label", "Points de vie");
-    pvBar.setAttribute("aria-valuemin", "0");
-    var pvFill = el("div", "pc-pv-bar-fill");
-    pvBar.appendChild(pvFill);
-    b.appendChild(pvBar);
+    var bar = el("div", "pc-vital-jauge");
+    bar.setAttribute("role", "progressbar");
+    bar.setAttribute("aria-label", cfg.accessibleName);
+    bar.setAttribute("aria-valuemin", "0");
+    var fill = el("i");
+    bar.appendChild(fill);
+    b.appendChild(bar);
+
+    var commands = el("div", "pc-vital-commandes");
+    var delta = el("input", "pc-vital-delta");
+    delta.type = "number";
+    delta.step = "1";
+    delta.placeholder = "+ / −";
+    delta.setAttribute("aria-label", "Variation de " + cfg.accessibleName);
+    delta.title = "Valeur à ajouter ou à retirer";
+    function appliquerVariation() {
+      var variation = parseFloat(delta.value);
+      if (!isFinite(variation) || variation === 0) return;
+      cfg.setCurrent(cfg.getCurrent() + variation);
+      delta.value = "";
+      refresh();
+    }
+    delta.addEventListener("keydown", function (ev) {
+      if (ev.key === "Enter") { ev.preventDefault(); appliquerVariation(); }
+    });
+    commands.appendChild(delta);
+    commands.appendChild(miniBtn("Appliquer", "Appliquer la variation", appliquerVariation));
+    commands.appendChild(el("span", "sp"));
+    commands.appendChild(miniBtn("Max", "Revenir au maximum", function () {
+      cfg.setCurrent(null);
+      refresh();
+    }));
+    b.appendChild(commands);
+
     hooks.push(function () {
-      var max = Math.max(0, pvMax()), courant = pvCourant();
+      var max = Math.max(0, Number(cfg.getMaximum()) || 0);
+      var courant = Number(cfg.getCurrent()) || 0;
       var ratio = max > 0 ? clamp(courant / max * 100, 0, 100) : 0;
-      pvFill.style.width = ratio + "%";
-      pvBar.setAttribute("aria-valuemax", String(max));
-      pvBar.setAttribute("aria-valuenow", String(clamp(courant, 0, max)));
-      pvBar.classList.toggle("critical", max > 0 && courant <= max * .2);
-      pvBar.classList.toggle("low", max > 0 && courant > max * .2 && courant <= max * .5);
+      if (document.activeElement !== current) current.value = String(courant);
+      maximum.textContent = String(max);
+      bar.style.setProperty("--vital-ratio", ratio + "%");
+      fill.style.width = ratio + "%";
+      bar.setAttribute("aria-valuemax", String(max));
+      bar.setAttribute("aria-valuenow", String(clamp(courant, 0, max)));
+      bar.classList.toggle("critical", max > 0 && courant <= max * .2);
+      bar.classList.toggle("low", max > 0 && courant > max * .2 && courant <= max * .5);
+      if (cfg.updateMaximum) cfg.updateMaximum(maximum);
     });
 
-    // maximum : valeur forcée (vide = calculée) + divers — les leviers HxH
-    var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-    mrow.appendChild(el("span", "lbl", "Forcé"));
-    var force = el("input", "force pc-edit-field");
-    force.type = "number"; force.step = "1"; force.min = "0";
-    force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; " +
-                  "une valeur le force.";
-    force.addEventListener("input", function () {
-      var v = parseFloat(force.value);
-      state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
-      refresh();
-    });
-    hooks.push(function () {
-      force.placeholder = String(pvMaxAuto());
-      if (document.activeElement !== force) {
-        force.value = state.pvMaxOverride === null ? "" : state.pvMaxOverride;
-      }
-    });
-    mrow.appendChild(force);
-    mrow.appendChild(el("span", "lbl", "Modificateurs"));
-    mrow.appendChild(multiMod(state.divers, "pvMax"));
-    mrow.appendChild(el("span", "sp"));
-    b.appendChild(mrow);
+    if (cfg.appendOptions) cfg.appendOptions(b);
     return b;
   }
 
+  function buildPv() {
+    return buildReserve({
+      title: "PV", moduleId: "pv", editId: "pv", themeClass: "pc-vital-pv",
+      accessibleName: "Points de vie", getCurrent: pvCourant, getMaximum: pvMax,
+      setCurrent: function (v) { state.pv = v; },
+      updateMaximum: function (node) {
+        var d = modSum(state.divers.pvMax);
+        node.classList.toggle("adj", state.pvMaxOverride !== null || d !== 0);
+        node.title = state.pvMaxOverride !== null
+          ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
+          : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
+            (d ? " · modificateurs " + sign(d) : "");
+      },
+      appendOptions: function (b) {
+        // Le maximum de PV garde ses leviers JJK : valeur forcée ou calcul
+        // habituel avec les trois emplacements de modificateurs.
+        var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
+        mrow.appendChild(el("span", "lbl", "Forcé"));
+        var force = el("input", "force pc-edit-field");
+        force.type = "number"; force.step = "1"; force.min = "0";
+        force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; une valeur le force.";
+        force.addEventListener("input", function () {
+          var v = parseFloat(force.value);
+          state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
+          refresh();
+        });
+        hooks.push(function () {
+          force.placeholder = String(pvMaxAuto());
+          if (document.activeElement !== force) force.value = state.pvMaxOverride === null ? "" : state.pvMaxOverride;
+        });
+        mrow.appendChild(force);
+        mrow.appendChild(el("span", "lbl", "Modificateurs"));
+        mrow.appendChild(multiMod(state.divers, "pvMax"));
+        mrow.appendChild(el("span", "sp"));
+        b.appendChild(mrow);
+      }
+    });
+  }
+
+  function buildEm() {
+    function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
+    function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
+    return buildReserve({
+      title: "EM", moduleId: "em", themeClass: "pc-vital-em",
+      accessibleName: "Énergie maudite", getCurrent: emCourant, getMaximum: emMax,
+      setCurrent: function (v) { state.em = v; }
+    });
+  }
   function buildNarration() {
     var b = block("Narration");
     var nRow = el("div", "pc-kv");
@@ -6628,6 +6713,7 @@
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "em",         titre: "EM",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----

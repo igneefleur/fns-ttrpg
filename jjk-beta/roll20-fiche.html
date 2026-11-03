@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
-  <title>Fiche JJK sur Roll20</title>
+  <title>Fiche Jujutsu Kaisen sur Roll20</title>
   <!-- AMORCEUR GELÉ. Ne plus rien ajouter ici : ni feuille de style, ni
        script, ni numéro de version.
 
@@ -39,7 +39,7 @@
   (function () {
     "use strict";
     var termine = false;
-    var delai = 8000;
+    var delai = 10000;
     var timer = null;
 
     function urlSure(u) {
@@ -51,9 +51,6 @@
     function listeSure(l, videAutorisee) {
       return Array.isArray(l) && (videAutorisee || l.length > 0) && l.every(urlSure);
     }
-    // La release de fiche reste en X.Y.Z[b]. L'extension possède son
-    // compteur de signature (X.Y.Z.N) : c'est une grammaire distincte,
-    // comme dans Outward, et elle ne doit pas passer par versionSure().
     function versionSure(v) {
       return typeof v === "string" && /^\d+\.\d+\.\d+b?$/.test(v);
     }
@@ -76,8 +73,9 @@
           })) return false;
       return true;
     }
-    function afficherErreur(titre, message) {
+    function afficherErreur() {
       if (timer) clearTimeout(timer);
+      window.__jjkOpeningDone = true;
       termine = true;
       var note = document.getElementById("jjk-roll20-note");
       if (!note) {
@@ -86,46 +84,22 @@
         document.body.insertBefore(note, document.body.firstChild);
       }
       note.textContent = "";
-      note.setAttribute("role", "alertdialog");
-      note.setAttribute("aria-live", "assertive");
-      note.style.cssText = "position:fixed;inset:0;z-index:999999;overflow:auto;" +
-        "box-sizing:border-box;padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
-        "font-family:'Proxima Nova','Nunito Sans','IBM Plex Sans',Helvetica,Arial,sans-serif;" +
-        "font-size:.8rem;line-height:1.5;text-align:left";
-      var boite = document.createElement("div");
-      boite.style.cssText = "box-sizing:border-box;max-width:34rem;margin:0 auto;" +
-        "padding:.9rem 1rem;background:#fff;border:1px solid #e0cfa0;border-radius:.3rem";
       var h = document.createElement("h1");
-      h.textContent = titre;
-      h.style.cssText = "margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Nunito Sans','IBM Plex Sans',sans-serif;" +
-        "font-size:1.15rem;line-height:1.25";
+      h.textContent = "Impossible d’ouvrir le personnage";
       var p = document.createElement("p");
-      p.textContent = message;
-      p.style.cssText = "margin:.35rem 0";
-      var actions = document.createElement("div");
-      actions.style.cssText = "display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem";
-      var retry = document.createElement("button");
-      retry.type = "button";
-      retry.textContent = "Réessayer";
-      retry.setAttribute("data-jjk-act", "reessayer-amorce");
-      retry.style.cssText = "padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
-        "background:#ffd77f;color:#1a1a1a;font:inherit;cursor:pointer";
-      retry.addEventListener("click", function () { try { location.reload(); } catch (e) {} });
+      p.textContent = "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.";
+      var b = document.createElement("button");
+      b.type = "button";
+      b.textContent = "Réessayer";
+      b.addEventListener("click", function () { try { location.reload(); } catch (e) {} });
       var exportButton = document.createElement("button");
       exportButton.type = "button";
       exportButton.textContent = "Exporter les données disponibles";
       exportButton.disabled = true;
       exportButton.title = "Aucune donnée du personnage disponible à exporter.";
-      exportButton.style.cssText = "padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
-        "background:#fff;color:#1a1a1a;font:inherit;opacity:.45;cursor:not-allowed";
       var noteExport = document.createElement("p");
       noteExport.textContent = "Aucune donnée du personnage disponible à exporter.";
-      noteExport.style.cssText = "margin:.35rem 0;font-size:.72rem;opacity:.85";
-      actions.appendChild(retry);
-      actions.appendChild(exportButton);
-      boite.appendChild(h); boite.appendChild(p); boite.appendChild(actions); boite.appendChild(noteExport);
-      note.appendChild(boite);
-      document.documentElement.setAttribute("data-jjk-opening-error", "1");
+      note.appendChild(h); note.appendChild(p); note.appendChild(b); note.appendChild(exportButton); note.appendChild(noteExport);
     }
     function chargerCss(urls, fini) {
       var i = 0;
@@ -136,8 +110,7 @@
         l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk", "1");
         l.onload = suivant;
         l.onerror = function () {
-          afficherErreur("Impossible d’ouvrir le personnage",
-            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+          afficherErreur();
         };
         document.head.appendChild(l);
       }
@@ -152,8 +125,7 @@
         script.src = u;
         script.onload = suivant;
         script.onerror = function () {
-          afficherErreur("Impossible d’ouvrir le personnage",
-            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+          afficherErreur();
         };
         document.body.appendChild(script);
       }
@@ -168,27 +140,24 @@
               !window.JjkAttrMap || typeof window.JjkAttrMap.attrsToState !== "function" ||
               typeof window.JjkAttrMap.stateToAttrs !== "function" ||
               !window.JjkAttrMap.PREFIX || !window.__jjkRoll20BootReady) {
-            afficherErreur("Impossible d’ouvrir le personnage",
-              "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+            afficherErreur();
             return;
           }
           termine = true;
-          if (timer) clearTimeout(timer);
         });
       });
     }
     function recevoir(m) {
       if (termine) return;
       if (!valide(m)) {
-        afficherErreur("Impossible d’ouvrir le personnage",
-          "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+        afficherErreur();
         return;
       }
       lancer(m);
     }
     timer = setTimeout(function () {
-      afficherErreur("Impossible d’ouvrir le personnage",
-        "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+      if (window.__jjkOpeningDone) return;
+      afficherErreur();
     }, delai);
     try {
       fetch("jjk-manifeste.json?t=" + Date.now(), { cache: "no-store" })
@@ -197,12 +166,10 @@
           return r.json();
         })
         .then(recevoir, function () {
-          afficherErreur("Impossible d’ouvrir le personnage",
-            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+          afficherErreur();
         });
     } catch (e) {
-      afficherErreur("Impossible d’ouvrir le personnage",
-        "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
+      afficherErreur();
     }
   })();
   </script>

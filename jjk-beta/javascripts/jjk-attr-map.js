@@ -58,7 +58,7 @@
   // est. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "4.2.4b";
+  var RELEASE_DEFAUT = "4.3.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
@@ -107,7 +107,7 @@
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
-    ["pvMaxOverride", "pv_max_force", "N"],
+    ["pvMaxOverride", "pv_max_force", "N"], ["emMax", "em_max", "n"],
     ["vitesseOverride", "vitesse_force", "N"],
     ["regenOverride", "regen_force", "N"],
     ["langueBase", "langue_base", "s"],
@@ -220,7 +220,7 @@
       xpTotal: 500,
       comps: {}, customComps: [],
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, narration: 3,
+      pv: null, em: null, emMax: 0, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: {
         texte: [], groupes: ["Sur soi"], objets: [],
@@ -341,7 +341,12 @@
       put(d[1], JSON.stringify(state[d[0]]));
     });
     // PV courant nullable : conservé à l'exact (null = « au maximum »)
-    put("etat_courant", JSON.stringify({ pv: state.pv == null ? null : state.pv }));
+    put("etat_courant", JSON.stringify({
+      pv: state.pv == null ? null : state.pv,
+      em: state.em == null ? null : state.em
+    }));
+    // Miroir direct utilisable dans les macros Roll20, avec le maximum en max.
+    put("em", state.em == null ? state.emMax : state.em, state.emMax);
 
     // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est fournie ----
     if (card) {
@@ -418,6 +423,7 @@
       try {
         var o2 = JSON.parse(ec);
         s.pv = (o2 && o2.pv != null) ? o2.pv : null;
+        if (o2 && Object.prototype.hasOwnProperty.call(o2, "em")) s.em = o2.em == null ? null : o2.em;
       } catch (e) {}
     }
     return s;
@@ -612,7 +618,7 @@
     return root.JjkSync.Compact.encode(state);
   }
   function mirrorAttrs(state, card) {
-    var all = stateToAttrs(state, card), keep = ["version", "mind", "body", "prestance", "pv", "vitesse", "initiative", "regen", "poids"];
+    var all = stateToAttrs(state, card), keep = ["version", "mind", "body", "prestance", "pv", "em", "em_max", "vitesse", "initiative", "regen", "poids"];
     var out = {};
     keep.forEach(function (k) { var n = PREFIX + k; if (all[n]) out[n] = all[n]; });
     return out;

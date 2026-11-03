@@ -466,23 +466,49 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 /* tuiles (Vitesse, Régén) : leviers centrés sous la valeur */
 .pc-big .pc-mmods { display: flex; justify-content: center; margin-top: .12rem; }
 
-/* ligne du maximum de PV : override « Forcé » (vide = calculé) + divers */
-/* Jauge PV : la barre Outward, ramenée à l'accent turquoise JJK. Elle reste
-   une lecture proportionnelle ; les valeurs négatives demeurent dans le nombre. */
-.pc-pv-bar {
-  width: 100%; height: .46rem; margin: .16rem 0 .22rem;
-  overflow: hidden; border-radius: 999px; background: var(--line-2);
+/* Réserves PV / EM : composition empruntée à Outward, palette et typographie JJK.
+   La jauge traverse le module de bord à bord ; les valeurs et commandes restent
+   dans la carte, et les courants restent jouables même en mode Consultation. */
+.pc-vital-block { padding: 0; overflow: hidden; }
+.pc-vital-block > .pc-block-title { margin: 0; padding: .35rem .5rem .2rem; }
+.pc-vital-head { display: flex; align-items: baseline; gap: .24rem; padding: .22rem .5rem .18rem; }
+.pc-vital-num {
+  width: 3.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  border-radius: 0; background: transparent; color: var(--ink); font: inherit;
+  font-size: .9rem; font-weight: 700; text-align: right; padding: 0 .08rem .03rem;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
 }
-.pc-pv-bar-fill {
-  width: 0; height: 100%; border-radius: inherit;
-  background: var(--accent); transition: width .16s ease, background-color .16s ease;
+.pc-vital-num::-webkit-inner-spin-button, .pc-vital-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-num:focus { outline: none; border-bottom: 2px solid var(--vital-color); }
+.pc-vital-separator, .pc-vital-max { color: var(--ink-3); font-size: .66rem; font-variant-numeric: tabular-nums; }
+.pc-vital-max.adj { color: var(--vital-color); font-weight: 700; }
+.pc-vital-block.pc-vital-pv { --vital-color: #97454A; --vital-low: #B17F49; }
+.pc-vital-block.pc-vital-em { --vital-color: #438C96; --vital-low: #356F78; }
+html.night .pc-vital-block.pc-vital-pv { --vital-color: #A94B50; --vital-low: #D0A45F; }
+html.night .pc-vital-block.pc-vital-em { --vital-color: #4B929B; --vital-low: #3A747C; }
+.pc-vital-jauge {
+  width: 100%; height: .48rem; overflow: hidden; border-radius: 0;
+  background: var(--line-2);
 }
-.pc-pv-bar.low .pc-pv-bar-fill { background: #C08A4E; }
-.pc-pv-bar.critical .pc-pv-bar-fill { background: var(--red); }
-html.night .pc-pv-bar-fill { background: #4A9FA8; }
-html.night .pc-pv-bar.low .pc-pv-bar-fill { background: #D8B977; }
-html.night .pc-pv-bar.critical .pc-pv-bar-fill { background: #C96B62; }
-.pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .05rem 0; font-size: .62rem; color: var(--ink-3); }
+.pc-vital-jauge > i {
+  display: block; width: 0; height: 100%; border-radius: inherit;
+  background: var(--vital-color); transition: width .15s ease, background-color .15s ease;
+}
+.pc-vital-jauge.low > i { background: var(--vital-low); }
+.pc-vital-jauge.critical > i { background: var(--red); }
+.pc-vital-commandes { display: flex; align-items: center; gap: .28rem; padding: .25rem .5rem .38rem; }
+.pc-vital-commandes .sp { flex: 1; }
+.pc-vital-delta {
+  box-sizing: border-box; width: 3.4rem; min-width: 0; border: 1px solid var(--line-2);
+  border-radius: 4px; padding: .13rem .25rem; background: var(--panel); color: var(--ink);
+  font: inherit; font-size: .62rem; text-align: center; -moz-appearance: textfield; appearance: textfield;
+}
+.pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-delta:focus { outline: none; border-color: var(--vital-color); }
+.pc-vital-commandes .pc-mini { padding: .13rem .34rem; }
+.pc-vital-em .pc-block-title::after { background: #438C96; }
+html.night .pc-vital-em .pc-block-title::after { background: #4B929B; }
+.pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .5rem .4rem; font-size: .62rem; color: var(--ink-3); }
 .pc-pvmax .lbl { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
 .pc-pvmax input.force {
   width: 2.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
@@ -493,6 +519,7 @@ html.night .pc-pv-bar.critical .pc-pv-bar-fill { background: #C96B62; }
 .pc-pvmax input.force::-webkit-inner-spin-button, .pc-pvmax input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-pvmax input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-pvmax .sp { flex: 1; }
+.pc-em-max-input { font-variant-numeric: tabular-nums; }
 
 /* mêmes leviers, version étroite : dans une tuile (Vitesse, Régén / jour), où
    « Forcé » et « Modificateurs » s'empilent sous la valeur */
