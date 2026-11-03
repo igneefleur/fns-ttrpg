@@ -408,14 +408,6 @@
     descendre: function () {}
   });
 
-  JjkMigr.ajouter({
-    schema: 4,
-    titre: "Stockage collaboratif Compact",
-    notes: "Les données sont déplacées des Attributes monolithiques vers des blocs vérifiés et un journal d’opérations. L’état du personnage et les règles restent identiques.",
-    monter: function () {},
-    descendre: function () {}
-  });
-
   global.JjkMigr = JjkMigr;
   if (typeof module === "object" && module && module.exports) module.exports = JjkMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));

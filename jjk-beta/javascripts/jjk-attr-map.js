@@ -10,14 +10,11 @@
  *   - setRelease(r)             : dit quelle release TOURNE (voir release()).
  *
  * TOUS les attributs produits commencent par « jjk_ ». Trois familles :
- *   - COMPACT (source canonique après migration) : `jjk_storage` porte la
- *     photographie, `jjk_block_*` les blocs vérifiés, `jjk_stack_*` les objets
- *     immuables et `jjk_ops_*` les journaux append-only. C'est leur réunion,
- *     après rejeu des opérations, qui reconstruit l'état complet.
- *   - HISTORIQUES / MIROIRS : `jjk_state` et les attributs natifs restent
- *     disponibles pour migrer les anciennes fiches et conserver les macros
- *     compatibles. Ils ne supplantent jamais Compact dès que `jjk_storage`
- *     existe : un Compact incomplet ou corrompu gèle la fiche.
+ *   - SOURCE DE VÉRITÉ : `jjk_state` porte l'état ENTIER en JSON. C'est lui
+ *     qu'on relit pour reconstruire la fiche : il ne dérive JAMAIS quand
+ *     jjk-fiche.js gagne un champ. attrsToState le préfère à tout le reste ;
+ *     la reconstruction champ par champ n'est qu'un repli.
+ *   - NATIFS (repli + macros) : un attribut par valeur/collection.
  *   - MIROIR (écrits seulement si `card` fourni) : valeurs DÉRIVÉES pour les
  *     macros et barres de jetons Roll20 — caractéristiques TOTALES
  *     (@{perso|jjk_body}), PV courant/max, vitesse. Non relus (recalculés
@@ -58,12 +55,12 @@
   // est. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "4.4.0b";
+  var RELEASE_DEFAUT = "3.6.1b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
   // manifeste manque.
-  var SCHEMA_DEFAUT = 4;
+  var SCHEMA_DEFAUT = 3;
 
   // Release EFFECTIVE : celle du code qui TOURNE, pas celle que le site publie.
   //
@@ -107,7 +104,7 @@
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
-    ["pvMaxOverride", "pv_max_force", "N"], ["emMax", "em_max", "n"],
+    ["pvMaxOverride", "pv_max_force", "N"],
     ["vitesseOverride", "vitesse_force", "N"],
     ["regenOverride", "regen_force", "N"],
     ["langueBase", "langue_base", "s"],
@@ -187,8 +184,7 @@
   // précisément le jour où la fiche redescend de version.
   var COLLECTIONS_OPT = [
     ["grenier", "grenier"],
-    ["vHist", "v_hist"],
-    ["notesJournal", "notes_journal"]
+    ["vHist", "v_hist"]
   ];
 
   // état par défaut : MIROIR EXACT de blank() de jjk-fiche.js (mêmes clés,
@@ -204,7 +200,6 @@
       v: SCHEMA_DEFAUT, rel: RELEASE_DEFAUT,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
-      notesJournal: { format: 1, messages: [] },
       avantages: [], sansLimite: false,
       caracsPlafondMod: { Mind: 0, Body: 0, Prestance: 0 },
       caracsPlafondForce: {},
@@ -220,7 +215,7 @@
       xpTotal: 500,
       comps: {}, customComps: [],
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, em: null, emMax: 0, narration: 3,
+      pv: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: {
         texte: [], groupes: ["Sur soi"], objets: [],
@@ -341,12 +336,7 @@
       put(d[1], JSON.stringify(state[d[0]]));
     });
     // PV courant nullable : conservé à l'exact (null = « au maximum »)
-    put("etat_courant", JSON.stringify({
-      pv: state.pv == null ? null : state.pv,
-      em: state.em == null ? null : state.em
-    }));
-    // Miroir direct utilisable dans les macros Roll20, avec le maximum en max.
-    put("em", state.em == null ? state.emMax : state.em, state.emMax);
+    put("etat_courant", JSON.stringify({ pv: state.pv == null ? null : state.pv }));
 
     // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est fournie ----
     if (card) {
@@ -423,7 +413,6 @@
       try {
         var o2 = JSON.parse(ec);
         s.pv = (o2 && o2.pv != null) ? o2.pv : null;
-        if (o2 && Object.prototype.hasOwnProperty.call(o2, "em")) s.em = o2.em == null ? null : o2.em;
       } catch (e) {}
     }
     return s;
@@ -501,25 +490,6 @@
   function attrsToState(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
-    // Le stockage Compact devient la source canonique dès que son marqueur
-    // existe. Un marqueur présent mais incomplet/corrompu gèle la fiche : ne
-    // jamais retomber silencieusement sur l'ancienne photographie jjk_state.
-    var compactMeta = attrs.jjk_storage;
-    if (compactMeta != null && String(cur("storage") || "") !== "") {
-      try {
-        if (!root.JjkSync || !root.JjkSync.Compact) throw new Error("Moteur Compact indisponible");
-        // read() reconstruit la photographie ET applique tous les journaux
-        // Compact. snapshot() seul ignorerait les opérations depuis le dernier
-        // point de compactage et ferait perdre les dernières modifications à
-        // la première ouverture ou au prochain export.
-        var compact = root.JjkSync.Compact.read(attrs);
-        if (!compact || !compact.state || typeof compact.state !== "object") throw new Error("Photographie Compact absente");
-        if (compact.incomplete) throw new Error("Journal Compact incomplet : certaines données référencées ne sont pas encore disponibles");
-        return attacher(compact.state, null, null);
-      } catch (eCompact) {
-        return attacher(blank(), "illisible", "Stockage Compact illisible : " + String(eCompact && eCompact.message || eCompact));
-      }
-    }
     var full = cur("state");
 
     if (full !== undefined && full !== "") {
@@ -552,30 +522,14 @@
   // Version de la fiche qui a écrit ces attributs, SANS reconstruire l'état :
   //   { schema, release } — schema = entier de format (state.v), release = le
   //   numéro lisible ("3.0.0") ; null si le personnage n'a pas de fiche.
-  // Le schéma vient d'abord de Compact, dont la lecture applique aussi les
-  // journaux. Sur une ancienne fiche non migrée, jjk_state reste le repli ; le
-  // scalaire jjk_version demeure lisible même si la photographie est illisible.
+  // Le schéma vient d'abord de jjk_state (seule source que la fiche met à jour
+  // en migrant), puis du scalaire jjk_version — qui reste lisible même quand
+  // jjk_state ne l'est plus, et c'est justement ce cas-là qui compte.
   function ficheDe(attrs) {
     attrs = attrs || {};
     var cur = lecteur(attrs);
     var schema = null, rel = null;
-    if (attrs.jjk_storage != null && String(cur("storage") || "") !== "") {
-      try {
-        if (!root.JjkSync || !root.JjkSync.Compact) throw new Error("Moteur Compact indisponible");
-        // La version peut elle aussi être portée par une opération ciblée ;
-        // lire le flux complet évite de vérifier une ancienne photographie.
-        var compact = root.JjkSync.Compact.read(attrs);
-        if (!compact || !compact.state || compact.incomplete) throw new Error("Stockage Compact incomplet");
-        schema = isFinite(parseFloat(compact.state.v)) ? num(compact.state.v) : null;
-        rel = typeof compact.state.rel === "string" ? compact.state.rel : null;
-        if (schema !== null || rel !== null) return { schema: schema, release: rel };
-      } catch (eCompact) {
-        // Le lecteur principal signalera l'état illisible et gèlera les écritures.
-        var cv = cur("version"), cm = cur("version", "max");
-        return { schema: cv !== undefined && isFinite(parseFloat(cv)) ? num(cv) : null,
-          release: typeof cm === "string" ? cm : null };
-      }
-    }
+
     var full = cur("state");
     if (full !== undefined && full !== "") {
       try {
@@ -610,18 +564,7 @@
   function hasSheet(names) {
     if (!names) return false;
     var list = Array.isArray(names) ? names : Object.keys(names);
-    return list.indexOf(PREFIX + "version") >= 0 || list.indexOf("jjk_storage") >= 0;
-  }
-
-  function compactAttrs(state) {
-    if (!root.JjkSync || !root.JjkSync.Compact) throw new Error("Moteur Compact indisponible");
-    return root.JjkSync.Compact.encode(state);
-  }
-  function mirrorAttrs(state, card) {
-    var all = stateToAttrs(state, card), keep = ["version", "mind", "body", "prestance", "pv", "em", "em_max", "vitesse", "initiative", "regen", "poids"];
-    var out = {};
-    keep.forEach(function (k) { var n = PREFIX + k; if (all[n]) out[n] = all[n]; });
-    return out;
+    return list.indexOf(PREFIX + "version") >= 0;
   }
 
   var api = {
@@ -632,8 +575,6 @@
     release: release,
     setRelease: setRelease,
     stateToAttrs: stateToAttrs,
-    compactAttrs: compactAttrs,
-    mirrorAttrs: mirrorAttrs,
     attrsToState: attrsToState,
     diagnostic: diagnostic,
     ficheDe: ficheDe,
