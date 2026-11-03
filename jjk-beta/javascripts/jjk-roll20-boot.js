@@ -80,6 +80,10 @@
   var echecs = 0;               // confirmations manquées d'affilée
   var premierPendingAt = 0, saveStatusTimer = null, saveFailure = "";
   var ready = false;            // les sauvegardes ne partent qu'après hydratation + montage
+  var OPERATION_TIMEOUT = 36000;
+  var operationTimer = null, operationSerial = 0, operationBusy = false;
+  var failureKind = "", loadingKind = "opening";
+  var openingStartedAt = Date.now();
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session
@@ -1148,6 +1152,40 @@
     return b;
   }
 
+  // Même cycle d'ouverture que Outward : le même écran reste affiché durant
+  // la lecture Roll20, la décision de version et le montage réel du bundle.
+  function startLoading(kind, step) {
+    if (kind === "opening" && !operationBusy && operationSerial) openingStartedAt = Date.now();
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+    loadingKind = kind || "opening";
+    failureKind = "";
+    operationBusy = true;
+    var serial = ++operationSerial;
+    if (operationTimer) clearTimeout(operationTimer);
+    ecranAttente("Chargement du personnage", step || "Vérification de l’extension…");
+    operationTimer = setTimeout(function () {
+      if (serial !== operationSerial) return;
+      operationBusy = false;
+      if (loadingKind === "upgrade") { erreurMiseAJour(); return; }
+      var retry = relireOuverture;
+      relectureOuverture = false;
+      ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
+        { reessayer: retry });
+    }, kind === "opening" ? Math.max(0, OPERATION_TIMEOUT - (Date.now() - openingStartedAt)) : OPERATION_TIMEOUT);
+    return serial;
+  }
+  function stopLoading() {
+    operationBusy = false;
+    ++operationSerial;
+    if (operationTimer) clearTimeout(operationTimer);
+    operationTimer = null;
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+  }
+  function updateLoading(step) {
+    var p = document.querySelector("#jjk-ecran .jjk-ecran-boite p");
+    if (p && operationBusy) p.textContent = step;
+  }
+
   function exportButton(zone, available) {
     var b = bouton(zone, "Exporter les données disponibles", "export", exporter);
     if (!available) griser(b, "Aucune donnée du personnage disponible à exporter.", zone.parentNode);
@@ -1182,14 +1220,8 @@
   function relireOuverture() {
     if (relectureOuverture) return;
     relectureOuverture = true;
-    ecranAttente("Chargement du personnage", "Chargement des données du personnage depuis Roll20…");
+    startLoading("opening", "Chargement des données du personnage depuis Roll20…");
     post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
-    setTimeout(function () {
-      if (!relectureOuverture) return;
-      relectureOuverture = false;
-      ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
-        { reessayer: relireOuverture });
-    }, 40000);
   }
   function ecranDonneesIncompletes(state) {
     var raison = state && state.raison ? String(state.raison) : "incomplet";
@@ -1498,7 +1530,7 @@
     if (bundleCharge || bundleEnCours || !spec || !Array.isArray(spec.js) || !spec.js.length) return;
     bundleEnCours = true;
     ready = false;
-    fermerEcran();
+    updateLoading("Préparation de la fiche…");
     window.__jjkDataUrl = spec.data || null;
     if (M && M.setRelease) M.setRelease(spec.release || null);
 
@@ -1522,9 +1554,9 @@
       }
       bundleEnCours = false;
       bundleCharge = true;
+      stopLoading();
+      fermerEcran();
       poserModeBar();
-      // Le message d'attente reste visible pendant l'hydratation et le montage.
-      // On ne le retire qu'une fois la fiche réellement prête.
       note(null);
       if (!syncWatchdogTimer) syncWatchdogTimer = setInterval(verifieSilenceSynchronisation, 1200);
       post({ type: "mounted" });
@@ -1834,7 +1866,7 @@
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }
     if (relecture) {
       ready = false; gele = false; decide = false; attrsPrets = false;
-      attrsVus = null; fermerEcran(); fermerBandeau();
+      attrsVus = null; fermerBandeau();
     }
     attrs = attrs || {};
     var state = M.attrsToState(attrs);
@@ -1936,7 +1968,11 @@
       // provenir de la photographie Backbone locale, antérieure aux écritures
       // d'un autre joueur. Toutes les voies d'ouverture,
       // récupération et confirmation attendent une lecture serveur fraîche.
-      if (d.fresh !== true) return;
+      if (d.fresh !== true) {
+        if (hydrated) sondeReponse(null);
+        return;
+      }
+      updateLoading("Chargement des données du personnage depuis Roll20…");
       noteLectureFraiche();
       if (relectureOuverture) {
         relectureOuverture = false;
@@ -1954,27 +1990,6 @@
     else if (d.type === "take" && d.payload) window.__jjkTake(d.payload);
     // liste des joueurs connectés, en réponse à __jjkPlayers
     else if (d.type === "players-result") playersReply(d.players || []);
-    else if (d.type === "hydrate-refresh-error" && d.charId === CHAR_ID) {
-      sondeReponse(null);
-      if (relectureOuverture) {
-        relectureOuverture = false;
-        ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
-          { reessayer: relireOuverture });
-      } else if (!hydrated) {
-        // AVANT la première hydratation, ce n'est pas une perte de sauvegarde :
-        // le personnage n'est pas encore chargé et ready vaut false. Passer par
-        // bandeauPerte() est sans effet (afficheErreurEnregistrement retourne
-        // immédiatement), ce qui laissait l'écran « Vérification de l'extension »
-        // affiché indéfiniment. Outward traite un échec d'ouverture dans son
-        // circuit d'ouverture, jamais dans celui des sauvegardes.
-        if (askTimer) { clearTimeout(askTimer); askTimer = null; }
-        ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
-          { reessayer: relireOuverture });
-      } else if (!gele) {
-        bandeauPerte();
-        alerteSyncSilencieuse = true;
-      }
-    }
     else if (d.type === "presence-state" && (!d.charId || d.charId === CHAR_ID)) {
       presenceRecu = true;
       if (d.player && typeof d.player.id === "string") presencePlayer = d.player;
@@ -2032,24 +2047,17 @@
     return;
   }
 
-  // Réclamer les Attributes jjk_* au pont d20, avec relances : le pont vient
-  // peut-être d'être injecté, et cette page arrive par le réseau (plus tard
-  // que l'ancienne amorce embarquée).
-  // La relance s'arrête à la PREMIÈRE hydratation : au-delà, un « load » de
-  // plus produirait un « hydrate » de plus, et donc une réponse tardive qui
-  // n'aurait plus rien à hydrater.
-  var tries = 0;
-  (function ask() {
-    askTimer = null;
-    if (hydrated) return;
-    tries++;
-    if (pontRefuse) return;
-    if (tries > 80) {
-      ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
-        { reessayer: function () { tries = 0; ask(); } });
-      return;
-    }
-    post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
-    askTimer = setTimeout(ask, 500);
-  })();
+  // Même boucle que la fiche Outward : une lecture par demi-seconde jusqu'à
+  // l'hydratation, le délai commun (36 s) décidant seul de l'écran d'erreur.
+  function demanderOuverture() {
+    if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+    startLoading("opening", "Vérification de l’extension…");
+    (function ask() {
+      askTimer = null;
+      if (hydrated || failureKind || pontRefuse) return;
+      post({ type: "load", resync: true, allege: true, viewId: VIEW_ID });
+      askTimer = setTimeout(ask, 500);
+    })();
+  }
+  demanderOuverture();
 })();

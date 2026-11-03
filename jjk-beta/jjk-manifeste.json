@@ -1,7 +1,7 @@
 {
   "_lisezmoi": "Manifeste de la fiche JJK. C'est LUI qui dit quoi charger. roll20-fiche.html est un amorceur gelé, servi sans ?v= par la coquille signée et gardé dix minutes par GitHub Pages : il ne peut donc pas nommer les fichiers lui-même sans risquer de les figer. Ce manifeste, lui, se relit sans cache à chaque ouverture. Toutes les URL sont RELATIVES à la racine du site ; une URL absolue est refusée.",
   "_versions": "release et schema sont DEUX numéros indépendants. release est le numéro publié, X.Y.Z, chaque nombre de 0 à 999 avec retenue ; le site beta y colle un b, que le site public ne porte jamais et qui NE CHANGE PAS LE RANG (3.6.0b et 3.6.0 sont de même rang, la beta étant ce que le public recevra à la fusion). schema est un entier qui ne monte QUE lorsque la forme de l’état du personnage change : il ne se déduit plus du premier nombre de la release. Toute différence de release OU de schéma impose le même écran de choix avant l’ouverture ; aucun choix n’est mémorisé. blocage reste fixé à \"release\" pour signaler cette politique. Les trois porteurs du numéro (ce manifeste, RELEASE de jjk-fiche.js, RELEASE_DEFAUT de jjk-attr-map.js) montent ENSEMBLE, suffixe compris : scripts/verif_versions.py refuse le contraire.",
-  "release": "4.3.2b",
+  "release": "4.4.0b",
   "schema": 4,
   "blocage": "release",
   "amorce": [
