@@ -21,28 +21,254 @@
        irréductiblement périmable du dispositif, et il n'a plus de raison de
        changer.
 
-       Il n'existe AUCUN bundle de repli. Si le manifeste ou un fichier
-       obligatoire manque, un écran bloquant apparaît : ouvrir une fiche
-       partiellement chargée risquerait de réécrire des données sans les lire. -->
+       Si le manifeste ne répond pas, un repli gelé charge les fichiers JJK
+       connus sous un seul numéro de version. Un script essentiel absent
+       produit un écran bloquant : aucune fiche partielle n'est montée. -->
   <link rel="stylesheet" href="stylesheets/fonts.css">
 </head>
 <body>
   <div id="jjk-roll20-note" role="status"><h1>Chargement du personnage</h1><p>Vérification de l’extension…</p></div>
   <div id="perso-atelier"><noscript>La fiche a besoin de JavaScript.</noscript></div>
   <script>
-  // JOUR / NUIT, tout de suite. Cette poignée de lignes doit rester ICI, dans
-  // l'amorceur : elle s'exécute AVANT le premier rendu. Passée à l'amorce, qui
-  // n'arrive qu'après la lecture du manifeste, elle ferait clignoter la fiche
-  // en clair avant de basculer en sombre. La règle ne changera plus : indice
-  // n=1/0 du hash (posé par l'extension d'après le thème de Roll20), sinon la
-  // préférence locale, sinon le thème du navigateur. L'amorce la rejoue.
+  // JOUR / NUIT, tout de suite : même règle que la fiche Outward.
   (function () {
     "use strict";
-    var termine = false;
-    // Secours ultime si une ressource ne déclenche ni load ni error.
-    // Les étapes normales ont leurs propres délais plus courts dans l'amorce.
-    var delai = 90000;
-    var timer = null;
+    try {
+      var h = location.hash || "", p = null;
+      try { p = localStorage.getItem("jjk-r20-night"); } catch (e) {}
+      var on = p === "0" ? false
+        : p === "1" ? true
+        : (/[#&]n=1/.test(h) ? true : /[#&]n=0/.test(h) ? false
+          : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches));
+      document.documentElement.classList.toggle("night", on);
+    } catch (e) {}
+  })();
+  (function () {
+    "use strict";
+    // Repli gelé, construit sur le même modèle que celui d'Outward : si le
+    // manifeste ne répond pas, l'ouverture utilise un ensemble COHÉRENT de
+    // fichiers connus, jamais un mélange de manifeste et de valeurs devinées.
+    var DEFAUT = {
+      release: "4.3.2b",
+      schema: 4,
+      blocage: "release",
+      amorce: [
+        "javascripts/jjk-sync.js?v=75",
+        "javascripts/jjk-attr-map.js?v=76",
+        "javascripts/jjk-save-progress.js?v=74",
+        "javascripts/jjk-roll20-boot.js?v=76"
+      ],
+      bundle: {
+        js: [
+          "javascripts/jjk-migrations.js?v=75",
+          "javascripts/jjk-mods.js?v=75",
+          "javascripts/jjk-fiche.js?v=76"
+        ],
+        css: ["stylesheets/jjk-fiche.css?v=75", "stylesheets/jjk-roll20.css?v=75"],
+        data: null,
+        compactStorage: true
+      },
+      archives: {
+      "3.0.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.0.0/jjk-migrations.js",
+                  "fiche/v3.0.0/jjk-mods.js",
+                  "fiche/v3.0.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.0.0/jjk-fiche.css",
+                  "fiche/v3.0.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.0.0/jjk-attr-map.js",
+            "data": "fiche/v3.0.0/jjk-creation.json"
+      },
+      "3.1.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.1.0/jjk-migrations.js",
+                  "fiche/v3.1.0/jjk-mods.js",
+                  "fiche/v3.1.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.1.0/jjk-fiche.css",
+                  "fiche/v3.1.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.1.0/jjk-attr-map.js",
+            "data": "fiche/v3.1.0/jjk-creation.json"
+      },
+      "3.1.1": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.1.1/jjk-migrations.js",
+                  "fiche/v3.1.1/jjk-mods.js",
+                  "fiche/v3.1.1/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.1.1/jjk-fiche.css",
+                  "fiche/v3.1.1/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.1.1/jjk-attr-map.js",
+            "data": "fiche/v3.1.1/jjk-creation.json"
+      },
+      "3.1.2": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.1.2/jjk-migrations.js",
+                  "fiche/v3.1.2/jjk-mods.js",
+                  "fiche/v3.1.2/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.1.2/jjk-fiche.css",
+                  "fiche/v3.1.2/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.1.2/jjk-attr-map.js",
+            "data": "fiche/v3.1.2/jjk-creation.json"
+      },
+      "3.2.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.2.0/jjk-migrations.js",
+                  "fiche/v3.2.0/jjk-mods.js",
+                  "fiche/v3.2.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.2.0/jjk-fiche.css",
+                  "fiche/v3.2.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.2.0/jjk-attr-map.js",
+            "data": "fiche/v3.2.0/jjk-creation.json"
+      },
+      "3.3.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.3.0/jjk-migrations.js",
+                  "fiche/v3.3.0/jjk-mods.js",
+                  "fiche/v3.3.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.3.0/jjk-fiche.css",
+                  "fiche/v3.3.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.3.0/jjk-attr-map.js",
+            "data": "fiche/v3.3.0/jjk-creation.json"
+      },
+      "3.4.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.4.0/jjk-migrations.js",
+                  "fiche/v3.4.0/jjk-mods.js",
+                  "fiche/v3.4.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.4.0/jjk-fiche.css",
+                  "fiche/v3.4.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.4.0/jjk-attr-map.js",
+            "data": "fiche/v3.4.0/jjk-creation.json"
+      },
+      "3.5.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.5.0/jjk-migrations.js",
+                  "fiche/v3.5.0/jjk-mods.js",
+                  "fiche/v3.5.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.5.0/jjk-fiche.css",
+                  "fiche/v3.5.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.5.0/jjk-attr-map.js",
+            "data": "fiche/v3.5.0/jjk-creation.json"
+      },
+      "3.6.0": {
+            "schema": 3,
+            "js": [
+                  "fiche/v3.6.0/jjk-migrations.js",
+                  "fiche/v3.6.0/jjk-mods.js",
+                  "fiche/v3.6.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v3.6.0/jjk-fiche.css",
+                  "fiche/v3.6.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v3.6.0/jjk-attr-map.js",
+            "data": "fiche/v3.6.0/jjk-creation.json"
+      },
+      "4.0.0": {
+            "schema": 4,
+            "js": [
+                  "fiche/v4.0.0/jjk-migrations.js",
+                  "fiche/v4.0.0/jjk-mods.js",
+                  "fiche/v4.0.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v4.0.0/jjk-fiche.css",
+                  "fiche/v4.0.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v4.0.0/jjk-attr-map.js",
+            "data": "fiche/v4.0.0/jjk-creation.json"
+      },
+      "4.1.0": {
+            "schema": 4,
+            "js": [
+                  "fiche/v4.1.0/jjk-migrations.js",
+                  "fiche/v4.1.0/jjk-mods.js",
+                  "fiche/v4.1.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v4.1.0/jjk-fiche.css",
+                  "fiche/v4.1.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v4.1.0/jjk-attr-map.js",
+            "data": "fiche/v4.1.0/jjk-creation.json"
+      },
+      "4.2.0": {
+            "schema": 4,
+            "js": [
+                  "fiche/v4.2.0/jjk-migrations.js",
+                  "fiche/v4.2.0/jjk-mods.js",
+                  "fiche/v4.2.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v4.2.0/jjk-fiche.css",
+                  "fiche/v4.2.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v4.2.0/jjk-attr-map.js",
+            "data": "fiche/v4.2.0/jjk-creation.json"
+      },
+      "4.3.0": {
+            "schema": 4,
+            "js": [
+                  "fiche/v4.3.0/jjk-migrations.js",
+                  "fiche/v4.3.0/jjk-mods.js",
+                  "fiche/v4.3.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v4.3.0/jjk-fiche.css",
+                  "fiche/v4.3.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v4.3.0/jjk-attr-map.js",
+            "data": "fiche/v4.3.0/jjk-creation.json"
+      }
+},
+      extension: {
+        minVersion: "4.2.1.1",
+        bridgeProtocol: 2,
+        requiredCapabilities: [
+          "compactStorage", "operationJournal", "readAfterWrite", "storageActivation",
+          "storageCleanup", "storageRelease", "sharedMode", "localBackups",
+          "backupRestore", "narrationIndependent", "sessionRelay"
+        ]
+      }
+    };
+    var manifesteChoisi = false, erreurAffichee = false;
+    var garde = setTimeout(function () {
+      // Le garde ne surveille que le chargement des fichiers. Dès que le
+      // boot JJK a démarré, c'est lui qui gère le délai de réponse de Roll20.
+      if (window.__jjkRoll20BootReady) return;
+      afficherErreur();
+    }, 10000);
 
     function urlSure(u) {
       return typeof u === "string" && !!u &&
@@ -61,7 +287,7 @@
     }
     function valide(m) {
       if (!m || typeof m !== "object" || !versionSure(m.release) ||
-          !Number.isInteger(m.schema) || m.schema < 1 ||
+          !Number.isInteger(m.schema) || m.schema < 1 || m.blocage !== "release" ||
           !listeSure(m.amorce, false)) return false;
       var b = m.bundle;
       if (!b || typeof b !== "object" || !listeSure(b.js, false) ||
@@ -76,9 +302,10 @@
       return true;
     }
     function afficherErreur() {
-      if (timer) clearTimeout(timer);
+      if (erreurAffichee) return;
+      erreurAffichee = true;
+      clearTimeout(garde);
       window.__jjkOpeningDone = true;
-      termine = true;
       var note = document.getElementById("jjk-roll20-note");
       if (!note) {
         note = document.createElement("div");
@@ -103,82 +330,70 @@
       noteExport.textContent = "Aucune donnée du personnage disponible à exporter.";
       note.appendChild(h); note.appendChild(p); note.appendChild(b); note.appendChild(exportButton); note.appendChild(noteExport);
     }
-    function chargerCss(urls, fini) {
-      var i = 0;
-      function suivant() {
-        if (termine) return;
-        if (i >= urls.length) { fini(); return; }
-        var u = urls[i++], l = document.createElement("link"), fini = false;
-        l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk", "1");
-        var delai = setTimeout(function () {
-          if (fini) return; fini = true; afficherErreur();
-        }, 15000);
-        l.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
-        l.onerror = function () {
-          if (fini) return; fini = true; clearTimeout(delai); afficherErreur();
-        };
-        document.head.appendChild(l);
-      }
-      suivant();
+    function css(url) {
+      // Comme Outward, les styles partent en parallèle : ils ne doivent jamais
+      // empêcher l'injection des scripts ni bloquer l'hydratation Roll20.
+      var link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = url;
+      link.setAttribute("data-jjk", "1");
+      document.head.appendChild(link);
     }
-    function chargerScripts(urls, fini) {
+    function serie(urls, fini) {
       var i = 0;
-      function suivant() {
-        if (termine) return;
+      (function suivant() {
+        if (erreurAffichee) return;
         if (i >= urls.length) { fini(); return; }
-        var u = urls[i++], script = document.createElement("script"), fini = false;
-        script.src = u;
+        var url = urls[i++], script = document.createElement("script"), terminee = false;
         var delai = setTimeout(function () {
-          if (fini) return; fini = true; afficherErreur();
+          if (terminee) return;
+          terminee = true;
+          afficherErreur();
         }, 15000);
-        script.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
+        script.src = url;
+        script.onload = function () {
+          if (terminee) return;
+          terminee = true;
+          clearTimeout(delai);
+          suivant();
+        };
         script.onerror = function () {
-          if (fini) return; fini = true; clearTimeout(delai); afficherErreur();
+          if (terminee) return;
+          terminee = true;
+          clearTimeout(delai);
+          afficherErreur();
         };
         document.body.appendChild(script);
-      }
-      suivant();
+      })();
     }
     function lancer(m) {
-      if (termine) return;
+      if (erreurAffichee) return;
       window.__jjkManifeste = m;
-      chargerCss(m.bundle.css, function () {
-        chargerScripts(m.amorce, function () {
-          if (!window.JjkSync || !window.JjkSync.Compact ||
-              !window.JjkAttrMap || typeof window.JjkAttrMap.attrsToState !== "function" ||
-              typeof window.JjkAttrMap.stateToAttrs !== "function" ||
-              !window.JjkAttrMap.PREFIX || !window.__jjkRoll20BootReady) {
-            afficherErreur();
-            return;
-          }
-          termine = true;
-        });
+      (m.bundle.css || []).forEach(css);
+      serie(m.amorce, function () {
+        if (!window.JjkSync || !window.JjkSync.Compact ||
+            !window.JjkAttrMap || typeof window.JjkAttrMap.attrsToState !== "function" ||
+            typeof window.JjkAttrMap.stateToAttrs !== "function" ||
+            !window.JjkAttrMap.PREFIX || !window.__jjkRoll20BootReady) {
+          afficherErreur();
+          return;
+        }
+        clearTimeout(garde);
       });
     }
-    function recevoir(m) {
-      if (termine) return;
-      if (!valide(m)) {
-        afficherErreur();
-        return;
-      }
-      lancer(m);
+    function une(m) {
+      if (manifesteChoisi || erreurAffichee) return;
+      manifesteChoisi = true;
+      // Comme Outward : manifeste entier validé, sinon repli entier gelé.
+      lancer(valide(m) ? m : DEFAUT);
     }
-    timer = setTimeout(function () {
-      if (window.__jjkOpeningDone) return;
-      afficherErreur();
-    }, delai);
+    setTimeout(function () { une(null); }, 3000);
     try {
+      // Le paramètre change aussi la clé de cache du CDN ; no-store seul ne suffit pas.
       fetch("jjk-manifeste.json?t=" + Date.now(), { cache: "no-store" })
-        .then(function (r) {
-          if (!r || !r.ok) throw new Error("HTTP " + (r && r.status));
-          return r.json();
-        })
-        .then(recevoir, function () {
-          afficherErreur();
-        });
-    } catch (e) {
-      afficherErreur();
-    }
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(une, function () { une(null); });
+    } catch (e) { une(null); }
   })();
   </script>
 </body>

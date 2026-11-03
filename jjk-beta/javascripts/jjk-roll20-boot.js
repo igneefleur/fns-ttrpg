@@ -1958,7 +1958,17 @@
       sondeReponse(null);
       if (relectureOuverture) {
         relectureOuverture = false;
-        ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("unreadable"),
+        ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
+          { reessayer: relireOuverture });
+      } else if (!hydrated) {
+        // AVANT la première hydratation, ce n'est pas une perte de sauvegarde :
+        // le personnage n'est pas encore chargé et ready vaut false. Passer par
+        // bandeauPerte() est sans effet (afficheErreurEnregistrement retourne
+        // immédiatement), ce qui laissait l'écran « Vérification de l'extension »
+        // affiché indéfiniment. Outward traite un échec d'ouverture dans son
+        // circuit d'ouverture, jamais dans celui des sauvegardes.
+        if (askTimer) { clearTimeout(askTimer); askTimer = null; }
+        ecranErreurOuverture("Impossible d’ouvrir le personnage", texteErreurOuverture("timeout"),
           { reessayer: relireOuverture });
       } else if (!gele) {
         bandeauPerte();
