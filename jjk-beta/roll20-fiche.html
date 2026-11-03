@@ -115,7 +115,7 @@
       exportButton.type = "button";
       exportButton.textContent = "Exporter les données disponibles";
       exportButton.disabled = true;
-      exportButton.title = "Aucune donnée du personnage n'a été lue.";
+      exportButton.title = "Aucune donnée du personnage disponible à exporter.";
       exportButton.style.cssText = "padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
         "background:#fff;color:#1a1a1a;font:inherit;opacity:.45;cursor:not-allowed";
       var noteExport = document.createElement("p");
@@ -136,8 +136,8 @@
         l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk", "1");
         l.onload = suivant;
         l.onerror = function () {
-          afficherErreur("Impossible de charger la fiche JJK",
-            "La feuille de style obligatoire « " + u + " » n'a pas pu être chargée. Aucune fiche partielle ne sera ouverte.");
+          afficherErreur("Impossible d’ouvrir le personnage",
+            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
         };
         document.head.appendChild(l);
       }
@@ -152,8 +152,8 @@
         script.src = u;
         script.onload = suivant;
         script.onerror = function () {
-          afficherErreur("Chargement interrompu",
-            "Le script obligatoire « " + u + " » n'a pas pu être chargé. Le montage a été arrêté pour éviter une fiche incomplète.");
+          afficherErreur("Impossible d’ouvrir le personnage",
+            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
         };
         document.body.appendChild(script);
       }
@@ -168,8 +168,8 @@
               !window.JjkAttrMap || typeof window.JjkAttrMap.attrsToState !== "function" ||
               typeof window.JjkAttrMap.stateToAttrs !== "function" ||
               !window.JjkAttrMap.PREFIX || !window.__jjkRoll20BootReady) {
-            afficherErreur("Initialisation incomplète",
-              "Les fichiers ont été téléchargés, mais les composants essentiels de la fiche ne sont pas disponibles. Aucune donnée ne sera modifiée.");
+            afficherErreur("Impossible d’ouvrir le personnage",
+              "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
             return;
           }
           termine = true;
@@ -180,15 +180,15 @@
     function recevoir(m) {
       if (termine) return;
       if (!valide(m)) {
-        afficherErreur("Impossible de vérifier la version de la fiche",
-          "Le manifeste de JJK est absent, incomplet ou invalide. La fiche n'a pas été ouverte et aucune donnée n'a été écrite. Vérifiez le déploiement du site puis rechargez.");
+        afficherErreur("Impossible d’ouvrir le personnage",
+          "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
         return;
       }
       lancer(m);
     }
     timer = setTimeout(function () {
-      afficherErreur("Le manifeste JJK ne répond pas",
-        "Le serveur n'a pas fourni le manifeste de version dans le délai prévu. Pour protéger les données, aucun ancien bundle de secours ne sera chargé.");
+      afficherErreur("Impossible d’ouvrir le personnage",
+        "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
     }, delai);
     try {
       fetch("jjk-manifeste.json?t=" + Date.now(), { cache: "no-store" })
@@ -197,12 +197,12 @@
           return r.json();
         })
         .then(recevoir, function () {
-          afficherErreur("Impossible de lire le manifeste JJK",
-            "Le manifeste de version est inaccessible ou son JSON est invalide. Aucune fiche ne sera montée sur un bundle de repli.");
+          afficherErreur("Impossible d’ouvrir le personnage",
+            "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
         });
     } catch (e) {
-      afficherErreur("Impossible de lire le manifeste JJK",
-        "Le navigateur n'a pas pu démarrer la lecture du manifeste. Aucune donnée n'a été modifiée.");
+      afficherErreur("Impossible d’ouvrir le personnage",
+        "Les fichiers nécessaires au fonctionnement de la fiche n’ont pas pu être chargés. Réessayez dans quelques instants.");
     }
   })();
   </script>

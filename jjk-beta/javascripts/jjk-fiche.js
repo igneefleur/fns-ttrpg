@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.2.2b";
+  var RELEASE = "4.2.3b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -1691,38 +1691,109 @@
       try { reg[i](); } catch (err) { if (!bilan[id]) bilan[id] = err; }
     }
   }
-  function refresh() {
+  // Une même cadence de relecture ne doit pas faire clignoter toute la fiche.
+  // Outward compare les empreintes de l'état et ne relance que les registres
+  // qui dépendent réellement des clés modifiées. Les modules JJK gardent leur
+  // propre carte de dépendances (les attributs Roll20 sont traduits en ces clés
+  // par JjkAttrMap avant d'arriver ici).
+  var refreshEmpreintes = null;
+  var VUE_DEPENDANCES = {
+    narration: ["narration"],
+    caracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
+    langues: ["langues", "langueBase", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps"],
+    initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
+    tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
+    pv: ["pv", "pvMaxOverride", "divers"],
+    armescomp: ["armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
+    comps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
+    arts: ["mods", "modData", "modActifs"],
+    armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
+    armures: ["armures", "inv", "inventaire"],
+    inv: ["inv", "inventaire", "armes", "armures", "divers"],
+    perso: ["name", "espece", "age", "sexe", "genre", "defaut", "qualites"],
+    avantages: ["avantages"],
+    bg: ["background"],
+    notes: ["notes", "notesJournal", "name"],
+    jets: ["de"],
+    actions: ["name"],
+    modcaracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
+    xpchamps: ["xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
+    creation: ["ptsCreaMod", "ptsCreaForce", "caracsBase", "caracsXp", "caracsPlafondMod", "caracsPlafondForce", "sansLimite", "comps", "compsForce", "xpTotal"],
+    mods: ["mods", "modData", "modActifs"],
+    modules: ["modules", "modActifs"],
+    optcomps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
+  };
+  var DEPENDANCES_CONNues = { v: 1, rel: 1, portrait: 1 };
+  Object.keys(VUE_DEPENDANCES).forEach(function (id) {
+    VUE_DEPENDANCES[id].forEach(function (k) { DEPENDANCES_CONNues[k] = 1; });
+  });
+  function empreinteRefresh(v) {
+    try {
+      if (window.JjkSync && window.JjkSync.Compact && typeof window.JjkSync.Compact.stable === "function")
+        return window.JjkSync.Compact.stable(v);
+    } catch (e) {}
+    return JSON.stringify(v);
+  }
+  function refresh(force) {
     save();
+    var stamps = {}, changes = [], invalidStamp = false;
+    try {
+      Object.keys(state || {}).forEach(function (k) { stamps[k] = empreinteRefresh(state[k]); });
+    } catch (e) { invalidStamp = true; }
+    Object.keys(stamps).forEach(function (k) {
+      if (!refreshEmpreintes || stamps[k] !== refreshEmpreintes[k]) changes.push(k);
+    });
+    Object.keys(refreshEmpreintes || {}).forEach(function (k) {
+      if (!Object.prototype.hasOwnProperty.call(stamps, k) && changes.indexOf(k) < 0) changes.push(k);
+    });
+    var cleInconnue = changes.some(function (k) { return !DEPENDANCES_CONNues[k]; });
+    var premierePasse = !refreshEmpreintes;
+    // JJK reçoit une photographie Roll20 toutes les 1,2 s. Une lecture
+    // identique ne doit PAS reconstruire les modules : contrairement aux
+    // rafraîchissements ponctuels d'Outward, ce chemin est périodique. Les
+    // hooks hors module restent exécutés pour garder l'en-tête et la barre
+    // cohérents ; les modules ne tournent que si une de leurs données change,
+    // si l'appelant force la passe ou si un mod exige le rafraîchissement total.
+    var tout = invalidStamp || force === true || premierePasse || modulesPersoActifs() || cleInconnue;
+    refreshEmpreintes = invalidStamp ? null : stamps;
+    function doit(id) {
+      if (tout) return true;
+      if (VUE_DEPENDANCES[id]) return changes.some(function (k) { return VUE_DEPENDANCES[id].indexOf(k) >= 0; });
+      // Les clés d'identité ne concernent que les registres hors module et
+      // « Personnalité » / « Notes », déjà traités explicitement ci-dessus.
+      if (changes.every(function (k) { return ["name", "portrait", "espece", "age", "sexe", "genre"].indexOf(k) >= 0; })) return false;
+      // Une nouvelle clé ou une dépendance inconnue doit rester visible :
+      // mieux vaut rafraîchir un module de trop que laisser un champ périmé.
+      return true;
+    }
     var bilan = {};
     joue("", regHors, bilan);
-    // les clés d'un objet se parcourent dans leur ordre de création : c'est
-    // l'ordre de montage des modules, donc l'ordre où les hooks se poussaient
-    // avant qu'ils ne soient séparés — l'affichage ne bouge pas
-    Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
-    // deux registres rebâtissables : ils appartiennent à leur module (même id,
-    // donc même muselière) mais vivent à part, leurs lignes étant détruites et
-    // recréées sans que le module le soit
-    joue("comps", compHooks, bilan);
-    joue("optcomps", optHooks, bilan);
+    Object.keys(regsModules).forEach(function (id) { if (doit(id)) joue(id, regsModules[id], bilan); });
+    if (doit("comps")) joue("comps", compHooks, bilan);
+    if (doit("optcomps")) joue("optcomps", optHooks, bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
       if (e.musele) return;
       if (!bilan[id]) { e.echecs = 0; return; }
       e.echecs++;
       e.erreur = messageErreur(bilan[id]);
-      // « » n'est pas un module mais ce qui encadre les onglets (barre
-      // d'outils, en-tête, barre d'envoi) : le museler éteindrait la fiche
-      // elle-même, sans bloc à marquer ni interrupteur pour le rallumer. Ses
-      // hooks restent sous try/catch, c'est là qu'est la protection.
       if (id && e.echecs >= MUSELIERE) {
         e.musele = true;
         museleAffiche(id, e);
       }
     });
+    // Les contrôles de construction sont recréés par certains modules : le
+    // verrou global doit être reposé après chaque passe, comme dans Outward.
+    if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
   }
+
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
   // toutes les sections tiennent des références sur l'ancien état, on remonte
   // donc la fiche entière depuis le nouvel état.
+  // Nettoyage des ressources attachées au DOM des modules (observateurs,
+  // timers et écouteurs document/window). Outward utilise le même registre :
+  // un module reconstruit doit d'abord libérer ce qu'il avait installé.
+  var remontageNettoyage = [];
   var rootEl = null;
   var appEl = null;      // le .perso-atelier monté : porte les jetons de couleur
   // C'est aussi ce que rend ctx.reconstruire et Jjk.remonte. Appelé PENDANT un
@@ -2561,6 +2632,89 @@
   // manquer à l'un d'eux.
   var MODULE_REGLAGES = "modules";
 
+  // Même garde que dans Outward : un module remplacé par un mod, un filtre
+  // personnalisé ou un mod actif impose un remontage complet. Pour les modules
+  // natifs, une modification distante ne reconstruit que les blocs concernés.
+  function moduleNatif(m) {
+    return MODULES_NATIFS.some(function (n) { return n.id === m.id && n.build === m.build; });
+  }
+  function modulesPersoActifs() {
+    return (typeof filtres !== "undefined" && Object.keys(filtres).some(function (k) { return filtres[k].length > 0; })) ||
+      (Array.isArray(modules) && modules.some(function (m) { return !moduleNatif(m); })) ||
+      ((state && state.mods) || []).some(function (m) { return m && m.actif !== false && modAutorise(m.id); });
+  }
+  function nettoieHooksModule(id) {
+    var conserves = [];
+    remontageNettoyage.forEach(function (fn) {
+      if (fn._jjkModule === id) { try { fn(); } catch (e) {} }
+      else conserves.push(fn);
+    });
+    remontageNettoyage = conserves;
+  }
+  function construitModule(m, hote, ancien) {
+    var reg = regModule(m.id), precedent = hooks, propPrecedent = proprietaireCourant;
+    var cleanStart = remontageNettoyage.length, e = null, erreurBuild = null;
+    hooks = reg;
+    proprietaireCourant = m.__mod || m.id;
+    try {
+      e = m.build(contexte(m, reg));
+      if (e && e.nodeType !== 1) e = null;
+      if (e && !e.dataset.module) e.dataset.module = m.id;
+      etatModule(m.id).panne = "";
+    } catch (err) {
+      erreurBuild = err;
+      reg.length = 0;
+    } finally {
+      hooks = precedent;
+      proprietaireCourant = propPrecedent;
+    }
+    if (erreurBuild) {
+      remontageNettoyage.splice(cleanStart).forEach(function (fn) { try { fn(); } catch (e) {} });
+      e = blocEnPanne(m, erreurBuild);
+    } else {
+      remontageNettoyage.slice(cleanStart).forEach(function (fn) { fn._jjkModule = m.id; });
+    }
+    etatModule(m.id).vide = !e;
+    if (!e) {
+      if (ancien && ancien.parentNode) ancien.parentNode.removeChild(ancien);
+      delete elModules[m.id];
+      return;
+    }
+    try {
+      if (ancien && ancien.parentNode) ancien.parentNode.replaceChild(e, ancien);
+      else hote.appendChild(e);
+      elModules[m.id] = e;
+    } catch (err2) {
+      reg.length = 0;
+      remontageNettoyage.splice(cleanStart).forEach(function (fn) { try { fn(); } catch (e) {} });
+      var carte = blocEnPanne(m, err2);
+      try {
+        if (ancien && ancien.parentNode) ancien.parentNode.replaceChild(carte, ancien);
+        else hote.appendChild(carte);
+        elModules[m.id] = carte;
+        etatModule(m.id).panne = messageErreur(err2);
+        etatModule(m.id).vide = false;
+      } catch (fatal) {
+        etatModule(m.id).vide = true;
+        delete elModules[m.id];
+        if (window.console && window.console.error) window.console.error("[fiche] insertion du module " + m.id, fatal);
+      }
+    }
+  }
+  function reconstruitModules(ids) {
+    (ids || []).forEach(function (id) {
+      var ancien = elModules[id];
+      var m = modules.filter(function (x) { return x.id === id; })[0];
+      if (!ancien || !ancien.parentNode || !m) return;
+      nettoieHooksModule(id);
+      regsModules[id] = [];
+      if (id === "comps") compHooks = [];
+      if (id === "optcomps") optHooks = [];
+      etatsModules[id] = { echecs: 0, musele: false, erreur: "", panne: "", vide: false };
+      construitModule(m, ancien.parentNode, ancien);
+    });
+  }
+
   function monteModules(panes) {
     var colonnes = {};
     elModules = {};
@@ -2597,59 +2751,9 @@
       var cols = colonnes[m.onglet];
       var hote = (cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null;
       if (!hote) { etatModule(m.id).vide = true; return; }
-      // le module construit DANS son propre registre : tout ce que ses briques
-      // y poussent lui appartient, et lui seul en répond
-      var reg = regModule(m.id);
-      var precedent = hooks;
-      // même idée pour les filtres : ceux qu'un module pose pendant son build
-      // portent son id, et c'est lui que le journal nomme s'ils déraillent
-      var propPrecedent = proprietaireCourant;
-      var e;
-      hooks = reg;
-      // le MOD qui a posé ce module, s'il vient d'un mod : c'est lui l'ayant
-      // droit de ce que le build enregistre, pas l'id du bloc
-      proprietaireCourant = m.__mod || m.id;
-      try {
-        e = m.build(contexte(m, reg));
-        // build qui rend autre chose qu'un ÉLÉMENT (une chaîne, un objet, un
-        // texte) : rien à monter, et surtout rien qui porte un dataset. Le
-        // traiter comme un build muet coûte un bloc ; le poser dans la page
-        // coûtait la fiche entière.
-        if (e && e.nodeType !== 1) e = null;
-        // les modules à rouage se sont déjà nommés (block() pose data-module) ;
-        // les autres le reçoivent ici, pour que TOUS soient repérables. DANS le
-        // try : c'est encore le module qui répond de ce qu'il a rendu.
-        if (e && !e.dataset.module) e.dataset.module = m.id;
-        etatModule(m.id).panne = "";
-      } catch (err) {
-        // build a pu pousser des fonctions avant de tomber : elles pointent
-        // sur un bloc à moitié bâti et jetteraient à chaque rafraîchissement
-        reg.length = 0;
-        e = blocEnPanne(m, err);
-      }
-      hooks = precedent;
-      proprietaireCourant = propPrecedent;
-      // build qui ne rend rien : ce n'est PAS une erreur (un module a le droit
-      // de s'effacer), mais la liste des modules doit pouvoir le signaler
-      etatModule(m.id).vide = !e;
-      if (!e) return;
-      // L'INSERTION AUSSI PEUT JETER, et c'était la dernière porte par laquelle
-      // un mod fermait la fiche. Un build qui rend document.body (ou n'importe
-      // quel ancêtre du point de montage) fait lever appendChild : hors try,
-      // l'exception sortait de mount(), la feuille restait à moitié bâtie, et
-      // comme le mod voyage avec le personnage cela recommençait à CHAQUE
-      // ouverture, sans une ligne d'interface pour le couper. Ici, c'est une
-      // carte de panne comme une autre, avec son bouton Désactiver.
-      try {
-        hote.appendChild(e);
-        elModules[m.id] = e;
-      } catch (err2) {
-        reg.length = 0;
-        var carte = blocEnPanne(m, err2);
-        elModules[m.id] = carte;
-        // la carte de panne, elle, est bâtie ici : elle s'insère forcément
-        hote.appendChild(carte);
-      }
+      // Construction centralisée : mêmes gardes à l'ouverture et lors d'une
+      // mise à jour distante ciblée, avec enregistrement des nettoyages.
+      construitModule(m, hote, null);
     });
   }
 
@@ -4420,6 +4524,10 @@
       document.removeEventListener("keydown", menuContexteTouche, true);
       menuContexte = menuContexteClic = menuContexteTouche = null;
     }
+    // Un état distant peut reconstruire le module Inventaire. Le menu flottant
+    // et ses écouteurs vivent sur document : il faut les fermer avant de jeter
+    // le bloc, sinon un ancien menu reste actif au-dessus de la nouvelle fiche.
+    remontageNettoyage.push(function () { fermeMenuContexte(); });
     function retireObjet(it) {
       var here = items.indexOf(it);
       if (here < 0) return;
@@ -6784,6 +6892,11 @@
   // d'elle-même. window.__jjkModules est l'ANCIEN nom du MÊME objet : ce qui a
   // été écrit avant la 3.0.0 continue de marcher tel quel.
   window.Jjk = {
+    // Sentinelle de montage consommée par l'amorce Roll20. Le chargement d'un
+    // script n'implique pas que ses données asynchrones soient prêtes : seule
+    // __pret=true, posé après mount(), autorise l'ouverture et les écritures.
+    __pret: false,
+    __erreur: "",
     // Les deux annoncent ce qu'ils ont toujours annoncé, mais ils ne se
     // déduisent plus l'un de l'autre : version porte le suffixe de beta le
     // cas échéant, schema est un entier libre. Un mod qui tirerait le schéma
@@ -6904,6 +7017,12 @@
     mount(root);
   }
   function montage(root) {
+    // Les observateurs et écouteurs du montage précédent ne doivent jamais
+    // survivre à une reconstruction complète de la fiche.
+    remontageNettoyage.splice(0).forEach(function (f) { try { f(); } catch (e) {} });
+    // Les références DOM et leurs empreintes appartiennent au montage : la
+    // première passe du nouvel arbre doit réinitialiser tous les hooks.
+    refreshEmpreintes = null;
     rootEl = root;
     enMontage = true;
     // tous les registres repartent à vide : les anciens pointent sur un DOM
@@ -6965,19 +7084,148 @@
   // rattraper par le .catch d'à côté, qui accusait alors le fichier de données
   // d'une faute qui n'était pas la sienne — et data-ready interdisant le
   // réessai, la fiche restait close sur un message faux. Chacun son filet.
-  // Les opérations reçues des autres fenêtres sont fusionnées par le moteur
-  // Compact de l'amorce. On remonte alors la fiche depuis l'état fusionné ;
-  // les registres DOM/hook sont reconstruits par le chemin normal de mount().
+  // Les opérations reçues des autres fenêtres sont fusionnées par Compact.
+  // Une relecture serveur toutes les 1,2 s n'est PAS un motif pour remonter
+  // toute la fiche : Outward ne reconstruit que les modules dont la structure
+  // a changé, puis restaure le focus et les défilements. Sans cela, chaque
+  // écriture distante détruisait tous les champs, les brouillons et les menus.
+  function recoitEtatCollaboratif(distant) {
+    if (!distant || typeof distant !== "object" || !rootEl) return;
+    var s;
+    try { s = normalize(distant); }
+    catch (e) { if (window.console && window.console.error) window.console.error("[fiche] état distant invalide", e); return; }
+    function stable(v) {
+      try {
+        if (window.JjkSync && window.JjkSync.Compact && typeof window.JjkSync.Compact.stable === "function")
+          return window.JjkSync.Compact.stable(v);
+      } catch (e) {}
+      try { return JSON.stringify(v); } catch (e) { return String(v); }
+    }
+    if (stable(s) === stable(state)) return;
+    var keys = Object.keys(state).concat(Object.keys(s).filter(function (k) {
+      return !Object.prototype.hasOwnProperty.call(state, k);
+    }));
+    var changes = keys.filter(function (k) { return stable(s[k]) !== stable(state[k]); });
+    if (!changes.length) return;
+
+    // Clés qui changent la liste ou la structure d'un module JJK. Les valeurs
+    // simples restent dans les hooks de refresh, sans détruire les champs.
+    var structural = {
+      notes: ["notes"], notesJournal: ["notes"], background: ["bg"],
+      avantages: ["avantages"],
+      comps: ["comps", "optcomps", "armescomp"],
+      customComps: ["comps", "optcomps"],
+      compsMod: ["comps", "optcomps", "armescomp"],
+      compsMod2: ["comps", "optcomps", "armescomp"],
+      compsXpMod2: ["comps", "optcomps", "armescomp"],
+      compsForce: ["comps", "optcomps", "armescomp"],
+      compsXpForce: ["comps", "optcomps", "armescomp"],
+      compsXpMod: ["comps", "optcomps", "armescomp"],
+      armesComps: ["comps", "optcomps", "armescomp"],
+      langues: ["langues", "comps", "optcomps"],
+      armes: ["armes"], armures: ["armures"],
+      inv: ["inv"], inventaire: ["inv"], de: ["jets"]
+    };
+    var scalar = [
+      "v", "rel", "name", "portrait", "espece", "age", "sexe", "genre",
+      "defaut", "qualites", "sansLimite", "caracsPlafondMod", "caracsPlafondForce",
+      "ptsCreaMod", "ptsCreaForce", "caracsBase", "caracsXp", "caracsMod",
+      "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod",
+      "caracsXpMod2", "xpTotal", "pv", "narration", "divers",
+      "pvMaxOverride", "vitesseOverride", "regenOverride", "langueBase"
+    ];
+    var targets = [];
+    var partial = !modulesPersoActifs() && changes.every(function (k) {
+      return Object.prototype.hasOwnProperty.call(structural, k) || scalar.indexOf(k) >= 0;
+    });
+    if (partial) changes.forEach(function (k) {
+      (structural[k] || []).forEach(function (id) { if (targets.indexOf(id) < 0) targets.push(id); });
+    });
+
+    var active = document.activeElement, focus = null, positions = [];
+    function signature(c) {
+      return [c.tagName, c.type || "", c.className || "",
+        c.getAttribute("placeholder") || "", c.getAttribute("aria-label") || ""].join("|");
+    }
+    function anchor(c) {
+      var a = c.closest("[data-sync-entity], [data-id], [data-module]") || rootEl;
+      var m = a.closest("[data-module]");
+      return { module: m ? m.dataset.module : "",
+        entity: a.dataset ? (a.dataset.syncEntity || a.dataset.id || "") : "", el: a };
+    }
+    if (active && rootEl.contains(active) && /^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName)) {
+      var a = anchor(active), sig = signature(active);
+      var similar = Array.prototype.filter.call(a.el.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === sig; });
+      focus = { module: a.module, entity: a.entity, signature: sig, index: similar.indexOf(active),
+        value: active.value, start: active.selectionStart, end: active.selectionEnd,
+        direction: active.selectionDirection, scroll: active.scrollTop };
+    }
+    var sx = window.scrollX || 0, sy = window.scrollY || 0;
+    Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
+      if (partial && targets.indexOf(m.dataset.module) < 0) return;
+      Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
+        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
+      });
+    });
+
+    if (partial) {
+      changes.forEach(function (k) {
+        if (s[k] === undefined) delete state[k];
+        else state[k] = s[k];
+      });
+      reconstruitModules(targets);
+      refresh();
+    } else {
+      state = s;
+      mount(rootEl);
+    }
+
+    positions.forEach(function (p) {
+      var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
+      var n = m && m.querySelectorAll("*")[p.index];
+      if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
+    });
+    if (focus) {
+      var scope = rootEl;
+      if (focus.module) scope = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === focus.module; });
+      if (scope && focus.entity) scope = Array.prototype.find.call(scope.querySelectorAll("[data-sync-entity], [data-id]"), function (n) { return (n.dataset.syncEntity || n.dataset.id) === focus.entity; });
+      if (scope) {
+        var fields = Array.prototype.filter.call(scope.querySelectorAll("input,textarea,select"), function (c) { return signature(c) === focus.signature; });
+        var field = fields[focus.index];
+        if (field && !field.disabled) {
+          field.focus({ preventScroll: true });
+          field.value = focus.value;
+          try { if (focus.start !== null) field.setSelectionRange(focus.start, focus.end, focus.direction); } catch (e) {}
+          field.scrollTop = focus.scroll;
+        }
+      }
+    }
+    try { window.scrollTo(sx, sy); } catch (e) {}
+  }
+
   window.addEventListener("jjk-compact-sync", function (ev) {
     if (!ev || !ev.detail || typeof ev.detail !== "object" || !rootEl) return;
-    try { state = normalize(ev.detail); mount(rootEl); }
+    try { recoitEtatCollaboratif(ev.detail); }
     catch (e) { if (window.console && window.console.error) window.console.error("[fiche] resynchronisation distante", e); }
   });
 
+  function signaleEchecOuverture(e) {
+    var message = messageErreur(e);
+    if (window.Jjk) { window.Jjk.__pret = false; window.Jjk.__erreur = message; }
+    try { window.dispatchEvent(new CustomEvent("jjk-fiche-mount-error", { detail: message })); } catch (ignore) {}
+  }
   function demarre(root) {
+    if (window.Jjk) { window.Jjk.__pret = false; window.Jjk.__erreur = ""; }
     state = load() || blank();
-    try { mount(root); }
+    try {
+      mount(root);
+      // Outward expose la même sentinelle : l'amorce ne déclare le bundle
+      // monté qu'après la construction effective du DOM et le premier refresh.
+      if (window.Jjk) { window.Jjk.__erreur = ""; window.Jjk.__pret = true; }
+      try { window.dispatchEvent(new CustomEvent("jjk-fiche-mounted")); } catch (ignore) {}
+    }
     catch (e) {
+      signaleEchecOuverture(e);
       if (window.console && window.console.error) window.console.error("[fiche] montage", e);
       root.innerHTML = '<p style="padding:2rem;color:#b0402c">La fiche n\'a pas pu se monter (' +
         messageErreur(e) + "). Les données, elles, sont chargées : la cause est dans la fiche ou dans un mod.</p>";
@@ -7000,6 +7248,7 @@
       // c'est bien du fichier qu'il faudrait alors se plaindre
       .then(function (d) { if (!d) throw new Error("données vides"); DATA = d; })
       .catch(function (e) {
+        signaleEchecOuverture(e);
         root.innerHTML = '<p style="padding:2rem;color:#b0402c">Le créateur n\'a pas pu charger ses données (' + e.message + ").</p>";
       })
       // hors de portée du .catch ci-dessus : DATA dit si les données sont là
