@@ -5,29 +5,29 @@
   "schema": 4,
   "blocage": "release",
   "amorce": [
-    "javascripts/jjk-sync.js?v=74",
-    "javascripts/jjk-attr-map.js?v=74",
+    "javascripts/jjk-sync.js?v=75",
+    "javascripts/jjk-attr-map.js?v=75",
     "javascripts/jjk-save-progress.js?v=74",
-    "javascripts/jjk-roll20-boot.js?v=74"
+    "javascripts/jjk-roll20-boot.js?v=75"
   ],
   "narration": {
     "js": [
-      "javascripts/jjk-sync.js?v=74",
-      "javascripts/jjk-narration.js?v=73"
+      "javascripts/jjk-sync.js?v=75",
+      "javascripts/jjk-narration.js?v=75"
     ],
     "css": [
-      "stylesheets/jjk-narration.css?v=73"
+      "stylesheets/jjk-narration.css?v=75"
     ]
   },
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=73",
-      "javascripts/jjk-mods.js?v=73",
-      "javascripts/jjk-fiche.js?v=74"
+      "javascripts/jjk-migrations.js?v=75",
+      "javascripts/jjk-mods.js?v=75",
+      "javascripts/jjk-fiche.js?v=75"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=74",
-      "stylesheets/jjk-roll20.css?v=74"
+      "stylesheets/jjk-fiche.css?v=75",
+      "stylesheets/jjk-roll20.css?v=75"
     ],
     "data": null,
     "compactStorage": true

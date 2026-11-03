@@ -1560,10 +1560,19 @@
           for (var n = 0; n < nouveaux.length; n++) nouveaux[n].setAttribute("data-jjk", "1");
           cb(); return;
         }
-        var u = urls[i++], l = document.createElement("link");
+        var u = urls[i++], l = document.createElement("link"), fini = false;
         l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk-temp", "1");
-        l.onload = suivant;
-        l.onerror = function () { if (l.parentNode) l.parentNode.removeChild(l); echec(u, "feuille de style introuvable"); };
+        var delai = setTimeout(function () {
+          if (fini) return; fini = true;
+          if (l.parentNode) l.parentNode.removeChild(l);
+          echec(u, "délai dépassé pendant le chargement de la feuille de style");
+        }, 15000);
+        l.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
+        l.onerror = function () {
+          if (fini) return; fini = true; clearTimeout(delai);
+          if (l.parentNode) l.parentNode.removeChild(l);
+          echec(u, "feuille de style introuvable");
+        };
         nouveaux.push(l); document.head.appendChild(l);
       }
       suivant();
@@ -1590,10 +1599,18 @@
           attendreMontage();
           return;
         }
-        var u = urls[i++], script = document.createElement("script");
+        var u = urls[i++], script = document.createElement("script"), fini = false;
         script.src = u;
-        script.onload = suivant;
-        script.onerror = function () { echec(u, "script obligatoire introuvable"); };
+        var delai = setTimeout(function () {
+          if (fini) return; fini = true;
+          if (script.parentNode) script.parentNode.removeChild(script);
+          echec(u, "délai dépassé pendant le chargement du script");
+        }, 15000);
+        script.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
+        script.onerror = function () {
+          if (fini) return; fini = true; clearTimeout(delai);
+          echec(u, "script obligatoire introuvable");
+        };
         document.body.appendChild(script);
       }
       suivant();
@@ -1604,9 +1621,15 @@
     }
     if (spec.attrmap) {
       if (!urlSure(spec.attrmap)) { echec("attrmap", "URL d'archive invalide"); return; }
-      var sm = document.createElement("script");
+      var sm = document.createElement("script"), attrmapFini = false;
       sm.src = spec.attrmap;
+      var attrmapDelai = setTimeout(function () {
+        if (attrmapFini) return; attrmapFini = true;
+        if (sm.parentNode) sm.parentNode.removeChild(sm);
+        echec(spec.attrmap, "délai dépassé pendant le chargement de la correspondance des attributs");
+      }, 15000);
       sm.onload = function () {
+        if (attrmapFini) return; attrmapFini = true; clearTimeout(attrmapDelai);
         var neuf = window.JjkAttrMap;
         if (!neuf || typeof neuf.stateToAttrs !== "function" || typeof neuf.attrsToState !== "function" || !neuf.PREFIX) {
           echec(spec.attrmap, "correspondance des attributs invalide"); return;
@@ -1614,7 +1637,10 @@
         M = neuf;
         chargerApresAttrMap();
       };
-      sm.onerror = function () { echec(spec.attrmap, "correspondance des attributs introuvable"); };
+      sm.onerror = function () {
+        if (attrmapFini) return; attrmapFini = true; clearTimeout(attrmapDelai);
+        echec(spec.attrmap, "correspondance des attributs introuvable");
+      };
       document.body.appendChild(sm);
       return;
     }
@@ -1802,10 +1828,9 @@
     if (hydrated && !relecture) return;
     if (!pontVerifie) return;
     hydrated = true;
-    // La première lecture fraîche confirme que l'ouverture progresse :
-    // neutraliser le watchdog initial sans masquer le message de chargement.
-    // Le message ne disparaît qu'à finalizeMontage(), lorsque le DOM est prêt.
-    window.__jjkOpeningDone = true;
+    // La lecture Roll20 ne signifie pas que la fiche est montée.
+    // Le garde-fou de l'amorceur reste actif jusqu'au vrai montage, à un écran
+    // de décision ou à une erreur explicite.
     if (askTimer) { clearTimeout(askTimer); askTimer = null; }
     if (relecture) {
       ready = false; gele = false; decide = false; attrsPrets = false;

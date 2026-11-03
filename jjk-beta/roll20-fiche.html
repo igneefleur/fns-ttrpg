@@ -39,7 +39,9 @@
   (function () {
     "use strict";
     var termine = false;
-    var delai = 10000;
+    // Secours ultime si une ressource ne déclenche ni load ni error.
+    // Les étapes normales ont leurs propres délais plus courts dans l'amorce.
+    var delai = 90000;
     var timer = null;
 
     function urlSure(u) {
@@ -106,11 +108,14 @@
       function suivant() {
         if (termine) return;
         if (i >= urls.length) { fini(); return; }
-        var u = urls[i++], l = document.createElement("link");
+        var u = urls[i++], l = document.createElement("link"), fini = false;
         l.rel = "stylesheet"; l.href = u; l.setAttribute("data-jjk", "1");
-        l.onload = suivant;
+        var delai = setTimeout(function () {
+          if (fini) return; fini = true; afficherErreur();
+        }, 15000);
+        l.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
         l.onerror = function () {
-          afficherErreur();
+          if (fini) return; fini = true; clearTimeout(delai); afficherErreur();
         };
         document.head.appendChild(l);
       }
@@ -121,11 +126,14 @@
       function suivant() {
         if (termine) return;
         if (i >= urls.length) { fini(); return; }
-        var u = urls[i++], script = document.createElement("script");
+        var u = urls[i++], script = document.createElement("script"), fini = false;
         script.src = u;
-        script.onload = suivant;
+        var delai = setTimeout(function () {
+          if (fini) return; fini = true; afficherErreur();
+        }, 15000);
+        script.onload = function () { if (fini) return; fini = true; clearTimeout(delai); suivant(); };
         script.onerror = function () {
-          afficherErreur();
+          if (fini) return; fini = true; clearTimeout(delai); afficherErreur();
         };
         document.body.appendChild(script);
       }
