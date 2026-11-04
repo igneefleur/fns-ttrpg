@@ -1656,7 +1656,7 @@
     var z = zoneActions(b);
     if (!duFutur) {
       var update = bouton(z, "Mettre à jour le personnage", "monter", function () {
-        if (!operationBusy && window.JjkMigr && typeof window.JjkMigr.appliquer === "function") monter(false, f);
+        if (!bundleEnCours && window.JjkMigr && typeof window.JjkMigr.appliquer === "function") monter(false, f);
       }, true);
       if (!window.JjkMigr || typeof window.JjkMigr.resume !== "function" ||
           typeof window.JjkMigr.appliquer !== "function") {
@@ -1667,8 +1667,7 @@
     if (arch && (!memeRang(arch.release, relFiche) ||
         (arch.schema != null && Number(arch.schema) !== Number(f.schema)))) arch = null;
     var open = bouton(z, duFutur ? "Ouvrir avec la version du personnage" : "Ouvrir avec l’ancienne version", "archive", function () {
-      if (!arch || operationBusy) return;
-      miseANiveauDemandee = false;
+      if (!arch || bundleEnCours) return;
       ecranAttente("Chargement du personnage", "Préparation de la fiche…");
       chargerBundle(arch, true);
     });
