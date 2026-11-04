@@ -603,36 +603,30 @@
     "html.night #jjk-bandeau{background:#262626;color:#ffd77f;border-bottom-color:#6b5a2e}" +
     "html.night #jjk-bandeau .jjk-bandeau-btn{background:#0d0d0d;color:#ffd77f;border-color:#6b5a2e}" +
     "#jjk-ecran{position:fixed;top:0;left:0;right:0;bottom:0;z-index:80;overflow:auto;" +
-    "padding:1rem;background:#e9e7e2;color:#1a1a1a;" +
+    "padding:1rem;background:rgba(8,11,12,.96);color:#E4ECEC;" +
     "font-family:'Proxima Nova',proxima-nova,'Nunito Sans','Helvetica Neue',Helvetica,Arial,sans-serif;" +
     "font-size:.8rem;line-height:1.5}" +
-    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#ffffff;" +
-    "border:1px solid #e0cfa0;border-radius:.3rem;padding:.9rem 1rem}" +
-    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#a5342c;background:#fdf1ec}" +
-    "#jjk-ecran h1{margin:0 0 .5rem;font-family:'Proxima Nova Condensed','Proxima Nova',proxima-nova," +
+    "#jjk-ecran .jjk-ecran-boite{box-sizing:border-box;max-width:34rem;margin:0 auto;background:#0F1415;" +
+    "border:1px solid #285A60;border-radius:.3rem;padding:.9rem 1rem;box-shadow:0 1rem 3rem rgba(0,0,0,.45)}" +
+    "#jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{border-color:#C96B62;background:#171D1E}" +
+    "#jjk-ecran h1{margin:0 0 .5rem;color:#78BBC0;font-family:'Proxima Nova Condensed','Proxima Nova',proxima-nova," +
     "'Nunito Sans',Helvetica,Arial,sans-serif;font-size:1.15rem;line-height:1.25}" +
-    "#jjk-ecran h2{margin:.85rem 0 .25rem;font-size:.88rem}" +
+    "#jjk-ecran h2{margin:.85rem 0 .25rem;color:#78BBC0;font-size:.88rem}" +
     "#jjk-ecran p{margin:.35rem 0}#jjk-ecran ul{margin:.3rem 0;padding-left:1.1rem}" +
     "#jjk-ecran li{margin:.25rem 0}" +
     "#jjk-ecran .jjk-ecran-vers{display:flex;flex-wrap:wrap;gap:.2rem 1.4rem;margin:.5rem 0;" +
-    "padding:.35rem .6rem;background:#f5f2ea;border-radius:.2rem}" +
+    "padding:.35rem .6rem;background:#171D1E;border:1px solid #253437;border-radius:.2rem}" +
     "#jjk-ecran .jjk-ecran-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin:.85rem 0 .4rem}" +
-    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #e0cfa0;border-radius:.2rem;" +
-    "background:#ffffff;color:#1a1a1a;font:inherit;cursor:pointer}" +
-    "#jjk-ecran button:hover:not([disabled]){background:#f5f2ea}" +
-    "#jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#1a1a1a;border-color:#ffd77f}" +
+    "#jjk-ecran button{padding:.35rem .7rem;border:1px solid #285A60;border-radius:.2rem;" +
+    "background:#171D1E;color:#E4ECEC;font:inherit;cursor:pointer}" +
+    "#jjk-ecran button:hover:not([disabled]){background:#1D292B;border-color:#4A9FA8}" +
+    "#jjk-ecran button.jjk-ecran-primaire{background:#4A9FA8;color:#071113;border-color:#4A9FA8}" +
+    "#jjk-ecran button.jjk-ecran-primaire:hover:not([disabled]){background:#78BBC0;border-color:#78BBC0}" +
     "#jjk-ecran button[disabled]{opacity:.45;cursor:not-allowed}" +
-    "#jjk-ecran .jjk-ecran-note{font-size:.72rem;opacity:.85}" +
-    "#jjk-ecran label.jjk-ecran-epingle{display:block;margin:.2rem 0}" +
+    "#jjk-ecran .jjk-ecran-note{font-size:.72rem;color:#A3B2B3;opacity:1}" +
     "#jjk-ecran textarea{box-sizing:border-box;width:100%;min-height:8rem;margin-top:.3rem;" +
-    "font-family:'Roboto Mono',monospace;font-size:.66rem}" +
-    "html.night #jjk-ecran{background:#000000;color:#e6e6e6}" +
-    "html.night #jjk-ecran .jjk-ecran-boite{background:#0d0d0d;border-color:#6b5a2e}" +
-    "html.night #jjk-ecran.jjk-ecran-rouge .jjk-ecran-boite{background:#2e1d1a;border-color:#a5342c}" +
-    "html.night #jjk-ecran .jjk-ecran-vers{background:#1a1a1a}" +
-    "html.night #jjk-ecran button{background:#1a1a1a;color:#e6e6e6;border-color:#6b5a2e}" +
-    "html.night #jjk-ecran button.jjk-ecran-primaire{background:#ffd77f;color:#0d0d0d;border-color:#ffd77f}" +
-    "html.night #jjk-ecran textarea{background:#0d0d0d;color:#e6e6e6;border-color:#3a3a3a}";
+    "background:#080B0C;color:#E4ECEC;border:1px solid #285A60;border-radius:.2rem;" +
+    "font-family:'Roboto Mono',monospace;font-size:.66rem}";
   function poserStyles() {
     if (document.getElementById("jjk-bandeau-css")) return;
     var s = document.createElement("style");
@@ -760,10 +754,20 @@
    * tant qu'il manque l'une des deux, et n'agit qu'une fois.
    */
 
-  // Épinglage : « ne plus me demander pour ce personnage ». Vrai localStorage
-  // de la page (pas le shim), donc PAR NAVIGATEUR : le choix d'un joueur
-  // d'ouvrir une vieille fiche avec son ancien code ne s'impose pas à la table.
-  var PIN_PREFIX = "jjk-r20-version:";
+  // Les anciennes versions stockaient un choix local permettant de contourner
+  // l'écran de version. Ce choix n'existe plus : on purge les clés historiques
+  // dès l'ouverture, pour tous les personnages de cette origine.
+  function purgeAncienEpinglage() {
+    try {
+      var prefixe = "jjk-r20-version:";
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf(prefixe) === 0) localStorage.removeItem(k);
+      }
+    } catch (e) {}
+  }
+  purgeAncienEpinglage();
+
   // Ce que la montée met à l'abri, dans le personnage lui-même.
   var BACKUP = "backup";
 
@@ -928,24 +932,6 @@
     if (spec.data != null && !urlSure(spec.data)) return null;
     if (spec.attrmap != null && !urlSure(spec.attrmap)) return null;
     return spec;
-  }
-
-  function epinglageLu() {
-    try {
-      var v = localStorage.getItem(PIN_PREFIX + CHAR_ID);
-      if (!v) return null;
-      var o = JSON.parse(v);
-      return (o && typeof o === "object" && typeof o.release === "string") ? o : null;
-    } catch (e) { return null; }
-  }
-  // On range la release EXACTE, jamais sa ligne : la clé et la forme rangées
-  // doivent rester lisibles pour les épinglages déjà posés chez les joueurs.
-  // C'est la comparaison, elle, qui se fait ligne à ligne (voir decider()).
-  function epinglagePoser(rel) {
-    try {
-      localStorage.setItem(PIN_PREFIX + CHAR_ID,
-        JSON.stringify({ release: String(rel), quand: new Date().toISOString() }));
-    } catch (e) {}
   }
 
   // Version de la fiche trouvée dans le personnage, { schema, release } ou null.
@@ -1198,13 +1184,13 @@
     if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
   }
   function poserModeBar() {
-    if (document.getElementById("jjk-mode-bar")) return;
+    if (document.getElementById("jjk-mode-bar")) return true;
     var app = document.querySelector(".perso-atelier");
-    if (!app || !app.parentNode) return;
+    if (!app || !app.parentNode) return false;
     var style = document.getElementById("jjk-mode-css");
     if (!style) {
       style = document.createElement("style"); style.id = "jjk-mode-css";
-      style.textContent = "#jjk-mode-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.32rem .5rem;margin:0 0 .35rem;background:var(--panel,#f6f0e5);border:1px solid var(--line-2,#c9bda8);border-radius:5px;color:var(--ink,#33271a);font:600 .66rem/1.3 'Alegreya',serif}#jjk-mode-toggle{border:1px solid var(--line-2,#c9bda8);border-radius:4px;padding:.3rem .6rem;background:var(--stripe,#eee4d4);color:var(--ink,#33271a);font:700 .65rem/1.2 inherit;letter-spacing:.05em;cursor:pointer}#jjk-mode-toggle[aria-pressed=true]{background:var(--accent,#8b3027);border-color:var(--accent,#8b3027);color:#fff}#jjk-mode-label{flex:1 1 auto;color:var(--ink-2,#786b59)}#jjk-mode-presence{flex:0 1 100%;font-size:.58rem;color:var(--ink-3,#8b806f)}#jjk-save-status{padding:.2rem .6rem;font-size:12px}html.night #jjk-mode-bar{background:#33271a;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle{background:#4a3a26;color:#e8dcc6;border-color:#6b5636}html.night #jjk-mode-toggle[aria-pressed=true]{background:#c66d54;color:#1c130d}html.jjk-consultation .pc-editable .pc-gear{opacity:.45;cursor:not-allowed}html.jjk-consultation .pc-editable .pc-edit-only{display:none!important}";
+      style.textContent = "#jjk-mode-bar{position:sticky;top:0;z-index:45;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;padding:.32rem .5rem;margin:0 0 .35rem;background:#0F1415;border:1px solid #285A60;border-radius:5px;color:#E4ECEC;font:600 .66rem/1.3 'Alegreya',serif}#jjk-mode-toggle{border:1px solid #285A60;border-radius:4px;padding:.3rem .6rem;background:#171D1E;color:#E4ECEC;font:700 .65rem/1.2 inherit;letter-spacing:.05em;cursor:pointer}#jjk-mode-toggle[aria-pressed=true]{background:#4A9FA8;border-color:#4A9FA8;color:#071113}#jjk-mode-label{flex:1 1 auto;color:#A3B2B3}#jjk-mode-presence{flex:0 1 100%;font-size:.58rem;color:#829496}#jjk-save-status{padding:.2rem .6rem;font-size:12px}html.jjk-consultation .pc-editable .pc-gear{opacity:.45;cursor:not-allowed}html.jjk-consultation .pc-editable .pc-edit-only{display:none!important}";
       document.head.appendChild(style);
     }
     var bar = document.createElement("div"); bar.id = "jjk-mode-bar";
@@ -1226,6 +1212,37 @@
     if (!presenceTimer) presenceTimer = setInterval(function () {
       if (!presenceDead) post({ type: "presence", action: "heartbeat", viewId: VIEW_ID });
     }, 12000);
+    return true;
+  }
+  var ficheMountedListener = null, ficheMountedObserver = null;
+  function finirAttenteMontageFiche() {
+    if (ficheMountedListener) {
+      window.removeEventListener("jjk-fiche-mounted", ficheMountedListener);
+      ficheMountedListener = null;
+    }
+    if (ficheMountedObserver) {
+      ficheMountedObserver.disconnect();
+      ficheMountedObserver = null;
+    }
+  }
+  function essayerModeBarAuMontage() {
+    if (!poserModeBar()) return false;
+    finirAttenteMontageFiche();
+    return true;
+  }
+  function attendreMontageFiche() {
+    if (essayerModeBarAuMontage()) return true;
+    if (!ficheMountedListener) {
+      ficheMountedListener = function () { essayerModeBarAuMontage(); };
+      window.addEventListener("jjk-fiche-mounted", ficheMountedListener);
+    }
+    // Repli pour les anciennes archives qui ne diffusent pas encore
+    // jjk-fiche-mounted : l'insertion réelle du DOM reste le signal fiable.
+    if (!ficheMountedObserver && window.MutationObserver && document.body) {
+      ficheMountedObserver = new MutationObserver(function () { essayerModeBarAuMontage(); });
+      ficheMountedObserver.observe(document.body, { childList: true, subtree: true });
+    }
+    return false;
   }
   var presenceViews = {};
   window.addEventListener("pagehide", function () {
@@ -1243,6 +1260,9 @@
     if (bundleCharge || bundleEnCours || !spec || !Array.isArray(spec.js) || !spec.js.length) return;
     bundleEnCours = true;
     ready = false;
+    // Le bundle monte la fiche après une lecture asynchrone de ses données.
+    // Écouter l'événement AVANT d'injecter le script évite de rater le montage.
+    attendreMontageFiche();
     fermerEcran();
     window.__jjkDataUrl = spec.data || null;
     if (M && M.setRelease) M.setRelease(spec.release || null);
@@ -1297,7 +1317,9 @@
           }
           bundleEnCours = false;
           bundleCharge = true;
-          poserModeBar();
+          // Repli si la fiche était déjà montée ; sinon le listener créé avant
+          // l'injection posera le bandeau à l'événement jjk-fiche-mounted.
+          attendreMontageFiche();
           post({ type: "mounted" });
           return;
         }
@@ -1568,17 +1590,6 @@
       b.appendChild(ul);
     }
 
-    // L'épinglage ne vaut QUE pour « ouvrir avec sa version » : la case est
-    // construite avant les boutons (leur gestionnaire la lit) mais posée après
-    // eux. Elle n'est jamais honorée par la montée, qui est destructive et ne
-    // se rejoue pas de mémoire.
-    var lab = noeud("label", "jjk-ecran-epingle");
-    var caseEp = document.createElement("input");
-    caseEp.type = "checkbox";
-    caseEp.id = "jjk-ecran-epingle";
-    lab.appendChild(caseEp);
-    lab.appendChild(document.createTextNode(" Ne plus me demander pour ce personnage"));
-
     var z = zoneActions(b);
     var bMonter = bouton(z, "Mettre la fiche à niveau (" + relSite + ")", "monter", function () {
       if (!duFutur && window.JjkMigr && window.JjkMigr.resume) monter(false, f);
@@ -1594,7 +1605,6 @@
       ? ("Ouvrir avec l'archive " + arch.release + " (la plus proche de sa version)")
       : ("Ouvrir avec sa version (" + (relFiche || "inconnue") + ")"), "archive", function () {
       if (!arch) return;   // bouton grisé : ceinture, au cas où un clic passe quand même
-      if (caseEp.checked && relFiche) epinglagePoser(relFiche);
       chargerBundle(arch, true);
     });
     boutonExport(z);
@@ -1612,11 +1622,6 @@
           relFiche + "."
         : "« Ouvrir avec sa version » est indisponible : la fiche ne dit pas quelle version l'a écrite.", b);
     }
-
-    b.appendChild(lab);
-    b.appendChild(noeud("p", "jjk-ecran-note",
-      "La case ne vaut que pour « ouvrir avec sa version », et seulement dans ce navigateur. La mise à " +
-      "niveau, elle, se redemande toujours."));
   }
 
   // ---------- la décision ----------
@@ -1659,29 +1664,6 @@
     // La politique de blocage est une donnée du manifeste validé : ne pas la
     // recopier en dur ici, sinon le contrat publié et le comportement divergent.
     var accord = accordVersionFiche(f, relSite, schSite, politique);
-
-    // 2. Choix déjà fait pour ce personnage, dans ce navigateur : on ne
-    // redemande pas. Comparé LIGNE à ligne des deux côtés, parce que le bundle
-    // d'archive réécrit state.rel avec SA constante dès la première
-    // sauvegarde : sur une égalité stricte, l'épinglage ne tenait qu'une
-    // session. L'épinglage ne vaut que si l'archive est toujours publiée ;
-    // sinon la question se repose.
-    //
-    // L'ACCORD LE SAUTE. /jjk/ et /jjk-beta/ sont servis par la même origine,
-    // donc partagent ce localStorage : le joueur qui coche « ne plus me
-    // demander » sur la beta, dont le schéma a pris un cran d'avance, posait
-    // aussi son épinglage pour le site stable, où sa fiche s'accorde et où RIEN
-    // ne lui aurait été demandé. Il y rouvrait alors une archive de la ligne
-    // précédente, sans écran pour le lui dire, et rejouait une vieille fiche
-    // sans le savoir. Partout ailleurs l'épinglage garde la tête, et doit la
-    // garder : là, l'écran reparaîtrait à chaque ouverture, et le test 3 est
-    // précisément celui qui, sur le schéma, rouvrirait la fiche avec le bundle
-    // du jour en silence, contre un choix explicite.
-    var pin = accord ? null : epinglageLu();
-    if (pin && f.release && memeRang(pin.release, f.release, true)) {
-      var arch = archiveDe(f.release);
-      if (arch) { chargerBundle(arch, true); return; }
-    }
 
     // 3. Accord avec le site : la fiche s'ouvre sans rien demander.
     if (accord) {
