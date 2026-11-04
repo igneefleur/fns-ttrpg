@@ -49,22 +49,22 @@
     // manifeste ne répond pas, l'ouverture utilise un ensemble COHÉRENT de
     // fichiers connus, jamais un mélange de manifeste et de valeurs devinées.
     var DEFAUT = {
-      release: "4.4.0b",
+      release: "4.4.2b",
       schema: 4,
       blocage: "release",
       amorce: [
-        "javascripts/jjk-sync.js?v=77",
-        "javascripts/jjk-attr-map.js?v=77",
-        "javascripts/jjk-save-progress.js?v=77",
-        "javascripts/jjk-roll20-boot.js?v=77"
+        "javascripts/jjk-sync.js?v=78",
+        "javascripts/jjk-attr-map.js?v=78",
+        "javascripts/jjk-save-progress.js?v=78",
+        "javascripts/jjk-roll20-boot.js?v=78"
       ],
       bundle: {
         js: [
-          "javascripts/jjk-migrations.js?v=77",
-          "javascripts/jjk-mods.js?v=77",
-          "javascripts/jjk-fiche.js?v=77"
+          "javascripts/jjk-migrations.js?v=78",
+          "javascripts/jjk-mods.js?v=78",
+          "javascripts/jjk-fiche.js?v=78"
         ],
-        css: ["stylesheets/jjk-fiche.css?v=77", "stylesheets/jjk-roll20.css?v=77"],
+        css: ["stylesheets/jjk-fiche.css?v=78", "stylesheets/jjk-roll20.css?v=78"],
         data: null,
         compactStorage: true
       },
@@ -250,6 +250,20 @@
             ],
             "attrmap": "fiche/v4.3.0/jjk-attr-map.js",
             "data": "fiche/v4.3.0/jjk-creation.json"
+      },
+      "4.4.0": {
+            "schema": 4,
+            "js": [
+                  "fiche/v4.4.0/jjk-migrations.js",
+                  "fiche/v4.4.0/jjk-mods.js",
+                  "fiche/v4.4.0/jjk-fiche.js"
+            ],
+            "css": [
+                  "fiche/v4.4.0/jjk-fiche.css",
+                  "fiche/v4.4.0/jjk-roll20.css"
+            ],
+            "attrmap": "fiche/v4.4.0/jjk-attr-map.js",
+            "data": "fiche/v4.4.0/jjk-creation.json"
       }
 },
       extension: {

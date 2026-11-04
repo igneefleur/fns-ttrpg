@@ -39,7 +39,7 @@ assert.match(bridge, /sharedMode:\s*1/);
 assert.equal(manifest.extension.requiredCapabilities.includes('sharedMode'), true);
 assert.equal(manifest.extension.requiredCapabilities.includes('perPlayerPresence'), false);
 assert.equal(manifest.extension.minVersion, '4.3.2');
-assert.equal(extManifest.version, '4.3.2');
+assert.equal(extManifest.version, '4.4.0');
 
 const declarations = 'var presenceLocal = {}, presenceKnown = {};';
 const funcs = [
@@ -97,14 +97,20 @@ assert.ok(rows.some(x => x.view === 'view-2'));
 now += 70000;
 assert.equal(ctx.presenceRead('char-1').length, 0, 'les vues trop anciennes expirent');
 
-// Le boot attend l'accusé Roll20 et classe les présents ; la barre conserve l'architecture Outward.
-assert.match(boot, /function appliqueMode\(state\)/);
-assert.match(boot, /modePending = \{ mode: next, requestedAt: requestedAt \}/);
-assert.match(boot, /type: "presence", action: "mode", mode: next/);
-assert.match(boot, /function demanderMode\(\)[\s\S]*?if \(modePending \|\| !ready \|\| !bundleCharge/);
-assert.match(boot, /function presencePrete\(\)/);
+// Le boot reprend le mode partagé et la présentation des présences d'Outward.
+assert.match(boot, /function appliqueMode\(mode\)/);
+assert.match(boot, /sharedModeState\.modeAt/);
+assert.match(boot, /type: "presence", action: "mode", mode: modePartage === "edition" \? "consultation" : "edition"/);
+assert.doesNotMatch(boot, /appliqueMode\(next, presenceViews/);
+assert.match(boot, /function renderPresence\(\)/);
+assert.match(boot, /En édition : /);
+assert.match(boot, /En consultation : /);
+assert.match(boot, /function envoyerPresence\(action\)/);
 assert.match(boot, /setInterval\(function \(\) \{ envoyerPresence\("heartbeat"\); \}, 10000\)/);
+assert.match(boot, /presenceRows = Array\.isArray\(d\.presence\)/);
+assert.match(boot, /presencePlayer = d\.player/);
 assert.match(css, /#jjk-mode-bar \.jjk-mode-controls/);
 assert.match(css, /\.jjk-presence-edition/);
+assert.match(css, /justify-content: space-between/);
 assert.match(html, /Vérification de l’extension…/);
 console.log('OK présence : modes par joueur partagés entre fenêtres, heartbeat neutre, expiration, leave et accusé Roll20');

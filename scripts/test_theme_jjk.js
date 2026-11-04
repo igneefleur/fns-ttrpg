@@ -38,7 +38,7 @@ for (const [label, css] of [
 assert(creator.includes(palette.fond), 'créateur extension : fond sombre absent');
 assert(icon.includes(palette.turquoise), 'icône extension : accent turquoise absent');
 assert(icon.includes(palette.fond), 'icône extension : fond sombre absent');
-assert.strictEqual(firefoxManifest.version, '4.3.2', 'Firefox : version du paquet non incrémentée');
+assert.strictEqual(firefoxManifest.version, '4.4.0', 'Firefox : version du paquet non incrémentée');
 assert.strictEqual(chromeManifest.version, firefoxManifest.version, 'Chrome et Firefox doivent partager la version du paquet');
 assert(fiche.includes(palette.danger), 'fiche : couleur de danger absente');
 assert(popup.includes(palette.danger), 'popup : couleur de danger absente');
