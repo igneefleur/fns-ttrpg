@@ -8,13 +8,13 @@
  * MAIS C'EST UNE PAGE DU MÊME LIVRE. Le plateau avait déjà la palette et
  * Alegreya, et il avait quand même l'air d'un widget d'outil : barre d'état
  * plate, cases sans titre, formulaire à boîtes, boutons tous du même poids.
- * Il reprend ici le vocabulaire de FORMES de la fiche : une feuille claire
- * (--paper) posée sur le plan de travail (--bg-side), des cartes à filet
+ * Il reprend ici le vocabulaire de FORMES de la fiche : une surface sombre
+ * (--paper) posée sur un fond noir (--bg-side), des cartes à filet
  * (--card, rayon 8 px, ombre presque nulle), un en-tête par carte en Cinzel
- * souligné d'un filet --hair et marqué du petit tiret carmin, des micro-libellés
+ * souligné d'un filet --hair et marqué d'un tiret turquoise, des micro-libellés
  * en capitales espacées face à de gros chiffres tabulaires, des champs qui sont
- * des soulignés et non des boîtes, et un seul accent carmin qui ne paraît que
- * pour le tiret de titre, le focus et l'alerte.
+ * des soulignés et non des boîtes, et un accent turquoise réservé au titre,
+ * au focus et aux interactions.
  *
  * Tailles en PIXELS, et non en rem comme la fiche : c'est un widget de taille
  * fixe posé dans l'interface d'un autre site, pas un document qui se lit. Le
@@ -23,27 +23,32 @@
  * donc recopiée en pixels, sous les mêmes noms : le défaut n'était pas l'unité,
  * c'était l'absence d'échelle nommée.
  *
- * La palette est celle du livre (jjk-fiche.css), jour et nuit, recopiée ici :
- * cette page ne charge rien d'autre, elle doit tenir seule. Les polices, elles,
+ * La palette sombre est celle du livre (jjk-fiche.css), recopiée ici : cette
+ * page ne charge rien d'autre, elle doit tenir seule. La classe .night apporte
+ * seulement une variante plus profonde. Les polices, elles,
  * sont bien celles du livre : roll20-narration.html charge stylesheets/fonts.css,
  * qui sert Alegreya et Cinzel en woff2 auto-hébergés. */
 
 :root {
-  /* ---- papiers et encres, de jour ---- */
-  --paper:   #faf6eb;   /* la feuille : le plateau lui-même */
-  --bg-side: #e4ddcd;   /* le plan de travail : la barre */
-  --card:    #fffdf6;   /* une place */
-  --panel:   #f6efdd;   /* la réserve du MJ, les plaques chiffrées */
-  --stripe:  #f1e8d3;   /* zébrage d'une ligne sur deux */
-  --hair:    #e2d8c0;   /* filets à l'intérieur d'une carte */
-  --line:    #c6bb9f;   /* soulignés de champ, séparations de surfaces */
-  --line-2:  #d6cbb1;   /* bordures de cartes et de contrôles */
-  --ink:     #20180c;
-  --ink-2:   #453d2d;
-  --ink-3:   #746a54;
-  --red:     #a5271c;   /* le ton de BORDURE et de remplissage */
-  --red-deep:#7c130c;   /* le ton de TEXTE (et la nuit l'inverse : voir plus bas) */
-  --wash:    rgba(165, 39, 28, .09);
+  /* ---- surfaces sombres et encres ---- */
+  --paper:   #0F1415;
+  --bg-side: #080B0C;
+  --card:    #171D1E;
+  --panel:   #121819;
+  --stripe:  #1A2223;
+  --hair:    #253437;
+  --line:    #344448;
+  --line-2:  #29383B;
+  --ink:     #E4ECEC;
+  --ink-2:   #B6C4C5;
+  --ink-3:   #829496;
+  --accent:  #4A9FA8;
+  --accent-hi:#78BBC0;
+  --accent-deep:#285A60;
+  --accent-wash: rgba(74,159,168,.16);
+  --red:     #C96B62;
+  --red-deep:#E08D83;
+  --wash:    rgba(201, 107, 98, .16);
 
   /* LE VOILE DES FONDS DE ZONE. Une place porte désormais l'image qu'on lui a
      donnée, et cette image n'appartient à personne : elle peut être blanche,
@@ -54,14 +59,14 @@
      Deux forces, deux emplois. La forte tient sous l'en-tête, là où il y a du
      texte à protéger. La douce couvre toute la carte, juste assez pour que
      l'image cesse de crier sous les jetons sans cesser d'être visible. */
-  --voile:      rgba(250, 246, 235, .90);
-  --voile-doux: rgba(250, 246, 235, .30);
+  --voile:      rgba(15, 20, 21, .92);
+  --voile-doux: rgba(15, 20, 21, .48);
 
   /* Le jeton est le seul objet du plateau qui ait droit à des couleurs hors
      palette : c'est un objet de table, pas un élément de fiche. */
-  --or:      #d8ac3f;
-  --or-fond: #f2d891;
-  --or-ombre:#8c6a17;
+  --or:      #4A9FA8;
+  --or-fond: #78BBC0;
+  --or-ombre:#285A60;
 
   /* ---- échelle typographique, en pixels ----
      Mêmes noms que la fiche, mêmes proportions, transposés au format d'un
@@ -90,34 +95,35 @@
   --jeton: 22px;
 }
 
-/* La nuit est une CLASSE, jamais une media query seule : elle doit rester
-   forçable par l'indice n=1/0 du hash et par le choix mémorisé du joueur.
-   Attention en la relisant : le carmin s'inverse. De jour --red est le ton
-   clair et --red-deep le ton foncé ; de nuit --red-deep est le ton CLAIR,
-   c'est-à-dire le ton de texte, et --red reste le ton de bordure. */
+/* La classe .night reste une CLASSE, jamais une media query seule : elle peut
+   être pilotée par l'indice n=1/0 du hash et le choix du joueur. Elle approfondit
+   les surfaces, mais les couleurs fonctionnelles restent stables : turquoise
+   pour les actions, rouge/rouille pour le danger. */
 html.night {
   color-scheme: dark;
-  --paper:   #201c15;
-  --bg-side: #14110c;
-  --card:    #262119;
-  --panel:   #2f2a20;
-  --stripe:  #2b261d;
-  --hair:    #39332a;
-  --line:    #4f4838;
-  --line-2:  #453e31;
-  --ink:     #eee4cf;
-  --ink-2:   #cbc2ac;
-  --ink-3:   #978d77;
-  --red:     #c65540;
-  --red-deep:#dd7461;
-  --wash:    rgba(198, 85, 64, .18);
-  /* Le voile suit le papier : de nuit il FONCE l'image au lieu de l'éclaircir,
-     sans quoi une photo sombre garderait un bandeau clair sous un texte clair. */
-  --voile:      rgba(32, 28, 21, .90);
-  --voile-doux: rgba(32, 28, 21, .40);
-  --or:      #c79a30;
-  --or-fond: #e0c47a;
-  --or-ombre:#6a4f0f;
+  --paper:   #0D1213;
+  --bg-side: #050809;
+  --card:    #141A1B;
+  --panel:   #101617;
+  --stripe:  #192123;
+  --hair:    #223135;
+  --line:    #304044;
+  --line-2:  #273538;
+  --ink:     #E4ECEC;
+  --ink-2:   #B6C4C5;
+  --ink-3:   #829496;
+  --accent:  #4A9FA8;
+  --accent-hi:#78BBC0;
+  --accent-deep:#285A60;
+  --accent-wash: rgba(74,159,168,.16);
+  --red:     #C96B62;
+  --red-deep:#E08D83;
+  --wash:    rgba(201, 107, 98, .16);
+  --voile:      rgba(13, 18, 19, .92);
+  --voile-doux: rgba(13, 18, 19, .48);
+  --or:      #4A9FA8;
+  --or-fond: #78BBC0;
+  --or-ombre:#285A60;
 }
 
 /* Aucun reset ici : ce n'est pas une page du site, elle n'hérite de rien. Sans
@@ -168,16 +174,16 @@ body {
 }
 .nb-kv.zero .v { font-weight: 400; color: var(--ink-2); }
 /* les jetons tombés hors de toute place : une anomalie, donc le ton de texte
-   carmin, et rien du tout quand il n'y en a pas */
+   rouge/rouille, et rien du tout quand il n'y en a pas */
 .nb-hors .v { color: var(--red-deep); }
 .nb-hors[hidden] { display: none; }
 .nb-outils { margin-left: auto; display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
 
 /* ---------- boutons ---------- */
 /* Trois poids, et un seul sens par poids : le discret pour ce qui se répète,
-   le plein carmin pour l'action principale d'un dialogue, le carmin sur fond
-   clair pour ce qui efface la table de tout le monde. L'ancien plateau donnait
-   le même trait carmin à « Enregistrer » et à « Confirmer ? », c'est-à-dire à
+   le plein turquoise pour l'action principale d'un dialogue, le rouge/rouille
+   pour ce qui efface la table de tout le monde. L'ancien plateau donnait le
+   même trait à « Enregistrer » et à « Confirmer ? », c'est-à-dire à
    « fais ceci » et à « attention ». */
 .nb-btn {
   flex: 0 0 auto; border: 1px solid var(--line-2); border-radius: 5px;
@@ -187,31 +193,28 @@ body {
   transition: background .12s, border-color .12s, color .12s;
 }
 .nb-btn:hover { border-color: var(--line); color: var(--ink); background: var(--card); }
-/* Le focus du livre sur un contrôle à boîte : le bord rougit et gagne un halo.
+/* Le focus du livre sur un contrôle à boîte : le bord devient turquoise et gagne un halo.
    Le plateau n'avait AUCUNE règle de focus : au clavier on ne savait jamais où
    l'on était. */
-.nb-btn:focus-visible { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
-.nb-btn.primary { background: var(--red); border-color: var(--red-deep); color: #fff; font-weight: 700; }
-.nb-btn.primary:hover { background: var(--red-deep); border-color: var(--red-deep); color: #fff; }
+.nb-btn:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
+.nb-btn.primary { background: var(--accent); border-color: var(--accent-deep); color: #071113; font-weight: 700; }
+.nb-btn.primary:hover { background: var(--accent-hi); border-color: var(--accent); color: #071113; }
 .nb-btn.danger { color: var(--red); }
 .nb-btn.danger:hover { border-color: var(--red); background: var(--wash); color: var(--red-deep); }
 /* Bouton ARMÉ : le premier clic n'a fait que demander. Il reste dans la famille
-   du danger (texte carmin sur lavis) au lieu d'emprunter l'habit de l'action
-   principale, sinon les deux se confondent au coup d'œil. */
-.nb-btn.arme { background: var(--wash); border-color: var(--red); color: var(--red-deep); font-weight: 700; }
+   du turquoise assourdi au lieu d'emprunter l'habit de l'action principale,
+   sinon les deux se confondent au coup d'œil. */
+.nb-btn.arme { background: var(--accent-wash); border-color: var(--accent); color: var(--accent-hi); font-weight: 700; }
 .nb-btn[disabled] { opacity: .5; cursor: default; }
 .nb-btn[disabled]:hover { background: var(--panel); border-color: var(--line-2); color: var(--ink-2); }
-/* LE CARMIN S'INVERSE LA NUIT, et il faut le suivre partout où il fait du
-   TEXTE. Mesuré sur cette palette : --red de nuit ne donne que 3.27:1 sur
-   --panel (il reste un ton de bordure et de remplissage), là où --red-deep,
-   qui est le ton clair de nuit, en donne 4.59. Et le blanc sur --red plein
-   tombe à 4.37:1 : le plein carmin de nuit reprend donc le traitement du sigle
-   de la fiche, une plaque profonde et une encre chaude, mesuré à 7.39:1. */
+/* Les couleurs fonctionnelles ne changent pas avec .night : le rouge/rouille
+   reste réservé au danger et le turquoise aux actions. Les boutons pleins
+   utilisent une encre sombre pour conserver un contraste suffisant. */
 html.night .nb-btn.danger { color: var(--red-deep); }
 html.night .nb-btn.danger:hover { background: var(--card); border-color: var(--red); color: var(--red-deep); }
-html.night .nb-btn.arme { background: var(--panel); border-color: var(--red); color: var(--red-deep); }
-html.night .nb-btn.primary { background: #7f2b1d; border-color: #a54a30; color: #f4e2da; }
-html.night .nb-btn.primary:hover { background: #a54a30; border-color: #a54a30; color: #fff; }
+html.night .nb-btn.arme { background: var(--accent-wash); border-color: var(--accent); color: var(--accent-hi); }
+html.night .nb-btn.primary { background: #4A9FA8; border-color: #285A60; color: #071113; }
+html.night .nb-btn.primary:hover { background: #78BBC0; border-color: #4A9FA8; color: #071113; }
 
 /* Le bouton lune / soleil, dans le registre du stepper de la fiche : un rond à
    filet qui rougit au survol. C'est le seul contrôle d'affichage assez fréquent
@@ -222,7 +225,7 @@ html.night .nb-btn.primary:hover { background: #a54a30; border-color: #a54a30; c
   display: inline-grid; place-items: center;
   border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
 }
-.nb-lune:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+.nb-lune:hover { border-color: var(--accent); color: var(--accent); background: var(--wash); }
 .nb-lune svg { width: 12px; height: 12px; display: block; fill: currentColor; }
 .nb-lune .nb-soleil { display: none; }
 html.night .nb-lune .nb-soleil { display: block; }
@@ -310,7 +313,7 @@ html.night .nb-lune .nb-croissant { display: none; }
 /* la place que le jeton survole pendant qu'on le déplace. Un liseré INTERNE,
    jamais un décalage : la place ne doit pas gagner un pixel ni bouger, sinon le
    repère se déplace sous le doigt en plein glissement. */
-.nb-place.vise { border-color: var(--red); box-shadow: inset 0 0 0 1px var(--red); }
+.nb-place.vise { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 
 /* LES ÉTIQUETTES SONT EN BAS, CHACUNE DANS SON COIN, ET À SA PROPRE LARGEUR.
    Une barre pleine largeur en haut de carte mangeait le fond de zone sur toute
@@ -435,7 +438,7 @@ html.night .nb-place-nom { color: var(--ink); }
 html.night .nb-modal-titre { color: var(--ink); }
 .nb-modal-titre::after {
   content: ""; position: absolute; left: 0; bottom: -1px;
-  width: 22px; height: 1.5px; background: var(--red); border-radius: 2px;
+  width: 22px; height: 1.5px; background: var(--accent); border-radius: 2px;
 }
 /* L'en-tête légère de groupe : un titre court prolongé par un filet jusqu'au
    bord, comme .pc-comp-champ dans la fiche. */
@@ -501,7 +504,7 @@ html.night .nb-groupe { color: var(--ink); }
   font: inherit; font-size: var(--fs-body); font-weight: 600;
   padding: 1px 2px 2px;
 }
-.nb-f > input:focus { outline: none; border-bottom: 2px solid var(--red); }
+.nb-f > input:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .nb-f > input::placeholder { color: var(--ink-3); font-weight: 400; }
 .nb-f > input[type="number"] {
   -moz-appearance: textfield; appearance: textfield; text-align: center;
@@ -517,7 +520,7 @@ html.night .nb-groupe { color: var(--ink); }
   background: var(--card); color: var(--ink);
   font: inherit; font-size: var(--fs-meta); padding: 2px 4px;
 }
-.nb-f > .nb-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.nb-f > .nb-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 
 .nb-session { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
 /* Les actions du dialogue s'alignent à droite, une seule est principale. */

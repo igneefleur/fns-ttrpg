@@ -1,9 +1,9 @@
 /* Création JJK — créateur de personnage, mise en page « dossier ».
  *
  * Transposition du système visuel du créateur HxH (creation.css) : feuille
- * chaude posée sur le parchemin, hiérarchie sérif, filets fins, un seul accent
- * carmin (onglet actif, valeurs finales, focus). Contrôles unifiés (steppers
- * fantômes, champs à filet, cartes douces). Palette scindée jour/nuit.
+ * sombre, hiérarchie sérif, filets fins et accent turquoise assourdi (onglet actif,
+ * valeurs finales, focus). Contrôles unifiés (steppers fantômes, champs à filet,
+ * cartes douces). Palette sombre cohérente avec la fiche et l’extension.
  * Toutes les tailles sont en rem. */
 
 /* rem FIGÉ sur la page du créateur : la feuille garde une taille stable. */
@@ -20,21 +20,25 @@ body:has(#perso-atelier) .md-sidebar--secondary,
 body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 
 .perso-atelier {
-  --paper:   #faf6eb;   /* la feuille (site : héritée d'extra.css ; iframe : ce repli) */
-  --bg-side: #e4ddcd;   /* le plan de travail */
-  --card:    #fffdf6;   /* cartes de section */
-  --panel:   #f6efdd;   /* encadrés doux, tuiles chiffrées */
-  --stripe:  #f1e8d3;   /* zébrage des lignes */
-  --hair:    #e2d8c0;   /* filets fins */
-  --line:    #c6bb9f;   /* bordures et soulignés */
-  --line-2:  #d6cbb1;   /* bordures de cartes */
-  --ink:     #20180c;
-  --ink-2:   #453d2d;
-  --ink-3:   #746a54;
-  --red:     #a5271c;
-  --red-deep:#7c130c;
-  --wash:    rgba(165, 39, 28, .09);
-  --ok:      #4f7a3a;
+  --paper:   #0F1415;
+  --bg-side: #080B0C;
+  --card:    #171D1E;
+  --panel:   #121819;
+  --stripe:  #1A2223;
+  --hair:    #253437;
+  --line:    #344448;
+  --line-2:  #29383B;
+  --ink:     #E4ECEC;
+  --ink-2:   #B6C4C5;
+  --ink-3:   #829496;
+  --accent:  #4A9FA8;
+  --accent-hi:#78BBC0;
+  --accent-deep:#285A60;
+  --accent-wash: rgba(74, 159, 168, .16);
+  --red:     #C96B62;
+  --red-deep:#E08D83;
+  --wash:    rgba(201, 107, 98, .16);
+  --ok:      #78B69A;
 
   /* échelle typographique dense */
   --fs-label: .54rem;
@@ -59,20 +63,20 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- barre d'outils (hors feuille) ---- */
 .perso-atelier .pc-top {
   display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
-  padding: .5rem 1.1rem; background: #e7dfc9; border-bottom: 1px solid #d7cdb2;
+  padding: .5rem 1.1rem; background: #0B1011; border-bottom: 1px solid #29383B;
 }
-.pc-top-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.02rem; letter-spacing: .06em; color: #47543e; }
-.pc-top-hint { font-size: .72rem; color: #8c8574; }
+.pc-top-title { font-family: 'Cinzel', serif; font-weight: 600; font-size: 1.02rem; letter-spacing: .06em; color: #78BBC0; }
+.pc-top-hint { font-size: .72rem; color: #829496; }
 .pc-btn {
-  padding: .3rem .75rem; border: 1px solid #cabf9f; border-radius: 7px;
-  background: #fdfaf1; color: #5b564a; font: inherit; font-size: .75rem; cursor: pointer;
+  padding: .3rem .75rem; border: 1px solid #344448; border-radius: 7px;
+  background: #171D1E; color: #B6C4C5; font: inherit; font-size: .75rem; cursor: pointer;
   transition: background .12s, border-color .12s, color .12s;
 }
-.pc-btn:hover { background: #fff; border-color: #a99e7f; color: #2a2820; }
+.pc-btn:hover { background: #1D292B; border-color: #4A9FA8; color: #E4ECEC; }
 .pc-btn.danger { color: var(--red); }
 .pc-btn.danger:hover { border-color: var(--red); background: var(--wash); color: var(--red-deep); }
 .pc-top .pc-lib { margin-left: auto; display: flex; gap: .35rem; align-items: center; flex-wrap: wrap; }
-.pc-top .pc-lib select { max-width: 220px; padding: .3rem .5rem; border: 1px solid #cabf9f; border-radius: 7px; background: #fdfaf1; color: #2a2820; font: inherit; font-size: .75rem; }
+.pc-top .pc-lib select { max-width: 220px; padding: .3rem .5rem; border: 1px solid #344448; border-radius: 7px; background: #171D1E; color: #E4ECEC; font: inherit; font-size: .75rem; }
 @media (max-width: 700px) {
   .perso-atelier .pc-top .pc-lib { margin-left: 0; }
   .perso-atelier .pc-top .pc-lib select { max-width: none; min-width: 0; flex: 1 1 120px; }
@@ -107,9 +111,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   position: absolute; left: 0; top: calc(100% + .2rem); z-index: 5; width: 11rem;
   border: 1px solid var(--line); border-radius: 5px; background: var(--card);
   color: var(--ink); font: inherit; font-size: .6rem; padding: .18rem .3rem;
-  box-shadow: 0 2px 8px rgba(60, 48, 18, .18); box-sizing: border-box;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .45); box-sizing: border-box;
 }
-.pc-portrait-edit:focus { outline: none; border-color: var(--red); }
+.pc-portrait-edit:focus { outline: none; border-color: var(--accent); }
 
 /* coût d'un passif (onglet Art), à droite de son nom, en mode édition */
 .pc-tech-cout { flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: .12rem; }
@@ -120,7 +124,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
 }
 .pc-tech-cout input::-webkit-inner-spin-button, .pc-tech-cout input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-tech-cout input:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-tech-cout input:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-tech-cout .u { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); }
 /* 2e ligne : compteurs Création / XP dépensé (barres étirées) + XP total */
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
@@ -135,7 +139,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 600;
   padding: .03rem .1rem .08rem; text-align: left; border-radius: 0;
 }
-.pc-f > input:focus, .pc-f > select:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-f > input:focus, .pc-f > select:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-f > input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 .pc-f > input[type="number"]::-webkit-inner-spin-button, .pc-f > input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-f.c12 { grid-column: span 12; } .pc-f.c6 { grid-column: span 6; }
@@ -157,9 +161,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   font-weight: 600; font-size: .7rem; letter-spacing: .02em; color: var(--ink-2);
   transition: background .12s, color .12s, box-shadow .12s;
 }
-.pc-tab:hover { background: rgba(90, 70, 30, .07); color: var(--ink); }
-.pc-tab.on { background: var(--red); color: #fff; box-shadow: 0 1px 4px rgba(124, 19, 12, .28); }
-.pc-tab.on:hover { background: var(--red-deep); color: #fff; }
+.pc-tab:hover { background: var(--accent-wash); color: var(--ink); }
+.pc-tab.on { background: var(--accent); color: #071113; box-shadow: 0 1px 4px rgba(40, 90, 96, .35); }
+.pc-tab.on:hover { background: var(--accent-hi); color: #071113; }
 
 /* ---- barre d'envoi (Roll20) : destinataire + modificateur ---- */
 /* Posée entre l'en-tête et les avertissements, JAMAIS dans .pc-id (grille de
@@ -183,8 +187,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-envoi-segs .seg:first-child { border-left-width: 1px; border-radius: 5px 0 0 5px; }
 .pc-envoi-segs .seg:last-child { border-radius: 0 5px 5px 0; }
 .pc-envoi-segs .seg:hover { color: var(--ink); background: var(--stripe); }
-.pc-envoi-segs .seg.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
-.pc-envoi-segs .seg.on:hover { background: var(--red-deep); color: #fff; }
+.pc-envoi-segs .seg.on { background: var(--accent); border-color: var(--accent-deep); color: #071113; }
+.pc-envoi-segs .seg.on:hover { background: var(--accent-hi); color: #071113; }
 .pc-envoi .pc-select { flex: 0 1 8.6rem; width: auto; min-width: 0; font-size: .62rem; }
 
 /* ---- avertissements ---- */
@@ -233,7 +237,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   font-family: 'Cinzel', serif; font-weight: 700;
   font-size: var(--fs-title); letter-spacing: .04em; color: var(--ink-2); line-height: 1.1;
 }
-.pc-block-title::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 1.4rem; height: 1.5px; background: var(--red); border-radius: 2px; }
+.pc-block-title::after { content: ""; position: absolute; left: 0; bottom: -1px; width: 1.4rem; height: 1.5px; background: var(--accent); border-radius: 2px; }
 .pc-block-title small { font-family: 'Alegreya', Garamond, serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
@@ -249,8 +253,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-block-title small ~ .pc-gear { margin-left: .4rem; }
 .pc-gear:hover { color: var(--ink); }
-.pc-editable.editing .pc-gear { color: var(--red); transform: rotate(90deg); }
-.pc-editable.editing { border-color: var(--red); }
+.pc-editable.editing .pc-gear { color: var(--accent); transform: rotate(90deg); }
+.pc-editable.editing { border-color: var(--accent); }
 .pc-editable:not(.editing) .pc-edit-only { display: none !important; }
 .pc-editable:not(.editing) .pc-edit-field {
   pointer-events: none;
@@ -263,6 +267,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding-left: 0;
 }
 .pc-editable:not(.editing) .pc-edit-field::placeholder { color: transparent; }
+/* Champs globaux de l'en-tête : ils n'appartiennent à aucun module, mais
+   restent soumis au mode Consultation/Édition partagé. */
+html.jjk-consultation .pc-global-edit-field {
+  pointer-events: none; border-color: transparent !important;
+  background: transparent !important; box-shadow: none !important;
+  color: var(--ink); opacity: 1;
+}
+html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 /* divers : fantômes au survol en temps normal, pleinement visibles en édition */
 .pc-editable.editing .pc-mmods { opacity: 1; }
 /* rouage flottant : chaque tuile Vitesse / Régén est son propre module */
@@ -273,7 +285,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: flex; align-items: center; gap: .35rem; }
-.pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--red-deep); color: #fdf3ec; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
+.pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #E4ECEC; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {
   min-width: 2rem; text-align: center; font-size: 1rem; font-weight: 700; color: var(--ink);
@@ -294,7 +306,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   font-weight: 700; font-size: .74rem; line-height: 1; cursor: pointer;
   display: inline-grid; place-items: center; transition: background .12s, border-color .12s, color .12s;
 }
-.pc-step button:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+.pc-step button:hover { border-color: var(--accent); color: var(--accent); background: var(--wash); }
 .pc-step .v { min-width: 2ch; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; font-size: .74rem; color: var(--ink); padding: 0 .08rem; }
 /* champ nombre éditable au cœur d'un stepper */
 .pc-num {
@@ -304,7 +316,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   -moz-appearance: textfield; appearance: textfield;
 }
 .pc-num::-webkit-inner-spin-button, .pc-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-num:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-num:focus { outline: none; border-bottom: 2px solid var(--accent); }
 
 /* ---- tuiles de grande valeur ---- */
 .pc-bigrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
@@ -335,7 +347,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-comp-tools .row > * { min-width: 0; }
 .pc-comp-search { flex: 1 1 9rem; min-width: 0; padding: .26rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .7rem; box-sizing: border-box; }
-.pc-comp-search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-comp-search:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 /* le champ de filtre et le menu des champs remplissent leur colonne, avec le
    même box-sizing pour que leurs bordures ne les décalent pas */
 .pc-comp-tools .row > .pc-comp-search,
@@ -349,7 +361,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   color: var(--ink-2); font-size: .64rem; font-weight: 600; cursor: pointer; user-select: none; transition: .12s;
 }
 .pc-chip:hover { border-color: var(--line); color: var(--ink); }
-.pc-chip.on { background: var(--red); border-color: var(--red-deep); color: #fff; }
+.pc-chip.on { background: var(--accent); border-color: var(--accent-deep); color: #fff; }
 .pc-comp-champ {
   display: flex; align-items: center; gap: .45rem; margin: .4rem 0 .1rem; padding: .05rem .05rem;
   font-family: 'Cinzel', serif; font-weight: 700; font-size: .62rem; letter-spacing: .04em; color: var(--ink-2);
@@ -381,7 +393,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   font-variant-numeric: tabular-nums; text-align: center; line-height: 1.25;
   padding: .06rem .05rem; min-width: 0; width: 100%; transition: .12s;
 }
-.pc-comp-roll:hover { border-color: var(--red); color: var(--red); text-decoration: none; }
+.pc-comp-roll:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 .pc-comp-roll.zero { color: var(--ink-3); font-weight: 600; }
 /* stade : barre segmentée [ N | I | M | E | A ], dégradé jusqu'au rouge des
    caractéristiques ; cliquable seulement quand le module est en édition */
@@ -395,11 +407,11 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-stadebar .seg:first-child { border-left-width: 1px; border-radius: 4px 0 0 4px; }
 .pc-stadebar .seg:last-child { border-radius: 0 4px 4px 0; }
 .pc-stadebar .seg.on.s0 { background: var(--panel); color: var(--ink-2); }
-.pc-stadebar .seg.on.s1 { background: #e3c3ad; color: var(--ink); border-color: #d0ab90; }
-.pc-stadebar .seg.on.s2 { background: #cf9377; color: #fff; border-color: #bd7d5f; }
-.pc-stadebar .seg.on.s3 { background: #ad5136; color: #fff; border-color: #9a422a; }
-.pc-stadebar .seg.on.s4 { background: var(--red-deep); color: #fdf3ec; border-color: var(--red-deep); }
-.pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--red); }
+.pc-stadebar .seg.on.s1 { background: #285A60; color: #E4ECEC; border-color: #36737A; }
+.pc-stadebar .seg.on.s2 { background: #367983; color: #071113; border-color: #4A9FA8; }
+.pc-stadebar .seg.on.s3 { background: #4A9FA8; color: #071113; border-color: #78BBC0; }
+.pc-stadebar .seg.on.s4 { background: #78BBC0; color: #071113; border-color: #78BBC0; }
+.pc-editable.editing .pc-stadebar .seg:hover { border-color: var(--accent); }
 /* verrouillé : le clic ne fait rien (garde-fou côté JS) mais le survol garde
    son infobulle — c'est elle qui donne le nom complet du stade */
 .pc-editable:not(.editing) .pc-stadebar .seg { cursor: default; }
@@ -407,14 +419,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   width: 100%; padding: .17rem .35rem; border: 1px solid var(--line-2); border-radius: 6px;
   background: var(--card); color: var(--ink); font: inherit; font-size: .62rem;
 }
-.pc-select:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 /* techniques : cartes nom + effet dans la carte d'art (onglet Art) */
 .pc-techniques { display: flex; flex-direction: column; gap: .2rem; padding: .15rem 0 0; }
 .pc-techniques:empty { display: none; }
 .pc-techniques .pc-av { margin-bottom: .1rem; }
 .pc-comp-add { display: flex; gap: .35rem; align-items: center; padding: .25rem .25rem .1rem; }
 .pc-comp-add input { flex: 1 1 auto; min-width: 0; padding: .24rem .5rem; border: 1px solid var(--line-2); border-radius: 6px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; }
-.pc-comp-add input:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-comp-add input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 .pc-mini { padding: .16rem .5rem; border: 1px solid var(--line-2); border-radius: 5px; background: var(--panel); color: var(--ink-2); font: inherit; font-size: .66rem; font-weight: 600; cursor: pointer; transition: .12s; }
 .pc-mini:hover { border-color: var(--line); color: var(--ink); background: #fff; }
 .pc-mini.danger { color: var(--red); }
@@ -424,7 +436,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-arme { border: 1px solid var(--hair); border-radius: 8px; background: var(--card); padding: .4rem .55rem .45rem; margin-bottom: .5rem; }
 .pc-arme-head { display: flex; align-items: baseline; gap: .5rem; }
 .pc-arme-head input.nm { flex: 1 1 auto; min-width: 0; border: none; border-bottom: 1px solid var(--line); background: transparent; color: var(--ink); font: inherit; font-size: .78rem; font-weight: 700; padding: .02rem .1rem .06rem; }
-.pc-arme-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-arme-head input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-arme-line { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .35rem .6rem; margin-top: .3rem; }
 .pc-arme-line .pc-f { flex: 1 1 3.4rem; }
 .pc-arme-line .pc-f.w { flex: 2 1 8rem; }
@@ -432,7 +444,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   flex: 0 0 auto; display: inline-block; padding: .14rem .5rem; border: 1px solid var(--line-2); border-radius: 5px;
   background: var(--panel); font-weight: 700; font-size: .64rem; color: var(--ink-2); cursor: pointer; transition: .12s;
 }
-.pc-roll-chip:hover { border-color: var(--red); color: var(--red); background: var(--wash); }
+.pc-roll-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--wash); }
 
 /* ---- modificateurs divers (3 emplacements : équipement / art / MJ) ----
    Le geste HxH : la valeur reste propre, les leviers ± n'apparaissent qu'au
@@ -447,15 +459,56 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   -moz-appearance: textfield; appearance: textfield;
 }
 .pc-mmod::-webkit-inner-spin-button, .pc-mmod::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-mmod:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-mmod:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-mmod.neg { color: var(--red); }
 .pc-cval.adj, .pc-big.adj .v, .pc-comp-total.adj, .pc-kv .max.adj { color: var(--red-deep) !important; }
 
 /* tuiles (Vitesse, Régén) : leviers centrés sous la valeur */
 .pc-big .pc-mmods { display: flex; justify-content: center; margin-top: .12rem; }
 
-/* ligne du maximum de PV : override « Forcé » (vide = calculé) + divers */
-.pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .05rem 0; font-size: .62rem; color: var(--ink-3); }
+/* Réserves PV / EM : composition empruntée à Outward, palette et typographie JJK.
+   La jauge traverse le module de bord à bord ; les valeurs et commandes restent
+   dans la carte, et les courants restent jouables même en mode Consultation. */
+.pc-vital-block { padding: 0; overflow: hidden; }
+.pc-vital-block > .pc-block-title { margin: 0; padding: .35rem .5rem .2rem; }
+.pc-vital-head { display: flex; align-items: baseline; gap: .24rem; padding: .22rem .5rem .18rem; }
+.pc-vital-num {
+  width: 3.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
+  border-radius: 0; background: transparent; color: var(--ink); font: inherit;
+  font-size: .9rem; font-weight: 700; text-align: right; padding: 0 .08rem .03rem;
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+}
+.pc-vital-num::-webkit-inner-spin-button, .pc-vital-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-num:focus { outline: none; border-bottom: 2px solid var(--vital-color); }
+.pc-vital-separator, .pc-vital-max { color: var(--ink-3); font-size: .66rem; font-variant-numeric: tabular-nums; }
+.pc-vital-max.adj { color: var(--vital-color); font-weight: 700; }
+.pc-vital-block.pc-vital-pv { --vital-color: #97454A; --vital-low: #B17F49; }
+.pc-vital-block.pc-vital-em { --vital-color: #438C96; --vital-low: #356F78; }
+html.night .pc-vital-block.pc-vital-pv { --vital-color: #A94B50; --vital-low: #D0A45F; }
+html.night .pc-vital-block.pc-vital-em { --vital-color: #4B929B; --vital-low: #3A747C; }
+.pc-vital-jauge {
+  width: 100%; height: .48rem; overflow: hidden; border-radius: 0;
+  background: var(--line-2);
+}
+.pc-vital-jauge > i {
+  display: block; width: 0; height: 100%; border-radius: inherit;
+  background: var(--vital-color); transition: width .15s ease, background-color .15s ease;
+}
+.pc-vital-jauge.low > i { background: var(--vital-low); }
+.pc-vital-jauge.critical > i { background: var(--red); }
+.pc-vital-commandes { display: flex; align-items: center; gap: .28rem; padding: .25rem .5rem .38rem; }
+.pc-vital-commandes .sp { flex: 1; }
+.pc-vital-delta {
+  box-sizing: border-box; width: 3.4rem; min-width: 0; border: 1px solid var(--line-2);
+  border-radius: 4px; padding: .13rem .25rem; background: var(--panel); color: var(--ink);
+  font: inherit; font-size: .62rem; text-align: center; -moz-appearance: textfield; appearance: textfield;
+}
+.pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-vital-delta:focus { outline: none; border-color: var(--vital-color); }
+.pc-vital-commandes .pc-mini { padding: .13rem .34rem; }
+.pc-vital-em .pc-block-title::after { background: #438C96; }
+html.night .pc-vital-em .pc-block-title::after { background: #4B929B; }
+.pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .5rem .4rem; font-size: .62rem; color: var(--ink-3); }
 .pc-pvmax .lbl { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
 .pc-pvmax input.force {
   width: 2.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
@@ -464,8 +517,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   -moz-appearance: textfield; appearance: textfield;
 }
 .pc-pvmax input.force::-webkit-inner-spin-button, .pc-pvmax input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-pvmax input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-pvmax input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-pvmax .sp { flex: 1; }
+.pc-em-max-input { font-variant-numeric: tabular-nums; }
 
 /* mêmes leviers, version étroite : dans une tuile (Vitesse, Régén / jour), où
    « Forcé » et « Modificateurs » s'empilent sous la valeur */
@@ -484,7 +538,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-bigedit input.force::-webkit-inner-spin-button,
 .pc-bigedit input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-bigedit input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-bigedit input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
 /* dans une tuile, les leviers restent visibles dès le mode édition (ils ne se
    révèlent pas au survol comme ailleurs : la tuile est trop petite pour ça) */
 .pc-bigedit .pc-mmods { opacity: 1; margin-top: 0; }
@@ -526,7 +580,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding: .18rem; border: 1px dashed var(--line-2); border-radius: 6px;
   background: var(--panel); transition: background .12s, border-color .12s;
 }
-.pc-modplan-liste.survol { border-color: var(--red); background: var(--wash); }
+.pc-modplan-liste.survol { border-color: var(--accent); background: var(--wash); }
 .pc-modplan-carte {
   display: flex; align-items: center; gap: .25rem; min-width: 0;
   padding: .2rem .3rem; border: 1px solid var(--line-2); border-radius: 5px;
@@ -543,12 +597,12 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-modplan-carte.off { background: var(--panel); border-style: dashed; }
 .pc-modplan-carte.off > .t { color: var(--ink-3); font-style: italic; }
 /* le trait qui dit où la carte va se poser */
-.pc-modplan-carte.avant { box-shadow: 0 -2px 0 var(--red); }
+.pc-modplan-carte.avant { box-shadow: 0 -2px 0 var(--accent); }
 .pc-modplan-carte[data-etat="panne"] { border-color: var(--red); background: var(--wash); }
 .pc-modplan-carte[data-etat="perdu"] { border-style: dotted; border-color: var(--red); }
 .pc-modplan-oeil {
   flex: 0 0 auto; cursor: pointer; font-size: .7rem; line-height: 1;
-  color: var(--red); padding: 0 .05rem;
+  color: var(--accent); padding: 0 .05rem;
 }
 .pc-modplan-carte.off .pc-modplan-oeil { color: var(--ink-3); }
 /* Ranger n'agit qu'au chargement suivant : la phrase le dit, centrée au-dessus
@@ -616,7 +670,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   color: var(--ink-2); border-bottom: 1px solid var(--hair); padding-bottom: .05rem;
 }
 /* une ligne réglée se repère d'un coup d'œil parmi cinquante */
-.pc-optcomp-row.on { border-left-color: var(--red); }
+.pc-optcomp-row.on { border-left-color: var(--accent); }
 /* champs compacts : sept colonnes doivent tenir dans une demi-largeur. Le
    modificateur est un champ NU (ni − ni +) : sur cinquante lignes, les boutons
    mangeaient la place sans rien apporter. */
@@ -627,7 +681,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-optcomp-row .pc-num.modif::-webkit-inner-spin-button,
 .pc-optcomp-row .pc-num.modif::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-optcomp-row .pc-num.modif:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-optcomp-row .pc-num.modif:focus { outline: none; border-bottom: 2px solid var(--accent); }
 /* Les valeurs calculées sont CENTRÉES dans leur colonne, comme les champs qui
    les précèdent : une colonne de nombres dont l'alignement change d'une case à
    l'autre se lit mal, et sur dix colonnes cela se voit tout de suite. */
@@ -660,14 +714,14 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 }
 .pc-optcomp-row input.force::-webkit-inner-spin-button,
 .pc-optcomp-row input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-optcomp-row input.force:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-optcomp-row input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
 
 /* langue du personnage : l'étoile la désigne (acquise, gratuite jusqu'à Expert) */
 .pc-lang-base {
   flex: 0 0 auto; border: none; background: none; cursor: pointer; padding: 0 .15rem 0 0;
   font: inherit; font-size: .62rem; line-height: 1; color: var(--line);
 }
-.pc-lang-base.on { color: var(--red); }
+.pc-lang-base.on { color: var(--accent); }
 .pc-editable:not(.editing) .pc-lang-base { cursor: default; }
 
 /* lignes de compétences : UN levier discret dans sa colonne dédiée
@@ -679,7 +733,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    place au bloc Création réglable, le 2026-08-04). Les deux règles restent
    pour les MODS, qui posent des .pc-kv avec une case et se retrouveraient
    sinon avec un contrôle sans style. */
-.pc-kv > input[type="checkbox"] { accent-color: var(--red); margin: 0; flex-shrink: 0; }
+.pc-kv > input[type="checkbox"] { accent-color: var(--accent); margin: 0; flex-shrink: 0; }
 .pc-kv > label { font-size: .64rem; color: var(--ink-2); cursor: pointer; }
 
 /* ---- inventaire : total du poids ---- */
@@ -708,7 +762,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   display: inline-flex; align-items: center; gap: .22rem; flex: 0 0 auto;
   cursor: pointer; user-select: none;
 }
-.pc-obj-cnt > input { accent-color: var(--red); margin: 0; cursor: pointer; }
+.pc-obj-cnt > input { accent-color: var(--accent); margin: 0; cursor: pointer; }
 .pc-obj-cnt > .t {
   font-size: var(--fs-label); letter-spacing: .05em; text-transform: uppercase;
   color: var(--ink-3);
@@ -724,9 +778,9 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   border: none; border-bottom: 1px solid var(--line); background: transparent;
   color: var(--ink); padding: .02rem .1rem; border-radius: 0;
 }
-.pc-obj-ghead .nmedit:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-ghead .nmedit:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-tiles { display: flex; flex-wrap: wrap; gap: .3rem; --obj-cols: 4; border-radius: 6px; }
-.pc-obj-tiles.over { outline: 1px dashed var(--red); outline-offset: 2px; }
+.pc-obj-tiles.over { outline: 1px dashed var(--accent); outline-offset: 2px; }
 .pc-obj-tile {
   width: calc((100% - .3rem * (var(--obj-cols) - 1)) / var(--obj-cols));
   border: 1px solid var(--hair); border-radius: 7px; overflow: hidden;
@@ -736,12 +790,12 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   box-sizing: border-box;
 }
 .pc-obj-tile:hover { border-color: var(--line); }
-.pc-obj-tile.sel { border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-obj-tile.sel { border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 .pc-obj-tile.drag { opacity: .3; }
-.pc-obj-tile.over { border-color: var(--red); border-style: dashed; }
+.pc-obj-tile.over { border-color: var(--accent); border-style: dashed; }
 /* trait d'insertion : l'objet tombera de CE côté de la tuile visée */
-.pc-obj-tile.over-l { box-shadow: inset 3px 0 0 var(--red); }
-.pc-obj-tile.over-r { box-shadow: inset -3px 0 0 var(--red); }
+.pc-obj-tile.over-l { box-shadow: inset 3px 0 0 var(--accent); }
+.pc-obj-tile.over-r { box-shadow: inset -3px 0 0 var(--accent); }
 /* retrait direct sur la tuile (mode édition) */
 .pc-obj-tile { position: relative; }
 .pc-obj-del {
@@ -751,10 +805,32 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   padding: .1rem .22rem; cursor: pointer; opacity: 0; transition: opacity .12s, background .12s;
 }
 .pc-obj-tile:hover .pc-obj-del { opacity: 1; }
-.pc-obj-del:hover { background: var(--red-deep); }
+.pc-obj-del:hover { background: var(--accent-deep); }
 .pc-obj-tile img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; display: block; }
 .pc-obj-ph { width: 100%; aspect-ratio: 1 / 1; display: flex; align-items: center; justify-content: center; color: var(--line); font-size: 1.1rem; background: var(--panel); }
 .pc-obj-ph.big { font-size: 2rem; }
+/* Menu contextuel de l'inventaire : actions ponctuelles, au clic droit ou
+   avec Maj+F10. Il reprend les couleurs de la fiche et reste dans le viewport. */
+.pc-obj-context {
+  z-index: 90; display: flex; flex-direction: column; gap: .08rem;
+  min-width: 11rem; max-width: min(18rem, calc(100vw - 12px));
+  padding: .24rem; border: 1px solid var(--line-2); border-radius: 6px;
+  background: var(--card); color: var(--ink);
+  box-shadow: 0 5px 18px rgba(20, 16, 10, .24);
+  font-family: inherit; font-size: .66rem;
+}
+.pc-obj-context-action {
+  display: block; width: 100%; min-width: 0; padding: .32rem .48rem;
+  border: 0; border-radius: 3px; background: transparent; color: var(--ink);
+  font: inherit; text-align: left; line-height: 1.25; cursor: pointer;
+}
+.pc-obj-context-action:hover,
+.pc-obj-context-action:focus-visible { outline: none; background: var(--wash); color: var(--ink); }
+.pc-obj-context-action:disabled { color: var(--ink-3); cursor: default; opacity: .55; }
+.pc-obj-context-action.danger { color: var(--red); }
+.pc-obj-context-action.danger:hover,
+.pc-obj-context-action.danger:focus-visible { background: var(--wash); color: var(--red-deep); }
+.pc-obj-context-sep { height: 1px; margin: .14rem .24rem; background: var(--hair); }
 /* LE NOM PASSE AVANT LES CHIFFRES. À huit tuiles par ligne, la tuile tombe à
    78 px et le nom n'avait plus que 28 px : trois lettres. Le pied peut donc
    passer à la ligne, et le nom garde une largeur lisible — ce sont la quantité
@@ -776,7 +852,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   display: flex; align-items: center; justify-content: center;
   color: var(--line); font-size: 1rem; cursor: pointer; transition: .12s; box-sizing: border-box;
 }
-.pc-obj-addtile:hover { border-color: var(--red); color: var(--red); }
+.pc-obj-addtile:hover { border-color: var(--accent); color: var(--accent); }
 .pc-mini.pc-obj-addgroup { align-self: flex-start; }
 
 /* ---- boîte de dialogue de la fiche (donner / prendre un objet) ----
@@ -801,8 +877,8 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-modal-img { text-align: center; }
 .pc-modal-img img { max-width: 6rem; max-height: 6rem; border-radius: 7px; border: 1px solid var(--line-2); }
 .pc-modal-actions { display: flex; justify-content: flex-end; gap: .35rem; margin-top: .5rem; }
-.pc-mini.primary { background: var(--red); border-color: var(--red-deep); color: #fff; }
-.pc-mini.primary:hover { background: var(--red-deep); color: #fff; }
+.pc-mini.primary { background: var(--accent); border-color: var(--accent-deep); color: #fff; }
+.pc-mini.primary:hover { background: var(--accent-deep); color: #fff; }
 /* conflit : deux versions d'un même champ, on tranche */
 .pc-modal-conflit { border-top: 1px solid var(--hair); padding-top: .3rem; }
 .pc-modal-conflit .lbl { font-size: .52rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); margin-bottom: .2rem; }
@@ -813,7 +889,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   color: var(--ink-2); font: inherit; font-size: .56rem; padding: .22rem .3rem; transition: .12s;
 }
 .pc-modal-choix:hover { border-color: var(--line); }
-.pc-modal-choix.on { border-color: var(--red); background: var(--wash); color: var(--ink); }
+.pc-modal-choix.on { border-color: var(--accent); background: var(--wash); color: var(--ink); }
 .pc-modal-choix .tag { font-size: .5rem; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--ink-3); margin-bottom: .12rem; }
 .pc-modal-choix .val { overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; }
 .pc-modal-choix img { width: 100%; border-radius: 4px; display: block; }
@@ -825,16 +901,16 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   color: var(--ink); font: inherit; font-size: .76rem; font-weight: 700; padding: .02rem .1rem .06rem;
   min-width: 0; width: 100%; border-radius: 0;
 }
-.pc-obj-body > input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-body > input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-qrow { display: flex; gap: .35rem; align-items: center; }
-.pc-obj-qrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--red); }
+.pc-obj-qrow input[type="range"] { flex: 1; min-width: 0; accent-color: var(--accent); }
 .pc-obj-qrow input.n {
   flex: 0 0 2.2rem; border: none; border-bottom: 1px solid var(--hair); background: transparent;
   color: var(--ink); font: inherit; font-size: .7rem; text-align: right; padding: .02rem .1rem .06rem;
   font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; min-width: 0;
 }
 .pc-obj-qrow input.n::-webkit-inner-spin-button, .pc-obj-qrow input.n::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-obj-qrow input.n:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-obj-pair { display: flex; gap: .5rem; }
 .pc-obj-pair .pc-f { flex: 1; }
 .pc-obj-actions { display: flex; gap: .35rem; justify-content: flex-end; align-items: flex-end; margin-top: .1rem; }
@@ -858,22 +934,22 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: transparent; color: var(--ink); font: inherit; font-size: .74rem; font-weight: 700;
   padding: .03rem .1rem .08rem;
 }
-.pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--red); }
+.pc-av-head input.nm:focus { outline: none; border-bottom: 2px solid var(--accent); }
 /* zone de texte posée dans un champ étiqueté (défaut, qualités, propriétés d'arme) */
 .pc-f > .pc-notes { min-height: 2.6rem; font-size: .7rem; }
 /* bouton « Chat » d'un champ étiqueté : rangé sous la zone, à droite */
 .pc-f > .pc-mini { align-self: flex-end; margin-top: .18rem; }
 .pc-notes { width: 100%; min-height: 4.5rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; box-sizing: border-box; }
-.pc-notes:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-notes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 .pc-empty { font-size: .72rem; color: var(--ink-3); font-style: italic; padding: .3rem .3rem; text-align: center; }
 
 /* ---- valeurs cliquables (lancer un jet) ---- */
 .pc-rollable { cursor: pointer; }
-.pc-rollable:hover { color: var(--red) !important; }
+.pc-rollable:hover { color: var(--accent) !important; }
 .pc-comp-total.pc-rollable:hover { text-decoration: underline; }
-.pc-cval.pc-rollable:hover { border-color: var(--red); color: var(--red); }
-.pc-big.pc-rollable:hover { border-color: var(--red); }
-.pc-big.pc-rollable:hover .v { color: var(--red); }
+.pc-cval.pc-rollable:hover { border-color: var(--accent); color: var(--accent); }
+.pc-big.pc-rollable:hover { border-color: var(--accent); }
+.pc-big.pc-rollable:hover .v { color: var(--accent); }
 
 /* ---- onglet Options ---- */
 .pc-opt-actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .1rem; }
@@ -927,7 +1003,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
   background: var(--card); color: var(--ink);
   border: 1px solid var(--line-2); border-radius: 7px;
 }
-.pc-code:focus { outline: none; border-color: var(--red); box-shadow: 0 0 0 2px var(--wash); }
+.pc-code:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 
 /* une ligne de la liste des mods ou des modules : le libellé prend la place,
    l'id et l'état restent en retrait, les boutons suivent. Le liseré gauche est
@@ -992,7 +1068,7 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 /* ---- flash ---- */
 .pc-flash {
   position: fixed; left: 50%; bottom: 1.2rem; transform: translateX(-50%);
-  background: #2a2620; color: #f3ecdd; font-size: .72rem;
+  background: #171D1E; color: #E4ECEC; border: 1px solid #344448; font-size: .72rem;
   font-family: 'Alegreya', Garamond, serif;
   padding: .4rem .9rem; border-radius: 7px; opacity: 0;
   transition: opacity .25s; pointer-events: none; z-index: 60;
@@ -1005,38 +1081,37 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
    ============================================================ */
 html.night .perso-atelier { color-scheme: dark; }
 html.night .perso-atelier {
-  /* mêmes papiers nuit que le livre (night.css) : le --paper local (repli de
-     l'iframe) masquerait sinon la feuille sombre du site */
-  --paper:   #201c15;
-  --bg-side: #14110c;
-  --card:    #262119;
-  --panel:   #2f2a20;
-  --stripe:  #2b261d;
-  --hair:    #39332a;
-  --line:    #4f4838;
-  --line-2:  #453e31;
-  --ink:     #eee4cf;
-  --ink-2:   #cbc2ac;
-  --ink-3:   #978d77;
-  --red:     #c65540;
-  --red-deep:#dd7461;
-  --wash:    rgba(198, 85, 64, .18);
-  --ok:      #9fb37e;
+  --paper:   #0D1213; --bg-side: #050809; --card: #141A1B;
+  --panel:   #101617; --stripe: #192123; --hair: #223135;
+  --line:    #304044; --line-2: #273538;
+  --ink:     #E4ECEC; --ink-2: #B6C4C5; --ink-3: #829496;
+  --accent:  #4A9FA8; --accent-hi: #78BBC0; --accent-deep: #285A60;
+  --accent-wash: rgba(74,159,168,.16);
+  --red:     #C96B62; --red-deep: #E08D83;
+  --wash:    rgba(201,107,98,.16); --ok: #78B69A;
 }
-html.night .perso-atelier .pc-top { background: #201c15; border-bottom-color: #3c3527; }
-html.night .pc-top-title { color: #adc08c; }
-html.night .pc-top-hint { color: #8f8672; }
-html.night .pc-btn { background: #2a2519; border-color: #3c3527; color: #b7ad97; }
-html.night .pc-btn:hover { background: #332d20; color: #e8dfcb; }
-html.night .pc-top .pc-lib select { background: #2a2519; border-color: #3c3527; color: #e8dfcb; }
+html.night .perso-atelier .pc-top { background: #0D1213; border-bottom-color: #273538; }
+html.night .pc-top-title { color: #78BBC0; }
+html.night .pc-top-hint { color: #829496; }
+html.night .pc-btn { background: #171D1E; border-color: #304044; color: #B6C4C5; }
+html.night .pc-btn:hover { background: #1D292B; border-color: #4A9FA8; color: #E4ECEC; }
+html.night .pc-top .pc-lib select { background: #171D1E; border-color: #304044; color: #E4ECEC; }
 html.night .pc-sheet { box-shadow: 0 6px 26px rgba(0, 0, 0, .5); }
-html.night .pc-tab:hover { background: rgba(233, 224, 204, .07); }
-html.night .pc-abbr { background: #7f2b1d; color: #f4e2da; }
-html.night .pc-mini:hover { background: #332d20; }
+html.night .pc-tab:hover { background: var(--accent-wash); }
+html.night .pc-abbr { background: #285A60; color: #E4ECEC; }
+html.night .pc-mini:hover { background: #1D292B; }
 html.night .pc-block-title { color: var(--ink); }
 /* dégradé des stades, tons nuit (le --red-deep nuit est un ton de TEXTE :
    le bout de barre reprend le rouge du chip de caractéristique nuit) */
-html.night .pc-stadebar .seg.on.s1 { background: #6b4936; color: #eee4cf; border-color: #7d5742; }
-html.night .pc-stadebar .seg.on.s2 { background: #8a5138; color: #f4e2da; border-color: #9c5f44; }
-html.night .pc-stadebar .seg.on.s3 { background: #a54a30; color: #f4e2da; border-color: #b55a3e; }
-html.night .pc-stadebar .seg.on.s4 { background: #7f2b1d; color: #f4e2da; border-color: #7f2b1d; }
+html.night .pc-stadebar .seg.on.s1 { background: #285A60; color: #E4ECEC; border-color: #36737A; }
+html.night .pc-stadebar .seg.on.s2 { background: #367983; color: #071113; border-color: #4A9FA8; }
+html.night .pc-stadebar .seg.on.s3 { background: #4A9FA8; color: #071113; border-color: #78BBC0; }
+html.night .pc-stadebar .seg.on.s4 { background: #78BBC0; color: #071113; border-color: #78BBC0; }
+
+
+/* Thème JJK sombre — repli autonome pour le site et l'iframe Roll20. */
+.perso-atelier { color-scheme: dark; }
+.perso-atelier input, .perso-atelier select, .perso-atelier textarea { color-scheme: dark; }
+.perso-atelier ::selection { background: rgba(74,159,168,.35); color: #F0F7F7; }
+.perso-atelier .pc-tab.on, .perso-atelier .pc-mini.primary { color: #071113; }
+.perso-atelier .pc-obj-del:hover { background: var(--red); color: #160909; }
