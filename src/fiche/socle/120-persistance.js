@@ -30,6 +30,77 @@
     card.id = "_current";
     cards._current = card;
     try { STORE.setItem("jjk-cards", JSON.stringify(cards)); } catch (e) {}
+    enregistrementModules(card, json);
+  }
+  // Photographie des valeurs propres et calculées de chaque module. Le
+  // détecteur compare ces valeurs à la capture précédente, puis ne démarre le
+  // contour que si le journal Compact porte déjà un ID local à faire confirmer.
+  // Cela fait aussi suivre les modules dépendants (PV, vitesse, compétences…)
+  // lorsqu'une caractéristique ou un équipement change leur résultat affiché.
+  var enregistrementEtat = null;
+  function enregistrementModules(card, json) {
+    if (!window.__jjkSavingModules || json === null || enregistrementEtat === json) return;
+    enregistrementEtat = json;
+    var out = {}, c = card.combat || {};
+    function set(id, value) { out[id] = JSON.stringify(value); }
+    function add(id, value) { set(id, [out[id], value]); }
+    var own = {
+      narration: ["narration"],
+      caracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "ptsCreaMod", "ptsCreaForce", "xpTotal"],
+      langues: ["langues", "langueBase"],
+      initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2"],
+      tuiles: ["divers", "vitesseOverride", "regenOverride"],
+      pv: ["pv", "pvMaxOverride", "divers"],
+      em: ["em", "emMax"],
+      armescomp: ["armesComps", "comps"],
+      comps: ["comps", "customComps", "compsMod", "compsMod2", "compsForce", "compsXpForce", "compsXpMod", "compsXpMod2"],
+      arts: ["comps", "customComps"],
+      armes: ["armes", "armesComps"],
+      armures: ["armures"],
+      inv: ["inv", "armes", "armures"],
+      perso: ["name", "portrait", "espece", "age", "sexe", "genre", "defaut", "qualites"],
+      avantages: ["avantages"],
+      bg: ["background"],
+      notes: ["notesJournal", "notes"],
+      jets: ["de"],
+      actions: ["narration", "de"],
+      modcaracs: ["caracsMod", "caracsMod2", "caracsForce", "caracsXpMod", "caracsXpMod2", "caracsXpForce", "caracsPlafondMod", "caracsPlafondForce"],
+      xpchamps: ["xpTotal", "caracsXp", "comps", "compsXpForce", "compsXpMod", "compsXpMod2"],
+      creation: ["ptsCreaMod", "ptsCreaForce", "caracsPlafondMod", "caracsPlafondForce", "caracsForce", "caracsXpForce"],
+      filtres: ["filtres"],
+      affichage: ["modules"],
+      mods: ["mods"],
+      modules: ["modData", "modActifs", "modules"],
+      optcomps: ["compsMod", "compsMod2", "compsForce", "compsXpForce", "compsXpMod", "compsXpMod2"]
+    };
+    Object.keys(own).forEach(function (id) {
+      set(id, own[id].map(function (key) { return state[key]; }));
+    });
+    // Sorties calculées qui changent parfois sans que la donnée brute du module
+    // change (ex. Body modifie PV max, initiative, vitesse et jets de compétences).
+    add("initiative", [c.initiative, card.caracs]);
+    add("tuiles", [c.vitesse, c.regen, c.poids]);
+    add("pv", [c.pv, c.pvMax]);
+    add("em", [state.em, state.emMax]);
+    add("inv", c.poids);
+    try {
+      var skills = allComps().map(function (entry) {
+        var comp = state.comps[entry.key] || {};
+        return [entry.key, compValue(entry.carac, comp, entry.key), compXp(comp, entry.key), comp.techniques || []];
+      });
+      add("comps", skills);
+      add("arts", skills);
+      add("armescomp", skills.filter(function (entry) { return /^Body\//.test(entry[0]) && (state.armesComps || []).some(function (n) { return entry[0] === "Body/" + n; }); }));
+    } catch (eSkills) {}
+    // Les coffres de mods peuvent correspondre à des modules ajoutés ou
+    // remplacés : ils héritent de leur ID DOM, comme dans Outward.
+    Object.keys(state.modData || {}).forEach(function (id) { add(id, state.modData[id]); });
+    (typeof modules !== "undefined" && Array.isArray(modules) ? modules : []).forEach(function (module) {
+      if (module && typeof module.enregistrement === "function") {
+        try { add(module.id, module.enregistrement()); } catch (eModule) {}
+      }
+    });
+    window.__jjkSavingModules(out);
   }
   // Le bandeau de perte : même mise en forme que celui des mods, au même
   // endroit, juste avant la feuille. Il n'y en a qu'UN, gardé d'un montage à

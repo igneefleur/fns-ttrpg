@@ -20,8 +20,10 @@ assert.match(edition, /beforeinput[\s\S]*?keydown/,
   'les tentatives de modification clavier et édition sont interceptées');
 assert.match(edition, /function guardConsultation/,
   'le mode Consultation possède le verrou global commun à Outward');
-assert.match(edition, /\.pc-vital-num[\s\S]*?\.pc-obj-tile/,
-  'les jauges et les tuiles restent des actions de jeu en Consultation');
+assert.match(edition, /\.pc-obj-tile/,
+  'les tuiles restent des actions de jeu en Consultation');
+assert.doesNotMatch(edition, /\.pc-vital-num/,
+  'les champs de ressources restent verrouillés en Consultation comme dans Outward');
 assert.match(edition, /\.pc-obj-context-action:not\(\[data-jjk-requires-edit\]\)/,
   'Montrer et Donner restent disponibles sans autoriser les actions de construction');
 assert.doesNotMatch(boot, /\bmiseANiveauDemandee\b/,
@@ -30,15 +32,15 @@ assert.match(boot, /compactMigrationSentAt/,
   'la photographie initiale Compact est renvoyée à cadence bornée');
 assert.doesNotMatch(boot, /enVol\s*=\s*fusion\(enVol,\s*changedMigration\)/,
   'la création initiale du stockage ne devient pas une modification joueur en attente');
-assert.doesNotMatch(edition, /g\.disabled\s*=/,
-  'le rouage reste cliquable visuellement et son clic est simplement ignoré');
+assert.match(edition, /if \(!canUseControl\(node\)\)[\s\S]*?node\.disabled = true/,
+  'les boutons de construction sont désactivés en Consultation comme dans Outward');
 assert.match(roll20Css, /html\.jjk-consultation \.pc-editable \.pc-gear \{ opacity: 1; cursor: default; \}/);
 assert.doesNotMatch(roll20Css, /html\.jjk-consultation[^\n]*cursor:\s*not-allowed/);
 assert.match(reserve, /el\("input", "pc-vital-num"\)/,
-  'la valeur courante PV/EM demeure une action de jeu, distincte des champs de construction');
+  'la valeur courante PV/EM existe toujours mais reste verrouillée en Consultation');
 assert.match(reserve, /el\("input", "pc-vital-delta"\)/);
 assert.doesNotMatch(reserve, /pc-vital-num[^\n]*pc-edit-field/);
 assert.match(header, /pc-em-max-input/);
 assert.match(header, /pc-global-edit-field/,
   'le maximum EM de l’en-tête est verrouillé en Consultation');
-console.log('OK consultation : construction désactivée, curseur neutre, ressources de jeu accessibles');
+console.log('OK consultation : construction et jauges verrouillées, actions de lecture et de jeu conservées');

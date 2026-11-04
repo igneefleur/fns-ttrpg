@@ -49,18 +49,67 @@
       f.setAttribute("aria-disabled", f.disabled ? "true" : "false");
     });
   }
+  function canUseControl(target) {
+    if (!target || !target.matches) return false;
+    // Liste d'actions de jeu/lecture, calquée sur OWD : les champs de saisie,
+    // les jauges modifiables et les quantités ne sont pas des commandes de jeu.
+    return target.matches(
+      ".pc-tab, .pc-rollable, .pc-obj-tile, " +
+      ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
+      ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
+      ".pc-note-toggle, .pc-journal-toggle, summary, a[href]"
+    ) || !!target.closest(".pc-notes-search, .pc-journal-pages") ||
+      !!target.closest(".pc-envoi") || target.type === "search";
+  }
+  function appliqueVerrouGlobal(scope) {
+    var surface = scope && scope.querySelectorAll ? scope : document;
+    var selector = surface === document
+      ? "#perso-atelier input, #perso-atelier textarea, #perso-atelier select, #perso-atelier button, #perso-atelier [draggable='true']"
+      : "input, textarea, select, button, [draggable='true']";
+    var nodes = Array.prototype.slice.call(surface.querySelectorAll(selector));
+    // MutationObserver peut recevoir directement un champ ou un bouton ajouté
+    // seul : querySelectorAll ne comprend pas l'élément racine lui-même.
+    if (surface !== document && surface.matches && /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(surface.tagName))
+      nodes.unshift(surface);
+    nodes.forEach(function (node) {
+      if (!ficheModifiable()) {
+        if (node.draggable) { node.dataset.jjkModeWasDraggable = "1"; node.draggable = false; }
+        if (!canUseControl(node)) {
+          node.setAttribute("data-jjk-readonly", "1");
+          if (node.tagName === "TEXTAREA" || node.tagName === "INPUT" &&
+              !/^(checkbox|radio|range|file|button|submit|reset)$/i.test(node.type)) {
+            if (node.dataset.jjkModeWasReadonly === undefined) node.dataset.jjkModeWasReadonly = node.readOnly ? "1" : "0";
+            node.readOnly = true;
+          } else {
+            if (node.dataset.jjkModeWasDisabled === undefined) node.dataset.jjkModeWasDisabled = node.disabled ? "1" : "0";
+            node.disabled = true;
+          }
+        }
+      } else if (node.hasAttribute("data-jjk-readonly")) {
+        if (node.dataset.jjkModeWasReadonly !== undefined) {
+          node.readOnly = node.dataset.jjkModeWasReadonly === "1";
+          delete node.dataset.jjkModeWasReadonly;
+        }
+        if (node.dataset.jjkModeWasDisabled !== undefined) {
+          node.disabled = node.dataset.jjkModeWasDisabled === "1";
+          delete node.dataset.jjkModeWasDisabled;
+        }
+        if (node.dataset.jjkModeWasDraggable === "1") node.draggable = true;
+        delete node.dataset.jjkModeWasDraggable;
+        node.removeAttribute("data-jjk-readonly");
+      }
+    });
+  }
   window.__jjkApplyMode = function (scope) {
-    if (scope && scope.querySelectorAll) {
-      if (scope.classList && scope.classList.contains("pc-editable")) applyEdit(scope, scope.dataset.module || "");
-      Array.prototype.forEach.call(scope.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
-      appliqueChampsHorsModule(scope);
-      return;
-    }
-    Array.prototype.forEach.call(document.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
-    // L'identité et l'XP de l'en-tête ne sont pas rangés dans un module ; les
-    // champs de mods sans bloc éditable ont, eux, un propriétaire explicite.
-    // Le mode global doit donc les verrouiller/déverrouiller lui aussi.
-    appliqueChampsHorsModule(document);
+    var surface = scope && scope.querySelectorAll ? scope : document;
+    // D'abord retirer le verrou global précédent. Ensuite seulement, réappliquer
+    // les permissions plus fines des modules : un champ pc-edit-field ne doit
+    // jamais redevenir actif simplement parce que le mode global repasse en édition.
+    appliqueVerrouGlobal(surface);
+    if (surface.classList && surface.classList.contains("pc-editable")) applyEdit(surface, surface.dataset.module || "");
+    Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
+    // L'identité et les commandes hors module partagent le verrou global.
+    appliqueChampsHorsModule(surface);
   };
   // Toutes les interactions de CONSTRUCTION repassent par le même garde.
   // Les actions de jeu restent libres : clic sur une tuile, Montrer, Donner,
@@ -122,17 +171,6 @@
   // Verrou global de Consultation, calqué sur Outward : les commandes de
   // construction sont bloquées même si un contrôle a été ajouté sans classe
   // pc-edit-field. Les actions de jeu et de lecture restent disponibles.
-  function canUseControl(target) {
-    if (!target || !target.matches) return false;
-    return target.matches(
-      ".pc-tab, .pc-rollable, .pc-vital-num, .pc-vital-delta, " +
-      ".pc-vital-commandes button, .pc-obj-tile, " +
-      ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
-      ".pc-obj-qrow input, .pc-notes-latest, .pc-notes-older, " +
-      ".pc-notes-newer, .pc-envoi select, .pc-envoi button, " +
-      ".pc-envoi-segs, summary, a[href]"
-    ) || !!target.closest(".pc-notes-search");
-  }
   function dansFiche(target) {
     var root = document.getElementById("perso-atelier");
     return !!(root && target && root.contains(target));
