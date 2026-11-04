@@ -1,0 +1,5 @@
+/* En Consultation, les boutons désactivés ne doivent produire aucun retour de survol. */
+html.jjk-consultation #perso-atelier button:disabled {
+  cursor: default !important;
+  pointer-events: none !important;
+}
