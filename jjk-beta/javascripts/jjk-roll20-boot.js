@@ -62,7 +62,13 @@
   var VIEW_ID = "v-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
   var modePartage = "consultation", presenceRecu = false, presenceTimer = null, presenceDead = false;
   window.__jjkGlobalMode = modePartage;
-  window.__jjkCanEdit = function () { return window.__jjkGlobalMode === "edition"; };
+  // Comme Outward, le mode Édition n'accorde rien tant que la fiche n'est pas
+  // réellement montée ou qu'elle est gelée. Le verrou est aussi appliqué au
+  // shim de persistance : un contrôle oublié ne peut donc pas écrire en douce.
+  window.__jjkCanEdit = function () {
+    return window.__jjkGlobalMode === "edition" && ready && !gele && !versionBloquee &&
+      !document.getElementById("jjk-ecran");
+  };
 
   var mem = {};                 // cache localStorage
   var SAVE_KEYS = { "jjk-perso": 1, "jjk-cards": 1 };
@@ -80,13 +86,29 @@
   var compactActif = false, compactSession = null, compactPoll = null, compactPollEnCours = false;
   var compactRecovering = false, compactErrorMessage = "";
   var compactMigrationSentAt = 0;
+  var compactRemote = null, saveModulesValues = null;
+  var saveContours = window.JjkSaveProgress ? new window.JjkSaveProgress.Tracker() : null;
+  var savePainter = saveContours ? new window.JjkSaveProgress.Painter(saveContours, document) : null;
   var compactStorageReady = false, compactCleanupAt = 0, versionBloquee = false;
   var backupLastAt = 0, backupPendingRequest = null, backupPendingAt = 0, backupRetryAt = 0;
   var pontVerifie = false, pontRefuse = false, pontChecking = false, hydrateEnAttente = null, relectureOuverture = false;
 
   window.__jjkLocalStorage = {
     getItem: function (k) { return Object.prototype.hasOwnProperty.call(mem, k) ? mem[k] : null; },
-    setItem: function (k, v) { mem[k] = String(v); if (ready && SAVE_KEYS[k]) scheduleSave(); },
+    setItem: function (k, v) {
+      // Une fiche en Consultation est réellement en lecture seule : ne pas
+      // même remplacer le cache mémoire si un contrôle oublié appelle save().
+      if (ready && SAVE_KEYS[k] && !window.__jjkCanEdit()) return;
+      mem[k] = String(v);
+      // Capture synchrone, comme Outward : l'opération Compact reçoit son ID
+      // avant que le contour du module ne soit dessiné. L'envoi Roll20 reste
+      // débouncé par scheduleSave().
+      if (ready && k === "jjk-perso" && compactActif && compactSession &&
+          compactSession.hasBase && window.__jjkCanEdit()) {
+        try { compactSession.capture(JSON.parse(mem[k])); } catch (e) {}
+      }
+      if (ready && SAVE_KEYS[k]) scheduleSave();
+    },
     removeItem: function (k) { delete mem[k]; },
     clear: function () { mem = {}; },
     key: function (i) { return Object.keys(mem)[i] || null; },
@@ -250,7 +272,14 @@
   function doSaveCompact(state, card) {
     try {
       if (versionBloquee) return;
-      compactSession.capture(state);
+      // En consultation, on laisse partir les opérations déjà capturées et les
+      // opérations d’initialisation, mais aucune nouvelle saisie ne doit être
+      // capturée depuis l’état mémoire. Le shim bloque déjà setItem en amont.
+      if (!compactSession.hasBase || window.__jjkCanEdit()) compactSession.capture(state);
+      // Repli sûr si l'état a été capturé avant que le stockage ait sa base.
+      if (saveModulesValues && saveContours && Object.keys(compactSession.pending || {}).length)
+        saveContours.capture(saveModulesValues, compactSession.pending, true);
+      updateSaveContours();
       actualiseStatutEnregistrement();
       var mirrors = M.mirrorAttrs ? M.mirrorAttrs(state, card) : {};
       if (!compactSession.hasBase) {
@@ -341,8 +370,10 @@
     try {
       var distant = window.JjkSync.Compact.read(attrs);
       if (distant && !distant.incomplete && verrouilleVersionFuture(distant.state)) return;
+      compactRemote = distant && !distant.incomplete ? distant : null;
       var resultat = compactSession.receive(attrs);
       if (!resultat) return;
+      updateSaveContours();
       actualiseStatutEnregistrement();
       if (resultat.incomplete) throw new Error("La lecture actualisée contient des blocs ou des journaux incomplets.");
       appliqueCycleStockage(attrs);
@@ -376,12 +407,14 @@
       try {
         var distant = window.JjkSync.Compact.read(attrs);
         if (distant && !distant.incomplete && verrouilleVersionFuture(distant.state)) return;
+        compactRemote = distant && !distant.incomplete ? distant : null;
         var resultat = compactSession.receive(attrs);
         if (!resultat) {
           if (!compactSession.hasBase) scheduleSave();
           planifieCompactPoll(1800);
           return;
         }
+        updateSaveContours();
         actualiseStatutEnregistrement();
         if (resultat.incomplete) throw new Error("Des blocs référencés par le journal ne sont pas encore arrivés.");
         var stockagePret = appliqueCycleStockage(attrs);
@@ -426,6 +459,7 @@
     try {
       compactSession = new window.JjkSync.Compact.Session(lastAttrs || {}, state, Date.now,
         { id: VIEW_ID, actor: { id: VIEW_ID } });
+      try { compactRemote = window.JjkSync.Compact.read(lastAttrs || {}); } catch (eRemote) { compactRemote = null; }
       compactMigrationSentAt = 0;
       compactStorageReady = false; compactCleanupAt = 0;
       compactActif = true;
@@ -724,6 +758,29 @@
       statutEnregistrement("Enregistré");
     }
   }
+  function updateSaveContours() {
+    if (!saveContours) return;
+    // Seule une lecture Compact complète contenant les IDs du journal vaut
+    // accusé de réception. Le clic et l'envoi ne terminent jamais le contour.
+    if (compactRemote && !compactRemote.incomplete) saveContours.confirm(compactRemote);
+    if (savePainter) savePainter.sync();
+  }
+  window.__jjkSavingModules = function (values) {
+    if (!saveContours || !values || typeof values !== "object") return;
+    saveModulesValues = values;
+    var active = ready && bundleCharge && compactActif && compactSession && compactSession.hasBase &&
+      window.__jjkCanEdit() && !compactRecovering;
+    var pending = active ? compactSession.pending : {};
+    // En mode Consultation ou avant la première base Compact, on ne fait que
+    // poser une photographie de référence. On n'écrase jamais une capture en
+    // attente d'accusé de réception.
+    if (active && Object.keys(pending).length) saveContours.capture(values, pending, true);
+    else if (!Object.keys(saveContours.records).length && !Object.keys(pending).length)
+      saveContours.capture(values, {}, false);
+    updateSaveContours();
+  };
+  window.addEventListener("pagehide", function () { if (savePainter) savePainter.destroy(); });
+
   function bandeauPerte() {
     saveFailure = "confirmation";
     afficheErreurEnregistrement(true);
@@ -1258,6 +1315,7 @@
     document.documentElement.classList.toggle("jjk-consultation", !next);
     if (changed && window.Jjk && typeof window.Jjk.remonte === "function") window.Jjk.remonte();
     if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
+    updateSaveContours();
     renderPresence();
   }
   function poserModeBar() {
@@ -1293,7 +1351,14 @@
     presence.appendChild(noeud("div", "jjk-presence-consultation"));
     bar.appendChild(controls);
     bar.appendChild(presence);
-    app.parentNode.insertBefore(bar, app);
+    // Jjk.remonte() vide innerHTML de la racine #perso-atelier. La barre doit
+    // être une sœur de cette racine, comme la barre Outward, jamais un enfant
+    // de l'arbre reconstruit : elle conserve présence et statut en changeant
+    // de mode ou après tout remontage complet.
+    var anchor = app;
+    while (anchor.parentNode && anchor.parentNode !== document.body) anchor = anchor.parentNode;
+    if (anchor.parentNode === document.body) document.body.insertBefore(bar, anchor);
+    else document.body.insertBefore(bar, document.body.firstChild);
     document.documentElement.classList.add("jjk-consultation");
     appliqueMode(sharedModeState);
     actualiseStatutEnregistrement();
