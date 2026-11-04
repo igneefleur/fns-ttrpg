@@ -2177,9 +2177,19 @@
   if (window.MutationObserver && document.documentElement) {
     var verrouObserver = new MutationObserver(function (changes) {
       if (ficheModifiable()) return;
+      var root = document.getElementById("perso-atelier");
+      if (!root) return;
       changes.forEach(function (change) {
         Array.prototype.forEach.call(change.addedNodes || [], function (node) {
           if (!node || node.nodeType !== 1 || typeof window.__jjkApplyMode !== "function") return;
+          // La barre Consultation / Edition est volontairement une sœur de la
+          // racine : elle doit rester interactive pour pouvoir sortir du mode
+          // Consultation. Ne verrouiller que les ajouts qui appartiennent à la
+          // fiche, ou un conteneur qui vient de recevoir la fiche elle-même.
+          if (node !== root && !root.contains(node)) {
+            if (node.contains && node.contains(root)) window.__jjkApplyMode(root);
+            return;
+          }
           var owner = node.closest ? node.closest(".pc-editable") : null;
           window.__jjkApplyMode(owner || node);
         });
@@ -4074,7 +4084,7 @@
                              function (v) { compFilter = v; }, null, rebuildComps);
     if (search) line1.appendChild(search);
     if (filtreChampOn()) {
-      var champSel = el("select", "pc-select");
+      var champSel = el("select", "pc-select pc-edit-field");
       ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
         var o = el("option");
         o.value = ch === "Tous les champs" ? "" : ch;
