@@ -1,9 +1,18 @@
 
   var NS = "jjk";
+  // Roll20 peut conserver le même WindowProxy lorsqu'une iframe de panneau
+  // est rechargée. Le pont d20 utilise cet identifiant pour purger le cache
+  // des gros attributs omis (notamment les fonds), sinon une nouvelle page
+  // pourrait recevoir une hydratation incomplète.
+  var VIEW_ID = "narr-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 10);
   var PREF = "jjk_narr_";
   var A_CONF = PREF + "conf";
   var A_PT = PREF + "pt_";
   var A_BG = PREF + "bg_";  // le fond importé d'une place, un attribut chacun
+  var A_STORAGE = PREF + "storage";
+  var A_BLOCK = PREF + "block_";
+  var A_STACK = PREF + "stack_";
+  var A_OPS = PREF + "ops_";
   var POLL = 1200;          // ms entre deux relectures
   // ms entre deux RESYNCHRONISATIONS, c'est-à-dire entre deux vraies questions
   // posées au serveur de Roll20. Relire ne suffit pas : la collection

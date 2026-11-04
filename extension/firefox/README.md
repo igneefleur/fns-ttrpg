@@ -46,6 +46,17 @@ Les deux parties écrivent les MÊMES Attributes du MÊME personnage. Séparer l
 code ne sépare pas les fiches : une fiche créée en beta est vue comme existante
 en stable, et une régression du site de chantier abîme les mêmes personnages.
 
+## Sauvegardes locales
+
+Le paquet comprend un service IndexedDB (`backups.js`) et un relais Roll20
+(`backup-relay.js`). Les snapshots confirmés sont conservés par campagne et
+personnage, dédoublonnés par SHA-256 et limités aux 20 plus récents. Le popup
+permet de consulter, exporter, restaurer et supprimer les sauvegardes. La lecture
+vérifie à nouveau l'empreinte avant export ou restauration. Une restauration
+remplace les attributs JJK du personnage, retire les journaux postérieurs,
+préserve l'espace indépendant du plateau Narration et laisse la fiche gelée
+jusqu'à son rechargement.
+
 ## Pièces
 
 Partagées :

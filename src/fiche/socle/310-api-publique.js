@@ -3,6 +3,11 @@
   // d'elle-même. window.__jjkModules est l'ANCIEN nom du MÊME objet : ce qui a
   // été écrit avant la 3.0.0 continue de marcher tel quel.
   window.Jjk = {
+    // Sentinelle de montage consommée par l'amorce Roll20. Le chargement d'un
+    // script n'implique pas que ses données asynchrones soient prêtes : seule
+    // __pret=true, posé après mount(), autorise l'ouverture et les écritures.
+    __pret: false,
+    __erreur: "",
     // Les deux annoncent ce qu'ils ont toujours annoncé, mais ils ne se
     // déduisent plus l'un de l'autre : version porte le suffixe de beta le
     // cas échéant, schema est un entier libre. Un mod qui tirerait le schéma

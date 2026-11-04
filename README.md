@@ -15,6 +15,23 @@ règles met donc l'outil à jour. L'extension est une coquille : elle affiche la
 fiche servie par le site (`roll20-fiche.html`) et s'empaquette par
 `python scripts/build_extension.py`, sans build du site.
 
+## Stockage et synchronisation Roll20
+
+Après migration, la fiche utilise un stockage Compact : `jjk_storage` décrit la
+photographie, `jjk_block_*` porte les blocs vérifiés, `jjk_stack_*` les objets
+d'inventaire indépendants et `jjk_ops_*` les journaux append-only des sessions.
+`jjk_state` et les attributs historiques sont conservés comme sources de migration
+et miroirs de compatibilité ; ils ne remplacent pas un stockage Compact présent.
+Une photographie ou un journal incomplet/corrompu gèle les écritures plutôt que
+d'écraser l'état serveur.
+
+Le plateau Narration possède un espace Compact séparé (`jjk_narr_*`). Ses fonds
+d'image restent des attributs autonomes pour ne pas retransmettre les images dans
+les journaux. Les sauvegardes locales de l'extension sont stockées dans IndexedDB,
+avec empreinte SHA-256, rétention par personnage, export JSON et restauration
+confirmée par le pont Roll20. Le mode Consultation/Édition est partagé entre les
+fenêtres liées à un personnage.
+
 ## Œuvre de fan
 
 Sans but lucratif et sans lien avec les ayants droit : « Jujutsu Kaisen » appartient

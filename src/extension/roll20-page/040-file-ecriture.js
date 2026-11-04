@@ -1,4 +1,4 @@
-  var queue = [], busy = false;
+  var queue = [], busy = false, activeJob = null;
   // Le filtre de préfixe s'applique À L'ENTRÉE : ce qui n'est pas à nous
   // n'entre même pas dans la file (rien à réexaminer, rien à jeter en route).
   function enqueue(id, attrs) {
@@ -12,6 +12,7 @@
     var job = queue.shift();
     if (!job) return;
     busy = true;
+    activeJob = job;
     var ch = getChar(job.id);
     // Deux raisons d'attendre, une seule conduite. Campaign injoignable (opener
     // du popout en cours de rechargement...), ou attributs pas encore chargés
@@ -24,6 +25,7 @@
     // dialogue déjà ouvert, donc déjà peuplé, et rien ne doit changer pour elle.
     if (!ch || (job.id && job.id === narrId && etatAttributs(ch) !== "sur")) {
       busy = false;
+      activeJob = null;
       if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
       return;
     }
@@ -34,6 +36,7 @@
         // de Roll20 (celle qui plante). Les attributs sont persistés via Firebase ;
         // l'onglet Attributes se met à jour de lui-même (au pire à la réouverture).
         busy = false;
+        activeJob = null;
         setTimeout(pump, 0);
         return;
       }

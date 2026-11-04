@@ -105,20 +105,20 @@
   // dit à Backbone d'envoyer l'état courant du modèle, celui que le set juste
   // au-dessus vient d'y poser. Un troisième argument aurait laissé croire que
   // save écrit ce qu'on lui tend, alors qu'il n'en lisait rien.
-  function sauve(m, name) {
-    if (!m || !m.save) return;
+  function sauve(m, name, trace) {
+    if (!m || !m.save) { issue(name, "exception", "save absent", trace); return; }
     var fini = false;
+    function conclut(quoi, detail) { if (fini) return; fini = true; issue(name, quoi, detail, trace); }
     try {
       m.save(null, {
-        success: function () { if (!fini) { fini = true; issue(name, "accepte", null); } },
-        error: function (mm, rep) { if (!fini) { fini = true; issue(name, "refuse", texteReponse(rep)); } }
+        success: function () { conclut("accepte", null); },
+        error: function (mm, rep) { conclut("refuse", texteReponse(rep)); }
       });
     } catch (e) {
-      fini = true;
-      issue(name, "exception", String((e && e.message) || e).slice(0, 120));
+      conclut("exception", String((e && e.message) || e).slice(0, 120));
       return;
     }
-    setTimeout(function () { if (!fini) { fini = true; issue(name, "aucune reponse", null); } }, 2500);
+    setTimeout(function () { conclut("aucune reponse", null); }, 2500);
   }
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
@@ -128,11 +128,13 @@
     // ménage, lui, ramène le compte à un — mais il ne s'exécute qu'une fois par
     // chargement, et il peut échouer : cette boucle reste la seule garantie.
     var tous = findAllAttrs(ch, name);
+    var trace = debutEcriture(name, data, Math.max(1, tous.length));
     if (tous.length > 1) doublons(name, tous.length);
     if (!tous.length) {
       var neuf = ch.attribs.create(data, { silent: true });
-      sauve(neuf, name);
-      return relu(neuf, name, data);
+      relu(neuf, name, data);
+      sauve(neuf, name, trace);
+      return neuf;
     }
     for (var k = 0; k < tous.length; k++) {
       var mk = tous[k];
@@ -141,9 +143,10 @@
       // ouverte — et le pont ouvre justement celle de « Narration ».
       if (mk.set) mk.set(data, { silent: true });
       else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
-      sauve(mk, name);
     }
-    return relu(tous[0], name, data);
+    relu(tous[0], name, data);
+    for (var j = 0; j < tous.length; j++) sauve(tous[j], name, trace);
+    return tous[0];
   }
 
   // CE QUE LE MODÈLE DIT JUSTE APRÈS L'ÉCRITURE. Deux pannes se ressemblent trait
@@ -151,6 +154,12 @@
   // prise mais Firebase ne l'a pas reçue. Sans ce relevé, il faut une signature
   // par hypothèse ; avec lui, le prochain retour tranche.
   var dernieresEcritures = {};
+  function debutEcriture(name, data, attendus) {
+    var e = { voulu: data.current, modele: null, serveur: "en-attente", detail: "",
+      attendus: Math.max(1, attendus || 1), reponses: 0, refus: null };
+    dernieresEcritures[name] = e;
+    return e;
+  }
   function relu(m, name, data) {
     try {
       var e = dernieresEcritures[name] || {};
@@ -175,12 +184,26 @@
   // pas dans l'ordre : sans cette règle, une acceptation arrivée en dernier
   // effacerait le refus qui, lui, dit au plateau qu'il doit réduire son image
   // et réessayer. La plus grave gagne, quel que soit l'ordre.
-  function issue(name, quoi, detail) {
+  function issue(name, quoi, detail, trace) {
     try {
       var e = dernieresEcritures[name] || {};
-      if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
-        e.serveur = quoi;
-        if (detail) { e.detail = detail; }
+      // Un nom peut exister en plusieurs exemplaires sur Roll20. Une restauration
+      // n'est confirmée que lorsque CHAQUE homonyme a répondu ; une acceptation
+      // précoce ne peut donc plus masquer le refus tardif d'un autre exemplaire.
+      if (trace) {
+        if (trace !== e) return; // réponse tardive d'une écriture remplacée
+        trace.reponses++;
+        if (quoi !== "accepte" && !trace.refus) trace.refus = { quoi: quoi, detail: detail || "" };
+        if (trace.reponses >= trace.attendus) {
+          trace.serveur = trace.refus ? trace.refus.quoi : "accepte";
+          trace.detail = trace.refus ? trace.refus.detail : "";
+          trace.termine = true;
+        }
+      } else {
+        if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
+          e.serveur = quoi;
+          if (detail) { e.detail = detail; }
+        }
       }
       dernieresEcritures[name] = e;
     } catch (err) {}

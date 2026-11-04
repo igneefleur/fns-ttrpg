@@ -57,38 +57,109 @@
       try { reg[i](); } catch (err) { if (!bilan[id]) bilan[id] = err; }
     }
   }
-  function refresh() {
+  // Une même cadence de relecture ne doit pas faire clignoter toute la fiche.
+  // Outward compare les empreintes de l'état et ne relance que les registres
+  // qui dépendent réellement des clés modifiées. Les modules JJK gardent leur
+  // propre carte de dépendances (les attributs Roll20 sont traduits en ces clés
+  // par JjkAttrMap avant d'arriver ici).
+  var refreshEmpreintes = null;
+  var VUE_DEPENDANCES = {
+    narration: ["narration"],
+    caracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
+    langues: ["langues", "langueBase", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps"],
+    initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
+    tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
+    pv: ["pv", "pvMaxOverride", "divers"],
+    armescomp: ["armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
+    comps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
+    arts: ["mods", "modData", "modActifs"],
+    armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
+    armures: ["armures", "inv", "inventaire"],
+    inv: ["inv", "inventaire", "armes", "armures", "divers"],
+    perso: ["name", "espece", "age", "sexe", "genre", "defaut", "qualites"],
+    avantages: ["avantages"],
+    bg: ["background"],
+    notes: ["notes", "notesJournal", "name"],
+    jets: ["de"],
+    actions: ["name"],
+    modcaracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
+    xpchamps: ["xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
+    creation: ["ptsCreaMod", "ptsCreaForce", "caracsBase", "caracsXp", "caracsPlafondMod", "caracsPlafondForce", "sansLimite", "comps", "compsForce", "xpTotal"],
+    mods: ["mods", "modData", "modActifs"],
+    modules: ["modules", "modActifs"],
+    optcomps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
+  };
+  var DEPENDANCES_CONNues = { v: 1, rel: 1, portrait: 1 };
+  Object.keys(VUE_DEPENDANCES).forEach(function (id) {
+    VUE_DEPENDANCES[id].forEach(function (k) { DEPENDANCES_CONNues[k] = 1; });
+  });
+  function empreinteRefresh(v) {
+    try {
+      if (window.JjkSync && window.JjkSync.Compact && typeof window.JjkSync.Compact.stable === "function")
+        return window.JjkSync.Compact.stable(v);
+    } catch (e) {}
+    return JSON.stringify(v);
+  }
+  function refresh(force) {
     save();
+    var stamps = {}, changes = [], invalidStamp = false;
+    try {
+      Object.keys(state || {}).forEach(function (k) { stamps[k] = empreinteRefresh(state[k]); });
+    } catch (e) { invalidStamp = true; }
+    Object.keys(stamps).forEach(function (k) {
+      if (!refreshEmpreintes || stamps[k] !== refreshEmpreintes[k]) changes.push(k);
+    });
+    Object.keys(refreshEmpreintes || {}).forEach(function (k) {
+      if (!Object.prototype.hasOwnProperty.call(stamps, k) && changes.indexOf(k) < 0) changes.push(k);
+    });
+    var cleInconnue = changes.some(function (k) { return !DEPENDANCES_CONNues[k]; });
+    var premierePasse = !refreshEmpreintes;
+    // JJK reçoit une photographie Roll20 toutes les 1,2 s. Une lecture
+    // identique ne doit PAS reconstruire les modules : contrairement aux
+    // rafraîchissements ponctuels d'Outward, ce chemin est périodique. Les
+    // hooks hors module restent exécutés pour garder l'en-tête et la barre
+    // cohérents ; les modules ne tournent que si une de leurs données change,
+    // si l'appelant force la passe ou si un mod exige le rafraîchissement total.
+    var tout = invalidStamp || force === true || premierePasse || modulesPersoActifs() || cleInconnue;
+    refreshEmpreintes = invalidStamp ? null : stamps;
+    function doit(id) {
+      if (tout) return true;
+      if (VUE_DEPENDANCES[id]) return changes.some(function (k) { return VUE_DEPENDANCES[id].indexOf(k) >= 0; });
+      // Les clés d'identité ne concernent que les registres hors module et
+      // « Personnalité » / « Notes », déjà traités explicitement ci-dessus.
+      if (changes.every(function (k) { return ["name", "portrait", "espece", "age", "sexe", "genre"].indexOf(k) >= 0; })) return false;
+      // Une nouvelle clé ou une dépendance inconnue doit rester visible :
+      // mieux vaut rafraîchir un module de trop que laisser un champ périmé.
+      return true;
+    }
     var bilan = {};
     joue("", regHors, bilan);
-    // les clés d'un objet se parcourent dans leur ordre de création : c'est
-    // l'ordre de montage des modules, donc l'ordre où les hooks se poussaient
-    // avant qu'ils ne soient séparés — l'affichage ne bouge pas
-    Object.keys(regsModules).forEach(function (id) { joue(id, regsModules[id], bilan); });
-    // deux registres rebâtissables : ils appartiennent à leur module (même id,
-    // donc même muselière) mais vivent à part, leurs lignes étant détruites et
-    // recréées sans que le module le soit
-    joue("comps", compHooks, bilan);
-    joue("optcomps", optHooks, bilan);
+    Object.keys(regsModules).forEach(function (id) { if (doit(id)) joue(id, regsModules[id], bilan); });
+    if (doit("comps")) joue("comps", compHooks, bilan);
+    if (doit("optcomps")) joue("optcomps", optHooks, bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
       if (e.musele) return;
       if (!bilan[id]) { e.echecs = 0; return; }
       e.echecs++;
       e.erreur = messageErreur(bilan[id]);
-      // « » n'est pas un module mais ce qui encadre les onglets (barre
-      // d'outils, en-tête, barre d'envoi) : le museler éteindrait la fiche
-      // elle-même, sans bloc à marquer ni interrupteur pour le rallumer. Ses
-      // hooks restent sous try/catch, c'est là qu'est la protection.
       if (id && e.echecs >= MUSELIERE) {
         e.musele = true;
         museleAffiche(id, e);
       }
     });
+    // Les contrôles de construction sont recréés par certains modules : le
+    // verrou global doit être reposé après chaque passe, comme dans Outward.
+    if (typeof window.__jjkApplyMode === "function") window.__jjkApplyMode();
   }
+
   // Remplacement d'état COMPLET (import, bibliothèque, nouveau personnage) :
   // toutes les sections tiennent des références sur l'ancien état, on remonte
   // donc la fiche entière depuis le nouvel état.
+  // Nettoyage des ressources attachées au DOM des modules (observateurs,
+  // timers et écouteurs document/window). Outward utilise le même registre :
+  // un module reconstruit doit d'abord libérer ce qu'il avait installé.
+  var remontageNettoyage = [];
   var rootEl = null;
   var appEl = null;      // le .perso-atelier monté : porte les jetons de couleur
   // C'est aussi ce que rend ctx.reconstruire et Jjk.remonte. Appelé PENDANT un

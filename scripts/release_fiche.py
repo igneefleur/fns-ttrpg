@@ -80,6 +80,7 @@ RACINE_DEFAUT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # jjk.css et les scripts du site ne sont pas de la fiche : les monter à chaque
 # publication ferait retélécharger tout le site pour rien.
 FICHIERS = [
+    "javascripts/jjk-sync.js",
     "javascripts/jjk-attr-map.js",
     "javascripts/jjk-roll20-boot.js",
     "javascripts/jjk-migrations.js",
@@ -533,9 +534,49 @@ def main():
     # 3. l'épreuve du moteur AVANT de toucher aux fichiers : elle ne lit rien
     # qu'on modifie, et un moteur fautif doit arrêter la publication avant
     # qu'elle ait laissé la moindre trace.
+    if not lancer("scripts/test_opening_security.js", ["node", "scripts/test_opening_security.js"], racine):
+        print("")
+        print("  ARRÊT : le contrat d'ouverture, le pont ou les verrous n'est pas sûr.")
+        return 1
+    if not lancer("scripts/test_bridge_initial_load.js", ["node", "scripts/test_bridge_initial_load.js"], racine):
+        print("")
+        print("  ARRÊT : une hydratation Roll20 peut encore partir d'une collection périmée.")
+        return 1
+    if not lancer("scripts/test_sonde_ack.js", ["node", "scripts/test_sonde_ack.js"], racine):
+        print("")
+        print("  ARRÊT : les confirmations de lecture/écriture ne sont pas fiables.")
+        return 1
     if not lancer("scripts/test_migrations.js", ["node", "scripts/test_migrations.js"], racine):
         print("")
         print("  ARRÊT : le moteur de migration est en défaut.")
+        return 1
+    if not lancer("scripts/test_sync_compact.js", ["node", "scripts/test_sync_compact.js"], racine):
+        print("")
+        print("  ARRÊT : le moteur de stockage Compact est en défaut.")
+        return 1
+    if not lancer("scripts/test_compact_pending_bridge.js", ["node", "scripts/test_compact_pending_bridge.js"], racine):
+        print("")
+        print("  ARRÊT : la file Compact et la libération des vues ne sont pas sûres.")
+        return 1
+    if not lancer("scripts/test_compact_cleanup.js", ["node", "scripts/test_compact_cleanup.js"], racine):
+        print("")
+        print("  ARRÊT : le nettoyage du stockage Compact n'est pas sûr.")
+        return 1
+    if not lancer("scripts/test_modernisation.js", ["node", "scripts/test_modernisation.js"], racine):
+        print("")
+        print("  ARRÊT : une vérification de modernisation a échoué.")
+        return 1
+    if not lancer("scripts/test_backup_restore_bridge.js", ["node", "scripts/test_backup_restore_bridge.js"], racine):
+        print("")
+        print("  ARRÊT : la restauration d'une sauvegarde Roll20 n'est pas sûre.")
+        return 1
+    if not lancer("scripts/test_backup_store.js", ["node", "scripts/test_backup_store.js"], racine):
+        print("")
+        print("  ARRÊT : le stockage local des sauvegardes n'est pas sûr.")
+        return 1
+    if not lancer("scripts/test_mods.js", ["node", "scripts/test_mods.js"], racine):
+        print("")
+        print("  ARRÊT : les protections de modules et les consentements ne sont pas sûrs.")
         return 1
 
     # 4. LE NUMÉRO S'ÉCRIT ICI, et pas ailleurs : après l'épreuve du moteur (une

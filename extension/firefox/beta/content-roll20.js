@@ -178,34 +178,25 @@ if (typeof browser === "undefined") { var browser = chrome; }
     return true;
   }
 
-  // ---------- frame du haut : injecter le pont d20 dans le monde principal ----------
-  // Marqueur DURABLE sur <html> : la balise <script> se retire à l'onload, un
-  // getElementById laissait donc chaque need-bridge (une fiche ouverte de plus)
-  // réinjecter un pont -> écouteurs en double -> écritures d'attributs en double.
-  //
-  // Le marqueur data-jjk-bridge est COMMUN aux deux copies, tout comme le
-  // window.__jjkBridge du pont lui-même : c'est délibéré. Un marqueur qui
-  // porterait le mode laisserait un utilisateur ayant basculé sans recharger sa
-  // partie se retrouver avec DEUX ponts dans le monde principal : chaque save
-  // écrit deux fois dans les Attributes, chaque has-sheet répond deux fois, et la
-  // table des liaisons du pont, qui ne compte que soixante-quatre places, se
-  // remplit deux fois plus vite. Le prix de ce choix : le pont déjà posé reste
-  // celui de l'ancien mode jusqu'au rechargement de la page.
-  //
-  // L'adresse est écrite en toutes lettres, jamais assemblée : concaténée, elle
-  // deviendrait invisible au contrôle de complétude comme à l'analyse statique
-  // d'AMO, qui ne savent lire que des littéraux.
+  // ---------- frame du haut : injection du pont d20 dans le monde principal ----------
+  // Marqueur durable commun aux copies stable/beta : la balise script se retire
+  // après chargement, mais le pont et ses écouteurs restent installés.
+  // Le principe et le cycle de demande sont les mêmes que dans Outward.
   function injectPageScript() {
     var root = document.documentElement;
     if (!root || root.hasAttribute("data-jjk-bridge")) return;
     root.setAttribute("data-jjk-bridge", "1");
+    // Le page-script ne peut pas lire browser.runtime. On lui transmet donc
+    // la version du paquet et le protocole utilisés par le contrat JJK.
+    try { root.setAttribute("data-jjk-extension-version", String(browser.runtime.getManifest().version || "")); }
+    catch (e) { root.setAttribute("data-jjk-extension-version", ""); }
+    root.setAttribute("data-jjk-bridge-protocol", "2");
     var s = document.createElement("script");
     s.id = "jjk-page-bridge";
     s.src = browser.runtime.getURL("beta/roll20-page.js");     // propre à cette copie
-    s.onload = function () { this.remove(); };   // le listener reste actif, on retire la balise
+    s.onload = function () { this.remove(); };
     (document.head || root).appendChild(s);
   }
-
   // ---------- pont léger vers le page-script (has-sheet) ----------
   // L'écouteur n'est POSÉ QU'À LA PREMIÈRE requête (aucun code au chargement de la page).
   var pendingHas = {}, hasListener = false;
@@ -215,31 +206,32 @@ if (typeof browser === "undefined") { var browser = chrome; }
     window.addEventListener("message", function (ev) {
       try {
         var d = ev.data;
-        if (!d || d.ns !== "jjk") return;   // ignore tout ce qui n'est pas à nous
+        if (!d || d.ns !== "jjk") return;
         if (d.type === "has-sheet-result" && pendingHas[d.charId]) {
-          // exists:null = perso injoignable POUR L'INSTANT (Campaign pas prêt) :
-          // on laisse les relances retenter ; le délai final rendra null au pire.
+          // exists:null = personnage pas encore disponible : laisser les relances retenter.
           if (d.exists === null || d.exists === undefined) return;
           var cb = pendingHas[d.charId]; delete pendingHas[d.charId]; cb(d.exists);
         }
       } catch (e) {}
     });
   }
-  // Demande au page-script d20 de s'injecter (l'injection ne se fait QUE là, sur
-  // interaction — jamais au chargement de l'éditeur, pour ne pas gêner Roll20).
-  function requestBridge() { try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {} }
-  // interroge has-sheet, avec relances (le page-script vient peut-être d'être injecté)
+  // Même demande ponctuelle qu'Outward. La vérification effective du pont
+  // passe par has-sheet et ses cinq tentatives, pas par un protocole d'ACK distinct.
+  function requestBridge() {
+    try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {}
+  }
+  // Interroge has-sheet, avec les mêmes relances qu'Outward (le page-script
+  // vient peut-être tout juste d'être injecté).
   function queryHasSheet(charId, cb) {
     ensureHasListener();
     if (!charId) { cb(null); return; }
     pendingHas[charId] = cb;
     var tries = 0;
     (function send() {
-      if (!pendingHas[charId]) return;   // déjà répondu
+      if (!pendingHas[charId]) return;
       tries++;
       try { window.top.postMessage({ ns: "jjk", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
       if (tries < 5) setTimeout(send, 700);
-      // dernier essai : laisser sa réponse arriver avant de conclure null
       else setTimeout(function () {
         if (pendingHas[charId]) { delete pendingHas[charId]; cb(null); }
       }, 700);
@@ -1257,15 +1249,22 @@ if (typeof browser === "undefined") { var browser = chrome; }
     ecouteNuit();
     posePriseTake();
     if (IS_TOP) {
-      // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
-      // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-      // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+      // FRAME DU HAUT : le pont d20 est injecté dès le démarrage de l'éditeur,
+      // comme dans Outward. Il reste passif jusqu'aux demandes des fiches ;
+      // le message need-bridge conserve son rôle de demande idempotente.
+      // Le reste de ce listener relaie les JETS vers le tchat Roll20 (ou l'opener).
       // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
       // sauf popout : relais vers l'opener).
       window.addEventListener("message", function (ev) {
         try {
           var d = ev.data;
           if (!d || d.ns !== "jjk") return;
+          // La demande ponctuelle d'injection est traitée avant rememberSheet,
+          // comme dans Outward. La vérification passe ensuite par has-sheet.
+          if (d.type === "need-bridge") {
+            injectPageScript();
+            return;
+          }
           // « take » descend vers les fiches : ne jamais retenir sa source comme
           // destinataire, sinon deux fenêtres se le renverraient sans fin
           if (d.type === "take") {
@@ -1307,8 +1306,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
             panRange();
             return;
           }
-          if (d.type === "need-bridge") injectPageScript();
-          else if (d.type === "roll") {
+          if (d.type === "roll") {
             if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
           } else if (d.type === "say") {
             if (!sendToChat(document, sayCommand(d.title, d.fields)) && IS_POPOUT) relayToOpener(d);
@@ -1325,8 +1323,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
       });
       // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
       if (IS_POPOUT) startScan();
-      // la partie elle-même (et elle seule) reçoit le plateau et son bouton
-      if (IS_EDITEUR) panDemarre();
+      // Le pont suit le même cycle de démarrage qu'Outward. La demande
+      // need-bridge de l'onglet reste un second chemin idempotent.
+      if (IS_EDITEUR) { injectPageScript(); panDemarre(); }
     } else {
       startScan();
     }
@@ -1365,8 +1364,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
   //   « Fiche JJK », pas de pane, pas de plateau, pas de bouton dans la barre
-  //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
-  //   part plus), aucun écouteur de message, aucune interception du lien
+  //   d'outils, pas de pont d20 (il n'est injecté qu'au démarrage de l'éditeur), aucun écouteur de message, aucune interception du lien
   //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
   //   telle que Roll20 l'a faite.
   //   Sur une partie DÉJÀ OUVERTE, rien ne se démonte, et c'est délibéré :
@@ -1421,6 +1419,9 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try {
       if (window.__jjkRoll20) return;   // une copie tient déjà cette frame
       window.__jjkRoll20 = MODE;
+    } catch (e) {}
+    try {
+      console.info("[JJK " + MODE + "] active — éditeur : " + (IS_EDITEUR ? "oui" : "non"));
     } catch (e) {}
     demarre();
   }

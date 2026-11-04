@@ -1,11 +1,6 @@
----
-search:
-  exclude: true
----
+# Création
 
-# Règles de Base JJK
-
-<meta http-equiv="refresh" content="0; url=content/regles/" />
-<script>location.replace("content/regles/");</script>
-
-[Accéder aux règles](content/regles/index.md)
+<div id="perso-atelier">
+  <noscript>Le créateur de personnage requiert JavaScript.</noscript>
+  <p style="padding:2rem;color:#8a8478">Chargement du créateur de personnage…</p>
+</div>

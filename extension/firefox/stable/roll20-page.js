@@ -103,7 +103,7 @@
   // Le tenir PAR FENÊTRE et non globalement est indispensable : l'iframe du
   // plateau est refaite au changement de nuit, et une fenêtre neuve doit tout
   // recevoir, sinon elle afficherait un plateau sans ses fonds.
-  var srcFrames = [], srcIds = [], srcLourds = [], MAX_SRC = 64;
+  var srcFrames = [], srcIds = [], srcLourds = [], srcViewIds = [], MAX_SRC = 64;
   // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
   // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
   // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
@@ -114,16 +114,30 @@
     for (var i = srcFrames.length - 1; i >= 0; i--) {
       var mort;
       try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
-      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); srcViewIds.splice(i, 1); }
     }
   }
-  function lier(src, id) {
+  function lier(src, id, viewId) {
     if (!src || !id) return false;
-    var i = srcFrames.indexOf(src);
-    if (i >= 0) return srcIds[i] === id;
+    var i = srcFrames.indexOf(src), vue = String(viewId || "");
+    if (i >= 0) {
+      if (srcIds[i] !== id) return false;
+      // Roll20 peut garder le même WindowProxy après navigation de l'iframe.
+      // Une nouvelle VIEW_ID signifie un nouveau document : son cache local
+      // n'a plus les attributs lourds omis à la session précédente.
+      if (vue && srcViewIds[i] !== vue) {
+        var ancienneVue = srcViewIds[i];
+        if (ancienneVue && typeof stockageLibereVue === "function") {
+          try { stockageLibereVue(getChar(id), ancienneVue); } catch (eRelease) {}
+        }
+        srcViewIds[i] = vue;
+        srcLourds[i] = null;
+      }
+      return true;
+    }
     menage();
     if (srcFrames.length >= MAX_SRC) return false;
-    srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
+    srcFrames.push(src); srcIds.push(id); srcLourds.push(null); srcViewIds.push(vue);
     return true;
   }
   // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé
@@ -271,20 +285,20 @@
   // dit à Backbone d'envoyer l'état courant du modèle, celui que le set juste
   // au-dessus vient d'y poser. Un troisième argument aurait laissé croire que
   // save écrit ce qu'on lui tend, alors qu'il n'en lisait rien.
-  function sauve(m, name) {
-    if (!m || !m.save) return;
+  function sauve(m, name, trace) {
+    if (!m || !m.save) { issue(name, "exception", "save absent", trace); return; }
     var fini = false;
+    function conclut(quoi, detail) { if (fini) return; fini = true; issue(name, quoi, detail, trace); }
     try {
       m.save(null, {
-        success: function () { if (!fini) { fini = true; issue(name, "accepte", null); } },
-        error: function (mm, rep) { if (!fini) { fini = true; issue(name, "refuse", texteReponse(rep)); } }
+        success: function () { conclut("accepte", null); },
+        error: function (mm, rep) { conclut("refuse", texteReponse(rep)); }
       });
     } catch (e) {
-      fini = true;
-      issue(name, "exception", String((e && e.message) || e).slice(0, 120));
+      conclut("exception", String((e && e.message) || e).slice(0, 120));
       return;
     }
-    setTimeout(function () { if (!fini) { fini = true; issue(name, "aucune reponse", null); } }, 2500);
+    setTimeout(function () { conclut("aucune reponse", null); }, 2500);
   }
   function writeOne(ch, name, v) {
     if (!ecrivable(name)) return;   // double fond : writeOne reste sûr quel que soit l'appelant
@@ -294,11 +308,13 @@
     // ménage, lui, ramène le compte à un — mais il ne s'exécute qu'une fois par
     // chargement, et il peut échouer : cette boucle reste la seule garantie.
     var tous = findAllAttrs(ch, name);
+    var trace = debutEcriture(name, data, Math.max(1, tous.length));
     if (tous.length > 1) doublons(name, tous.length);
     if (!tous.length) {
       var neuf = ch.attribs.create(data, { silent: true });
-      sauve(neuf, name);
-      return relu(neuf, name, data);
+      relu(neuf, name, data);
+      sauve(neuf, name, trace);
+      return neuf;
     }
     for (var k = 0; k < tous.length; k++) {
       var mk = tous[k];
@@ -307,9 +323,10 @@
       // ouverte — et le pont ouvre justement celle de « Narration ».
       if (mk.set) mk.set(data, { silent: true });
       else { mk.attributes = mk.attributes || {}; mk.attributes.name = data.name; mk.attributes.current = data.current; mk.attributes.max = data.max; }
-      sauve(mk, name);
     }
-    return relu(tous[0], name, data);
+    relu(tous[0], name, data);
+    for (var j = 0; j < tous.length; j++) sauve(tous[j], name, trace);
+    return tous[0];
   }
 
   // CE QUE LE MODÈLE DIT JUSTE APRÈS L'ÉCRITURE. Deux pannes se ressemblent trait
@@ -317,6 +334,12 @@
   // prise mais Firebase ne l'a pas reçue. Sans ce relevé, il faut une signature
   // par hypothèse ; avec lui, le prochain retour tranche.
   var dernieresEcritures = {};
+  function debutEcriture(name, data, attendus) {
+    var e = { voulu: data.current, modele: null, serveur: "en-attente", detail: "",
+      attendus: Math.max(1, attendus || 1), reponses: 0, refus: null };
+    dernieresEcritures[name] = e;
+    return e;
+  }
   function relu(m, name, data) {
     try {
       var e = dernieresEcritures[name] || {};
@@ -341,18 +364,32 @@
   // pas dans l'ordre : sans cette règle, une acceptation arrivée en dernier
   // effacerait le refus qui, lui, dit au plateau qu'il doit réduire son image
   // et réessayer. La plus grave gagne, quel que soit l'ordre.
-  function issue(name, quoi, detail) {
+  function issue(name, quoi, detail, trace) {
     try {
       var e = dernieresEcritures[name] || {};
-      if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
-        e.serveur = quoi;
-        if (detail) { e.detail = detail; }
+      // Un nom peut exister en plusieurs exemplaires sur Roll20. Une restauration
+      // n'est confirmée que lorsque CHAQUE homonyme a répondu ; une acceptation
+      // précoce ne peut donc plus masquer le refus tardif d'un autre exemplaire.
+      if (trace) {
+        if (trace !== e) return; // réponse tardive d'une écriture remplacée
+        trace.reponses++;
+        if (quoi !== "accepte" && !trace.refus) trace.refus = { quoi: quoi, detail: detail || "" };
+        if (trace.reponses >= trace.attendus) {
+          trace.serveur = trace.refus ? trace.refus.quoi : "accepte";
+          trace.detail = trace.refus ? trace.refus.detail : "";
+          trace.termine = true;
+        }
+      } else {
+        if (!(quoi === "accepte" && e.serveur && e.serveur !== "accepte")) {
+          e.serveur = quoi;
+          if (detail) { e.detail = detail; }
+        }
       }
       dernieresEcritures[name] = e;
     } catch (err) {}
   }
 
-  var queue = [], busy = false;
+  var queue = [], busy = false, activeJob = null;
   // Le filtre de préfixe s'applique À L'ENTRÉE : ce qui n'est pas à nous
   // n'entre même pas dans la file (rien à réexaminer, rien à jeter en route).
   function enqueue(id, attrs) {
@@ -366,6 +403,7 @@
     var job = queue.shift();
     if (!job) return;
     busy = true;
+    activeJob = job;
     var ch = getChar(job.id);
     // Deux raisons d'attendre, une seule conduite. Campaign injoignable (opener
     // du popout en cours de rechargement...), ou attributs pas encore chargés
@@ -378,6 +416,7 @@
     // dialogue déjà ouvert, donc déjà peuplé, et rien ne doit changer pour elle.
     if (!ch || (job.id && job.id === narrId && etatAttributs(ch) !== "sur")) {
       busy = false;
+      activeJob = null;
       if (++job.tries <= 60) { queue.unshift(job); setTimeout(pump, 1000); }
       return;
     }
@@ -388,6 +427,7 @@
         // de Roll20 (celle qui plante). Les attributs sont persistés via Firebase ;
         // l'onglet Attributes se met à jour de lui-même (au pire à la réouverture).
         busy = false;
+        activeJob = null;
         setTimeout(pump, 0);
         return;
       }
@@ -427,6 +467,167 @@
     return out;
   }
 
+
+
+  // Présence et mode Consultation/Édition partagés par tous les cadres d'un
+  // personnage. Chaque joueur conserve SON mode, partagé entre ses fenêtres.
+  // Le champ vit dans jjk_presence, séparément de jjk_state : une préférence
+  // d'interface ne doit jamais modifier les règles ou les données du perso.
+  // Format repris d'Outward : une entrée par vue, avec séquence et horodatage.
+  var presenceLocal = {}, presenceKnown = {};
+
+  function presenceAcces(ch) {
+    if (!ch) return false;
+    var d = droits(ch), ids = d.controlledby.split(",").map(function (v) { return v.trim(); });
+    return d.gm || ids.indexOf("all") >= 0 || (!!d.moi && ids.indexOf(d.moi) >= 0);
+  }
+
+  function presenceMerge(a, b, now) {
+    var out = {};
+    [a, b].forEach(function (map) {
+      Object.keys(map || {}).forEach(function (key) {
+        if (["__proto__", "prototype", "constructor"].indexOf(key) >= 0) return;
+        var r = map[key];
+        if (!r || typeof r.player !== "string" || !r.player ||
+            !Number.isSafeInteger(r.seq) || !Number.isFinite(r.at) ||
+            now - r.at >= 60000 || r.at - now > 60000) return;
+        var row = Object.assign({}, r);
+        row.mode = row.mode === "edition" ? "edition" : "consultation";
+        row.modeAt = Number.isFinite(Number(row.modeAt)) ? Number(row.modeAt) : 0;
+        row.modeBy = String(row.modeBy || "");
+        var old = out[key];
+        if (!old || row.seq > old.seq || row.seq === old.seq && row.at > old.at) out[key] = row;
+      });
+    });
+    return out;
+  }
+
+  function presenceData(attrs) {
+    var raw = attrs && attrs[PREFIX + "presence"], data = null;
+    try { data = raw && raw.current ? JSON.parse(raw.current) : null; } catch (e) {}
+    if (!data || (data.format !== 1 && data.v !== 1) || !data.views || typeof data.views !== "object") return {};
+    var views = {};
+    Object.keys(data.views).forEach(function (key) {
+      var row = data.views[key];
+      if (!row || typeof row !== "object") return;
+      var copy = Object.assign({}, row);
+      // Les anciennes entrées (v:1) n'avaient ni séquence ni choix par vue.
+      // Une séquence zéro les laisse migrer sans rivaliser avec une écriture neuve.
+      if (data.v === 1 && !Number.isSafeInteger(copy.seq)) copy.seq = 0;
+      // Migration transparente du mode global : on l'attribue au
+      // joueur qui l'avait choisi, sans l'imposer aux autres joueurs.
+      if (data.v === 1 && data.modeBy && copy.player === String(data.modeBy) && !copy.modeAt) {
+        copy.mode = data.mode === "edition" ? "edition" : "consultation";
+        copy.modeAt = Number(data.modeAt) || 0;
+        copy.modeBy = "legacy:" + String(data.modeBy);
+      }
+      views[key] = copy;
+    });
+    return views;
+  }
+
+  function presenceChoice(rows, player) {
+    var best = null;
+    (rows || []).forEach(function (row) {
+      if (!row || row.player !== player || row.left) return;
+      var candidate = {
+        mode: row.mode === "edition" ? "edition" : "consultation",
+        modeAt: Number(row.modeAt) || 0,
+        modeBy: String(row.modeBy || "")
+      };
+      if (!best || candidate.modeAt > best.modeAt ||
+          candidate.modeAt === best.modeAt && candidate.modeBy > best.modeBy) best = candidate;
+    });
+    return best;
+  }
+
+  function presenceRead(id, attrs) {
+    var now = Date.now();
+    var known = presenceMerge(presenceKnown[id], presenceData(attrs || readAll(id)), now);
+    known = presenceMerge(known, presenceLocal[id], now);
+    presenceKnown[id] = known;
+    var rows = Object.keys(known).map(function (key) { return known[key]; })
+      .filter(function (row) { return !row.left && now - row.at < 30000; });
+    return rows.map(function (row) {
+      return Object.assign({}, row, presenceChoice(rows, row.player) || {
+        mode: "consultation", modeAt: 0, modeBy: ""
+      });
+    });
+  }
+
+  function presenceModeState(rows, player) {
+    return presenceChoice(rows, player) || { mode: "consultation", modeAt: 0, modeBy: "" };
+  }
+
+  function presenceDiffusion(charId, attrs) {
+    var rows = presenceRead(charId, attrs || readAll(charId));
+    var player = "", playerName = "Joueur";
+    try {
+      player = String((window.currentPlayer && window.currentPlayer.id) || "");
+      playerName = String((window.currentPlayer && (window.currentPlayer.displayname || window.currentPlayer.name)) || playerName);
+    } catch (e) {}
+    var state = presenceModeState(rows, player);
+    var views = {};
+    rows.forEach(function (row) { views[row.view || row.player] = row; });
+    var payload = {
+      ns: "jjk", type: "presence-state", charId: charId,
+      presence: rows, modeState: state, player: player ? { id: player, name: playerName } : null,
+      // Compatibilité de lecture avec les anciennes fiches encore ouvertes.
+      mode: state.mode, modeAt: state.modeAt, modeBy: state.modeBy,
+      modeName: "", views: views
+    };
+    for (var i = srcFrames.length - 1; i >= 0; i--) {
+      if (srcIds[i] !== charId) continue;
+      try { srcFrames[i].postMessage(payload, "*"); } catch (e) {}
+    }
+  }
+
+  function presencePublie(ch) {
+    if (!ch) return;
+    var attrs = readAll(ch.id);
+    presenceRead(ch.id, attrs);
+    var current = { format: 1, views: presenceKnown[ch.id] || {} };
+    var json = JSON.stringify(current);
+    if (!attrs[PREFIX + "presence"] || attrs[PREFIX + "presence"].current !== json) {
+      var update = {}; update[PREFIX + "presence"] = { current: json, max: "" };
+      enqueue(ch.id, update);
+    }
+  }
+
+  function presenceTraite(ev, msg) {
+    var id = String(msg.charId || "");
+    var view = String(msg.viewId || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
+    if (!id || !view) return;
+    var ch = getChar(id);
+    if (!presenceAcces(ch)) return;
+    var player = "", name = "Joueur";
+    try {
+      player = String((window.currentPlayer && window.currentPlayer.id) || "");
+      name = String((window.currentPlayer && (window.currentPlayer.displayname || window.currentPlayer.name)) || "Joueur");
+    } catch (e) {}
+    if (!player) return;
+
+    var attrs = readAll(id), rows = presenceRead(id, attrs), map = presenceLocal[id] || (presenceLocal[id] = {});
+    var previous = map[view] || (presenceKnown[id] || {})[view];
+    var seq = (previous ? previous.seq : 0) + 1;
+    var choice = presenceChoice(rows, player);
+    var now = Date.now();
+    if (msg.action === "mode" || !choice) {
+      var askedAt = Number(msg.requestedAt) || 0;
+      choice = {
+        mode: msg.action === "mode" && msg.mode === "edition" ? "edition" : "consultation",
+        modeAt: Math.max(now, askedAt, choice ? choice.modeAt + 1 : 0),
+        modeBy: view + ":" + seq
+      };
+    }
+    map[view] = Object.assign({
+      player: player, name: name, view: view, at: now, seq: seq,
+      left: msg.action === "leave"
+    }, choice);
+    presenceKnown[id] = presenceMerge(presenceKnown[id], map, now);
+    presencePublie(ch);
+    presenceDiffusion(id, readAll(id));
+  }
   // ---------- plateau de Narration ----------
   // Le plateau partagé vit dans les Attributes d'un personnage nommé
   // « Narration », que le MJ rend contrôlable par tous les joueurs : c'est le
@@ -698,15 +899,92 @@
   // sûre ici — une collection vidée un instant ferait créer un HOMONYME à la
   // première écriture qui tomberait dans le trou, et les homonymes sont
   // exactement la plaie que le ménage, plus bas, passe son temps à réparer.
-  var RESYNC_MIN = 1500;    // ms : plancher, quoi que demande la page
-  var resyncQuand = {};     // charId -> quand on l'a demandé pour la dernière fois
-  function resynchronise(ch) {
-    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") return false;
-    var n = Date.now();
-    if (n - (resyncQuand[ch.id] || 0) < RESYNC_MIN) return false;
-    resyncQuand[ch.id] = n;
-    try { ch.attribs.fetch(); return true; } catch (e) { return false; }
+  var RESYNC_MIN = 1500;    // même cadence minimale que le pont Outward
+  var resyncJobs = {};      // même ordonnanceur de lectures que le pont Outward
+  function extensionCapacites() {
+    var racine = document.documentElement;
+    return {
+      version: racine ? String(racine.getAttribute("data-jjk-extension-version") || "") : "",
+      protocol: racine ? Number(racine.getAttribute("data-jjk-bridge-protocol") || 0) : 0,
+      capabilities: {
+        compactStorage: 1, operationJournal: 1, readAfterWrite: 1,
+        storageActivation: 1, storageCleanup: 1, storageRelease: 1, sharedMode: 1, localBackups: 1,
+        backupRestore: 1, narrationIndependent: 1, sessionRelay: 1, perPlayerPresence: 1
+      }
+    };
   }
+  function publieLecture(ch, ok) {
+    if (!ch) return;
+    var attrs = readAll(ch.id);
+    if (ok) {
+      stockageFraiche[ch.id] = { at: Date.now(), attrs: attrs };
+      stockageConfirme(ch, attrs);
+      if (typeof presenceDiffusion === "function") presenceDiffusion(ch.id, attrs);
+    }
+    for (var i = srcFrames.length - 1; i >= 0; i--) {
+      if (srcIds[i] !== ch.id) continue;
+      try {
+        // Les blocs contenant des images peuvent être très lourds. Le pont
+        // mémorise ce qu'il a déjà envoyé à chaque fenêtre et n'en renvoie le
+        // contenu qu'à sa première lecture, à son changement ou au renvoi forcé.
+        var pour = {}, omis = [];
+        Object.keys(attrs).forEach(function (nom) { pour[nom] = attrs[nom]; });
+        omis = allege(pour, srcFrames[i], false);
+        srcFrames[i].postMessage({ ns: "jjk", type: "hydrate",
+          charId: ch.id, attrs: pour, omis: omis, fresh: !!ok, extension: extensionCapacites() }, "*");
+      } catch (e) {}
+    }
+  }
+  function resynchronise(ch) {
+    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") {
+      if (ch) publieLecture(ch, false);
+      return false;
+    }
+    var job = resyncJobs[ch.id] || (resyncJobs[ch.id] = {
+      last: 0, running: false, timer: null, serial: 0
+    });
+    if (job.running || job.timer) return true;
+    var delay = RESYNC_MIN - (Date.now() - job.last);
+    if (delay > 0) {
+      job.timer = setTimeout(function () {
+        job.timer = null;
+        resynchronise(ch);
+      }, delay);
+      return true;
+    }
+    job.last = Date.now();
+    job.running = true;
+    var serial = ++job.serial, timeout;
+    function termine(ok) {
+      if (serial !== job.serial || !job.running) return;
+      clearTimeout(timeout);
+      job.running = false;
+      publieLecture(ch, ok);
+    }
+    timeout = setTimeout(function () { termine(false); }, 36000);
+    try {
+      // Même fetch serveur, cadence, délai maximal et verrou que dans Outward.
+      ch.attribs.fetch({
+        success: function () { termine(true); },
+        error: function () { termine(false); }
+      });
+    } catch (e) { termine(false); }
+    return true;
+  }
+  // Les fiches et le plateau restent abonnés tant que leur fenêtre existe.
+  // Les collections Roll20 ne se rafraîchissent pas toutes seules : une lecture
+  // périodique est donc indispensable à la synchronisation inter-fenêtres.
+  setInterval(function () {
+    menage();
+    var vus = {};
+    for (var i = 0; i < srcIds.length; i++) {
+      var id = srcIds[i];
+      if (!id || vus[id]) continue;
+      vus[id] = true;
+      var ch = getChar(id);
+      if (ch) resynchronise(ch);
+    }
+  }, RESYNC_MIN);
 
   // ---------- le ménage des attributs du plateau ----------
   // Mesuré chez l'auteur : 82 attributs « jjk_ » sur « Narration » pour 18
@@ -901,11 +1179,400 @@
     pas();
   }
 
+  // ---------- stockage Compact : validation, activation et ménage ----------
+  // Une photographie n'est « active » qu'après sa relecture intégrale côté
+  // Roll20. La phase staging est volontaire : elle interdit les journaux avant
+  // que tous les blocs aient été écrits et vérifiés.
+  var stockageFraiche = {}, stockageNettoyage = {}, stockageRapports = {}, stockageActivation = {}, stockageSauvegardes = {}, stockageVues = Object.create(null), stockageEnAttente = Object.create(null);
+  function stockageAcces(ch) {
+    if (!ch) return false;
+    var d = droits(ch), ids = String(d.controlledby || '').split(',').map(function (v) { return v.trim(); });
+    return d.gm === true || ids.indexOf('all') >= 0 || (!!d.moi && ids.indexOf(d.moi) >= 0);
+  }
+  function stockageHash(s) {
+    s = String(s); var h = 2166136261;
+    for (var i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0).toString(16);
+  }
+  function stockageStable(v) {
+    if (Array.isArray(v)) return '[' + v.map(stockageStable).join(',') + ']';
+    if (v && typeof v === 'object') return '{' + Object.keys(v).sort().map(function (k) {
+      return JSON.stringify(k) + ':' + stockageStable(v[k]);
+    }).join(',') + '}';
+    return JSON.stringify(v);
+  }
+  function stockageConfig(kind) {
+    return kind === 'narration'
+      ? { meta: 'jjk_narr_storage', block: 'jjk_narr_block_', stack: 'jjk_narr_stack_', ops: 'jjk_narr_ops_' }
+      : { meta: 'jjk_storage', block: 'jjk_block_', stack: 'jjk_stack_', ops: 'jjk_ops_' };
+  }
+  function stockageMeta(attrs, kind) {
+    var cfg = stockageConfig(kind), raw = attrs && attrs[cfg.meta];
+    if (!raw || typeof raw.current !== 'string' || !raw.current) return null;
+    var meta = JSON.parse(raw.current);
+    if (!meta || meta.format !== 2 || typeof meta.epoch !== 'string' || !meta.epoch ||
+        ['staging', 'ready'].indexOf(meta.phase) < 0 ||
+        !meta.blocks || typeof meta.blocks !== 'object' || Array.isArray(meta.blocks))
+      throw new Error('Manifeste Compact invalide.');
+    Object.keys(meta.blocks).forEach(function (name) {
+      if (name.indexOf(cfg.block) !== 0 && name.indexOf(cfg.stack) !== 0)
+        throw new Error('Nom de bloc Compact non autorisé : ' + name);
+      if (name.indexOf('__proto__') >= 0 || name.indexOf('constructor') >= 0 ||
+          typeof meta.blocks[name] !== 'string')
+        throw new Error('Nom ou empreinte de bloc Compact réservé.');
+      var box = attrs[name];
+      if (!box || typeof box.current !== 'string' || stockageHash(box.current) !== meta.blocks[name])
+        throw new Error('Bloc Compact absent ou invalide : ' + name);
+    });
+    if (meta.names && typeof meta.names === 'object') Object.keys(meta.names).forEach(function (logical) {
+      var physical = meta.names[logical];
+      if (typeof logical !== 'string' || typeof physical !== 'string' ||
+          (logical.indexOf(cfg.block) !== 0 && logical.indexOf(cfg.stack) !== 0) ||
+          (physical.indexOf(cfg.block) !== 0 && physical.indexOf(cfg.stack) !== 0) ||
+          physical.indexOf('__proto__') >= 0 || physical.indexOf('constructor') >= 0 ||
+          !Object.prototype.hasOwnProperty.call(meta.blocks, physical))
+        throw new Error('Référence de bloc Compact invalide.');
+    });
+    return meta;
+  }
+  function stockageFraichePour(ch) {
+    var f = ch && stockageFraiche[ch.id];
+    return f && Date.now() - f.at <= 15000 ? f : null;
+  }
+  function stockageTravailEnCours(ch) {
+    return !!(ch && ((activeJob && activeJob.id === ch.id) || queue.some(function (job) { return job.id === ch.id; })));
+  }
+  function stockageActiver(ch, kind) {
+    var f = stockageFraichePour(ch);
+    if (!f) return { status: 'pending', stage: 'confirmation' };
+    var cfg = stockageConfig(kind), meta = stockageMeta(f.attrs, kind);
+    if (!meta) return { status: 'absent' };
+    if (meta.phase === 'ready') return { status: 'ready' };
+    var key = ch.id + ':' + kind, now = Date.now();
+    if (stockageActivation[key] && now - stockageActivation[key] < 6000)
+      return { status: 'pending', stage: 'writing' };
+    if (stockageTravailEnCours(ch))
+      return { status: 'pending', stage: 'writing' };
+    // L'écriture du marqueur ne part qu'après vérification de CHAQUE bloc.
+    // Le verrou court évite que plusieurs vues n'empilent le même marqueur.
+    stockageActivation[key] = now;
+    meta.phase = 'ready';
+    var attrs = {}; attrs[cfg.meta] = { current: JSON.stringify(meta), max: '' };
+    enqueue(ch.id, attrs);
+    return { status: 'activating' };
+  }
+  function stockageClePending(kind, epoch, id) { return JSON.stringify([kind, epoch, String(id)]); }
+  function stockageBucketPending(ch) {
+    return stockageEnAttente[ch.id] || (stockageEnAttente[ch.id] = { ops: Object.create(null), payloads: Object.create(null) });
+  }
+  function stockageOperationsEnAttente(ch, kind, epoch) {
+    var bucket = ch && stockageEnAttente[ch.id], ops = Object.create(null), payloads = Object.create(null);
+    if (!bucket) return { ops: ops, payloads: payloads };
+    Object.keys(bucket.ops).forEach(function (key) {
+      var item = bucket.ops[key];
+      if (item.kind === kind && item.epoch === epoch) ops[item.id] = item.op;
+    });
+    Object.keys(bucket.payloads).forEach(function (key) {
+      var item = bucket.payloads[key];
+      if (item.kind === kind && item.epoch === epoch) payloads[item.name] = item.current;
+    });
+    return { ops: ops, payloads: payloads };
+  }
+  function stockageTravailContient(ch, item, isPayload) {
+    var jobs = [];
+    if (activeJob) jobs.push(activeJob);
+    queue.forEach(function (job) { jobs.push(job); });
+    var cfg = stockageConfig(item.kind), prefix = cfg.ops;
+    for (var i = 0; i < jobs.length; i++) {
+      var job = jobs[i];
+      if (job.id !== ch.id) continue;
+      var attrs = job.attrs || {};
+      if (isPayload) {
+        if (attrs[item.name] && String(attrs[item.name].current || '') === item.current) return true;
+      } else {
+        var names = Object.keys(attrs);
+        for (var j = 0; j < names.length; j++) {
+          if (names[j].indexOf(prefix) !== 0) continue;
+          try {
+            var box = JSON.parse(attrs[names[j]].current || '{}');
+            if (box.epoch === item.epoch && Array.isArray(box.ops) && box.ops.some(function (op) {
+              return op.id === item.id && stockageStable(op) === stockageStable(item.op);
+            })) return true;
+          } catch (e) {}
+        }
+      }
+    }
+    return false;
+  }
+  // Après une relecture fraîche, les opérations présentes sont confirmées.
+  // Celles absentes ne sont libérées que si aucune écriture n'est encore en vol.
+  function stockageConfirme(ch, attrs) {
+    if (!ch || !attrs) return;
+    var bucket = stockageEnAttente[ch.id];
+    if (!bucket) return;
+    var metas = {};
+    ['fiche', 'narration'].forEach(function (kind) {
+      var cfg = stockageConfig(kind), meta = null;
+      try { meta = stockageMeta(attrs, kind); } catch (e) {}
+      if (!meta) return;
+      metas[kind] = meta.epoch;
+      var found = Object.create(null);
+      Object.keys(attrs).forEach(function (name) {
+        if (name.indexOf(cfg.ops) !== 0) return;
+        try {
+          var box = JSON.parse(attrs[name].current || '{}');
+          if (box.format !== 2 || box.epoch !== meta.epoch || !Array.isArray(box.ops)) return;
+          box.ops.forEach(function (op) { if (op && typeof op.id === 'string') found[op.id] = op; });
+        } catch (e) {}
+      });
+      Object.keys(bucket.ops).forEach(function (key) {
+        var item = bucket.ops[key];
+        if (item.kind !== kind || item.epoch !== meta.epoch) return;
+        if (found[item.id] && stockageStable(found[item.id]) === stockageStable(item.op)) delete bucket.ops[key];
+        else if (!stockageTravailContient(ch, item, false)) delete bucket.ops[key];
+      });
+      Object.keys(bucket.payloads).forEach(function (key) {
+        var item = bucket.payloads[key];
+        if (item.kind !== kind || item.epoch !== meta.epoch) return;
+        if (attrs[item.name] && String(attrs[item.name].current || '') === item.current) delete bucket.payloads[key];
+        else if (!stockageTravailContient(ch, item, true)) delete bucket.payloads[key];
+      });
+    });
+    // Une époque qui a changé invalide les références pending de l'ancienne.
+    ['ops', 'payloads'].forEach(function (type) {
+      Object.keys(bucket[type]).forEach(function (key) {
+        var item = bucket[type][key];
+        if (metas[item.kind] && metas[item.kind] !== item.epoch && !stockageTravailContient(ch, item, type === 'payloads')) delete bucket[type][key];
+      });
+    });
+    if (!Object.keys(bucket.ops).length && !Object.keys(bucket.payloads).length) delete stockageEnAttente[ch.id];
+  }
+  // Chaque fenêtre possède une session Compact. Les opérations en attente sont
+  // suivies globalement au personnage : deux fenêtres ne peuvent donc pas
+  // réutiliser un même ID avec un contenu différent avant la relecture Roll20.
+  function stockageSuitVue(ch, viewId, sessionId, kind, epoch, ops, payloads) {
+    if (!ch || !viewId || !sessionId || !epoch) return;
+    var genre = kind === 'narration' ? 'narration' : 'fiche';
+    var parVue = stockageVues[ch.id] || (stockageVues[ch.id] = Object.create(null));
+    var vue = parVue[viewId], bucket = stockageBucketPending(ch);
+    if (vue && (vue.session !== sessionId || vue.kind !== genre || vue.epoch !== epoch))
+      throw new Error('Une vue a changé de session Compact sans se recharger.');
+    // Prévalidation complète avant toute mutation : un lot rejeté ne doit pas
+    // laisser de référence fantôme ni de moitié de session dans le pont.
+    (ops || []).forEach(function (op) {
+      if (!op || typeof op.id !== 'string') throw new Error('Opération Compact sans identifiant.');
+      var pending = bucket.ops[stockageClePending(genre, epoch, op.id)];
+      if (pending && stockageStable(pending.op) !== stockageStable(op))
+        throw new Error('Identifiant d’opération en attente réutilisé avec un contenu différent : ' + op.id);
+    });
+    Object.keys(payloads || {}).forEach(function (name) {
+      var value = payloads[name], current = value && typeof value.current === 'string' ? value.current : String(value || '');
+      var pending = bucket.payloads[stockageClePending(genre, epoch, name)];
+      if (pending && pending.current !== current)
+        throw new Error('Bloc Compact en attente réutilisé avec un contenu différent : ' + name);
+    });
+    if (!vue) vue = parVue[viewId] = { session: sessionId, kind: genre, epoch: epoch, ops: Object.create(null), payloads: Object.create(null) };
+    (ops || []).forEach(function (op) {
+      vue.ops[op.id] = op;
+      var key = stockageClePending(genre, epoch, op.id), pending = bucket.ops[key];
+      if (!pending) pending = bucket.ops[key] = { kind: genre, epoch: epoch, id: op.id, op: op, refs: Object.create(null) };
+      pending.refs[viewId] = true;
+    });
+    Object.keys(payloads || {}).forEach(function (name) {
+      var value = payloads[name], current = value && typeof value.current === 'string' ? value.current : String(value || '');
+      vue.payloads[name] = current;
+      var key = stockageClePending(genre, epoch, name), pending = bucket.payloads[key];
+      if (!pending) pending = bucket.payloads[key] = { kind: genre, epoch: epoch, name: name, current: current, refs: Object.create(null) };
+      pending.refs[viewId] = true;
+    });
+  }
+  function stockageLibereVue(ch, viewId) {
+    if (!ch || !viewId) return { status: 'absent' };
+    var parVue = stockageVues[ch.id] || {}, vue = parVue[viewId];
+    if (!vue) return { status: 'absent' };
+    delete parVue[viewId];
+    var autresOps = Object.create(null), autresPayloads = Object.create(null);
+    Object.keys(parVue).forEach(function (id) {
+      Object.keys(parVue[id].ops || {}).forEach(function (op) { autresOps[op] = true; });
+      Object.keys(parVue[id].payloads || {}).forEach(function (name) { autresPayloads[name] = true; });
+    });
+    var fresh = stockageFraichePour(ch), attrs = fresh ? fresh.attrs : readAll(ch.id);
+    var cfg = stockageConfig(vue.kind), prefix = cfg.ops, annules = 0;
+    // Un job sorti de la file est déjà en cours : il reste suivi jusqu'à sa
+    // confirmation distante. Les jobs non commencés peuvent être annulés.
+    queue.forEach(function (job) {
+      if (job.id !== ch.id) return;
+      Object.keys(job.attrs || {}).forEach(function (name) {
+        if (name.indexOf(prefix) === 0 && !attrs[name]) {
+          try {
+            var box = JSON.parse(job.attrs[name].current || '{}');
+            var owned = (box.ops || []).some(function (op) { return !!vue.ops[op.id]; });
+            var shared = (box.ops || []).some(function (op) { return !!autresOps[op.id]; });
+            // Si un lot contient aussi une opération encore référencée par une
+            // autre vue, on conserve le lot entier : journal immuable, pas de
+            // réécriture d'un contenu sous un nom dérivé de l'ancien hash.
+            if (owned && !shared) { delete job.attrs[name]; annules++; }
+          } catch (e) { /* un job illisible ne se supprime jamais */ }
+        } else if (Object.prototype.hasOwnProperty.call(vue.payloads, name) && !autresPayloads[name] && !attrs[name]) {
+          delete job.attrs[name]; annules++;
+        }
+      });
+    });
+    for (var i = queue.length - 1; i >= 0; i--) {
+      if (queue[i].id === ch.id && !Object.keys(queue[i].attrs || {}).length) queue.splice(i, 1);
+    }
+    var bucket = stockageEnAttente[ch.id];
+    if (bucket) {
+      Object.keys(bucket.ops).forEach(function (key) {
+        var item = bucket.ops[key];
+        delete item.refs[viewId];
+        if (!Object.keys(item.refs).length && !stockageTravailContient(ch, item, false)) delete bucket.ops[key];
+      });
+      Object.keys(bucket.payloads).forEach(function (key) {
+        var item = bucket.payloads[key];
+        delete item.refs[viewId];
+        if (!Object.keys(item.refs).length && !stockageTravailContient(ch, item, true)) delete bucket.payloads[key];
+      });
+      if (!Object.keys(bucket.ops).length && !Object.keys(bucket.payloads).length) delete stockageEnAttente[ch.id];
+    }
+    if (!Object.keys(parVue).length) delete stockageVues[ch.id];
+    return { status: 'done', cancelled: annules };
+  }
+
+  var STOCKAGE_LEGACY = [
+    'jjk_nom','jjk_espece','jjk_age','jjk_sexe','jjk_genre','jjk_portrait',
+    'jjk_defaut','jjk_background','jjk_notes','jjk_inventaire','jjk_de','jjk_xp_total',
+    'jjk_narration','jjk_pv_max_force','jjk_vitesse_force','jjk_regen_force','jjk_langue_base',
+    'jjk_pts_crea_mod','jjk_pts_crea_force','jjk_sans_limite','jjk_release',
+    'jjk_qualites','jjk_avantages','jjk_caracs_base','jjk_caracs_xp','jjk_caracs_mod',
+    'jjk_caracs_mod2','jjk_caracs_force','jjk_caracs_xp_force','jjk_caracs_xp_mod',
+    'jjk_caracs_xp_mod2','jjk_caracs_plafond_mod','jjk_caracs_plafond_force',
+    'jjk_comps_mod','jjk_comps_mod2','jjk_comps_force','jjk_comps_xp_force',
+    'jjk_comps_xp_mod','jjk_comps_xp_mod2','jjk_competences','jjk_comp_perso',
+    'jjk_langues','jjk_armes_comps','jjk_armes','jjk_armures','jjk_inventaire_sys',
+    'jjk_divers','jjk_modules','jjk_mod_donnees','jjk_mod_actifs','jjk_mods',
+    'jjk_grenier','jjk_v_hist','jjk_notes_journal','jjk_etat_courant'
+  ];
+  // Les jjk_narr_bg_<id> sont volontairement absents : ce sont de gros fonds
+  // autonomes, toujours lus directement par Narration et jamais compactés.
+  // Seule la configuration et les anciens jetons migrés sont nettoyés.
+  function stockageAncien(name, kind) {
+    if (kind === 'narration') return name === 'jjk_narr_conf' || name.indexOf('jjk_narr_pt_') === 0;
+    return STOCKAGE_LEGACY.indexOf(name) >= 0;
+  }
+  function stockageNettoie(ch, kind) {
+    var f = stockageFraichePour(ch), cfg = stockageConfig(kind), meta, report;
+    function dit(r) { stockageRapports[ch.id + ':' + kind] = r; return r; }
+    if (!f) return dit({ status: 'pending', stage: 'confirmation' });
+    if (stockageNettoyage[ch.id + ':' + kind]) return dit({ status: 'pending', stage: 'deleting' });
+    if (stockageTravailEnCours(ch))
+      return dit({ status: 'pending', stage: 'writing' });
+    try { meta = stockageMeta(f.attrs, kind); }
+    catch (e) { return dit({ status: 'error', error: String(e.message || e) }); }
+    if (!meta || meta.phase !== 'ready') return dit({ status: 'pending', stage: 'migration' });
+    // Les miroirs historiques ne sont supprimés qu'après confirmation d'une
+    // photographie locale réellement écrite dans IndexedDB par l'extension.
+    // jjk_state, lui, reste conservé comme dernier recours de récupération.
+    var backup = stockageSauvegardes[ch.id];
+    if (!backup || backup[kind] !== meta.epoch)
+      return dit({ status: 'pending', stage: 'backup' });
+
+    // Un payload créé par une opération reste vivant tant qu'un journal le cite.
+    var retenus = {}, morts = [], ms = models(ch), i;
+    Object.keys(f.attrs).forEach(function (name) {
+      if (name.indexOf(cfg.ops) !== 0) return;
+      try {
+        var box = JSON.parse(f.attrs[name].current || '{}');
+        if (box.epoch !== meta.epoch || !Array.isArray(box.ops)) return;
+        box.ops.forEach(function (op) {
+          ['creates','modules'].forEach(function (prop) {
+            Object.keys(op && op[prop] || {}).forEach(function (id) {
+              var spec = op[prop][id]; if (spec && typeof spec.attribute === 'string') retenus[spec.attribute] = true;
+            });
+          });
+        });
+      } catch (e) {}
+    });
+    for (i = 0; i < ms.length; i++) {
+      var m = ms[i], name = attrVal(m, 'name');
+      if (typeof name !== 'string') continue;
+      var legacy = stockageAncien(name, kind), ancienJournal = false;
+      // Les journaux d'une ancienne époque ne peuvent plus contribuer à la
+      // photographie active. Ils ne sont supprimés qu'après la sauvegarde
+      // IndexedDB de la nouvelle époque ; un journal illisible reste intact.
+      if (name.indexOf(cfg.ops) === 0) {
+        try {
+          var ancien = JSON.parse(str(attrVal(m, 'current')) || '{}');
+          ancienJournal = ancien && ancien.format === 2 && typeof ancien.epoch === 'string' &&
+            ancien.epoch !== meta.epoch && Array.isArray(ancien.ops);
+        } catch (eJournal) {}
+      }
+      var orphan = (name.indexOf(cfg.block) === 0 || name.indexOf(cfg.stack) === 0) &&
+        !Object.prototype.hasOwnProperty.call(meta.blocks, name) && !retenus[name];
+      if (legacy || ancienJournal || orphan) morts.push({ model: m, name: name });
+    }
+    if (!morts.length) return dit({ status: 'done', remaining: 0 });
+
+    stockageNettoyage[ch.id + ':' + kind] = true;
+    var index = 0, supprimes = 0, started = Date.now();
+    function fin(r) { delete stockageNettoyage[ch.id + ':' + kind]; dit(r); }
+    function suivant() {
+      if (index >= morts.length) { fin({ status: 'done', remaining: 0, removed: supprimes }); return; }
+      if (Date.now() - started > 110000) { fin({ status: 'error', error: 'Nettoyage interrompu : délai de sécurité dépassé.', remaining: morts.length - index }); return; }
+      var item = morts[index++], actuel = readAll(ch.id), mf;
+      try { mf = stockageMeta(actuel, kind); } catch (e) { fin({ status: 'error', error: String(e.message || e) }); return; }
+      // La photographie et le manifeste doivent être identiques à ceux que
+      // nous avons validés. Si un joueur a écrit depuis, on s'arrête sans rien
+      // supprimer de plus : la prochaine lecture repartira d'un état frais.
+      if (!mf || mf.phase !== 'ready' || mf.epoch !== meta.epoch ||
+          stockageStable(actuel[cfg.meta]) !== stockageStable(f.attrs[cfg.meta])) {
+        fin({ status: 'pending', stage: 'changed' }); return;
+      }
+      if (!encoreLa(ch, item.model)) { setTimeout(suivant, WRITE_DELAY); return; }
+      var observed = actuel[item.name], snap = f.attrs[item.name];
+      if (!observed || !snap || str(observed.current) !== str(snap.current) || str(observed.max) !== str(snap.max)) {
+        setTimeout(suivant, WRITE_DELAY); return;
+      }
+      detruit(item.model, function () { supprimes++; setTimeout(suivant, WRITE_DELAY); }, function (why) {
+        fin({ status: 'error', error: 'Suppression refusée pour ' + item.name + ' : ' + why, remaining: morts.length - index });
+      });
+    }
+    setTimeout(suivant, WRITE_DELAY);
+    return dit({ status: 'pending', stage: 'deleting', remaining: morts.length });
+  }
   // Écouteur PASSIF : n'agit QUE sur nos messages (ns:"jjk" + charId), qui ne sont
   // émis que sur interaction (ouverture de l'onglet Fiche JJK). On NE poste RIEN de
   // spontané au chargement — Roll20 ouvre ses fiches via postMessage, un message
   // inattendu casserait son gestionnaire. Tout est en try/catch pour ne jamais
   // laisser une exception remonter dans le contexte de Roll20.
+  // Une sauvegarde n'est validée qu'après l'accusé du relais IndexedDB.
+  // Le pont associe l'accusé à une demande précise et à l'époque Compact lue.
+  var stockageBackupDemandes = Object.create(null);
+  document.addEventListener("jjk-backup-saved", function (ev) {
+    try {
+      var data = JSON.parse(ev.detail || "{}");
+      if (!data || typeof data.request !== "string" ||
+          !Object.prototype.hasOwnProperty.call(stockageBackupDemandes, data.request)) return;
+      var pending = stockageBackupDemandes[data.request];
+      delete stockageBackupDemandes[data.request];
+      if (data.ok === true) {
+        var saved = stockageSauvegardes[pending.charId] || {};
+        if (pending.fiche) saved.fiche = pending.fiche;
+        if (pending.narration) saved.narration = pending.narration;
+        saved.at = Date.now();
+        stockageSauvegardes[pending.charId] = saved;
+      }
+      for (var i = srcFrames.length - 1; i >= 0; i--) {
+        if (srcIds[i] !== pending.charId || srcViewIds[i] !== pending.viewId) continue;
+        try {
+          srcFrames[i].postMessage({ ns: "jjk", type: "backup-status", charId: pending.charId,
+            viewId: pending.viewId, request: data.request, ok: data.ok === true,
+            error: data.ok === true ? "" : String(data.error || "Sauvegarde locale refusée.") }, "*");
+        } catch (eFrame) {}
+      }
+    } catch (e) {}
+  }, false);
+
   window.addEventListener("message", function (ev) {
     try {
       var d = ev.data;
@@ -913,6 +1580,235 @@
       // la liste des joueurs ne dépend d'aucun personnage : traitée AVANT le
       // filtre charId
       if (d.type === "players") { reply(ev, { type: "players-result", players: players() }); return; }
+      // Les sauvegardes locales ne quittent jamais le personnage courant :
+      // le pont ajoute les identifiants réels de campagne/personnage et relaie
+      // uniquement une photographie déjà confirmée par la fiche.
+      if (d.type === "storage-ops") {
+        try {
+        var storageChar = d.charId && getChar(d.charId);
+        if (!storageChar || !liee(ev.source, d.charId) || !stockageAcces(storageChar) ||
+            !Array.isArray(d.ops) || !d.epoch) return;
+        if (d.storage !== undefined && d.storage !== "fiche" && d.storage !== "narration")
+          throw new Error("Espace de stockage Compact inconnu.");
+        var freshStorage = stockageFraichePour(storageChar), kindStorage = d.storage === "narration" ? "narration" : "fiche";
+        if (!freshStorage) { reply(ev, { type: "storage-error", charId: d.charId, error: "Lecture Roll20 trop ancienne : nouvelle lecture requise." }); return; }
+        var activeMeta = stockageMeta(freshStorage.attrs, kindStorage);
+        if (!activeMeta || activeMeta.phase !== "ready" || activeMeta.epoch !== d.epoch) {
+          reply(ev, { type: "storage-error", charId: d.charId, error: "Le stockage Compact n'est pas activé ou son époque a changé. Rechargez la lecture avant de renvoyer les opérations." }); return;
+        }
+        var viewIndex = srcFrames.indexOf(ev.source), viewId = String(d.viewId || "");
+        if (viewIndex < 0 || !viewId || viewId.length > 128 || srcViewIds[viewIndex] !== viewId)
+          throw new Error("Identifiant de vue Compact invalide : rechargez la fiche.");
+        var operationsRecues = [], incomingOps = Object.create(null);
+        d.ops.forEach(function (op) {
+          if (!op || typeof op.id !== "string" || !op.id.length || op.id.length > 256 ||
+              ["__proto__", "prototype", "constructor"].indexOf(op.id) >= 0 ||
+              !Number.isSafeInteger(op.clock) || op.clock < 0 || !Array.isArray(op.changes) || op.changes.length > 20000 ||
+              op.changes.some(function (change) {
+                return !change || typeof change.k !== "string" || change.k.length > 4096 ||
+                  change.k.indexOf("__proto__") >= 0 || change.k.indexOf("constructor") >= 0 ||
+                  !Array.isArray(change.n) || !change.n.length || ["v", "o", "a", "d"].indexOf(change.n[0]) < 0;
+              })) throw new Error("Le journal contient une opération invalide.");
+          if (incomingOps[op.id] && stockageStable(incomingOps[op.id]) !== stockageStable(op))
+            throw new Error("Identifiant d'opération répété dans le même envoi avec un contenu différent : " + op.id);
+          if (!incomingOps[op.id]) { incomingOps[op.id] = op; operationsRecues.push(op); }
+        });
+        var ops = operationsRecues.slice();
+        var narrationStorage = d.storage === "narration";
+        var opsPrefix = narrationStorage ? "jjk_narr_ops_" : "jjk_ops_";
+        var blockPrefix = narrationStorage ? "jjk_narr_block_" : "jjk_block_";
+        var stackPrefix = narrationStorage ? "jjk_narr_stack_" : "jjk_stack_";
+        var payloads = {}, payloadSource = d.payloads && typeof d.payloads === "object" && !Array.isArray(d.payloads) ? d.payloads : {};
+        if (d.payloads != null && (typeof d.payloads !== "object" || Array.isArray(d.payloads)))
+          throw new Error("Les blocs du journal sont invalides.");
+        Object.keys(payloadSource).forEach(function (name) {
+          var value = payloadSource[name];
+          if ((name.indexOf(blockPrefix) !== 0 && name.indexOf(stackPrefix) !== 0) ||
+              name.indexOf("__proto__") >= 0 || name.indexOf("constructor") >= 0 ||
+              !value || typeof value.current !== "string" || value.current.length > 950000)
+            throw new Error("Bloc de données non autorisé ou trop volumineux : " + name);
+          payloads[name] = { current: value.current, max: "" };
+        });
+        if (!ops.length && !Object.keys(payloads).length) return;
+        var currentAttrs = freshStorage.attrs, seenOps = Object.create(null), sessionId = String(d.session || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 64);
+        if (!sessionId) { reply(ev, { type: "storage-error", charId: d.charId, error: "Identifiant de session Compact absent." }); return; }
+        var attenteStorage = stockageOperationsEnAttente(storageChar, kindStorage, d.epoch);
+        Object.keys(attenteStorage.ops).forEach(function (id) {
+          var op = attenteStorage.ops[id];
+          if (seenOps[id] && stockageStable(seenOps[id]) !== stockageStable(op))
+            throw new Error("Identifiant d'opération en attente réutilisé avec un contenu différent : " + id);
+          seenOps[id] = op;
+        });
+        Object.keys(currentAttrs).forEach(function (name) {
+          if (name.indexOf(opsPrefix) !== 0) return;
+          try {
+            var journal = JSON.parse(currentAttrs[name].current || "{}");
+            if (journal.epoch !== d.epoch) return;
+            if (!Array.isArray(journal.ops)) throw new Error("Journal Compact mal formé : " + name);
+            journal.ops.forEach(function (op) {
+              if (!op || typeof op.id !== "string") throw new Error("Opération illisible dans " + name);
+              if (seenOps[op.id] && stockageStable(seenOps[op.id]) !== stockageStable(op))
+                throw new Error("Identifiant d'opération réutilisé avec un contenu différent : " + op.id);
+              seenOps[op.id] = op;
+            });
+          } catch (e) { throw new Error("Journal Compact illisible : " + name + " (" + String(e.message || e) + ")"); }
+        });
+        Object.keys(payloads).forEach(function (name) {
+          if (Object.prototype.hasOwnProperty.call(attenteStorage.payloads, name)) {
+            if (attenteStorage.payloads[name] !== payloads[name].current)
+              throw new Error("Identifiant de bloc en attente réutilisé avec un contenu différent : " + name);
+            delete payloads[name];
+            return;
+          }
+          if (currentAttrs[name]) {
+            if (String(currentAttrs[name].current || "") !== payloads[name].current)
+              throw new Error("Identifiant de bloc déjà utilisé avec un contenu différent : " + name);
+            delete payloads[name];
+          }
+        });
+        ops = ops.filter(function (op) {
+          if (!seenOps[op.id]) return true;
+          if (stockageStable(seenOps[op.id]) !== stockageStable(op))
+            throw new Error("Identifiant d'opération déjà enregistré avec un contenu différent : " + op.id);
+          return false;
+        });
+        var lotStorage = {}, payloadNames = Object.keys(payloads);
+        payloadNames.forEach(function (name) { lotStorage[name] = payloads[name]; });
+        // Journaux immuables par lot : en cas de nouvelle tentative, les IDs
+        // déjà relus sont ignorés. Le payload des piles/modules est écrit avant
+        // l'opération qui le référence, dans la même file Roll20.
+        var paquet = [], taille = 0, numero = 0;
+        function empreinteJournal(texte) {
+          var h = 2166136261;
+          for (var hi = 0; hi < texte.length; hi++) { h ^= texte.charCodeAt(hi); h = Math.imul(h, 16777619); }
+          return (h >>> 0).toString(36);
+        }
+        function pousserPaquet() {
+          if (!paquet.length) return;
+          var brutJournal = JSON.stringify({ format: 2, epoch: d.epoch, session: sessionId, ops: paquet });
+          // Le nom est déterministe à partir du contenu : réessayer exactement
+          // le même lot retrouve son attribut immuable, tandis qu'un lot suivant
+          // obtient un autre nom. Un compteur remis à zéro à chaque message
+          // écraserait sinon le premier journal de la session.
+          var nomJournal = opsPrefix + (sessionId || "session") + "_" + empreinteJournal(brutJournal);
+          var existant = currentAttrs[nomJournal] || lotStorage[nomJournal];
+          if (existant && String(existant.current || "") !== brutJournal)
+            throw new Error("Collision de nom de journal Compact : " + nomJournal);
+          if (!existant) lotStorage[nomJournal] = { current: brutJournal, max: "" };
+          numero++;
+          paquet = []; taille = 0;
+        }
+        ops.forEach(function (op) {
+          var raw = JSON.stringify(op), n = raw.length;
+          if (paquet.length && taille + n + 2 > 18000) pousserPaquet();
+          paquet.push(op); taille += n + 1;
+        });
+        pousserPaquet();
+        // Valider et enregistrer les références de vue AVANT de mettre en file :
+        // une collision ou un changement de session ne doit jamais laisser un
+        // job partir après que le message a été refusé.
+        stockageSuitVue(storageChar, viewId, sessionId, kindStorage, d.epoch, operationsRecues, payloadSource);
+        if (Object.keys(lotStorage).length) enqueue(d.charId, lotStorage);
+        reply(ev, { type: "storage-ops-queued", charId: d.charId, count: ops.length, payloads: payloadNames.length });
+        return;
+        } catch (storageOpsError) {
+          reply(ev, { type: "storage-error", charId: d.charId, error: String(storageOpsError.message || storageOpsError) });
+          return;
+        }
+      }
+      if (d.type === "storage-release") {
+        var releaseChar = d.charId && getChar(d.charId), releaseIndex = srcFrames.indexOf(ev.source);
+        var releaseView = String(d.viewId || "");
+        if (!releaseChar || !liee(ev.source, d.charId) || releaseIndex < 0 ||
+            !releaseView || srcViewIds[releaseIndex] !== releaseView) return;
+        try { stockageLibereVue(releaseChar, releaseView); } catch (releaseError) {}
+        return;
+      }
+      if (d.type === "storage-activate") {
+        var activationChar = d.charId && getChar(d.charId), activationIndex = srcFrames.indexOf(ev.source);
+        var activationView = String(d.viewId || ""), activationKind = d.storage === "narration" ? "narration" : "fiche";
+        if (d.storage !== undefined && d.storage !== "fiche" && d.storage !== "narration") return;
+        if (!activationChar || !liee(ev.source, d.charId) || !stockageAcces(activationChar) ||
+            activationIndex < 0 || !activationView || srcViewIds[activationIndex] !== activationView) return;
+        try {
+          var activation = stockageActiver(activationChar, activationKind);
+          reply(ev, Object.assign({ type: "storage-activate-status", charId: d.charId, storage: activationKind }, activation));
+        } catch (activationError) {
+          reply(ev, { type: "storage-error", charId: d.charId, storage: activationKind, error: String(activationError.message || activationError) });
+        }
+        return;
+      }
+      if (d.type === "storage-cleanup") {
+        if (d.storage !== undefined && d.storage !== "fiche" && d.storage !== "narration") return;
+        var cleanupChar = d.charId && getChar(d.charId), cleanupKind = d.storage === "narration" ? "narration" : "fiche";
+        var cleanupIndex = srcFrames.indexOf(ev.source), cleanupView = String(d.viewId || "");
+        if (!cleanupChar || !liee(ev.source, d.charId) || cleanupIndex < 0 || !cleanupView || srcViewIds[cleanupIndex] !== cleanupView) return;
+        if (!stockageAcces(cleanupChar)) { reply(ev, { type: "storage-cleanup-status", charId: d.charId, storage: cleanupKind, report: { status: "error", error: "Accès en écriture requis pour nettoyer le stockage." } }); return; }
+        try { reply(ev, { type: "storage-cleanup-status", charId: d.charId, storage: cleanupKind, report: stockageNettoie(cleanupChar, cleanupKind) }); }
+        catch (cleanupError) { reply(ev, { type: "storage-cleanup-status", charId: d.charId, storage: cleanupKind, report: { status: "error", error: String(cleanupError.message || cleanupError) } }); }
+        return;
+      }
+      if (d.type === "backup-snapshot") {
+        var backupIndex = srcFrames.indexOf(ev.source), backupView = String(d.viewId || "");
+        if (!d.charId || !d.state || typeof d.state !== "object" || Array.isArray(d.state) ||
+            !Number.isSafeInteger(d.state.v) || backupIndex < 0 ||
+            srcIds[backupIndex] !== d.charId || !backupView || backupView.length > 128 ||
+            srcViewIds[backupIndex] !== backupView) return;
+        var backupRequest = String(d.request || "");
+        if (!backupRequest || backupRequest.length > 160 || backupRequest.indexOf(backupView + "-backup-") !== 0 ||
+            stockageBackupDemandes[backupRequest]) return;
+        var bc = campaign(), bch = getChar(d.charId), freshBackup = bch && stockageFraichePour(bch);
+        if (!bc || !bc.id || !bch) return;
+        if (!freshBackup) {
+          if (typeof resynchronise === "function") resynchronise(bch);
+          reply(ev, { type: "backup-status", charId: d.charId, viewId: backupView, request: backupRequest,
+            ok: false, error: "La lecture Roll20 n'est plus assez récente. Une nouvelle lecture a été demandée ; réessayez." });
+          return;
+        }
+        // La liste des attributs vient exclusivement de readAll(), après fetch
+        // serveur. Ne jamais prendre d.attrs : la page et les mods ne peuvent
+        // pas choisir les données qui seront prises pour une sauvegarde validée.
+        var ba = freshBackup.attrs || {}, bs = ba[PREFIX + "state"], bm = ba[PREFIX + "storage"];
+        if ((!(bs && bs.current) && !(bm && bm.current)) || !ba[PREFIX + "version"]) {
+          reply(ev, { type: "backup-status", charId: d.charId, viewId: backupView, request: backupRequest,
+            ok: false, error: "La photographie Roll20 ne contient pas une fiche JJK complète." });
+          return;
+        }
+        var propres = {}, bn, totalBackup = 0;
+        for (bn in ba) if (Object.prototype.hasOwnProperty.call(ba, bn) && ecrivable(bn)) {
+          var boxBackup = ba[bn];
+          if (!boxBackup || typeof boxBackup.current !== "string" || typeof boxBackup.max !== "string" ||
+              boxBackup.current.length > 950000 || boxBackup.max.length > 950000) {
+            reply(ev, { type: "backup-status", charId: d.charId, viewId: backupView, request: backupRequest,
+              ok: false, error: "Un attribut dépasse la taille autorisée ou est illisible. Les données Roll20 sont conservées." });
+            return;
+          }
+          propres[bn] = { current: boxBackup.current, max: boxBackup.max };
+          totalBackup += bn.length + boxBackup.current.length + boxBackup.max.length;
+          if (totalBackup > 20000000) {
+            reply(ev, { type: "backup-status", charId: d.charId, viewId: backupView, request: backupRequest,
+              ok: false, error: "La photographie dépasse la taille maximale de sauvegarde locale (20 Mo). Les données Roll20 sont conservées." });
+            return;
+          }
+        }
+        function epochOf(raw) {
+          try { var meta = JSON.parse(raw && raw.current || "{}"); return meta && meta.format === 2 ? String(meta.epoch || "") : ""; }
+          catch (e) { return ""; }
+        }
+        stockageBackupDemandes[backupRequest] = {
+          charId: String(d.charId), viewId: backupView,
+          fiche: epochOf(propres.jjk_storage), narration: epochOf(propres.jjk_narr_storage), at: Date.now()
+        };
+        Object.keys(stockageBackupDemandes).forEach(function (key) {
+          if (Date.now() - stockageBackupDemandes[key].at > 120000) delete stockageBackupDemandes[key];
+        });
+        document.dispatchEvent(new CustomEvent("jjk-backup-save", { detail: JSON.stringify({
+          request: backupRequest, campaignId: String(bc.id), charId: String(d.charId),
+          name: String((bch.get ? bch.get("name") : "") || d.state.name || "Sans nom"),
+          state: d.state, attrs: propres, reason: d.reason || "autosave"
+        }) }));
+        return;
+      }
       // le plateau de Narration ne dépend d'aucun personnage CONNU du panneau :
       // c'est justement ce qu'il vient demander, donc avant le filtre charId
       if (d.type === "narration-char") {
@@ -942,6 +1838,11 @@
         return;
       }
       if (!d.charId) return;
+      if (d.type === "presence") {
+        if (!lier(ev.source, d.charId, d.viewId)) return;
+        presenceTraite(ev, d);
+        return;
+      }
       if (d.type === "has-sheet") {
         // perso injoignable (Campaign pas prêt, opener fermé...) : exists:null
         // (« Roll20 n'a pas répondu ») — surtout pas false, qui proposerait de
@@ -955,7 +1856,7 @@
       } else if (d.type === "load") {
         // première demande de cette frame : elle se lie à ce personnage ; une
         // demande ultérieure pour un autre personnage est refusée (verrou 2).
-        if (!lier(ev.source, d.charId)) return;
+        if (!lier(ev.source, d.charId, d.viewId)) return;
         // LA LISTE DES PRÉFIXES DU PLATEAU, envoyée par la page qui les écrit.
         // C'est elle qui rend le ménage possible : sans elle, aMoi() garde tout
         // et rien n'est jamais détruit. On ne retient que des chaînes commençant
@@ -973,14 +1874,20 @@
         // toutes les 500 ms, le Campaign peut arriver après nous)
         var chl = getChar(d.charId);
         if (!chl) return;
-        // LA PAGE DEMANDE, LE PONT BORNE — voir resynchronise(). Le fetch est
-        // asynchrone : ce qu'il rapporte ne paraîtra qu'à la lecture SUIVANTE,
-        // et c'est très bien, le plateau relit de toute façon toutes les 1,2 s.
-        // Seul le plateau est concerné : les fiches de personnage ont leur
-        // dialogue ouvert et sous les yeux de leur joueur, elles n'ont jamais
-        // montré cette panne, et rien ne justifie de leur coûter une requête.
-        if (d.resync === true && d.charId === narrId) { resynchronise(chl); }
-        var rl = { type: "hydrate", charId: d.charId, attrs: readAll(d.charId) };
+        // Comme Outward, une ouverture demande une lecture serveur fraîche.
+        // Le pont diffuse ensuite un hydrate avec fresh:true ou fresh:false ;
+        // aucune réponse d'erreur privée à JJK n'existe dans ce protocole.
+        if (d.resync === true) {
+          resynchronise(chl);
+          return;
+        }
+        var lecture = readAll(d.charId);
+        var omis = d.allege === true ? allege(lecture, ev.source, d.complet === true) : [];
+        var rl = { type: "hydrate", charId: d.charId, attrs: lecture, omis: omis };
+        // Contrat explicite entre la fiche servie par le site et le pont signé.
+        // La fiche bloque son ouverture si la version installée ne sait pas
+        // transporter Compact, confirmer les écritures ou relayer les sessions.
+        rl.extension = extensionCapacites();
         // CE QUE VAUT CETTE LECTURE, dit avec elle. Seul le plateau est concerné :
         // pour tout autre personnage la fiche est ouverte, donc les attributs
         // chargés, et rien ne change. Le champ est neuf ; une page servie par un
@@ -993,10 +1900,7 @@
           // que Roll20 n'a pas encore peuplée, tout paraîtrait absent.
           if (rl.sur) menagePlateau(chl);
           if (menageRapport) { rl.menage = menageRapport; menageRapport = null; }
-          // « omis » est TOUJOURS posé, même vide : sa présence dit au plateau
-          // que ce pont-ci sait alléger. Mais on n'allège QUE s'il l'a demandé
-          // (d.allege), parce que le pont est signé et lui non : voir allege().
-          rl.omis = d.allege === true ? allege(rl.attrs, ev.source, d.complet === true) : [];
+          // « omis » a déjà été calculé pour la lecture commune ci-dessus.
           // CE PONT-CI SAIT ALLER RECHERCHER. Sa seule présence le dit, comme
           // « omis » dit qu'il sait alléger : devant un pont plus ancien, le
           // champ manque, et la page sait alors que sa demande de
@@ -1015,5 +1919,121 @@
         enqueue(d.charId, d.attrs);
       }
     } catch (e) {}
+  }, false);
+
+  // La restauration arrive depuis le relais de l'extension par événement DOM.
+  // Elle remplace un ÉTAT, pas seulement quelques valeurs : les journaux Compact
+  // et les attributs JJK apparus après la sauvegarde doivent donc disparaître.
+  // Les attributs jjk_narr_* restent indépendants et ne sont jamais touchés.
+  document.addEventListener("jjk-backup-restore", function (ev) {
+    var d; try { d = JSON.parse(ev.detail); } catch (e) { return; }
+    var snap = d && d.snapshot || {}, c = campaign(), ch = snap.charId && getChar(snap.charId);
+    var attrs = snap.attrs, allowed = {}, valid = !!(c && c.id && String(c.id) === String(snap.campaignId) && ch && attrs && typeof attrs === "object");
+    if (valid) Object.keys(attrs).forEach(function (name) {
+      if (!ecrivable(name) || !attrs[name] || typeof attrs[name] !== "object") { valid = false; return; }
+      allowed[name] = { current: str(attrs[name].current), max: str(attrs[name].max) };
+    });
+    if (!valid || !(allowed[PREFIX + "state"] || allowed[PREFIX + "storage"]) || !allowed[PREFIX + "version"]) {
+      document.dispatchEvent(new CustomEvent("jjk-backup-restore-result", { detail: JSON.stringify({ token: d && d.token, ok: false, error: "Sauvegarde incompatible avec ce personnage." }) }));
+      return;
+    }
+
+    var id = String(snap.charId), started = Date.now(), fini = false, suppression = null;
+    function frames(message) {
+      for (var i = srcFrames.length - 1; i >= 0; i--) {
+        if (srcIds[i] !== id) continue;
+        try { srcFrames[i].postMessage(Object.assign({ ns: "jjk", charId: id }, message), "*"); } catch (e) {}
+      }
+    }
+    function termine(ok, error) {
+      if (fini) return;
+      fini = true;
+      frames({ type: "backup-restore-status", ok: ok, error: error || "" });
+      document.dispatchEvent(new CustomEvent("jjk-backup-restore-result", { detail: JSON.stringify({ token: d.token, ok: ok, error: error || "" }) }));
+    }
+    function valeursLocalesConformes() {
+      var got = readAll(id), keys = Object.keys(allowed);
+      for (var i = 0; i < keys.length; i++) {
+        var name = keys[i];
+        if (!got[name] || str(got[name].current) !== allowed[name].current || str(got[name].max) !== allowed[name].max) return false;
+      }
+      return true;
+    }
+    function ecrituresConfirmees() {
+      var keys = Object.keys(allowed);
+      for (var i = 0; i < keys.length; i++) {
+        var name = keys[i], r = dernieresEcritures[name];
+        if (!r || r.serveur !== "accepte" || r.voulu !== allowed[name].current) return false;
+      }
+      return true;
+    }
+    function echecEcriture() {
+      var keys = Object.keys(allowed);
+      for (var i = 0; i < keys.length; i++) {
+        var r = dernieresEcritures[keys[i]];
+        if (r && r.serveur && r.serveur !== "accepte" && r.serveur !== "en-attente") return "Roll20 a refusé l’écriture de « " + keys[i] + " » (" + r.serveur + (r.detail ? " : " + r.detail : "") + ").";
+      }
+      return "";
+    }
+    function retireObsoletes() {
+      // Une restauration plus ancienne ne doit pas rejouer des opérations
+      // postérieures. Retirer tout attribut JJK absent de la sauvegarde rétablit
+      // exactement son espace de stockage, sauf le plateau Narration qui est
+      // volontairement indépendant du personnage.
+      var ms = models(ch), morts = [];
+      for (var i = 0; i < ms.length; i++) {
+        var name = attrVal(ms[i], "name");
+        if (ecrivable(name) && name.indexOf("jjk_narr_") !== 0 && !Object.prototype.hasOwnProperty.call(allowed, name))
+          morts.push(ms[i]);
+      }
+      var index = 0;
+      function suivant() {
+        if (index >= morts.length) {
+          resynchronise(ch);
+          verifierFin();
+          return;
+        }
+        var m = morts[index++], name = attrVal(m, "name");
+        // Un autre cadre peut avoir déjà supprimé l'attribut : on ne recommence
+        // jamais une suppression et on ne touche pas un nom restauré entre-temps.
+        if (!encoreLa(ch, m) || Object.prototype.hasOwnProperty.call(allowed, name)) { suivant(); return; }
+        detruit(m, suivant, function (raison) {
+          termine(false, "La sauvegarde a été écrite, mais l'ancien attribut « " + name + " » n'a pas pu être retiré : " + raison + ". Rechargez la fiche après vérification des sauvegardes.");
+        });
+      }
+      suivant();
+    }
+    function verifierFin() {
+      if (!valeursLocalesConformes()) {
+        if (Date.now() - started > 110000) { termine(false, "Roll20 n'a pas confirmé toutes les valeurs de la sauvegarde."); return; }
+        setTimeout(verifierFin, 500); return;
+      }
+      // Les attributs obsolètes ont été détruits avec succès. Les valeurs restent
+      // relues depuis la collection et le serveur a confirmé chaque écriture.
+      var restants = models(ch).some(function (m) {
+        var name = attrVal(m, "name");
+        return ecrivable(name) && name.indexOf("jjk_narr_") !== 0 && !Object.prototype.hasOwnProperty.call(allowed, name);
+      });
+      if (restants) {
+        if (Date.now() - started > 110000) { termine(false, "Certains anciens attributs JJK sont encore présents après restauration."); return; }
+        setTimeout(verifierFin, 500); return;
+      }
+      termine(true, "");
+    }
+    function verifierEcritures() {
+      if (fini) return;
+      var refus = echecEcriture();
+      if (refus) { termine(false, refus + " Une sauvegarde antérieure reste disponible dans l’extension."); return; }
+      if (valeursLocalesConformes() && ecrituresConfirmees()) { retireObsoletes(); return; }
+      if (Date.now() - started > 110000) { termine(false, "Roll20 n'a pas confirmé toutes les écritures de restauration. Une sauvegarde antérieure reste disponible."); return; }
+      setTimeout(verifierEcritures, 500);
+    }
+
+    // Les cadres ouverts sont gelés avant la première écriture : leurs sessions
+    // ne doivent pas republier leurs opérations locales pendant la restauration.
+    frames({ type: "backup-restore-start" });
+    dernieresEcritures = {};
+    enqueue(id, allowed);
+    verifierEcritures();
   }, false);
 })();

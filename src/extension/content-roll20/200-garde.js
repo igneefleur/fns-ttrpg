@@ -31,8 +31,7 @@
   // le dire au joueur sans mentir, alors voici l'inventaire exact.
   //   Sur les pages Roll20 OUVERTES ENSUITE, rien ne se réveille : pas d'onglet
   //   « Fiche JJK », pas de pane, pas de plateau, pas de bouton dans la barre
-  //   d'outils, pas de pont d20 (il n'est injecté que sur need-bridge, qui ne
-  //   part plus), aucun écouteur de message, aucune interception du lien
+  //   d'outils, pas de pont d20 (il n'est injecté qu'au démarrage de l'éditeur), aucun écouteur de message, aucune interception du lien
   //   « Prendre », aucune écriture dans le stockage. La frame reste exactement
   //   telle que Roll20 l'a faite.
   //   Sur une partie DÉJÀ OUVERTE, rien ne se démonte, et c'est délibéré :
@@ -87,6 +86,9 @@
     try {
       if (window.__jjkRoll20) return;   // une copie tient déjà cette frame
       window.__jjkRoll20 = MODE;
+    } catch (e) {}
+    try {
+      console.info("[JJK " + MODE + "] active — éditeur : " + (IS_EDITEUR ? "oui" : "non"));
     } catch (e) {}
     demarre();
   }

@@ -7,31 +7,32 @@
     window.addEventListener("message", function (ev) {
       try {
         var d = ev.data;
-        if (!d || d.ns !== "jjk") return;   // ignore tout ce qui n'est pas à nous
+        if (!d || d.ns !== "jjk") return;
         if (d.type === "has-sheet-result" && pendingHas[d.charId]) {
-          // exists:null = perso injoignable POUR L'INSTANT (Campaign pas prêt) :
-          // on laisse les relances retenter ; le délai final rendra null au pire.
+          // exists:null = personnage pas encore disponible : laisser les relances retenter.
           if (d.exists === null || d.exists === undefined) return;
           var cb = pendingHas[d.charId]; delete pendingHas[d.charId]; cb(d.exists);
         }
       } catch (e) {}
     });
   }
-  // Demande au page-script d20 de s'injecter (l'injection ne se fait QUE là, sur
-  // interaction — jamais au chargement de l'éditeur, pour ne pas gêner Roll20).
-  function requestBridge() { try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {} }
-  // interroge has-sheet, avec relances (le page-script vient peut-être d'être injecté)
+  // Même demande ponctuelle qu'Outward. La vérification effective du pont
+  // passe par has-sheet et ses cinq tentatives, pas par un protocole d'ACK distinct.
+  function requestBridge() {
+    try { window.top.postMessage({ ns: "jjk", type: "need-bridge" }, "*"); } catch (e) {}
+  }
+  // Interroge has-sheet, avec les mêmes relances qu'Outward (le page-script
+  // vient peut-être tout juste d'être injecté).
   function queryHasSheet(charId, cb) {
     ensureHasListener();
     if (!charId) { cb(null); return; }
     pendingHas[charId] = cb;
     var tries = 0;
     (function send() {
-      if (!pendingHas[charId]) return;   // déjà répondu
+      if (!pendingHas[charId]) return;
       tries++;
       try { window.top.postMessage({ ns: "jjk", type: "has-sheet", charId: charId }, "*"); } catch (e) {}
       if (tries < 5) setTimeout(send, 700);
-      // dernier essai : laisser sa réponse arriver avant de conclure null
       else setTimeout(function () {
         if (pendingHas[charId]) { delete pendingHas[charId]; cb(null); }
       }, 700);

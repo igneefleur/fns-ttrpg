@@ -108,36 +108,16 @@ jobs:
           target-folder: jjk-beta
           clean: true
           force: false
-      # L'EXTENSION EST UNIQUE : ELLE SE PUBLIE AUX DEUX ADRESSES.
-      #
-      # Le paquet signé porte les DEUX moitiés, stable et beta, et c'est la case
-      # du popup qui choisit laquelle s'exécute. Il n'existe donc pas de « version
-      # beta de l'extension » : il n'y en a qu'une, et la plus récente est
-      # toujours la bonne pour tout le monde.
-      #
-      # Or elle était publiée par branche. Une signature faite ici n'atteignait
-      # /jjk/download/ qu'après une fusion ET un déploiement stable : le bouton
-      # de téléchargement du site public servait un paquet périmé, et surtout
-      # update_url pointe sur /jjk/download/updates.json, donc les mises à jour
-      # automatiques attendaient elles aussi. C'est ce qui a fait tourner un
-      # joueur en 3.6.0.3 alors que la 3.6.0.4 était signée depuis longtemps.
-      #
-      # On recopie donc le seul dossier download/ dans l'autre emplacement, sans
-      # toucher au reste : clean à false, sinon ce déploiement effacerait tout le
-      # site stable.
-      #
-      # MAIS SEULEMENT QUAND CE RUN A VRAIMENT SIGNÉ. Sans cette condition, un
-      # push ordinaire sur la beta recopiait le download/ de CETTE branche
-      # par-dessus celui du site des joueurs — et les deux branches ne portent pas
-      # forcément le même paquet, puisque la signature automatique ne commite que
-      # sur jjk. Un simple déploiement de la beta a ainsi fait reculer
-      # /jjk/download/ de la 3.6.0.16 à la 3.6.0.12 : update_url annonçait une
-      # version inférieure à celle installée, donc plus aucune mise à jour, et le
-      # bouton de téléchargement servait un paquet d'avant les renommages. Aucun
-      # run n'avait échoué. Ce qui se propage ici, c'est une SIGNATURE, jamais un
-      # déploiement.
-      - name: L'extension signée va aussi sur jjk (download/ seul)
-        if: ${{ inputs.signer }}
+      # L'extension est unique : son update_url Firefox pointe TOUJOURS sur
+      # /jjk/download/updates.json, même quand la partie beta du site évolue.
+      # Une signature faite sur jjk-beta doit donc atteindre le canal public.
+      # On compare l'empreinte signée et la version AVANT de copier : un beta en
+      # retard ne peut jamais faire reculer /jjk/download/ (régression déjà vue).
+      - name: Comparer le paquet signé beta au canal public
+        id: extension_publication
+        run: python scripts/compare_signed_extension.py --site site/download
+      - name: Publier l'extension signée plus récente sur jjk (download/ seul)
+        if: steps.extension_publication.outputs.publish == 'true'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: site/download

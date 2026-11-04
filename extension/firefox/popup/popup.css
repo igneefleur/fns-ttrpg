@@ -1,12 +1,9 @@
-/* Panneau de l'extension — la même main que la fiche de personnage.
+/* Panneau de l’extension — la même identité que la fiche de personnage.
  *
- * CE QUI EST REPRIS DE LA FICHE, et pourquoi : la palette du livre (jour et
- * nuit), les cartes à filet sur une feuille claire, le petit tiret carmin sous
- * chaque titre de bloc, les libellés minuscules en capitales espacées face aux
- * valeurs, le carmin réservé à quatre situations (le tiret, le segment actif, le
- * focus, l'alerte). Une extension qui a l'air d'un réglage de navigateur et un
- * livre qui a l'air d'un livre ne se ressemblaient en rien ; celui-ci ressemble
- * au livre.
+ * Palette sombre noire et turquoise assourdi, cartes à filet, petit trait
+ * turquoise sous les titres, libellés en capitales espacées et valeurs lisibles.
+ * Le turquoise sert aux interactions ; les alertes conservent leur rouge/rouille.
+ * Le panneau reprend les formes et la hiérarchie de la fiche.
  *
  * LA RACINE EST ÉPINGLÉE À 18 px, la valeur de l'iframe Roll20. Toutes les
  * tailles de la fiche sont en rem sur une racine de 22 px (site) ou de 18 px
@@ -76,25 +73,25 @@
      d'autre, elle doit tenir seule. Recopiée mais non complète : on ne garde
      que les tons dont ce panneau se sert, un ton mort étant un ton qui ment
      sur ce qu'on peut peindre ici. */
-  --paper:   #faf6eb;
-  --card:    #fffdf6;
-  --panel:   #f6efdd;
-  --hair:    #e2d8c0;
-  --line:    #c6bb9f;
-  --line-2:  #d6cbb1;
-  --ink:     #20180c;
-  --ink-2:   #453d2d;
-  --ink-3:   #746a54;
-  --red:     #a5271c;
-  --red-deep:#7c130c;
-  --wash:    rgba(165, 39, 28, .09);
-  --ok:      #4f7a3a;
-  /* Le remplissage d'un contrôle actif et le texte qu'il porte. De jour, blanc
-     sur --red mesure 7.22:1 ; de nuit, la même paire tombe à 4.40:1, sous le
-     seuil AA pour du texte de 11 px. La nuit reprend donc la paire du sigle de
-     caractéristique, #f4e2da sur #7f2b1d, mesurée 7.39:1. */
+  --paper:   #0F1415;
+  --card:    #171D1E;
+  --panel:   #121819;
+  --hair:    #253437;
+  --line:    #344448;
+  --line-2:  #29383B;
+  --ink:     #E4ECEC;
+  --ink-2:   #B6C4C5;
+  --ink-3:   #829496;
+  --red:     #4A9FA8;
+  --red-deep:#285A60;
+  --danger:  #C96B62;
+  --danger-deep:#E08D83;
+  --wash:    rgba(74, 159, 168, .16);
+  --danger-wash: rgba(201, 107, 98, .16);
+  --ok:      #78B69A;
+  /* Texte sombre sur l'accent turquoise pour conserver un contraste lisible. */
   --actif-fond: var(--red);
-  --actif-txt:  #fff;
+  --actif-txt:  #071113;
 
   --fs-label: .58rem;   /* 10.4 px — capitales espacées */
   --fs-meta:  .62rem;   /* 11.2 px — notes et pied */
@@ -114,24 +111,24 @@ html.night {
      anneaux de focus du système) restent clairs sur un fond sombre. Il est posé
      sur la racine et non sur un scope, parce qu'ici toute la page est sombre. */
   color-scheme: dark;
-  --paper:   #201c15;
-  --card:    #262119;
-  --panel:   #2f2a20;
-  --hair:    #39332a;
-  --line:    #4f4838;
-  --line-2:  #453e31;
-  --ink:     #eee4cf;
-  --ink-2:   #cbc2ac;
-  --ink-3:   #978d77;
-  /* Le rouge S'INVERSE la nuit : --red est le ton de bordure et de remplissage,
-     --red-deep est le ton de TEXTE (5.13:1 sur --card, contre 3.63:1 pour
-     --red, qui échoue). Ne jamais lire --red-deep comme « plus foncé ». */
-  --red:     #c65540;
-  --red-deep:#dd7461;
-  --wash:    rgba(198, 85, 64, .18);
-  --ok:      #9fb37e;
-  --actif-fond: #7f2b1d;
-  --actif-txt:  #f4e2da;
+  --paper:   #0D1213;
+  --card:    #141A1B;
+  --panel:   #101617;
+  --hair:    #223135;
+  --line:    #304044;
+  --line-2:  #273538;
+  --ink:     #E4ECEC;
+  --ink-2:   #B6C4C5;
+  --ink-3:   #829496;
+  --red:     #4A9FA8;
+  --red-deep:#285A60;
+  --danger:  #C96B62;
+  --danger-deep:#E08D83;
+  --wash:    rgba(74, 159, 168, .16);
+  --danger-wash: rgba(201, 107, 98, .16);
+  --ok:      #78B69A;
+  --actif-fond: #4A9FA8;
+  --actif-txt:  #071113;
 }
 
 body {
@@ -212,13 +209,12 @@ body.p-off .p-etat { color: var(--ink-3); }
   background: var(--card);
   border: 1px solid var(--line-2);
   border-radius: 8px;
-  box-shadow: 0 1px 2px rgba(60, 48, 18, .05);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, .22);
   padding: .3rem .45rem .4rem;
   min-width: 0;
 }
 
-/* L'en-tête de bloc, signature du projet : Cinzel, un filet, et le petit tiret
-   carmin de 1.4rem posé dessus, à gauche. */
+/* L'en-tête de bloc : Cinzel, un filet et un petit tiret turquoise posé à gauche. */
 .p-titre {
   position: relative;
   margin: 0 0 .3rem; padding: .02rem 0 .18rem;
@@ -264,7 +260,7 @@ html.night .p-titre { color: var(--ink); }
   color: var(--ink); line-height: 1.15;
 }
 
-/* L'interrupteur. Le carmin d'un contrôle actif, comme le segment actif d'un
+/* L'interrupteur. Le turquoise d'un contrôle actif, comme le segment actif d'un
    contrôle segmenté ou l'onglet en service : c'est l'une des quatre situations
    où l'accent a le droit de paraître. Éteint, il retombe sur --panel cerclé de
    --line, et ne crie pas. */
@@ -289,7 +285,7 @@ html.night .p-titre { color: var(--ink); }
 [aria-checked="true"] .p-sw > i,
 .p-sw[aria-checked="true"] > i {
   transform: translateX(1rem);
-  background: #fff; border-color: rgba(0, 0, 0, .2);
+  background: #E4ECEC; border-color: rgba(0, 0, 0, .35);
 }
 [aria-checked="true"] > .p-sw,
 .p-sw[aria-checked="true"] {
@@ -443,15 +439,13 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
 }
 .p-liens a:hover { border-color: var(--line); color: var(--ink); }
 
-/* L'alerte de la fiche, à l'identique : un liseré carmin à gauche, un fond
-   --wash, aucun cadre complet. Elle ne paraît que si une clé de dépannage est
-   posée, ce qui est presque toujours un oubli. */
+/* L'alerte de dépannage reste rouge : le turquoise est réservé aux actions. */
 .p-alerte {
   margin: .3rem 0 0; padding: .14rem .4rem .18rem;
-  background: var(--wash);
-  border-left: 2px solid var(--red);
+  background: var(--danger-wash);
+  border-left: 2px solid var(--danger);
   border-radius: 0 4px 4px 0;
-  color: var(--red-deep);
+  color: var(--danger-deep);
   font-size: var(--fs-meta); font-weight: 600; line-height: 1.25;
   /* Une clé de dépannage porte une adresse, et une adresse n'a pas d'espace où
      se couper : sans cela elle passe sous le bord de la fenêtre. */
@@ -474,3 +468,22 @@ body.p-off #p-pieces .p-titre { color: var(--ink-3); }
   font-size: var(--fs-meta); line-height: 1.25;
 }
 .p-flash[hidden] { display: none; }
+
+
+/* Gestionnaire de sauvegardes locales : les données restent dans IndexedDB
+   du navigateur et ne transitent jamais vers un service externe. */
+.popup-tabs{display:flex;gap:.15rem;margin:.35rem .5rem 0;padding:.12rem;background:var(--panel);border:1px solid var(--line-2);border-radius:7px}
+.popup-tabs .seg{flex:1 1 0;border:0;background:transparent;padding:.28rem .35rem;color:var(--ink-2);font:inherit;font-size:var(--fs-label);font-weight:800;letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.popup-tabs .seg[aria-selected="true"]{background:var(--actif-fond);color:var(--actif-txt);border-radius:5px}
+[data-popup-panel][hidden]{display:none!important}
+#backup-status{margin:.1rem 0 .3rem;color:var(--ink-3);font-size:var(--fs-meta)}
+.backup-row{display:flex;align-items:center;flex-wrap:wrap;gap:.25rem;border-top:1px solid var(--hair);padding:.35rem 0}
+.backup-row p{flex:1 1 100%;margin:0;color:var(--ink-2);font-size:var(--fs-meta)}
+.backup-row .p-mini{font-size:var(--fs-label)}
+#backup-list .p-bloc{margin:.25rem 0}
+#backup-list section small{display:block;color:var(--ink-3);font-size:var(--fs-meta)}
+
+
+/* Présentation JJK sombre permanente, y compris lorsque l'option système est « Jour ». */
+html, body { color-scheme: dark; }
+:focus-visible { outline-color: #78BBC0; }

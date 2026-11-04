@@ -1,16 +1,12 @@
-/* CSS EN LUMIÈRE (pages de Roll20). Tout ce que l'extension DESSINE elle-même
-   dans la partie tient ici : l'onglet « Fiche JJK », son pane, l'écran « pas
+/* Cadre de l’extension dans Roll20. Tout ce que l’extension DESSINE elle-même
+   dans la partie tient ici : l’onglet « Fiche JJK », son panneau, l’écran « pas
    encore de fiche », et le cadre du plateau de Narration. Le reste (la fiche,
-   le plateau) vit dans des iframes servies par le site, dont le CSS est
-   totalement isolé de celui-ci.
+   le plateau) vit dans des iframes servies par le site, dont le CSS est isolé.
 
-   PALETTE DU LIVRE, jour et nuit, recopiée de docs/stylesheets/jjk-fiche.css :
-   ce fichier est signé, il ne peut rien charger du site, et il doit tenir seul.
-   Les formes aussi viennent de la fiche : une carte, c'est un fond --card, un
-   filet --line-2, huit pixels de rayon et une ombre à peine posée ; un titre de
-   section, c'est un petit trait rouge sous un texte espacé. Le cadre du plateau
-   avait la couleur mais pas la forme, il avait donc l'air d'un widget collé sur
-   Roll20 au lieu d'une page du livre.
+   PALETTE SOMBRE TURQUOISE, recopiée de docs/stylesheets/jjk-fiche.css : ce
+   fichier est signé, il ne peut rien charger du site, et il doit tenir seul.
+   Les formes reprennent celles de la fiche : fond --card, filet --line-2, huit
+   pixels de rayon, ombre discrète et titre souligné d’un trait turquoise.
 
    LES POLICES DU LIVRE NE SONT PAS LÀ, et il faut le dire plutôt que de le
    laisser croire : Alegreya et Cinzel sont servies par le site, une feuille
@@ -58,29 +54,29 @@
    Elle ne traverse aucune iframe, donc ni la fiche ni le plateau, qui sont des
    documents servis par le site et portent leur propre palette. */
 .jjk-panneau, .jjk-create, .jjk-creator-frame {
-  --paper:    #faf6eb;
-  --bg-side:  #e4ddcd;
-  --card:     #fffdf6;
-  --panel:    #f6efdd;
-  --line:     #c6bb9f;
-  --line-2:   #d6cbb1;
-  --ink:      #20180c;
-  --ink-2:    #453d2d;
-  --red:      #a5271c;
-  --ombre:    rgba(60, 48, 18, .10);
+  --paper:    #0F1415;
+  --bg-side:  #080B0C;
+  --card:     #171D1E;
+  --panel:    #121819;
+  --line:     #344448;
+  --line-2:   #29383B;
+  --ink:      #E4ECEC;
+  --ink-2:    #B6C4C5;
+  --red:      #4A9FA8;
+  --ombre:    rgba(0, 0, 0, .28);
   --ombre-portee: rgba(0, 0, 0, .28);
 }
 .jjk-panneau.jjk-nuit, .jjk-create.jjk-nuit, .jjk-creator-frame.jjk-nuit {
-  --paper:    #201c15;
-  --bg-side:  #14110c;
-  --card:     #262119;
-  --panel:    #2f2a20;
-  --line:     #4f4838;
-  --line-2:   #453e31;
-  --ink:      #eee4cf;
-  --ink-2:    #cbc2ac;
-  --red:      #c65540;
-  --ombre:    rgba(0, 0, 0, .35);
+  --paper:    #0D1213;
+  --bg-side:  #050809;
+  --card:     #141A1B;
+  --panel:    #101617;
+  --line:     #304044;
+  --line-2:   #273538;
+  --ink:      #E4ECEC;
+  --ink-2:    #B6C4C5;
+  --red:      #4A9FA8;
+  --ombre:    rgba(0, 0, 0, .48);
   --ombre-portee: rgba(0, 0, 0, .60);
 }
 
@@ -245,19 +241,16 @@
   width: 26px; height: 1.5px; background: var(--red); border-radius: 2px;
 }
 .jjk-create-msg { margin: 0; color: var(--ink-2); font-size: 13px; }
-/* Le rouge de ce bouton ne suit PAS la nuit, et c'est mesuré : le --red du
-   livre s'éclaircit la nuit parce qu'il y sert de couleur de TEXTE sur fond
-   sombre, et du blanc posé dessus tomberait à 4.4 pour 1, sous le seuil. Le
-   rouge profond du jour tient 7.2 pour 1 contre le blanc cassé, de jour comme
-   de nuit, et reste le rouge du livre. */
+/* Le bouton principal reprend le turquoise de la fiche ; son texte sombre
+   conserve un contraste lisible sur le remplissage. */
 .jjk-create-btn {
   margin-top: 14px; padding: 9px 20px 10px; cursor: pointer;
-  background: #a5271c; color: #fff8f0;
-  border: 1px solid #7c130c; border-radius: 7px;
+  background: #4A9FA8; color: #071113;
+  border: 1px solid #285A60; border-radius: 7px;
   font: 700 14px/1.2 'Alegreya', 'EB Garamond', Garamond, 'Times New Roman', serif;
   letter-spacing: .02em;
   box-shadow: 0 1px 3px var(--ombre);
   transition: background .12s;
 }
-.jjk-create-btn:hover { background: #7c130c; }
+.jjk-create-btn:hover { background: #78BBC0; }
 .jjk-create-btn:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }

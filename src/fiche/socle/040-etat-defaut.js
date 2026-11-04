@@ -4,6 +4,7 @@
       v: SCHEMA, rel: RELEASE,
       name: "", portrait: "", espece: "", age: "", sexe: "", genre: "",
       defaut: "", qualites: ["", ""], background: "", notes: "",
+      notesJournal: { format: 1, messages: [] },
       avantages: [], sansLimite: false,
       // Le PLAFOND des caractéristiques et le budget de POINTS DE CRÉATION se
       // règlent (bloc Création des Options), avec la même grammaire que les
@@ -33,7 +34,7 @@
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, narration: 3,
+      pv: null, em: null, emMax: 0, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
       // module (le poids de JJK est un nombre SANS unité)

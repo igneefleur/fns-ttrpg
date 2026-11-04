@@ -27,7 +27,7 @@
   // Le tenir PAR FENÊTRE et non globalement est indispensable : l'iframe du
   // plateau est refaite au changement de nuit, et une fenêtre neuve doit tout
   // recevoir, sinon elle afficherait un plateau sans ses fonds.
-  var srcFrames = [], srcIds = [], srcLourds = [], MAX_SRC = 64;
+  var srcFrames = [], srcIds = [], srcLourds = [], srcViewIds = [], MAX_SRC = 64;
   // Les fenêtres MORTES quittent la table. Sans ce ménage, chaque cadre détruit
   // (une fiche qu'on ferme et rouvre, un panneau qu'on replie) gardait sa place
   // pour toujours : au soixante-cinquième, le pont refusait toute nouvelle
@@ -38,16 +38,30 @@
     for (var i = srcFrames.length - 1; i >= 0; i--) {
       var mort;
       try { mort = !srcFrames[i] || srcFrames[i].closed; } catch (e) { mort = true; }
-      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); }
+      if (mort) { srcFrames.splice(i, 1); srcIds.splice(i, 1); srcLourds.splice(i, 1); srcViewIds.splice(i, 1); }
     }
   }
-  function lier(src, id) {
+  function lier(src, id, viewId) {
     if (!src || !id) return false;
-    var i = srcFrames.indexOf(src);
-    if (i >= 0) return srcIds[i] === id;
+    var i = srcFrames.indexOf(src), vue = String(viewId || "");
+    if (i >= 0) {
+      if (srcIds[i] !== id) return false;
+      // Roll20 peut garder le même WindowProxy après navigation de l'iframe.
+      // Une nouvelle VIEW_ID signifie un nouveau document : son cache local
+      // n'a plus les attributs lourds omis à la session précédente.
+      if (vue && srcViewIds[i] !== vue) {
+        var ancienneVue = srcViewIds[i];
+        if (ancienneVue && typeof stockageLibereVue === "function") {
+          try { stockageLibereVue(getChar(id), ancienneVue); } catch (eRelease) {}
+        }
+        srcViewIds[i] = vue;
+        srcLourds[i] = null;
+      }
+      return true;
+    }
     menage();
     if (srcFrames.length >= MAX_SRC) return false;
-    srcFrames.push(src); srcIds.push(id); srcLourds.push(null);
+    srcFrames.push(src); srcIds.push(id); srcLourds.push(null); srcViewIds.push(vue);
     return true;
   }
   // vérifie sans jamais lier : un « save » d'une frame qui n'a jamais chargé

@@ -26,6 +26,7 @@
        une extension cassée, ce qu'elle ne serait pas. -->
   <script src="../parties.js"></script>
   <script src="popup.js"></script>
+  <script src="backups-ui.js"></script>
 </head>
 <body>
 
@@ -49,7 +50,14 @@
   <span class="p-tag" id="p-chantier" hidden>beta</span>
 </header>
 
-<main class="p-corps">
+<nav class="popup-tabs p-segs" role="tablist" aria-label="Extension">
+  <button type="button" class="seg" role="tab" aria-selected="true" data-popup-tab="backups">Sauvegardes</button>
+  <button type="button" class="seg" role="tab" aria-selected="false" data-popup-tab="options">Options</button>
+</nav>
+<section class="p-corps" data-popup-panel="backups">
+  <section class="p-bloc"><h2 class="p-titre">Sauvegardes locales</h2><p id="backup-status" role="status">Chargement…</p><div id="backup-list"></div></section>
+</section>
+<main class="p-corps" data-popup-panel="options">
 
   <!-- L'INTERRUPTEUR GÉNÉRAL, la plus grosse chose de la fenêtre.
        Un interrupteur général qu'il faut chercher n'est pas un interrupteur

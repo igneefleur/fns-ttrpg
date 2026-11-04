@@ -107,9 +107,23 @@
       // briques. Tout ce qui prend un GESTE du joueur passe par aNous() : le
       // code appelé au clic doit rester attribué à son mod, sinon ce qu'il
       // installe alors n'a plus d'ayant droit et survit à son refus.
-      texte: function (lire, ecrire, indication) { return textInput(lire, aNous(ecrire), indication, reg); },
-      bouton: function (libelle, infobulle, action) { return miniBtn(libelle, infobulle, aNous(action)); },
-      pas: function (lire, ecrire, pas) { return stepper(lire, aNous(ecrire), pas || 1, null, reg); },
+      texte: function (lire, ecrire, indication) {
+        var champ = textInput(lire, aNous(ecrire), indication, reg);
+        champ.setAttribute("data-jjk-requires-edit", id);
+        return champ;
+      },
+      bouton: function (libelle, infobulle, action) {
+        var bouton = miniBtn(libelle, infobulle, aNous(action));
+        bouton.setAttribute("data-jjk-requires-edit", id);
+        return bouton;
+      },
+      pas: function (lire, ecrire, pas) {
+        var champ = stepper(lire, aNous(ecrire), pas || 1, null, reg);
+        champ.setAttribute("data-jjk-requires-edit", id);
+        var saisie = champ.querySelector(".pc-edit-field");
+        if (saisie) saisie.setAttribute("data-jjk-requires-edit", id);
+        return champ;
+      },
       tuile: function (libelle, valeur, action) { return bigTile(libelle, valeur, aNous(action), reg); },
       ligneComp: function (carac, nom) {
         return compRow({ key: carac + "/" + nom, name: nom, carac: carac, custom: false },

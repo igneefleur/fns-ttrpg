@@ -9,7 +9,7 @@
   // fabrique un champ APRÈS son montage passe le sien, sinon sa fonction
   // atterrirait chez le voisin et échapperait à sa muselière).
   function textInput(get, set, placeholder, reg) {
-    var i = el("input");
+    var i = el("input", "pc-edit-field");
     i.type = "text";
     if (placeholder) i.placeholder = placeholder;
     i.value = get() || "";
@@ -37,7 +37,7 @@
   function stepper(get, set, step, title, reg) {
     var w = el("span", "pc-step");
     w.appendChild(stepBtn("−", title ? "− " + step : null, function () { set(get() - step); refresh(); }));
-    var i = el("input", "pc-num");
+    var i = el("input", "pc-num pc-edit-field");
     i.type = "number";
     i.value = get();
     i.addEventListener("input", function () {
@@ -59,7 +59,7 @@
       return map[key];
     }
     for (var i = 0; i < MMOD_SLOTS.length; i++) (function (i) {
-      var inp = el("input", "pc-mmod");
+      var inp = el("input", "pc-mmod pc-edit-field");
       inp.type = "number"; inp.step = "any"; inp.placeholder = "0";
       inp.title = "Bonus ou malus divers (" + MMOD_SLOTS[i] + ") — emplacement " +
                   (i + 1) + " sur " + MMOD_SLOTS.length + " ; les modificateurs s'additionnent.";

@@ -109,8 +109,112 @@
       sel = items.indexOf(moved);
     }
 
+    var menuContexte = null, menuContexteClic = null, menuContexteTouche = null;
+    function fermeMenuContexte() {
+      if (!menuContexte) return;
+      if (menuContexte.parentNode) menuContexte.parentNode.removeChild(menuContexte);
+      document.removeEventListener("mousedown", menuContexteClic, true);
+      document.removeEventListener("keydown", menuContexteTouche, true);
+      menuContexte = menuContexteClic = menuContexteTouche = null;
+    }
+    // Un état distant peut reconstruire le module Inventaire. Le menu flottant
+    // et ses écouteurs vivent sur document : il faut les fermer avant de jeter
+    // le bloc, sinon un ancien menu reste actif au-dessus de la nouvelle fiche.
+    remontageNettoyage.push(function () { fermeMenuContexte(); });
+    function retireObjet(it) {
+      var here = items.indexOf(it);
+      if (here < 0) return;
+      items.splice(here, 1);
+      if (sel === here) sel = null;
+      else if (sel !== null && sel > here) sel--;
+      render();
+      refresh();
+    }
+    function montreObjet(it) {
+      sayChat("Objet — " + (it.nom || "objet"), [
+        ["Groupe", G[it.groupe]], ["Quantité", fmtP(it.qte)],
+        ["Poids", it.poids ? fmtP(it.poids) : ""],
+        ["Valeur", it.vente ? "vente " + fmtP(it.vente) + (it.achat ? " · achat " + fmtP(it.achat) : "") : (it.achat ? "achat " + fmtP(it.achat) : "")],
+        ["", it.desc]
+      ]);
+    }
+    function ouvreMenuContexte(it, x, y) {
+      fermeMenuContexte();
+      var index = items.indexOf(it);
+      if (index < 0) return;
+      var menu = el("div", "pc-obj-context");
+      menu.setAttribute("role", "menu");
+      menu.setAttribute("aria-label", "Actions de l'objet " + (it.nom || "sans nom"));
+      menuContexte = menu;
+      function separateur() { menu.appendChild(el("div", "pc-obj-context-sep")); }
+      function action(libelle, fn, disabled, danger, construction) {
+        var bt = el("button", "pc-obj-context-action" + (danger ? " danger" : ""), libelle);
+        bt.type = "button";
+        bt.setAttribute("role", "menuitem");
+        if (construction) bt.setAttribute("data-jjk-requires-edit", "inv");
+        bt.disabled = !!disabled;
+        bt.addEventListener("click", function (ev) {
+          ev.preventDefault(); ev.stopPropagation();
+          if (bt.disabled || (construction && !isEdit("inv"))) return;
+          fermeMenuContexte();
+          fn();
+        });
+        menu.appendChild(bt);
+        return bt;
+      }
+      action("Détails", function () { sel = items.indexOf(it); render(); refresh(); });
+      action("Montrer", function () { montreObjet(it); });
+      action("Donner", function () { donnerDialogue(it, it.qte); }, !(it.qte > 0));
+      if (isEdit("inv")) {
+        separateur();
+        if (G.length > 1) {
+          G.forEach(function (nom, gi) {
+            if (gi === it.groupe) return;
+            action("Déplacer vers « " + nom + " »", function () {
+              var actuel = items.indexOf(it);
+              if (actuel < 0 || !isEdit("inv")) return;
+              moveTo(actuel, gi, null);
+              render(); refresh();
+            }, false, false, true);
+          });
+        }
+        action("Retirer", function () {
+          if (!isEdit("inv")) return;
+          function confirmerRetrait() { if (isEdit("inv")) retireObjet(it); }
+          if (!(it.nom || it.desc)) { confirmerRetrait(); return; }
+          confirmer("Retirer un objet", "Retirer « " + (it.nom || "cet objet") + " » de l'inventaire ?", "Retirer", confirmerRetrait);
+        }, false, true, true);
+      }
+      (appEl || rootEl || document.body).appendChild(menu);
+      menu.style.position = "fixed";
+      menu.style.left = Math.max(6, x) + "px";
+      menu.style.top = Math.max(6, y) + "px";
+      var rect = menu.getBoundingClientRect();
+      if (rect.right > window.innerWidth - 6) menu.style.left = Math.max(6, window.innerWidth - rect.width - 6) + "px";
+      if (rect.bottom > window.innerHeight - 6) menu.style.top = Math.max(6, window.innerHeight - rect.height - 6) + "px";
+      menuContexteClic = function (ev) { if (menuContexte && !menuContexte.contains(ev.target)) fermeMenuContexte(); };
+      menuContexteTouche = function (ev) {
+        if (ev.key === "Escape") { ev.preventDefault(); fermeMenuContexte(); }
+        else if (ev.key === "ArrowDown" || ev.key === "ArrowUp") {
+          var visibles = Array.prototype.filter.call(menu.querySelectorAll("button:not(:disabled)"), function (b) { return true; });
+          if (!visibles.length) return;
+          ev.preventDefault();
+          var courant = visibles.indexOf(document.activeElement);
+          var suivant = ev.key === "ArrowDown" ? (courant + 1) % visibles.length : (courant <= 0 ? visibles.length - 1 : courant - 1);
+          visibles[suivant].focus();
+        }
+      };
+      document.addEventListener("mousedown", menuContexteClic, true);
+      document.addEventListener("keydown", menuContexteTouche, true);
+      var premier = menu.querySelector("button:not(:disabled)");
+      if (premier) premier.focus();
+    }
+
     function tile(it, idx) {
       var t = el("div", "pc-obj-tile" + (sel === idx ? " sel" : ""));
+      t.tabIndex = 0;
+      t.setAttribute("role", "button");
+      t.setAttribute("aria-label", (it.nom || "Objet") + " — ouvrir les détails ; clic droit pour les actions");
       if (it.img) {
         var im = el("img");
         im.alt = ""; im.draggable = false;
@@ -127,7 +231,11 @@
         // afficher, donc le retrait y était annulé en silence dès que l'objet
         // portait un nom. La modale de la fiche, elle, s'affiche partout.
         function retire() {
+          // La confirmation peut rester ouverte pendant un changement global
+          // vers Consultation : le garde du clic initial ne suffit pas.
+          if (!isEdit("inv")) return;
           var here = items.indexOf(it);
+          if (here < 0) return;
           items.splice(here, 1);
           if (sel === here) sel = null;
           else if (sel !== null && sel > here) sel--;
@@ -157,7 +265,20 @@
       t.appendChild(foot);
       tileRefs[idx] = { nom: nom, badge: badge, poids: poids };
 
-      t.addEventListener("click", function () { sel = idx; render(); });
+      t.addEventListener("click", function () { fermeMenuContexte(); sel = items.indexOf(it); render(); });
+      t.addEventListener("contextmenu", function (e) {
+        e.preventDefault(); e.stopPropagation();
+        ouvreMenuContexte(it, e.clientX, e.clientY);
+      });
+      t.addEventListener("keydown", function (e) {
+        if ((e.shiftKey && e.key === "F10") || e.key === "ContextMenu") {
+          e.preventDefault();
+          var r = t.getBoundingClientRect();
+          ouvreMenuContexte(it, r.left + Math.min(24, r.width / 2), r.top + Math.min(24, r.height / 2));
+        } else if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault(); sel = items.indexOf(it); render();
+        }
+      });
       t.draggable = true;
       t.addEventListener("dragstart", function (e) {
         // réordonner et changer de groupe = construction : mode édition requis
@@ -169,6 +290,7 @@
       t.addEventListener("dragend", function () { dragIdx = null; render(); });
       t.addEventListener("dragover", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; return; }
         // lâcher sur soi-même : cible invalide, et on N'EN LAISSE PAS le
         // conteneur du groupe la valider (sinon l'objet saute en fin de groupe)
         if (dragIdx === idx) { e.stopPropagation(); return; }
@@ -183,6 +305,7 @@
       t.addEventListener("dragleave", function () { t.classList.remove("over-l", "over-r"); });
       t.addEventListener("drop", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; render(); return; }
         if (dragIdx === idx) { e.stopPropagation(); return; }
         e.preventDefault();
         e.stopPropagation();
@@ -241,7 +364,7 @@
       pdsG.title = "Poids de ce groupe";
       head.appendChild(pdsG);
       var caseG = el("label", "pc-obj-cnt");
-      var boite = el("input");
+      var boite = el("input", "pc-edit-field");
       boite.type = "checkbox";
       boite.checked = invCompte(gi);
       boite.title = "Décoché, ce groupe est posé au sol : il ne compte plus dans le poids porté.";
@@ -315,12 +438,14 @@
       // déposer dans le vide du groupe : l'objet rejoint la fin de ce groupe
       tiles.addEventListener("dragover", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; return; }
         e.preventDefault();
         tiles.classList.add("over");
       });
       tiles.addEventListener("dragleave", function () { tiles.classList.remove("over"); });
       tiles.addEventListener("drop", function (e) {
         if (dragIdx === null) return;
+        if (!isEdit("inv")) { e.preventDefault(); e.stopPropagation(); dragIdx = null; render(); return; }
         e.preventDefault();
         var from = dragIdx; dragIdx = null;
         moveTo(from, gi, null);
@@ -537,6 +662,7 @@
     }
 
     function render() {
+      fermeMenuContexte();
       tileRefs = {};
       grpPoids = [];
       leftBox.innerHTML = "";

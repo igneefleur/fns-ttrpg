@@ -7,7 +7,7 @@
   function tuileForce(tile, champ, auto, dec) {
     var row = el("div", "pc-bigedit pc-edit-only");
     row.appendChild(el("span", "lbl", "Forcé"));
-    var inp = el("input", "force");
+    var inp = el("input", "force pc-edit-field");
     inp.type = "number"; inp.min = "0";
     inp.step = dec ? "0.5" : "1";
     inp.title = "Vide = valeur calculée (modificateurs compris) ; une valeur la force.";

@@ -7,15 +7,22 @@
     ecouteNuit();
     posePriseTake();
     if (IS_TOP) {
-      // FRAME DU HAUT : on n'injecte RIEN au chargement (l'injection main-world gênait
-      // l'ouverture des fiches Roll20). On attend que l'utilisateur ouvre l'onglet
-      // Fiche JJK (depuis une fiche déjà ouverte) : il pose alors le pont via need-bridge.
+      // FRAME DU HAUT : le pont d20 est injecté dès le démarrage de l'éditeur,
+      // comme dans Outward. Il reste passif jusqu'aux demandes des fiches ;
+      // le message need-bridge conserve son rôle de demande idempotente.
+      // Le reste de ce listener relaie les JETS vers le tchat Roll20 (ou l'opener).
       // Reçoit aussi les JETS de la fiche -> tchat Roll20 (le tchat vit dans cette frame,
       // sauf popout : relais vers l'opener).
       window.addEventListener("message", function (ev) {
         try {
           var d = ev.data;
           if (!d || d.ns !== "jjk") return;
+          // La demande ponctuelle d'injection est traitée avant rememberSheet,
+          // comme dans Outward. La vérification passe ensuite par has-sheet.
+          if (d.type === "need-bridge") {
+            injectPageScript();
+            return;
+          }
           // « take » descend vers les fiches : ne jamais retenir sa source comme
           // destinataire, sinon deux fenêtres se le renverraient sans fin
           if (d.type === "take") {
@@ -57,8 +64,7 @@
             panRange();
             return;
           }
-          if (d.type === "need-bridge") injectPageScript();
-          else if (d.type === "roll") {
+          if (d.type === "roll") {
             if (!sendToChat(document, rollCommand(d.die, d.value, d.label)) && IS_POPOUT) relayToOpener(d);
           } else if (d.type === "say") {
             if (!sendToChat(document, sayCommand(d.title, d.fields)) && IS_POPOUT) relayToOpener(d);
@@ -75,8 +81,9 @@
       });
       // popout : la barre d'onglets de la fiche vit dans CE document, on y pose l'onglet.
       if (IS_POPOUT) startScan();
-      // la partie elle-même (et elle seule) reçoit le plateau et son bouton
-      if (IS_EDITEUR) panDemarre();
+      // Le pont suit le même cycle de démarrage qu'Outward. La demande
+      // need-bridge de l'onglet reste un second chemin idempotent.
+      if (IS_EDITEUR) { injectPageScript(); panDemarre(); }
     } else {
       startScan();
     }

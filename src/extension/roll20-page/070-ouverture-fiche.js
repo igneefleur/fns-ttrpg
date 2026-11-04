@@ -230,13 +230,90 @@
   // sûre ici — une collection vidée un instant ferait créer un HOMONYME à la
   // première écriture qui tomberait dans le trou, et les homonymes sont
   // exactement la plaie que le ménage, plus bas, passe son temps à réparer.
-  var RESYNC_MIN = 1500;    // ms : plancher, quoi que demande la page
-  var resyncQuand = {};     // charId -> quand on l'a demandé pour la dernière fois
-  function resynchronise(ch) {
-    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") return false;
-    var n = Date.now();
-    if (n - (resyncQuand[ch.id] || 0) < RESYNC_MIN) return false;
-    resyncQuand[ch.id] = n;
-    try { ch.attribs.fetch(); return true; } catch (e) { return false; }
+  var RESYNC_MIN = 1500;    // même cadence minimale que le pont Outward
+  var resyncJobs = {};      // même ordonnanceur de lectures que le pont Outward
+  function extensionCapacites() {
+    var racine = document.documentElement;
+    return {
+      version: racine ? String(racine.getAttribute("data-jjk-extension-version") || "") : "",
+      protocol: racine ? Number(racine.getAttribute("data-jjk-bridge-protocol") || 0) : 0,
+      capabilities: {
+        compactStorage: 1, operationJournal: 1, readAfterWrite: 1,
+        storageActivation: 1, storageCleanup: 1, storageRelease: 1, sharedMode: 1, localBackups: 1,
+        backupRestore: 1, narrationIndependent: 1, sessionRelay: 1, perPlayerPresence: 1
+      }
+    };
   }
+  function publieLecture(ch, ok) {
+    if (!ch) return;
+    var attrs = readAll(ch.id);
+    if (ok) {
+      stockageFraiche[ch.id] = { at: Date.now(), attrs: attrs };
+      stockageConfirme(ch, attrs);
+      if (typeof presenceDiffusion === "function") presenceDiffusion(ch.id, attrs);
+    }
+    for (var i = srcFrames.length - 1; i >= 0; i--) {
+      if (srcIds[i] !== ch.id) continue;
+      try {
+        // Les blocs contenant des images peuvent être très lourds. Le pont
+        // mémorise ce qu'il a déjà envoyé à chaque fenêtre et n'en renvoie le
+        // contenu qu'à sa première lecture, à son changement ou au renvoi forcé.
+        var pour = {}, omis = [];
+        Object.keys(attrs).forEach(function (nom) { pour[nom] = attrs[nom]; });
+        omis = allege(pour, srcFrames[i], false);
+        srcFrames[i].postMessage({ ns: "jjk", type: "hydrate",
+          charId: ch.id, attrs: pour, omis: omis, fresh: !!ok, extension: extensionCapacites() }, "*");
+      } catch (e) {}
+    }
+  }
+  function resynchronise(ch) {
+    if (!ch || !ch.attribs || typeof ch.attribs.fetch !== "function") {
+      if (ch) publieLecture(ch, false);
+      return false;
+    }
+    var job = resyncJobs[ch.id] || (resyncJobs[ch.id] = {
+      last: 0, running: false, timer: null, serial: 0
+    });
+    if (job.running || job.timer) return true;
+    var delay = RESYNC_MIN - (Date.now() - job.last);
+    if (delay > 0) {
+      job.timer = setTimeout(function () {
+        job.timer = null;
+        resynchronise(ch);
+      }, delay);
+      return true;
+    }
+    job.last = Date.now();
+    job.running = true;
+    var serial = ++job.serial, timeout;
+    function termine(ok) {
+      if (serial !== job.serial || !job.running) return;
+      clearTimeout(timeout);
+      job.running = false;
+      publieLecture(ch, ok);
+    }
+    timeout = setTimeout(function () { termine(false); }, 36000);
+    try {
+      // Même fetch serveur, cadence, délai maximal et verrou que dans Outward.
+      ch.attribs.fetch({
+        success: function () { termine(true); },
+        error: function () { termine(false); }
+      });
+    } catch (e) { termine(false); }
+    return true;
+  }
+  // Les fiches et le plateau restent abonnés tant que leur fenêtre existe.
+  // Les collections Roll20 ne se rafraîchissent pas toutes seules : une lecture
+  // périodique est donc indispensable à la synchronisation inter-fenêtres.
+  setInterval(function () {
+    menage();
+    var vus = {};
+    for (var i = 0; i < srcIds.length; i++) {
+      var id = srcIds[i];
+      if (!id || vus[id]) continue;
+      vus[id] = true;
+      var ch = getChar(id);
+      if (ch) resynchronise(ch);
+    }
+  }, RESYNC_MIN);
 

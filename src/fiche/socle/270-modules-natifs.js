@@ -20,6 +20,7 @@
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "em",         titre: "EM",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----

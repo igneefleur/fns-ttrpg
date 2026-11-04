@@ -137,5 +137,9 @@
     // le jeton qu'on tient reste sous le doigt, quoi qu'en dise Roll20
     if (prise && points[prise.id]) neuf[prise.id] = points[prise.id];
     points = neuf;
+    // La photographie Compact (puis ses journaux d'opérations) devient la
+    // source canonique après relecture. Les anciens jjk_narr_conf / pt_* restent
+    // présents pour les pages antérieures, mais ne pilotent plus les nouvelles.
+    synchroniseNarrationCompact(attrs);
     rend();
   }

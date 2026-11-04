@@ -185,7 +185,9 @@
     });
     var pedit = null;
     pbox.addEventListener("click", function () {
-      if (pedit) return;
+      // Le portrait fait partie de la construction de la fiche : le mode
+      // Consultation global doit empêcher l'ouverture même de son champ URL.
+      if (!ficheModifiable() || pedit) return;
       pedit = el("input", "pc-portrait-edit");
       pedit.type = "text";
       pedit.placeholder = "URL de l'image…";
@@ -195,7 +197,8 @@
         else if (e.key === "Escape") { pedit.value = state.portrait || ""; pedit.blur(); }
       });
       pedit.addEventListener("blur", function () {
-        state.portrait = pedit.value.trim();
+        // Le verrou peut être activé pendant que le champ est ouvert.
+        if (ficheModifiable()) state.portrait = pedit.value.trim();
         if (pedit) { pedit.remove(); pedit = null; }
         refresh();
       });
@@ -229,11 +232,16 @@
     try { new ResizeObserver(function () { carrePortrait(0); }).observe(idBox); } catch (e) {}
 
     var id = idBox;
-    id.appendChild(fld("Nom", textInput(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
-    id.appendChild(fld("Espèce", textInput(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
-    id.appendChild(fld("Âge", textInput(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
-    id.appendChild(fld("Sexe", textInput(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
-    id.appendChild(fld("Genre", textInput(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
+    function champEntete(get, set, placeholder) {
+      var champ = textInput(get, set, placeholder);
+      champ.classList.add("pc-global-edit-field");
+      return champ;
+    }
+    id.appendChild(fld("Nom", champEntete(function () { return state.name; }, function (v) { state.name = v; }, "Nom du personnage"), "c4"));
+    id.appendChild(fld("Espèce", champEntete(function () { return state.espece; }, function (v) { state.espece = v; }), "c2"));
+    id.appendChild(fld("Âge", champEntete(function () { return state.age; }, function (v) { state.age = v; }), "c2"));
+    id.appendChild(fld("Sexe", champEntete(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
+    id.appendChild(fld("Genre", champEntete(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
 
     // 2e ligne : compteurs de budgets + XP total
     var mrow = el("div", "pc-id-meters");
@@ -258,7 +266,7 @@
     }
     mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
     mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
-    var xpIn = el("input", null);
+    var xpIn = el("input", "pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
     xpIn.value = state.xpTotal;
     xpIn.addEventListener("input", function () {
@@ -267,6 +275,17 @@
     });
     hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     mrow.appendChild(fld("XP total", xpIn));
+    var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
+    emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
+    emMaxIn.setAttribute("aria-label", "Énergie maudite maximale");
+    emMaxIn.title = "Réserve totale d'énergie maudite";
+    emMaxIn.addEventListener("input", function () {
+      var v = parseInt(emMaxIn.value, 10);
+      state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
+      refresh();
+    });
+    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
+    mrow.appendChild(fld("EM max", emMaxIn));
     id.appendChild(mrow);
 
     head.appendChild(id);

@@ -346,24 +346,14 @@ def main(archive_differee=False):
             fautes.append("manifeste : jjk-migrations.js existe mais n'est nommé nulle part ; "
                           "dans Roll20 le moteur de migration ne serait jamais chargé")
 
-    # 4. LE MODE DE BLOCAGE. C'est ce réglage, et non le suffixe, qui décide
-    # quand l'écran de version paraît. « release » n'est pas une faute : le
-    # contrat ne l'a jamais banni et l'amorceur le sert pour de bon (voir
-    # blocage() dans jjk-roll20-boot.js). En faire un refus donnait un outil
-    # qu'il fallait contourner pour publier un réglage licite, et un outil qu'on
-    # contourne ne garde plus rien du tout. On le dit, on ne bloque pas.
+    # 4. LE MODE DE BLOCAGE. JJK reprend la règle d'OWD : une fiche n'est
+    # directement compatible que si release ET schema correspondent. Le mode
+    # « release » désigne cet écran de choix à chaque désaccord de version.
     blocage = man.get("blocage")
-    if blocage == "schema":
-        notes.append("manifeste : blocage « schema »")
-    elif blocage == "release":
-        notes.append("manifeste : blocage « release », alors que « schema » est le "
-                     "réglage attendu ; ainsi réglé, un simple correctif de CSS sort "
-                     "l'écran de version chez tous les joueurs, à toutes les tables, "
-                     "pour un code qui lit et écrit exactement les mêmes données")
+    if blocage == "release":
+        notes.append("manifeste : blocage « release » (choix obligatoire sur tout désaccord de release ou de schéma)")
     else:
-        fautes.append("manifeste : blocage = %r, inconnu de l'amorceur, qui retombera "
-                      "sur « schema » sans le dire ; les deux seuls réglages servis "
-                      "sont « schema » (attendu) et « release »" % blocage)
+        fautes.append("manifeste : blocage = %r ; « release » est requis pour aligner JJK sur OWD" % blocage)
 
     # 2. LE RECUL, et la ligne X.Y qui doit avoir son archive.
     brutes = man.get("archives") or {}

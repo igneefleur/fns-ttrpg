@@ -2,7 +2,27 @@
     var b = blank();
     if (!s || typeof s !== "object") return b;
     s = migre(s);
+    // Notes versionnées : l'ancien champ `notes` est conservé comme miroir
+    // texte pour les bundles/archives antérieurs. À la première ouverture,
+    // l'ancienne zone devient un message historique daté de façon neutre.
+    if (s.notesJournal === undefined) {
+      s.notesJournal = { format: 1, messages: typeof s.notes === "string" && s.notes.length
+        ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
+    }
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
+    if (!s.notesJournal || s.notesJournal.format !== 1 || !Array.isArray(s.notesJournal.messages)) {
+      s.notesJournal = { format: 1, messages: typeof s.notes === "string" && s.notes.length
+        ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
+    } else {
+      var noteIds = Object.create(null);
+      s.notesJournal.messages = s.notesJournal.messages.filter(function (m) {
+        if (!m || typeof m !== "object" || typeof m.id !== "string" || !m.id || noteIds[m.id] || typeof m.text !== "string") return false;
+        noteIds[m.id] = true;
+        m.mode = m.mode === "markdown" ? "markdown" : "plain";
+        m.at = isFinite(Number(m.at)) && Number(m.at) >= 0 && Number(m.at) <= 8640000000000000 ? Number(m.at) : 0;
+        return true;
+      });
+    }
     // La release suit toujours le code qui vient d'écrire : c'est lui qui fait
     // foi. Sur la beta, cela tamponne le suffixe sur n'importe quel personnage
     // seulement ouvert puis réenregistré ; c'est sans danger tant que le
@@ -288,8 +308,25 @@
     s.inv.comptes = s.inv.groupes.map(function (_, gi) {
       return s.inv.comptes[gi] !== false;
     });
-    s.inv.objets = objArray(s.inv.objets).map(function (it) {
+    var refsObjets = {};
+    function hashRefObjet(v) {
+      var texte = JSON.stringify(v), h = 2166136261;
+      for (var ri = 0; ri < texte.length; ri++) { h ^= texte.charCodeAt(ri); h = Math.imul(h, 16777619); }
+      return (h >>> 0).toString(36);
+    }
+    s.inv.objets = objArray(s.inv.objets).map(function (it, indexObjet) {
+      // `id` reste l'identifiant métier utilisé par Donner/Prendre. `ref` est
+      // une identité technique distincte et stable pour la synchronisation
+      // Compact : elle ne dépend ni du nom ni du groupe après la migration.
+      var refObjet = String(it.ref == null ? "" : it.ref).replace(/[^A-Za-z0-9_-]/g, "").slice(0, 80);
+      if (!refObjet || refsObjets[refObjet]) {
+        var baseRef = "i-" + hashRefObjet({ index: indexObjet, id: it.id || "", nom: it.nom || "", img: it.img || "", desc: it.desc || "" });
+        refObjet = baseRef; var suffixeRef = 1;
+        while (refsObjets[refObjet]) refObjet = baseRef + "-" + (++suffixeRef);
+      }
+      refsObjets[refObjet] = true;
       return {
+        ref: refObjet,
         nom: it.nom == null ? "" : String(it.nom),
         // quantités et poids DÉCIMAUX (une demi-ration, 0.5 de poids…)
         qte: pnum(it.qte === undefined ? 1 : it.qte),
@@ -403,6 +440,9 @@
     s.narration = clamp(num(s.narration, 3), 0, 99);
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
     if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
+    s.emMax = clamp(Math.floor(num(s.emMax, 0)), 0, 9999);
+    s.em = (s.em === null || s.em === undefined || s.em === "") ? null : parseFloat(s.em);
+    if (s.em !== null && !isFinite(s.em)) s.em = null;
     return s;
   }
 

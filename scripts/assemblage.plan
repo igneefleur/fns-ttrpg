@@ -86,6 +86,7 @@ variantes = stable, beta
   src/extension/roll20-page/060-plateau.js
   src/extension/roll20-page/070-ouverture-fiche.js
   src/extension/roll20-page/080-menage.js
+  src/extension/roll20-page/085-stockage.js
   src/extension/roll20-page/090-ecouteur.js
 
 # La coquille de l'onglet : elle pointe son iframe vers la fiche servie par le
@@ -121,6 +122,11 @@ variantes = stable, beta
 # qui viendra ensuite, seul, et se lira alors dans un diff d'une page.
 
 
+[docs/javascripts/jjk-sync.js]
+bom = non
+fin = lf
+  src/synchronisation/jjk-sync.js
+
 # LA FICHE DE PERSONNAGE. Le socle d'abord (amorce, état, calculs communs,
 # entêtes et onglets), puis un fichier par MODULE, rangé sous le nom de
 # l'onglet où il paraît : c'est la table des matières que le gros fichier
@@ -128,6 +134,8 @@ variantes = stable, beta
 [docs/javascripts/jjk-fiche.js]
 bom = oui
 fin = lf
+  src/fiche/vendor/markdown-it.min.js
+  src/fiche/vendor/purify.min.js
   src/fiche/socle/010-ouverture.js
   src/fiche/socle/020-version.js
   src/fiche/socle/030-outils.js

@@ -145,6 +145,89 @@
   // manquer à l'un d'eux.
   var MODULE_REGLAGES = "modules";
 
+  // Même garde que dans Outward : un module remplacé par un mod, un filtre
+  // personnalisé ou un mod actif impose un remontage complet. Pour les modules
+  // natifs, une modification distante ne reconstruit que les blocs concernés.
+  function moduleNatif(m) {
+    return MODULES_NATIFS.some(function (n) { return n.id === m.id && n.build === m.build; });
+  }
+  function modulesPersoActifs() {
+    return (typeof filtres !== "undefined" && Object.keys(filtres).some(function (k) { return filtres[k].length > 0; })) ||
+      (Array.isArray(modules) && modules.some(function (m) { return !moduleNatif(m); })) ||
+      ((state && state.mods) || []).some(function (m) { return m && m.actif !== false && modAutorise(m.id); });
+  }
+  function nettoieHooksModule(id) {
+    var conserves = [];
+    remontageNettoyage.forEach(function (fn) {
+      if (fn._jjkModule === id) { try { fn(); } catch (e) {} }
+      else conserves.push(fn);
+    });
+    remontageNettoyage = conserves;
+  }
+  function construitModule(m, hote, ancien) {
+    var reg = regModule(m.id), precedent = hooks, propPrecedent = proprietaireCourant;
+    var cleanStart = remontageNettoyage.length, e = null, erreurBuild = null;
+    hooks = reg;
+    proprietaireCourant = m.__mod || m.id;
+    try {
+      e = m.build(contexte(m, reg));
+      if (e && e.nodeType !== 1) e = null;
+      if (e && !e.dataset.module) e.dataset.module = m.id;
+      etatModule(m.id).panne = "";
+    } catch (err) {
+      erreurBuild = err;
+      reg.length = 0;
+    } finally {
+      hooks = precedent;
+      proprietaireCourant = propPrecedent;
+    }
+    if (erreurBuild) {
+      remontageNettoyage.splice(cleanStart).forEach(function (fn) { try { fn(); } catch (e) {} });
+      e = blocEnPanne(m, erreurBuild);
+    } else {
+      remontageNettoyage.slice(cleanStart).forEach(function (fn) { fn._jjkModule = m.id; });
+    }
+    etatModule(m.id).vide = !e;
+    if (!e) {
+      if (ancien && ancien.parentNode) ancien.parentNode.removeChild(ancien);
+      delete elModules[m.id];
+      return;
+    }
+    try {
+      if (ancien && ancien.parentNode) ancien.parentNode.replaceChild(e, ancien);
+      else hote.appendChild(e);
+      elModules[m.id] = e;
+    } catch (err2) {
+      reg.length = 0;
+      remontageNettoyage.splice(cleanStart).forEach(function (fn) { try { fn(); } catch (e) {} });
+      var carte = blocEnPanne(m, err2);
+      try {
+        if (ancien && ancien.parentNode) ancien.parentNode.replaceChild(carte, ancien);
+        else hote.appendChild(carte);
+        elModules[m.id] = carte;
+        etatModule(m.id).panne = messageErreur(err2);
+        etatModule(m.id).vide = false;
+      } catch (fatal) {
+        etatModule(m.id).vide = true;
+        delete elModules[m.id];
+        if (window.console && window.console.error) window.console.error("[fiche] insertion du module " + m.id, fatal);
+      }
+    }
+  }
+  function reconstruitModules(ids) {
+    (ids || []).forEach(function (id) {
+      var ancien = elModules[id];
+      var m = modules.filter(function (x) { return x.id === id; })[0];
+      if (!ancien || !ancien.parentNode || !m) return;
+      nettoieHooksModule(id);
+      regsModules[id] = [];
+      if (id === "comps") compHooks = [];
+      if (id === "optcomps") optHooks = [];
+      etatsModules[id] = { echecs: 0, musele: false, erreur: "", panne: "", vide: false };
+      construitModule(m, ancien.parentNode, ancien);
+    });
+  }
+
   function monteModules(panes) {
     var colonnes = {};
     elModules = {};
@@ -181,59 +264,9 @@
       var cols = colonnes[m.onglet];
       var hote = (cols && aClef(cols, m.colonne)) ? cols[m.colonne] : null;
       if (!hote) { etatModule(m.id).vide = true; return; }
-      // le module construit DANS son propre registre : tout ce que ses briques
-      // y poussent lui appartient, et lui seul en répond
-      var reg = regModule(m.id);
-      var precedent = hooks;
-      // même idée pour les filtres : ceux qu'un module pose pendant son build
-      // portent son id, et c'est lui que le journal nomme s'ils déraillent
-      var propPrecedent = proprietaireCourant;
-      var e;
-      hooks = reg;
-      // le MOD qui a posé ce module, s'il vient d'un mod : c'est lui l'ayant
-      // droit de ce que le build enregistre, pas l'id du bloc
-      proprietaireCourant = m.__mod || m.id;
-      try {
-        e = m.build(contexte(m, reg));
-        // build qui rend autre chose qu'un ÉLÉMENT (une chaîne, un objet, un
-        // texte) : rien à monter, et surtout rien qui porte un dataset. Le
-        // traiter comme un build muet coûte un bloc ; le poser dans la page
-        // coûtait la fiche entière.
-        if (e && e.nodeType !== 1) e = null;
-        // les modules à rouage se sont déjà nommés (block() pose data-module) ;
-        // les autres le reçoivent ici, pour que TOUS soient repérables. DANS le
-        // try : c'est encore le module qui répond de ce qu'il a rendu.
-        if (e && !e.dataset.module) e.dataset.module = m.id;
-        etatModule(m.id).panne = "";
-      } catch (err) {
-        // build a pu pousser des fonctions avant de tomber : elles pointent
-        // sur un bloc à moitié bâti et jetteraient à chaque rafraîchissement
-        reg.length = 0;
-        e = blocEnPanne(m, err);
-      }
-      hooks = precedent;
-      proprietaireCourant = propPrecedent;
-      // build qui ne rend rien : ce n'est PAS une erreur (un module a le droit
-      // de s'effacer), mais la liste des modules doit pouvoir le signaler
-      etatModule(m.id).vide = !e;
-      if (!e) return;
-      // L'INSERTION AUSSI PEUT JETER, et c'était la dernière porte par laquelle
-      // un mod fermait la fiche. Un build qui rend document.body (ou n'importe
-      // quel ancêtre du point de montage) fait lever appendChild : hors try,
-      // l'exception sortait de mount(), la feuille restait à moitié bâtie, et
-      // comme le mod voyage avec le personnage cela recommençait à CHAQUE
-      // ouverture, sans une ligne d'interface pour le couper. Ici, c'est une
-      // carte de panne comme une autre, avec son bouton Désactiver.
-      try {
-        hote.appendChild(e);
-        elModules[m.id] = e;
-      } catch (err2) {
-        reg.length = 0;
-        var carte = blocEnPanne(m, err2);
-        elModules[m.id] = carte;
-        // la carte de panne, elle, est bâtie ici : elle s'insère forcément
-        hote.appendChild(carte);
-      }
+      // Construction centralisée : mêmes gardes à l'ouverture et lors d'une
+      // mise à jour distante ciblée, avec enregistrement des nettoyages.
+      construitModule(m, hote, null);
     });
   }
 
