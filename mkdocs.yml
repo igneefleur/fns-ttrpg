@@ -38,11 +38,12 @@ theme:
 extra:
   generator: false   # supprime le « Made with Material for MkDocs »
 extra_css:
-  - stylesheets/fonts.css   # @font-face auto-hébergés : doit être chargée en premier
+  - stylesheets/fonts.css   # symboles et Roboto Mono ; la pile OWD est redéfinie par jjk-theme.css
   - stylesheets/extra.css?v=13
   - stylesheets/night.css
   - stylesheets/jjk.css?v=1 # variantes propres à la branche jjk (gabarit des tables anima)
   - stylesheets/jjk-fiche.css?v=84
+  - stylesheets/jjk-theme.css?v=85
 extra_javascript:
   - javascripts/continuous.js
   - javascripts/nav-drawer.js
