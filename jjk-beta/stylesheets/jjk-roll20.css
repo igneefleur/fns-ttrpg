@@ -87,12 +87,7 @@ html.night #jjk-roll20-note a { color: #78BBC0; }
   font-family: 'Proxima Nova Condensed', 'Nunito Sans', sans-serif;
   font-size: .7rem; font-weight: 800; color: var(--ink); white-space: nowrap;
 }
-#jjk-mode-toggle.pc-btn {
-  padding: .18rem .45rem; border-color: var(--line); background: var(--card); color: var(--ink-2);
-  font-size: .65rem; line-height: 1.25;
-}
-#jjk-mode-toggle.pc-btn:hover:not([disabled]) { background: #14282B; border-color: #4A9FA8; color: #E4ECEC; }
-#jjk-mode-toggle[disabled] { opacity: .6; cursor: wait; }
+#jjk-mode-toggle.pc-btn { padding: .18rem .45rem; font-size: .65rem; line-height: 1.25; }
 #jjk-mode-bar .jjk-mode-presence {
   display: flex; flex-wrap: wrap; justify-content: flex-end;
   gap: .15rem .7rem; margin-left: auto; min-width: 0;
