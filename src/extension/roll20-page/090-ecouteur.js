@@ -65,7 +65,7 @@
               op.changes.some(function (change) {
                 return !change || typeof change.k !== "string" || change.k.length > 4096 ||
                   change.k.indexOf("__proto__") >= 0 || change.k.indexOf("constructor") >= 0 ||
-                  !Array.isArray(change.n) || !change.n.length || ["v", "o", "a", "d"].indexOf(change.n[0]) < 0;
+                  !Array.isArray(change.n) || !change.n.length || ["v", "o", "a", "d", "l", "i"].indexOf(change.n[0]) < 0;
               })) throw new Error("Le journal contient une opération invalide.");
           if (incomingOps[op.id] && stockageStable(incomingOps[op.id]) !== stockageStable(op))
             throw new Error("Identifiant d'opération répété dans le même envoi avec un contenu différent : " + op.id);

@@ -12,7 +12,7 @@ for (const [name, source] of [['source', comps], ['bundle', bundle]]) {
 }
 assert.match(css, /html\.jjk-consultation #perso-atelier button:disabled[\s\S]*?cursor: default !important;[\s\S]*?pointer-events: none !important;/,
   'les boutons désactivés ne réagissent pas au survol en Consultation');
-assert.match(manifest, /jjk-fiche\.js\?v=82/);
-assert.match(manifest, /jjk-roll20\.css\?v=82/);
-assert.match(manifest, /jjk-consultation\.css\?v=82/);
+assert.match(manifest, /jjk-fiche\.js\?v=83/);
+assert.match(manifest, /jjk-roll20\.css\?v=83/);
+assert.match(manifest, /jjk-consultation\.css\?v=83/);
 console.log('OK : filtre de champ éditable dans le module Compétences ; survol neutralisé pour les boutons désactivés en Consultation');

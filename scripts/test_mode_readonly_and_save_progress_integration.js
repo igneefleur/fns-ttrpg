@@ -57,7 +57,7 @@ assert.match(progress, /duration:\s*120000/);
 assert.match(progress, /400\s*-\s*\(now\s*-\s*r\.finish\)/);
 assert.match(progress, /#perso-atelier \.pc-editable\[data-module\]/);
 
-assert.equal(manifest.release, '4.4.4b');
-assert.ok(manifest.amorce.every(x => x.includes('?v=80')));
-assert.ok(manifest.bundle.js.every(x => x.includes('?v=80')));
+assert.equal(manifest.release, '4.4.5b');
+assert.ok(manifest.amorce.every(x => x.includes('?v=83')));
+assert.ok(manifest.bundle.js.every(x => x.includes('?v=83')));
 console.log('OK intégration : barre persistante, Consultation verrouillée, sauvegarde en attente maintenue et contours confirmés par Roll20');

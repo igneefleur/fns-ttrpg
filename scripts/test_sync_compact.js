@@ -1,5 +1,7 @@
 'use strict';
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 global.window = global;
 const JjkSync = require('../src/synchronisation/jjk-sync.js');
 global.JjkSync = JjkSync;
@@ -27,6 +29,37 @@ assert.equal(snap.state.inv.objets[0].ref, 'objet-a');
 assert.equal(snap.state.notesJournal.messages[0].text, 'Conserver');
 assert.ok(encoded.jjk_storage && Object.keys(encoded).some(k => k.startsWith('jjk_block_')));
 console.log('OK Compact : fiche entière, inventaire et Notes restitués sans perte');
+
+// Le moteur émet des nœuds de liste ("l") et de tableau fixe ("i").
+// L'écouteur Roll20 doit les accepter : les refuser bloque les modifications
+// de listes et de mods d'armes avant même leur écriture dans les Attributes.
+const nodeState = stateBase();
+const nodeAttrs = M.compactAttrs(nodeState);
+const nodeSession = new JjkSync.Compact.Session(nodeAttrs, nodeState, () => 1200,
+  { id: 'node-tags-test', actor: { id: 'node-tags-test' } });
+const nodeEdited = clone(nodeState);
+nodeEdited.extraList = [];
+nodeEdited.inv.objets[0].arme = { modsDegats: ['Force', '', ''] };
+nodeSession.capture(nodeEdited);
+const nodeOps = Object.values(nodeSession.outgoing());
+const nodeChanges = nodeOps.flatMap(op => op.changes);
+assert.ok(nodeChanges.some(change => change.n[0] === 'l'),
+  'une nouvelle liste doit produire le marqueur l');
+assert.ok(nodeChanges.some(change => change.n[0] === 'i'),
+  'un tableau fixe de mods doit produire le marqueur i');
+const nodeJournal = Object.assign({}, nodeAttrs, {
+  jjk_ops_regression_node_tags: attr({ epoch: nodeSession.epoch, session: 'node-tags-test', ops: nodeOps })
+});
+assert.equal(stable(JjkSync.Compact.read(nodeJournal).state), stable(nodeEdited),
+  'le lecteur Compact doit reconstruire les deux types de nœuds');
+const listenerSource = fs.readFileSync(path.join(__dirname,
+  '../src/extension/roll20-page/090-ecouteur.js'), 'utf8');
+const listenerGuard = /!Array\.isArray\(change\.n\)[\s\S]{0,140}(\["v",\s*"o",\s*"a",\s*"d",\s*"l",\s*"i"\])\.indexOf\(change\.n\[0\]\)\s*<\s*0/.exec(listenerSource);
+assert.ok(listenerGuard,
+  'le filtre de réception Roll20 doit autoriser v, o, a, d, l et i');
+assert.deepEqual(JSON.parse(listenerGuard[1]), ['v', 'o', 'a', 'd', 'l', 'i']);
+console.log('OK réception Roll20 : marqueurs de liste (l) et de tableau fixe (i) acceptés et reconstruits');
+
 
 const emptyReserveState = clone(original); emptyReserveState.etat = {};
 assert.equal(stable(JjkSync.Compact.snapshot(JjkSync.Compact.encode(emptyReserveState)).state),
