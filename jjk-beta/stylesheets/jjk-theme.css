@@ -1,0 +1,469 @@
+/*
+ * Thème JJK — noir, gris neutres et cyan.
+ * Palette partagée entre le site, la fiche et son iframe Roll20.
+ * Typographie alignée sur la fiche OWD : Proxima Nova / Nunito Sans,
+ * Proxima Nova Condensed pour les titres, Roboto Mono pour les données.
+ */
+
+/* Nunito Sans est le repli auto-hébergé de la pile OWD.
+   Les fichiers sont déjà publiés dans docs/assets/fonts de owd-beta :
+   on les réutilise sans dupliquer les binaires dans la branche JJK. */
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("https://igneefleur.github.io/fns-ttrpg/owd-beta/assets/fonts/nunito-sans-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: normal;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("https://igneefleur.github.io/fns-ttrpg/owd-beta/assets/fonts/nunito-sans-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: italic;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("https://igneefleur.github.io/fns-ttrpg/owd-beta/assets/fonts/nunito-sans-i-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito Sans";
+  font-style: italic;
+  font-weight: 200 1000;
+  font-display: swap;
+  src: url("https://igneefleur.github.io/fns-ttrpg/owd-beta/assets/fonts/nunito-sans-i-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root,
+body,
+html.night {
+  color-scheme: dark;
+  --jjk-black: #000000;
+  --jjk-paper: #101010;
+  --jjk-card: #1A1A1A;
+  --jjk-panel: #141414;
+  --jjk-stripe: #222222;
+  --jjk-line: #383838;
+  --jjk-line-soft: #303030;
+  --jjk-ink: #E6E6E6;
+  --jjk-ink-2: #B8B8B8;
+  --jjk-ink-3: #858585;
+  --jjk-cyan: #39BFCB;
+  --jjk-cyan-hi: #72DCE3;
+  --jjk-cyan-deep: #247F88;
+  --jjk-cyan-wash: rgba(57, 191, 203, .16);
+  /* Noms historiques consommés par la fiche et le plateau de narration. */
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --stripe: #222222;
+  --hair: #303030;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --ink-3: #858585;
+  --accent: #39BFCB;
+  --accent-hi: #72DCE3;
+  --accent-deep: #247F88;
+  --accent-wash: rgba(57, 191, 203, .16);
+  --red: #C96B62;
+  --red-deep: #E08D83;
+  --wash: rgba(201, 107, 98, .16);
+  --voile: rgba(16, 16, 16, .92);
+  --voile-doux: rgba(16, 16, 16, .48);
+  --or: #39BFCB;
+  --or-fond: #72DCE3;
+  --or-ombre: #247F88;
+  --jjk-font-ui: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --jjk-font-heading: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --md-text-font: "Symboles JDR", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --md-code-font: "Roboto Mono", monospace;
+  --md-default-bg-color: #000000;
+  --md-default-fg-color: #E6E6E6;
+  --md-default-fg-color--light: #B8B8B8;
+  --md-default-fg-color--lighter: #858585;
+  --md-default-fg-color--lightest: #383838;
+  --md-default-fg-color--dark: #E6E6E6;
+  --md-typeset-color: #E6E6E6;
+  --md-typeset-a-color: #39BFCB;
+  --md-primary-fg-color: #141414;
+  --md-primary-fg-color--light: #222222;
+  --md-primary-fg-color--dark: #000000;
+  --md-accent-fg-color: #39BFCB;
+  --md-code-bg-color: #1A1A1A;
+  --md-code-fg-color: #E6E6E6;
+  --md-typeset-mark-color: rgba(57, 191, 203, .22);
+}
+
+html,
+body {
+  background: #000000 !important;
+  color: #E6E6E6;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* ---- Documentation MkDocs ---- */
+.md-container,
+.md-main,
+.md-main__inner,
+.md-content,
+.md-sidebar,
+.md-sidebar__scrollwrap {
+  background: #000000 !important;
+  color: #E6E6E6;
+}
+.md-header,
+.md-tabs {
+  background: #000000 !important;
+  color: #E6E6E6;
+  border-bottom: 1px solid #303030;
+}
+.md-tabs__link,
+.md-nav__link {
+  color: #B8B8B8;
+}
+.md-tabs__link--active,
+.md-tabs__link:hover,
+.md-nav__link--active,
+.md-nav__link:hover,
+.md-nav__link:focus {
+  color: #39BFCB !important;
+}
+.md-sidebar--primary .md-nav__title,
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  background: #000000 !important;
+  color: #39BFCB !important;
+  box-shadow: none !important;
+}
+.md-content > .md-content__inner {
+  background: #101010 !important;
+  color: #E6E6E6;
+  border: 1px solid #222222;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .5);
+}
+.md-typeset,
+.md-typeset p,
+.md-typeset li,
+.md-typeset td,
+.md-typeset th,
+.md-typeset blockquote {
+  color: #E6E6E6;
+  font-family: "Symboles JDR", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6,
+.md-typeset .mcard > p:first-child strong:first-child,
+.md-typeset .gcard > p:first-child {
+  color: #72DCE3 !important;
+  font-family: "Symboles JDR", "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.md-typeset a,
+.md-typeset a code {
+  color: #39BFCB;
+}
+.md-typeset a:hover {
+  color: #72DCE3;
+}
+.md-typeset blockquote {
+  border-left-color: #383838;
+}
+.md-typeset hr,
+.md-typeset .cols hr {
+  border-color: #383838;
+}
+.md-typeset code,
+.md-typeset pre,
+.md-typeset kbd {
+  font-family: "Roboto Mono", monospace !important;
+}
+.md-typeset pre,
+.md-typeset code {
+  background: #1A1A1A;
+  color: #E6E6E6;
+}
+.md-typeset table:not([class]) th,
+.md-typeset .cj-modules.anima table:not([class]) th,
+html.night .md-typeset table:not([class]) th,
+html.night .md-typeset .cj-modules.anima table:not([class]) th {
+  background: #1A1A1A !important;
+  color: #E6E6E6 !important;
+  border-color: #383838 !important;
+}
+.md-typeset table:not([class]) td,
+.md-typeset .cj-modules.anima table:not([class]) td,
+html.night .md-typeset table:not([class]) td,
+html.night .md-typeset .cj-modules.anima table:not([class]) td {
+  border-color: #383838 !important;
+}
+.md-typeset table:not([class]) tbody tr:nth-child(odd) td,
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd) td,
+html.night .md-typeset table:not([class]) tbody tr:nth-child(odd) td,
+html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd) td {
+  background: #141414 !important;
+}
+.md-typeset table:not([class]) tbody tr:nth-child(even) td,
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td,
+html.night .md-typeset table:not([class]) tbody tr:nth-child(even) td,
+html.night .md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td {
+  background: #1A1A1A !important;
+}
+.md-typeset .mcard,
+.md-typeset .gcard,
+.md-typeset .eclat-card,
+.md-typeset .defs,
+.md-typeset .sblock,
+.md-typeset .wfiche,
+.md-typeset .optrule,
+.md-typeset .cl-commit,
+html.night .md-typeset .mcard,
+html.night .md-typeset .gcard,
+html.night .md-typeset .eclat-card,
+html.night .md-typeset .defs,
+html.night .md-typeset .sblock,
+html.night .md-typeset .wfiche,
+html.night .md-typeset .optrule,
+html.night .md-typeset .cl-commit {
+  background-color: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #E6E6E6;
+}
+.md-typeset .wf-effet,
+.md-typeset .wfiche .wf-effet,
+html.night .md-typeset .wf-effet,
+html.night .md-typeset .wfiche .wf-effet {
+  background: #141414 !important;
+}
+.md-typeset .cj-modules.anima h3,
+.md-typeset .cj-modules.anima h4,
+html.night .md-typeset .cj-modules.anima h3,
+html.night .md-typeset .cj-modules.anima h4 {
+  color: #72DCE3 !important;
+  border-bottom-color: #39BFCB !important;
+}
+
+/* ---- Fiche personnage et créateur ---- */
+.perso-atelier {
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --stripe: #222222;
+  --hair: #303030;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --ink-3: #858585;
+  --accent: #39BFCB;
+  --accent-hi: #72DCE3;
+  --accent-deep: #247F88;
+  --accent-wash: rgba(57, 191, 203, .16);
+  background: #000000 !important;
+  color: #E6E6E6;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+html.night .perso-atelier {
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --stripe: #222222;
+  --hair: #303030;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --ink-3: #858585;
+  --accent: #39BFCB;
+  --accent-hi: #72DCE3;
+  --accent-deep: #247F88;
+  --accent-wash: rgba(57, 191, 203, .16);
+  background: #000000 !important;
+}
+.perso-atelier input,
+.perso-atelier select,
+.perso-atelier textarea,
+.perso-atelier button {
+  font-family: inherit;
+}
+.perso-atelier .pc-sheet {
+  background: #101010 !important;
+  color: #E6E6E6;
+}
+.perso-atelier .pc-top {
+  background: #141414 !important;
+  border-bottom-color: #303030 !important;
+}
+.perso-atelier .pc-top-title,
+.perso-atelier .pc-block-title,
+.perso-atelier .pc-modgroupe {
+  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.perso-atelier .pc-top-title {
+  color: #72DCE3 !important;
+}
+.perso-atelier .pc-top-hint {
+  color: #858585 !important;
+}
+.perso-atelier .pc-btn,
+.perso-atelier .pc-top .pc-lib select {
+  background: #1A1A1A;
+  border-color: #383838;
+  color: #B8B8B8;
+}
+.perso-atelier .pc-btn:hover:not([disabled]),
+.perso-atelier .pc-mini:hover:not([disabled]) {
+  background: #222222;
+  border-color: #39BFCB;
+  color: #E6E6E6;
+}
+.perso-atelier .pc-tab.on,
+.perso-atelier .pc-mini.primary {
+  background: #39BFCB;
+  border-color: #247F88;
+  color: #071113;
+}
+.perso-atelier .pc-tab.on:hover,
+.perso-atelier .pc-mini.primary:hover {
+  background: #72DCE3;
+  color: #071113;
+}
+.perso-atelier .pc-block,
+.perso-atelier .pc-av,
+.perso-atelier .pc-modal,
+.perso-atelier .pc-obj-panel,
+.perso-atelier .pc-obj-context {
+  background-color: #1A1A1A;
+  border-color: #383838;
+}
+.perso-atelier .pc-abbr {
+  background: #247F88 !important;
+  color: #E6E6E6;
+}
+.perso-atelier .pc-stadebar .seg.on.s1 {
+  background: #247F88 !important;
+  color: #E6E6E6 !important;
+  border-color: #39BFCB !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s2 {
+  background: #247F88 !important;
+  color: #E6E6E6 !important;
+  border-color: #39BFCB !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s3 {
+  background: #39BFCB !important;
+  color: #071113 !important;
+  border-color: #72DCE3 !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s4 {
+  background: #72DCE3 !important;
+  color: #071113 !important;
+  border-color: #72DCE3 !important;
+}
+.perso-atelier .pc-flash {
+  background: #1A1A1A;
+  color: #E6E6E6;
+  border-color: #383838;
+}
+.perso-atelier .pc-modgroupe::after {
+  background: #383838;
+}
+
+
+/* Le plateau de narration est un iframe indépendant : mêmes jetons de palette
+   et même pile typographique OWD que la fiche principale. */
+#nb,
+#nb button,
+#nb input,
+#nb select,
+#nb textarea {
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+#nb .nb-place-nom,
+#nb .nb-modal-titre,
+#nb .nb-groupe,
+#nb .nb-etat .nb-titre {
+  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+#nb .nb-kv .v,
+#nb .nb-place-compte {
+  color: #E6E6E6;
+}
+html.night .nb-btn.primary {
+  background: #39BFCB !important;
+  border-color: #247F88 !important;
+  color: #071113 !important;
+}
+html.night .nb-btn.primary:hover {
+  background: #72DCE3 !important;
+  border-color: #39BFCB !important;
+  color: #071113 !important;
+}
+
+/* ---- Extension Roll20 / iframe ---- */
+html,
+html body {
+  color-scheme: dark;
+}
+body {
+  background: #000000 !important;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+html.night body {
+  background: #000000 !important;
+}
+#jjk-roll20-note {
+  color: #B8B8B8 !important;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+#jjk-roll20-note h1,
+#jjk-mode-bar .jjk-mode-label {
+  color: #72DCE3 !important;
+  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+#jjk-roll20-note a {
+  color: #39BFCB !important;
+}
+#jjk-roll20-note button {
+  background: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #E6E6E6 !important;
+}
+#jjk-mode-bar,
+html.night #jjk-mode-bar {
+  --panel: #141414;
+  --card: #1A1A1A;
+  --line: #383838;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --accent: #39BFCB;
+  background: #141414 !important;
+  border-color: #383838 !important;
+  color: #E6E6E6 !important;
+}
+#jjk-mode-toggle.pc-btn {
+  background: #1A1A1A;
+  border-color: #383838;
+  color: #B8B8B8;
+}
+#jjk-mode-toggle.pc-btn:hover:not([disabled]) {
+  background: #222222;
+  border-color: #39BFCB;
+  color: #E6E6E6;
+}
+#perso-atelier .jjk-save-outline path {
+  stroke: #39BFCB !important;
+}
