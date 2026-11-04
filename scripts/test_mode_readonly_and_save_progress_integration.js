@@ -57,7 +57,9 @@ assert.match(progress, /duration:\s*120000/);
 assert.match(progress, /400\s*-\s*\(now\s*-\s*r\.finish\)/);
 assert.match(progress, /#perso-atelier \.pc-editable\[data-module\]/);
 
-assert.equal(manifest.release, '4.4.5b');
-assert.ok(manifest.amorce.every(x => x.includes('?v=83')));
-assert.ok(manifest.bundle.js.every(x => x.includes('?v=83')));
-console.log('OK intégration : barre persistante, Consultation verrouillée, sauvegarde en attente maintenue et contours confirmés par Roll20');
+assert.equal(manifest.release, '4.4.6b');
+assert.ok(manifest.amorce.every(x => x.includes('?v=84')));
+assert.ok(manifest.bundle.js.every(x => x.includes('?v=84')));
+assert.ok(manifest.amorce.indexOf('javascripts/jjk-sync.js?v=84') < manifest.amorce.indexOf('javascripts/jjk-save-flow.js?v=84'));
+assert.ok(manifest.amorce.indexOf('javascripts/jjk-save-flow.js?v=84') < manifest.amorce.indexOf('javascripts/jjk-roll20-boot.js?v=84'));
+console.log('OK intégration : mode consultation, sauvegarde en attente, contours confirmés et version 4.4.6b');

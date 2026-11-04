@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.4.5b";
+  var RELEASE = "4.4.6b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -42,4 +42,3 @@
   // résultat s'y colore de lui-même dans le tchat, vert sur un critique et
   // rouge sur un échec critique, sans que la fiche ait à le calculer.
   var DE_DEFAUT = "1d100cs>96cf<5";
-
