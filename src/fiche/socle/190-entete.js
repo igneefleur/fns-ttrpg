@@ -277,15 +277,15 @@
     mrow.appendChild(fld("XP total", xpIn));
     var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
     emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
-    emMaxIn.setAttribute("aria-label", "Énergie maudite maximale");
-    emMaxIn.title = "Réserve totale d'énergie maudite";
+    emMaxIn.setAttribute("aria-label", "Énergie occulte maximale");
+    emMaxIn.title = "Réserve totale d'énergie occulte";
     emMaxIn.addEventListener("input", function () {
       var v = parseInt(emMaxIn.value, 10);
       state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
       refresh();
     });
     hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
-    mrow.appendChild(fld("EM max", emMaxIn));
+    mrow.appendChild(fld("EO max", emMaxIn));
     id.appendChild(mrow);
 
     head.appendChild(id);

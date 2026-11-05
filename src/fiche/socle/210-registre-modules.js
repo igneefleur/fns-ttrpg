@@ -86,6 +86,9 @@
     art: function (pane) {
       return { seule: pane };   // un seul bloc, sur toute la largeur
     },
+    energie: function (pane) {
+      return { seule: pane };   // catégories sur toute la largeur, comme les Arts
+    },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
       var left = el("div", "pc-col");

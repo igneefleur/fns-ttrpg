@@ -58,7 +58,7 @@
   // est. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "4.4.9b";
+  var RELEASE_DEFAUT = "4.5.0b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
@@ -125,6 +125,7 @@
   // champ d'état collection (objet/tableau) -> suffixe (stocké en JSON)
   var COLLECTIONS = [
     ["qualites", "qualites"], ["avantages", "avantages"],
+    ["energie", "energie"],
     ["caracsBase", "caracs_base"], ["caracsXp", "caracs_xp"],
     // Tous les leviers des Options voyagent, y compris sur le chemin de repli.
     // Les seconds modificateurs et les forçages de caractéristiques manquaient
@@ -219,6 +220,7 @@
       compsMod: {}, compsMod2: {}, compsXpMod2: {},
       xpTotal: 500,
       comps: {}, customComps: [],
+      energie: [],
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
       pv: null, em: null, emMax: 0, narration: 3,
       armes: [], armures: [], inventaire: "",

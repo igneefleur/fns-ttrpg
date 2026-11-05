@@ -125,8 +125,8 @@
     function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
     function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
     return buildReserve({
-      title: "EM", moduleId: "em", themeClass: "pc-vital-em",
-      accessibleName: "Énergie maudite", getCurrent: emCourant, getMaximum: emMax,
+      title: "EO", moduleId: "em", themeClass: "pc-vital-em",
+      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emMax,
       setCurrent: function (v) { state.em = v; }
     });
   }
