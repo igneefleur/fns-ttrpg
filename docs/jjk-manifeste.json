@@ -18,7 +18,8 @@
     ],
     "css": [
       "stylesheets/jjk-narration.css?v=84",
-      "stylesheets/jjk-theme.css?v=85"
+      "stylesheets/jjk-theme.css?v=86",
+      "stylesheets/jjk-theme-overrides.css?v=86"
     ]
   },
   "bundle": {
@@ -31,7 +32,8 @@
       "stylesheets/jjk-fiche.css?v=84",
       "stylesheets/jjk-roll20.css?v=84",
       "stylesheets/jjk-consultation.css?v=84",
-      "stylesheets/jjk-theme.css?v=85"
+      "stylesheets/jjk-theme.css?v=86",
+      "stylesheets/jjk-theme-overrides.css?v=86"
     ],
     "data": null,
     "compactStorage": true

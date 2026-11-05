@@ -1,0 +1,297 @@
+/*
+ * Correctif du thème JJK : noir/gris neutres et turquoise désaturé.
+ * Chargé après jjk-theme.css dans MkDocs et par le manifeste dans Roll20.
+ * Typographie alignée sur OWD : Proxima Nova / Nunito Sans, Proxima Nova
+ * Condensed pour les titres, Roboto Mono pour les données.
+ */
+:root,
+html,
+html.night {
+  color-scheme: dark;
+  --jjk-black: #000000;
+  --jjk-paper: #101010;
+  --jjk-card: #1A1A1A;
+  --jjk-panel: #141414;
+  --jjk-stripe: #222222;
+  --jjk-line: #383838;
+  --jjk-line-soft: #303030;
+  --jjk-ink: #E6E6E6;
+  --jjk-ink-2: #B8B8B8;
+  --jjk-ink-3: #858585;
+  --jjk-cyan: #367983;
+  --jjk-cyan-hi: #4A9FA8;
+  --jjk-cyan-deep: #285A60;
+  --jjk-cyan-wash: rgba(54, 121, 131, .16);
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --stripe: #222222;
+  --hair: #303030;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --ink-3: #858585;
+  --accent: #367983;
+  --accent-hi: #4A9FA8;
+  --accent-deep: #285A60;
+  --accent-wash: rgba(54, 121, 131, .16);
+  --or: #367983;
+  --or-fond: #4A9FA8;
+  --or-ombre: #285A60;
+  --md-default-bg-color: #000000;
+  --md-default-fg-color: #E6E6E6;
+  --md-default-fg-color--light: #B8B8B8;
+  --md-default-fg-color--lighter: #858585;
+  --md-default-fg-color--lightest: #383838;
+  --md-default-fg-color--dark: #E6E6E6;
+  --md-typeset-color: #E6E6E6;
+  --md-typeset-a-color: #367983;
+  --md-primary-fg-color: #141414;
+  --md-primary-fg-color--light: #222222;
+  --md-primary-fg-color--dark: #000000;
+  --md-accent-fg-color: #4A9FA8;
+  --md-code-bg-color: #1A1A1A;
+  --md-code-fg-color: #E6E6E6;
+  --md-typeset-mark-color: rgba(54, 121, 131, .22);
+  --jjk-font-ui: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --jjk-font-heading: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+html,
+body,
+.md-typeset,
+.md-typeset p,
+.md-typeset li,
+.md-typeset td,
+.md-typeset th,
+.md-typeset blockquote,
+.perso-atelier,
+#nb {
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4,
+.md-typeset h5,
+.md-typeset h6,
+.perso-atelier .pc-top-title,
+.perso-atelier .pc-block-title,
+.perso-atelier .pc-modgroupe,
+#nb .nb-place-nom,
+#nb .nb-modal-titre,
+#nb .nb-groupe,
+#nb .nb-etat .nb-titre,
+#jjk-roll20-note h1,
+#jjk-mode-bar .jjk-mode-label {
+  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.md-typeset code,
+.md-typeset pre,
+.md-typeset kbd,
+.perso-atelier .pc-code,
+#nb code {
+  font-family: "Roboto Mono", monospace !important;
+}
+html, body, .md-container, .md-main, .md-main__inner, .md-content,
+.md-sidebar, .md-sidebar__scrollwrap {
+  background: #000000 !important;
+  color: #E6E6E6;
+}
+.md-header, .md-tabs {
+  background: #000000 !important;
+  color: #E6E6E6;
+  border-bottom-color: #303030 !important;
+}
+.md-tabs__link, .md-nav__link { color: #B8B8B8; }
+.md-tabs__link--active, .md-tabs__link:hover,
+.md-nav__link--active, .md-nav__link:hover, .md-nav__link:focus {
+  color: #4A9FA8 !important;
+}
+.md-sidebar--primary .md-nav__title,
+.md-sidebar--primary .md-nav--lifted > .md-nav__list > .md-nav__item--active > .md-nav__link {
+  background: #000000 !important;
+  color: #4A9FA8 !important;
+  box-shadow: none !important;
+}
+.md-content > .md-content__inner {
+  background: #101010 !important;
+  color: #E6E6E6;
+  border-color: #222222 !important;
+}
+.md-typeset h1, .md-typeset h2, .md-typeset h3,
+.md-typeset h4, .md-typeset h5, .md-typeset h6 {
+  color: #4A9FA8 !important;
+}
+.md-typeset a, .md-typeset a code, #jjk-roll20-note a { color: #367983 !important; }
+.md-typeset a:hover, #jjk-roll20-note a:hover { color: #4A9FA8 !important; }
+.md-typeset blockquote { border-left-color: #383838; }
+.md-typeset hr, .md-typeset .cols hr { border-color: #383838; }
+.md-typeset pre, .md-typeset code {
+  background: #1A1A1A;
+  color: #E6E6E6;
+}
+.md-typeset table:not([class]) th,
+.md-typeset .cj-modules.anima table:not([class]) th {
+  background: #1A1A1A !important;
+  color: #E6E6E6 !important;
+  border-color: #383838 !important;
+}
+.md-typeset table:not([class]) td,
+.md-typeset .cj-modules.anima table:not([class]) td { border-color: #383838 !important; }
+.md-typeset table:not([class]) tbody tr:nth-child(odd) td,
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(odd) td { background: #141414 !important; }
+.md-typeset table:not([class]) tbody tr:nth-child(even) td,
+.md-typeset .cj-modules.anima table:not([class]) tbody tr:nth-child(even) td { background: #1A1A1A !important; }
+.md-typeset .mcard, .md-typeset .gcard, .md-typeset .eclat-card,
+.md-typeset .defs, .md-typeset .sblock, .md-typeset .wfiche,
+.md-typeset .optrule, .md-typeset .cl-commit {
+  background-color: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #E6E6E6;
+}
+.md-typeset .wf-effet, .md-typeset .wfiche .wf-effet { background: #141414 !important; }
+.md-typeset .cj-modules.anima h3,
+.md-typeset .cj-modules.anima h4 { color: #4A9FA8 !important; border-bottom-color: #367983 !important; }
+
+.perso-atelier,
+html.night .perso-atelier {
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --stripe: #222222;
+  --hair: #303030;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --ink-3: #858585;
+  --accent: #367983;
+  --accent-hi: #4A9FA8;
+  --accent-deep: #285A60;
+  --accent-wash: rgba(54, 121, 131, .16);
+  background: #000000 !important;
+  color: #E6E6E6;
+}
+.perso-atelier .pc-sheet { background: #101010 !important; color: #E6E6E6; }
+.perso-atelier .pc-top { background: #141414 !important; border-bottom-color: #303030 !important; }
+.perso-atelier .pc-top-title { color: #4A9FA8 !important; }
+.perso-atelier .pc-top-hint { color: #858585 !important; }
+.perso-atelier .pc-btn,
+.perso-atelier .pc-top .pc-lib select {
+  background: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #B8B8B8 !important;
+}
+.perso-atelier .pc-btn:hover:not([disabled]),
+.perso-atelier .pc-mini:hover:not([disabled]) {
+  background: #222222 !important;
+  border-color: #367983 !important;
+  color: #E6E6E6 !important;
+}
+.perso-atelier .pc-tab.on,
+.perso-atelier .pc-mini.primary {
+  background: #367983 !important;
+  border-color: #285A60 !important;
+  color: #E6E6E6 !important;
+}
+.perso-atelier .pc-tab.on:hover,
+.perso-atelier .pc-mini.primary:hover {
+  background: #4A9FA8 !important;
+  border-color: #367983 !important;
+  color: #071113 !important;
+}
+.perso-atelier .pc-block,
+.perso-atelier .pc-av,
+.perso-atelier .pc-modal,
+.perso-atelier .pc-obj-panel,
+.perso-atelier .pc-obj-context {
+  background-color: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #E6E6E6;
+}
+.perso-atelier .pc-abbr {
+  background: #285A60 !important;
+  border-color: #36737A !important;
+  color: #E4ECEC !important;
+}
+/* Paliers d'aptitude : restauration du dégradé historique, distinct des accents généraux. */
+.perso-atelier .pc-stadebar .seg.on.s1 {
+  background: #285A60 !important;
+  color: #E4ECEC !important;
+  border-color: #36737A !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s2 {
+  background: #367983 !important;
+  color: #071113 !important;
+  border-color: #4A9FA8 !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s3 {
+  background: #4A9FA8 !important;
+  color: #071113 !important;
+  border-color: #78BBC0 !important;
+}
+.perso-atelier .pc-stadebar .seg.on.s4 {
+  background: #78BBC0 !important;
+  color: #071113 !important;
+  border-color: #78BBC0 !important;
+}
+.perso-atelier .pc-flash {
+  background: #1A1A1A !important;
+  color: #E6E6E6 !important;
+  border-color: #383838 !important;
+}
+.perso-atelier .pc-modgroupe::after { background: #383838 !important; }
+
+#nb,
+#nb button,
+#nb input,
+#nb select,
+#nb textarea {
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+#nb .nb-kv .v, #nb .nb-place-compte { color: #E6E6E6; }
+#nb .nb-btn.primary,
+html.night .nb-btn.primary {
+  background: #367983 !important;
+  border-color: #285A60 !important;
+  color: #E6E6E6 !important;
+}
+#nb .nb-btn.primary:hover,
+html.night .nb-btn.primary:hover {
+  background: #4A9FA8 !important;
+  border-color: #367983 !important;
+  color: #071113 !important;
+}
+
+html, body { color-scheme: dark; }
+body { background: #000000 !important; }
+#jjk-roll20-note { color: #B8B8B8 !important; }
+#jjk-roll20-note h1,
+#jjk-mode-bar .jjk-mode-label { color: #4A9FA8 !important; }
+#jjk-roll20-note button {
+  background: #1A1A1A !important;
+  border-color: #383838 !important;
+  color: #E6E6E6 !important;
+}
+#jjk-mode-bar, html.night #jjk-mode-bar {
+  --panel: #141414;
+  --card: #1A1A1A;
+  --line: #383838;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --accent: #367983;
+  background: #141414 !important;
+  border-color: #383838 !important;
+  color: #E6E6E6 !important;
+}
+#jjk-mode-toggle.pc-btn { background: #1A1A1A; border-color: #383838; color: #B8B8B8; }
+#jjk-mode-toggle.pc-btn:hover:not([disabled]) {
+  background: #222222;
+  border-color: #367983;
+  color: #E6E6E6;
+}
+#perso-atelier .jjk-save-outline path { stroke: #367983 !important; }

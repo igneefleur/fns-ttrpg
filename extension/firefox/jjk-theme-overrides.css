@@ -1,0 +1,73 @@
+/*
+ * Thème atténué de l'habillage injecté dans Roll20.
+ * Cette feuille est chargée après overlay.css, dans Firefox et Chromium.
+ */
+.jjk-panneau,
+.jjk-create,
+.jjk-creator-frame {
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --red: #367983;
+  --ombre: rgba(0, 0, 0, .40);
+  --ombre-portee: rgba(0, 0, 0, .55);
+  color-scheme: dark;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.jjk-panneau.jjk-nuit,
+.jjk-create.jjk-nuit,
+.jjk-creator-frame.jjk-nuit {
+  --paper: #101010;
+  --bg-side: #000000;
+  --card: #1A1A1A;
+  --panel: #141414;
+  --line: #383838;
+  --line-2: #303030;
+  --ink: #E6E6E6;
+  --ink-2: #B8B8B8;
+  --red: #367983;
+}
+.jjk-panneau-titre,
+.jjk-create-title {
+  color: #B8B8B8 !important;
+  font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.jjk-panneau-tete::after,
+.jjk-create-title::after { background: #367983 !important; }
+.jjk-panneau-btn {
+  background: #1A1A1A !important;
+  border-color: #303030 !important;
+  color: #B8B8B8 !important;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.jjk-panneau-btn:hover {
+  background: #222222 !important;
+  border-color: #367983 !important;
+  color: #E6E6E6 !important;
+}
+.jjk-panneau-btn:focus-visible { outline-color: #4A9FA8 !important; }
+.jjk-create {
+  background: #1A1A1A !important;
+  border-color: #303030 !important;
+  color: #E6E6E6 !important;
+}
+.jjk-create-title { color: #B8B8B8 !important; }
+.jjk-create-msg { color: #B8B8B8 !important; }
+.jjk-create-btn {
+  background: #367983 !important;
+  color: #E6E6E6 !important;
+  border-color: #285A60 !important;
+  font-family: "Proxima Nova", proxima-nova, "Nunito Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+}
+.jjk-create-btn:hover { background: #4A9FA8 !important; color: #071113 !important; }
+.jjk-create-btn:focus-visible { outline-color: #4A9FA8 !important; }
+.jjk-panneau-corps { background: #000000 !important; }
+.jjk-panneau-grip {
+  background: linear-gradient(135deg, transparent 45%, #383838 45%, #383838 55%, transparent 55%,
+                              transparent 70%, #383838 70%, #383838 80%, transparent 80%) !important;
+}
