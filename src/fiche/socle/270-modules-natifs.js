@@ -25,6 +25,7 @@
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
     { id: "armures",    titre: "Armures",           onglet: "equipement", colonne: "droite", build: buildArmures },

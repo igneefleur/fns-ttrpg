@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.4.10b";
+  var RELEASE = "4.5.0b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -188,6 +188,8 @@
       compsMod: {}, compsMod2: {}, compsXpMod2: {},
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
+      // Catégories de techniques et passifs d'énergie occulte.
+      energie: [],
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
@@ -456,6 +458,27 @@
       return a.filter(function (x) { return x && typeof x === "object"; });
     }
     s.avantages = objArray(s.avantages);
+    // Les techniques occultes sont rangées par catégorie. Leur coût est un
+    // entier en EO ; une catégorie ou une technique vide reste conservée pour
+    // que l'édition ne fasse jamais disparaître une saisie en cours.
+    s.energie = (Array.isArray(s.energie) ? s.energie : []).filter(function (c) {
+      return c && typeof c === "object" && !Array.isArray(c);
+    }).map(function (c) {
+      var techniques = Array.isArray(c.techniques) ? c.techniques : [];
+      return {
+        name: String(c.name || ""),
+        techniques: techniques.filter(function (t) {
+          return t && typeof t === "object" && !Array.isArray(t);
+        }).map(function (t) {
+          var cout = Math.floor(parseFloat(t.cout));
+          return {
+            name: String(t.name || ""),
+            cout: isFinite(cout) ? clamp(cout, 0, 9999) : 0,
+            desc: String(t.desc || "")
+          };
+        })
+      };
+    });
     s.customComps = objArray(s.customComps);
     s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
@@ -2609,15 +2632,15 @@
     mrow.appendChild(fld("XP total", xpIn));
     var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
     emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
-    emMaxIn.setAttribute("aria-label", "Énergie maudite maximale");
-    emMaxIn.title = "Réserve totale d'énergie maudite";
+    emMaxIn.setAttribute("aria-label", "Énergie occulte maximale");
+    emMaxIn.title = "Réserve totale d'énergie occulte";
     emMaxIn.addEventListener("input", function () {
       var v = parseInt(emMaxIn.value, 10);
       state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
       refresh();
     });
     hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
-    mrow.appendChild(fld("EM max", emMaxIn));
+    mrow.appendChild(fld("EO max", emMaxIn));
     id.appendChild(mrow);
 
     head.appendChild(id);
@@ -2645,6 +2668,7 @@
   var TABS = [
     { id: "fiche", label: "Fiche" },
     { id: "art", label: "Art" },
+    { id: "energie", label: "Énergie" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
     { id: "options", label: "Options" }
@@ -2764,6 +2788,9 @@
     },
     art: function (pane) {
       return { seule: pane };   // un seul bloc, sur toute la largeur
+    },
+    energie: function (pane) {
+      return { seule: pane };   // catégories sur toute la largeur, comme les Arts
     },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
@@ -3788,8 +3815,8 @@
     function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
     function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
     return buildReserve({
-      title: "EM", moduleId: "em", themeClass: "pc-vital-em",
-      accessibleName: "Énergie maudite", getCurrent: emCourant, getMaximum: emMax,
+      title: "EO", moduleId: "em", themeClass: "pc-vital-em",
+      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emMax,
       setCurrent: function (v) { state.em = v; }
     });
   }
@@ -4335,6 +4362,119 @@
       }).join("|");
       if (sig !== lastSig) { lastSig = sig; render(); }
     });
+    return b;
+  }
+
+  // ---------- onglet Énergie ----------
+  // Les catégories et leurs techniques sont indépendantes des compétences :
+  // elles ne coûtent pas d'XP et ne dépendent d'aucun stade d'aptitude.
+  function buildEnergie() {
+    var b = block("Techniques occultes", null, "energie");
+    var box = el("div", "pc-arts pc-energie");
+    b.appendChild(box);
+
+    function render() {
+      box.innerHTML = "";
+      if (!Array.isArray(state.energie)) state.energie = [];
+
+      if (!state.energie.length)
+        box.appendChild(el("div", "pc-empty", "Aucune catégorie d'énergie occulte."));
+
+      state.energie.forEach(function (categorie, ci) {
+        var card = el("div", "pc-av pc-art pc-energie-categorie");
+        var head = el("div", "pc-av-head");
+        var nom = el("input", "nm pc-edit-field");
+        nom.type = "text";
+        nom.placeholder = "Nom de la catégorie";
+        nom.value = categorie.name || "";
+        nom.addEventListener("input", function () {
+          categorie.name = nom.value;
+          save();
+        });
+        head.appendChild(nom);
+        head.appendChild(miniBtn("✕", "Supprimer cette catégorie", function () {
+          var contient = !!String(categorie.name || "").trim() ||
+            (categorie.techniques || []).some(function (t) {
+              return String(t.name || "").trim() || String(t.desc || "").trim();
+            });
+          if (contient && !confirm("Supprimer la catégorie « " +
+              (categorie.name || "sans nom") + " » et toutes ses techniques ?")) return;
+          state.energie.splice(ci, 1);
+          save();
+          render();
+        }, "danger pc-edit-only"));
+        card.appendChild(head);
+
+        var liste = el("div", "pc-techniques");
+        (categorie.techniques || []).forEach(function (technique, ti) {
+          var tCard = el("div", "pc-av pc-technique pc-energie-technique");
+          var tHead = el("div", "pc-av-head");
+          var tNom = el("input", "nm pc-edit-field");
+          tNom.type = "text";
+          tNom.placeholder = "Nom de la technique";
+          tNom.value = technique.name || "";
+          tNom.addEventListener("input", function () {
+            technique.name = tNom.value;
+            save();
+          });
+          tHead.appendChild(tNom);
+
+          var cout = el("span", "pc-tech-cout");
+          var coutIn = el("input", "pc-edit-field");
+          coutIn.type = "number";
+          coutIn.min = "0";
+          coutIn.max = "9999";
+          coutIn.step = "1";
+          coutIn.setAttribute("aria-label", "Coût en énergie occulte");
+          coutIn.title = "Coût de cette technique en énergie occulte";
+          coutIn.value = String(technique.cout == null ? 0 : technique.cout);
+          coutIn.addEventListener("input", function () {
+            var v = parseFloat(coutIn.value);
+            technique.cout = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : 0;
+            save();
+          });
+          cout.appendChild(coutIn);
+          cout.appendChild(el("span", "u", "EO"));
+          tHead.appendChild(cout);
+          tHead.appendChild(miniBtn("✕", "Retirer cette technique", function () {
+            if ((String(technique.name || "").trim() || String(technique.desc || "").trim()) &&
+                !confirm("Retirer la technique « " + (technique.name || "sans nom") + " » ?")) return;
+            categorie.techniques.splice(ti, 1);
+            save();
+            render();
+          }, "danger pc-edit-only"));
+          tCard.appendChild(tHead);
+
+          var description = el("textarea", "pc-notes pc-edit-field");
+          description.rows = 3;
+          description.placeholder = "Description / effet";
+          description.value = technique.desc || "";
+          description.addEventListener("input", function () {
+            technique.desc = description.value;
+            save();
+          });
+          tCard.appendChild(description);
+          liste.appendChild(tCard);
+        });
+        card.appendChild(liste);
+        card.appendChild(miniBtn("+ technique", "Ajouter une technique à cette catégorie", function () {
+          if (!Array.isArray(categorie.techniques)) categorie.techniques = [];
+          categorie.techniques.push({ name: "", cout: 0, desc: "" });
+          save();
+          render();
+        }, "pc-edit-only"));
+        box.appendChild(card);
+      });
+
+      box.appendChild(miniBtn("+ catégorie", "Créer une catégorie d'énergie occulte", function () {
+        state.energie.push({ name: "", techniques: [] });
+        save();
+        render();
+      }, "pc-edit-only"));
+      applyEdit(b, "energie");
+    }
+
+    render();
     return b;
   }
 
@@ -6877,6 +7017,7 @@
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
     { id: "armures",    titre: "Armures",           onglet: "equipement", colonne: "droite", build: buildArmures },
@@ -7369,6 +7510,7 @@
       armesComps: ["comps", "optcomps", "armescomp"],
       langues: ["langues", "comps", "optcomps"],
       armes: ["armes"], armures: ["armures"],
+      energie: ["energie"],
       inv: ["inv"], inventaire: ["inv"], de: ["jets"]
     };
     var scalar = [

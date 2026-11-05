@@ -153,6 +153,7 @@
       armesComps: ["comps", "optcomps", "armescomp"],
       langues: ["langues", "comps", "optcomps"],
       armes: ["armes"], armures: ["armures"],
+      energie: ["energie"],
       inv: ["inv"], inventaire: ["inv"], de: ["jets"]
     };
     var scalar = [

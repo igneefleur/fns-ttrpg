@@ -183,6 +183,27 @@
       return a.filter(function (x) { return x && typeof x === "object"; });
     }
     s.avantages = objArray(s.avantages);
+    // Les techniques occultes sont rangées par catégorie. Leur coût est un
+    // entier en EO ; une catégorie ou une technique vide reste conservée pour
+    // que l'édition ne fasse jamais disparaître une saisie en cours.
+    s.energie = (Array.isArray(s.energie) ? s.energie : []).filter(function (c) {
+      return c && typeof c === "object" && !Array.isArray(c);
+    }).map(function (c) {
+      var techniques = Array.isArray(c.techniques) ? c.techniques : [];
+      return {
+        name: String(c.name || ""),
+        techniques: techniques.filter(function (t) {
+          return t && typeof t === "object" && !Array.isArray(t);
+        }).map(function (t) {
+          var cout = Math.floor(parseFloat(t.cout));
+          return {
+            name: String(t.name || ""),
+            cout: isFinite(cout) ? clamp(cout, 0, 9999) : 0,
+            desc: String(t.desc || "")
+          };
+        })
+      };
+    });
     s.customComps = objArray(s.customComps);
     s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);

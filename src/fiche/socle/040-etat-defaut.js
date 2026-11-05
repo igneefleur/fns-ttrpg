@@ -30,6 +30,8 @@
       compsMod: {}, compsMod2: {}, compsXpMod2: {},
       xpTotal: XP_CREATION,
       comps: {}, customComps: [],
+      // Catégories de techniques et passifs d'énergie occulte.
+      energie: [],
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
