@@ -47,7 +47,8 @@
         "backup-relay.js"
       ],
       "css": [
-        "overlay.css"
+        "overlay.css",
+        "jjk-theme-overrides.css"
       ],
       "run_at": "document_idle",
       "all_frames": true,
