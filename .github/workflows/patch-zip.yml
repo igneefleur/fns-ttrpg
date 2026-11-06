@@ -1,8 +1,8 @@
-name: Package JJK 4.5.1 patch
+name: Package JJK 4.5.2 patch
 on:
   push:
     branches:
-      - jjk-beta-patch-4.5.1
+      - jjk-beta-patch-4.5.2
   workflow_dispatch:
 permissions:
   contents: write
@@ -36,8 +36,10 @@ jobs:
         run: python scripts/verif_versions.py
       - name: Verify JavaScript syntax
         run: node --check docs/javascripts/jjk-fiche.js
+      - name: Test EO and PV attribute separation
+        run: node scripts/test_resources.js
       - name: Check whitespace errors
-        run: git diff --check 22cb3a5383e1f475fd8791b55784db6be064e6b9 HEAD
+        run: git diff --check 9500ea63a68f58dde220019e102525b446f654f3 HEAD
       - name: Build ZIP with modified project files only
         run: |
           python - <<'PY'
@@ -46,7 +48,7 @@ jobs:
           import zipfile
 
           raw = subprocess.check_output(
-              ["git", "diff", "--name-only", "22cb3a5383e1f475fd8791b55784db6be064e6b9", "HEAD"],
+              ["git", "diff", "--name-only", "9500ea63a68f58dde220019e102525b446f654f3", "HEAD"],
               text=True,
           )
           paths = [
@@ -56,7 +58,7 @@ jobs:
           ]
           if not paths:
               raise SystemExit("No modified project files found.")
-          archive_path = Path("JJK-4.5.1.zip")
+          archive_path = Path("JJK-4.5.2.zip")
           with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
               for name in paths:
                   source = Path(name)
@@ -69,7 +71,7 @@ jobs:
           PY
       - uses: actions/upload-artifact@v4
         with:
-          name: JJK-4.5.1-only-modified-files
-          path: JJK-4.5.1.zip
+          name: JJK-4.5.2-only-modified-files
+          path: JJK-4.5.2.zip
           if-no-files-found: error
           retention-days: 7
