@@ -37,7 +37,7 @@ jobs:
       - name: Verify JavaScript syntax
         run: node --check docs/javascripts/jjk-fiche.js
       - name: Check whitespace errors
-        run: git diff --check origin/jjk-beta...HEAD
+        run: git diff --check 22cb3a5383e1f475fd8791b55784db6be064e6b9 HEAD
       - name: Build ZIP with modified project files only
         run: |
           python - <<'PY'
@@ -46,7 +46,7 @@ jobs:
           import zipfile
 
           raw = subprocess.check_output(
-              ["git", "diff", "--name-only", "origin/jjk-beta...HEAD"],
+              ["git", "diff", "--name-only", "22cb3a5383e1f475fd8791b55784db6be064e6b9", "HEAD"],
               text=True,
           )
           paths = [
