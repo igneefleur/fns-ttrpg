@@ -5979,7 +5979,9 @@
       state.emBarreMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
       refresh();
     });
-    hooks.push(function () { if (document.activeElement !== eoBase) eoBase.value = state.emBarreMax; });
+    hooks.push(function () {
+      if (document.activeElement !== eoBase) eoBase.value = state.emBarreMax;
+    });
     eo.appendChild(eoBase);
     eo.appendChild(multiMod(state.divers, "eoMax"));
     var eoTotal = el("span", "pc-comp-total", "");
