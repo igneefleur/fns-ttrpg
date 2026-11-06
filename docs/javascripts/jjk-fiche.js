@@ -5945,6 +5945,7 @@
       head.appendChild(el("span", null, label));
     });
     table.appendChild(head);
+
     var pv = el("div", "pc-barres-row pc-mods-host");
     pv.appendChild(el("span", "pc-comp-name", "PV"));
     pv.appendChild(champForceVal(
