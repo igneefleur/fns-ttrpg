@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.5.0b";
+  var RELEASE = "4.5.1b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -2598,49 +2598,69 @@
     id.appendChild(fld("Sexe", champEntete(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
     id.appendChild(fld("Genre", champEntete(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
 
-    // 2e ligne : compteurs de budgets + XP total
-    var mrow = el("div", "pc-id-meters");
-    function meter(label, getUsed, getTotal) {
+    // Deux budgets côte à côte : XP et EO, chacun avec sa dépense, son total
+    // éditable et sa barre. La réserve courante du module EO n'entre pas ici.
+    var mrow = el("div", "pc-id-meters pc-id-progression");
+    function meter(label, getUsed, getTotal, totalInput, titre) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
       var b = el("b", null, "");
       m.appendChild(b);
+      if (totalInput) {
+        m.appendChild(el("span", null, "/"));
+        m.appendChild(totalInput);
+      }
       var bar = el("span", "bar");
       var fill = el("i");
       bar.appendChild(fill);
       m.appendChild(bar);
+      if (titre) m.title = titre;
       hooks.push(function () {
-        var used = getUsed(), total = getTotal();
-        b.textContent = used + " / " + total;
+        var used = Number(getUsed()) || 0, total = Math.max(0, Number(getTotal()) || 0);
+        b.textContent = fmtP(used);
         var over = used > total;
         b.classList.toggle("over", over);
         fill.classList.toggle("over", over);
-        fill.style.width = clamp(total ? (used / total) * 100 : 0, 0, 100) + "%";
+        fill.style.width = clamp(total ? used / total * 100 : 0, 0, 100) + "%";
       });
       return m;
     }
-    mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
-    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
-    var xpIn = el("input", "pc-edit-field pc-global-edit-field");
+    function eoDepense() {
+      var total = 0;
+      (Array.isArray(state.energie) ? state.energie : []).forEach(function (categorie) {
+        if (!categorie || !Array.isArray(categorie.techniques)) return;
+        categorie.techniques.forEach(function (technique) {
+          var cout = Number(technique && technique.cout);
+          if (isFinite(cout) && cout > 0) total += Math.floor(cout);
+        });
+      });
+      return total;
+    }
+
+    var xpIn = el("input", "pc-meter-total pc-id-xp-total pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
-    xpIn.value = state.xpTotal;
+    xpIn.setAttribute("aria-label", "XP total");
+    xpIn.title = "XP total";
+    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     xpIn.addEventListener("input", function () {
       var v = parseInt(xpIn.value, 10);
       if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
     });
-    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
-    mrow.appendChild(fld("XP total", xpIn));
-    var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
+    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
+      xpIn, "Expérience dépensée / totale"));
+
+    var emMaxIn = el("input", "pc-meter-total pc-id-em-total pc-edit-field pc-global-edit-field pc-em-max-input");
     emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
-    emMaxIn.setAttribute("aria-label", "Énergie occulte maximale");
+    emMaxIn.setAttribute("aria-label", "EO total");
     emMaxIn.title = "Réserve totale d'énergie occulte";
+    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
     emMaxIn.addEventListener("input", function () {
       var v = parseInt(emMaxIn.value, 10);
       state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
       refresh();
     });
-    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
-    mrow.appendChild(fld("EO max", emMaxIn));
+    mrow.appendChild(meter("EO dépensé", eoDepense, function () { return state.emMax; },
+      emMaxIn, "Énergie occulte dépensée / totale"));
     id.appendChild(mrow);
 
     head.appendChild(id);
@@ -2655,6 +2675,8 @@
         warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + ptsCreaMax() + "."));
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
+      if (eoDepense() > state.emMax)
+        warns.appendChild(el("div", "pc-warn", "EO dépensée au-delà du total (" + fmtP(eoDepense()) + " / " + fmtP(state.emMax) + ")."));
       var cap = compCap();
       Object.keys(state.comps).forEach(function (k) {
         if (compXp(state.comps[k]) > cap)
@@ -3213,8 +3235,6 @@
       top.appendChild(chip);
       // la ligne du nom porte aussi le malus de poids : elle est mise à jour au
       // rafraîchissement, d'où la référence gardée
-      var nm = el("span", "nm", name);
-      top.appendChild(nm);
       var val = el("span", "pc-cval pc-rollable", "");
       // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et c'est
       // caracJet qui dit ce que vaut un jet direct (la charge n'y pèse plus)
@@ -3236,27 +3256,23 @@
           if (val2 > max) { flash("Plafond de " + plaf + " atteint (Options, bloc Création)."); val2 = max; }
           state.caracsBase[name] = val2;
         }, CARAC_PAS, "création"));
-      bot.appendChild(el("span", "lbl", "Achats xp"));
-      var xpStep = el("span", "pc-step");
-      xpStep.appendChild(stepBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
-        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
-      }));
-      var cnt = el("span", "v", "");
-      xpStep.appendChild(cnt);
-      xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
-        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        // le plafond porte sur base + achats, SANS le modificateur de total
-        // (qui peut porter la valeur au-delà du plafond comme en dessous : le
-        // tester brûlerait de l'xp sous un malus, ou bloquerait à tort sous un
-        // bonus)
-        if (state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > caracPlafond(name)) {
-          flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
-          return;
-        }
-        state.caracsXp[name]++;
-        refresh();
-      }));
-      bot.appendChild(xpStep);
+      bot.appendChild(el("span", "lbl", "Achats XP"));
+      bot.appendChild(stepper(
+        function () { return state.caracsXp[name]; },
+        function (v) {
+          var actuel = state.caracsXp[name];
+          var suivant = clamp(Math.floor(Number(v) || 0), 0, 9999);
+          if (suivant > actuel) {
+            var cout = (suivant - actuel) * DATA.xpParStade;
+            if (xpRestant() < cout) { flash("XP insuffisant."); return; }
+            // Le plafond porte sur base + achats, sans modificateur de total.
+            if (state.caracsBase[name] + CARAC_PAS * suivant > caracPlafond(name)) {
+              flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
+              return;
+            }
+          }
+          state.caracsXp[name] = suivant;
+        }, 1, "achat XP"));
       row.appendChild(bot);
 
       hooks.push(function () {
@@ -3274,7 +3290,6 @@
         // Un écart s'écrirait en clair sur la ligne du nom : sans lui, le joueur
         // verrait un total qui ne correspond ni à sa création ni à ses achats,
         // sans rien dans le bloc pour dire pourquoi.
-        nm.textContent = name + (m ? " · poids " + sign(-m) : "");
         val.textContent = String(caracJet(name));
         val.classList.toggle("adj", d !== 0 || force || m !== 0);
         // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
@@ -3289,9 +3304,27 @@
                         (d ? " · modificateur (Options) " + sign(d) : "")) +
                     (m ? " · poids " + sign(-m) : "") +
                     " = " + caracJet(name) + " — clic : lancer 1d100 + " + name;
-        cnt.textContent = String(state.caracsXp[name]);
       });
       b.appendChild(row);
+    });
+
+    // Budget de création : la même jauge pleine largeur que les réserves OWD.
+    var budget = el("div", "pc-creation-budget pc-edit-only");
+    var ligne = el("div", "pc-vital-tete");
+    ligne.appendChild(el("span", "pc-vital-nom", "Création"));
+    var valeur = el("span", "pc-vital-val", "");
+    ligne.appendChild(valeur);
+    budget.appendChild(ligne);
+    var jauge = el("span", "pc-vital-jauge");
+    var plein = el("i");
+    jauge.appendChild(plein);
+    budget.appendChild(jauge);
+    b.appendChild(budget);
+    hooks.push(function () {
+      var pris = ptsCreation(), max = ptsCreaMax();
+      valeur.textContent = fmtP(pris) + " / " + fmtP(max);
+      plein.style.width = clamp(max ? pris / max * 100 : 0, 0, 100) + "%";
+      plein.classList.toggle("over", pris > max);
     });
     return b;
   }
@@ -3688,22 +3721,26 @@
     return b;
   }
 
-  // Réserve de ressource : même logique que les jauges Outward (courant,
-  // maximum, barre pleine largeur et variation à appliquer), dans les cartes
-  // et la palette JJK. Le courant reste un geste de jeu, même en Consultation.
+  // Réserves PV / EO : même charpente pleine largeur que la jauge vitale OWD.
+  // Le courant reste une action de jeu indépendante du budget EO de l'en-tête.
   function buildReserve(cfg) {
-    var b;
-    if (cfg.editId) {
-      b = block(cfg.title, null, cfg.editId);
-      b.classList.add("pc-vital-block");
-    } else {
-      b = el("div", "pc-block pc-vital-block");
-      b.dataset.module = cfg.moduleId;
-      b.appendChild(el("div", "pc-block-title", cfg.title));
-    }
-    b.classList.add(cfg.themeClass);
+    var b = cfg.editId ? block("", null, cfg.editId) : el("div", "pc-block");
+    b.classList.add("pc-vital-block");
+    if (!cfg.editId) b.dataset.module = cfg.moduleId;
 
-    var head = el("div", "pc-vital-head");
+    // Le titre natif porte aussi le bouton de réglage du module PV : on le
+    // déplace dans le bandeau, à côté du nom, sans perdre son action.
+    var ancienTitre = b.querySelector(".pc-block-title");
+    var gear = ancienTitre && (ancienTitre.querySelector(".pc-gear-float") || ancienTitre.querySelector("button"));
+    if (gear && gear.parentNode) gear.parentNode.removeChild(gear);
+    if (ancienTitre && ancienTitre.parentNode) ancienTitre.parentNode.removeChild(ancienTitre);
+
+    var reserve = el("div", "pc-vital-res " + cfg.themeClass);
+    var head = el("div", "pc-vital-tete");
+    head.appendChild(el("span", "pc-vital-nom", cfg.title));
+    if (gear) head.appendChild(gear);
+
+    var val = el("span", "pc-vital-val");
     var current = el("input", "pc-vital-num");
     current.type = "number";
     current.step = "1";
@@ -3713,26 +3750,26 @@
       cfg.setCurrent(isFinite(v) ? v : null);
       refresh();
     });
-    head.appendChild(current);
-    head.appendChild(el("span", "pc-vital-separator", "/"));
+    val.appendChild(current);
     var maximum = el("span", "pc-vital-max", "");
-    head.appendChild(maximum);
-    b.appendChild(head);
+    val.appendChild(maximum);
+    head.appendChild(val);
+    reserve.appendChild(head);
 
-    var bar = el("div", "pc-vital-jauge");
+    var bar = el("span", "pc-vital-jauge");
     bar.setAttribute("role", "progressbar");
     bar.setAttribute("aria-label", cfg.accessibleName);
     bar.setAttribute("aria-valuemin", "0");
     var fill = el("i");
     bar.appendChild(fill);
-    b.appendChild(bar);
+    reserve.appendChild(bar);
 
-    var commands = el("div", "pc-vital-commandes");
+    var commands = el("div", "pc-vital-cmd");
     var delta = el("input", "pc-vital-delta");
     delta.type = "number";
     delta.step = "1";
-    delta.placeholder = "+ / −";
-    delta.setAttribute("aria-label", "Variation de " + cfg.accessibleName);
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", cfg.accessibleName + " à ajouter ou retirer");
     delta.title = "Valeur à ajouter ou à retirer";
     function appliquerVariation() {
       var variation = parseFloat(delta.value);
@@ -3746,25 +3783,26 @@
     });
     commands.appendChild(delta);
     commands.appendChild(miniBtn("Appliquer", "Appliquer la variation", appliquerVariation));
-    commands.appendChild(el("span", "sp"));
     commands.appendChild(miniBtn("Max", "Revenir au maximum", function () {
       cfg.setCurrent(null);
       refresh();
     }));
-    b.appendChild(commands);
+    reserve.appendChild(commands);
+    b.appendChild(reserve);
 
     hooks.push(function () {
-      var max = Math.max(0, Number(cfg.getMaximum()) || 0);
+      var max = Math.max(0, Math.floor(Number(cfg.getMaximum()) || 0));
       var courant = Number(cfg.getCurrent()) || 0;
-      var ratio = max > 0 ? clamp(courant / max * 100, 0, 100) : 0;
+      var negatif = courant < 0;
       if (document.activeElement !== current) current.value = String(courant);
-      maximum.textContent = String(max);
-      bar.style.setProperty("--vital-ratio", ratio + "%");
-      fill.style.width = ratio + "%";
+      current.style.width = Math.max(3.4, String(current.value).length + 0.3) + "ch";
+      maximum.textContent = "/ " + fmtP(max);
       bar.setAttribute("aria-valuemax", String(max));
       bar.setAttribute("aria-valuenow", String(clamp(courant, 0, max)));
-      bar.classList.toggle("critical", max > 0 && courant <= max * .2);
-      bar.classList.toggle("low", max > 0 && courant > max * .2 && courant <= max * .5);
+      reserve.classList.toggle("over", negatif);
+      fill.classList.toggle("over", negatif);
+      fill.style.marginLeft = negatif ? "auto" : "0";
+      fill.style.width = clamp(negatif ? 100 : (max > 0 ? courant / max * 100 : 0), 0, 100) + "%";
       if (cfg.updateMaximum) cfg.updateMaximum(maximum);
     });
 
@@ -3774,7 +3812,7 @@
 
   function buildPv() {
     return buildReserve({
-      title: "PV", moduleId: "pv", editId: "pv", themeClass: "pc-vital-pv",
+      title: "PV", moduleId: "pv", editId: "pv", themeClass: "t-pv",
       accessibleName: "Points de vie", getCurrent: pvCourant, getMaximum: pvMax,
       setCurrent: function (v) { state.pv = v; },
       updateMaximum: function (node) {
@@ -3815,27 +3853,11 @@
     function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
     function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
     return buildReserve({
-      title: "EO", moduleId: "em", themeClass: "pc-vital-em",
+      title: "EO", moduleId: "em", themeClass: "t-em",
       accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emMax,
       setCurrent: function (v) { state.em = v; }
     });
   }
-  function buildNarration() {
-    var b = block("Narration");
-    var nRow = el("div", "pc-kv");
-    var nStep = el("span", "pc-step");
-    nStep.appendChild(stepBtn("−", null, function () { state.narration = Math.max(0, state.narration - 1); refresh(); }));
-    var nV = el("span", "v", "");
-    hooks.push(function () { nV.textContent = String(state.narration); });
-    nStep.appendChild(nV);
-    nStep.appendChild(stepBtn("+", null, function () { state.narration++; refresh(); }));
-    nRow.appendChild(nStep);
-    nRow.appendChild(el("span", "sp"));
-    nRow.appendChild(miniBtn("Nouvelle session", "Repartir à 3 points", function () { state.narration = 3; refresh(); }));
-    b.appendChild(nRow);
-    return b;
-  }
-
   // opts : { module, reg, onDrop } — le module dont le rouage déverrouille la
   // barre de stade, le registre de hooks où la ligne s'inscrit (celui du module
   // qui la reconstruit, sinon ses hooks fuiteraient), et le retrait sur mesure.
@@ -4366,8 +4388,8 @@
   }
 
   // ---------- onglet Énergie ----------
-  // Les catégories et leurs techniques sont indépendantes des compétences :
-  // elles ne coûtent pas d'XP et ne dépendent d'aucun stade d'aptitude.
+  // Les coûts des techniques sont indépendants de l'XP : ils alimentent le
+  // budget EO de l'en-tête, distinct du courant de la réserve EO sur la fiche.
   function buildEnergie() {
     var b = block("Techniques occultes", null, "energie");
     var box = el("div", "pc-arts pc-energie");
@@ -4402,6 +4424,7 @@
           state.energie.splice(ci, 1);
           save();
           render();
+          refresh();
         }, "danger pc-edit-only"));
         card.appendChild(head);
 
@@ -4432,6 +4455,7 @@
             var v = parseFloat(coutIn.value);
             technique.cout = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : 0;
             save();
+            refresh();
           });
           cout.appendChild(coutIn);
           cout.appendChild(el("span", "u", "EO"));
@@ -4442,6 +4466,7 @@
             categorie.techniques.splice(ti, 1);
             save();
             render();
+            refresh();
           }, "danger pc-edit-only"));
           tCard.appendChild(tHead);
 
@@ -4462,6 +4487,7 @@
           categorie.techniques.push({ name: "", cout: 0, desc: "" });
           save();
           render();
+          refresh();
         }, "pc-edit-only"));
         box.appendChild(card);
       });
@@ -4470,6 +4496,7 @@
         state.energie.push({ name: "", techniques: [] });
         save();
         render();
+        refresh();
       }, "pc-edit-only"));
       applyEdit(b, "energie");
     }
@@ -7004,15 +7031,14 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
-    { id: "narration",  titre: "Narration",         onglet: "fiche", colonne: "gauche", build: buildNarration },
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
     // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
+    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "em",         titre: "EM",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----

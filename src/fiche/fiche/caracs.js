@@ -12,8 +12,6 @@
       top.appendChild(chip);
       // la ligne du nom porte aussi le malus de poids : elle est mise à jour au
       // rafraîchissement, d'où la référence gardée
-      var nm = el("span", "nm", name);
-      top.appendChild(nm);
       var val = el("span", "pc-cval pc-rollable", "");
       // caracJet, pas caracTotal : ce bouton LANCE la caractéristique, et c'est
       // caracJet qui dit ce que vaut un jet direct (la charge n'y pèse plus)
@@ -35,27 +33,23 @@
           if (val2 > max) { flash("Plafond de " + plaf + " atteint (Options, bloc Création)."); val2 = max; }
           state.caracsBase[name] = val2;
         }, CARAC_PAS, "création"));
-      bot.appendChild(el("span", "lbl", "Achats xp"));
-      var xpStep = el("span", "pc-step");
-      xpStep.appendChild(stepBtn("−", "Rendre " + DATA.xpParStade + " xp", function () {
-        if (state.caracsXp[name] > 0) { state.caracsXp[name]--; refresh(); }
-      }));
-      var cnt = el("span", "v", "");
-      xpStep.appendChild(cnt);
-      xpStep.appendChild(stepBtn("+", "Dépenser " + DATA.xpParStade + " xp", function () {
-        if (xpRestant() < DATA.xpParStade) { flash("XP insuffisant."); return; }
-        // le plafond porte sur base + achats, SANS le modificateur de total
-        // (qui peut porter la valeur au-delà du plafond comme en dessous : le
-        // tester brûlerait de l'xp sous un malus, ou bloquerait à tort sous un
-        // bonus)
-        if (state.caracsBase[name] + CARAC_PAS * (state.caracsXp[name] + 1) > caracPlafond(name)) {
-          flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
-          return;
-        }
-        state.caracsXp[name]++;
-        refresh();
-      }));
-      bot.appendChild(xpStep);
+      bot.appendChild(el("span", "lbl", "Achats XP"));
+      bot.appendChild(stepper(
+        function () { return state.caracsXp[name]; },
+        function (v) {
+          var actuel = state.caracsXp[name];
+          var suivant = clamp(Math.floor(Number(v) || 0), 0, 9999);
+          if (suivant > actuel) {
+            var cout = (suivant - actuel) * DATA.xpParStade;
+            if (xpRestant() < cout) { flash("XP insuffisant."); return; }
+            // Le plafond porte sur base + achats, sans modificateur de total.
+            if (state.caracsBase[name] + CARAC_PAS * suivant > caracPlafond(name)) {
+              flash("Plafond de " + caracPlafond(name) + " atteint (Options, bloc Création).");
+              return;
+            }
+          }
+          state.caracsXp[name] = suivant;
+        }, 1, "achat XP"));
       row.appendChild(bot);
 
       hooks.push(function () {
@@ -73,7 +67,6 @@
         // Un écart s'écrirait en clair sur la ligne du nom : sans lui, le joueur
         // verrait un total qui ne correspond ni à sa création ni à ses achats,
         // sans rien dans le bloc pour dire pourquoi.
-        nm.textContent = name + (m ? " · poids " + sign(-m) : "");
         val.textContent = String(caracJet(name));
         val.classList.toggle("adj", d !== 0 || force || m !== 0);
         // quand le plafond mord, l'écrire en substitution (« plafonné à 80 »)
@@ -88,9 +81,27 @@
                         (d ? " · modificateur (Options) " + sign(d) : "")) +
                     (m ? " · poids " + sign(-m) : "") +
                     " = " + caracJet(name) + " — clic : lancer 1d100 + " + name;
-        cnt.textContent = String(state.caracsXp[name]);
       });
       b.appendChild(row);
+    });
+
+    // Budget de création : la même jauge pleine largeur que les réserves OWD.
+    var budget = el("div", "pc-creation-budget pc-edit-only");
+    var ligne = el("div", "pc-vital-tete");
+    ligne.appendChild(el("span", "pc-vital-nom", "Création"));
+    var valeur = el("span", "pc-vital-val", "");
+    ligne.appendChild(valeur);
+    budget.appendChild(ligne);
+    var jauge = el("span", "pc-vital-jauge");
+    var plein = el("i");
+    jauge.appendChild(plein);
+    budget.appendChild(jauge);
+    b.appendChild(budget);
+    hooks.push(function () {
+      var pris = ptsCreation(), max = ptsCreaMax();
+      valeur.textContent = fmtP(pris) + " / " + fmtP(max);
+      plein.style.width = clamp(max ? pris / max * 100 : 0, 0, 100) + "%";
+      plein.classList.toggle("over", pris > max);
     });
     return b;
   }

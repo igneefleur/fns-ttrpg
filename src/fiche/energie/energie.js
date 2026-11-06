@@ -1,6 +1,6 @@
   // ---------- onglet Énergie ----------
-  // Les catégories et leurs techniques sont indépendantes des compétences :
-  // elles ne coûtent pas d'XP et ne dépendent d'aucun stade d'aptitude.
+  // Les coûts des techniques sont indépendants de l'XP : ils alimentent le
+  // budget EO de l'en-tête, distinct du courant de la réserve EO sur la fiche.
   function buildEnergie() {
     var b = block("Techniques occultes", null, "energie");
     var box = el("div", "pc-arts pc-energie");
@@ -35,6 +35,7 @@
           state.energie.splice(ci, 1);
           save();
           render();
+          refresh();
         }, "danger pc-edit-only"));
         card.appendChild(head);
 
@@ -65,6 +66,7 @@
             var v = parseFloat(coutIn.value);
             technique.cout = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : 0;
             save();
+            refresh();
           });
           cout.appendChild(coutIn);
           cout.appendChild(el("span", "u", "EO"));
@@ -75,6 +77,7 @@
             categorie.techniques.splice(ti, 1);
             save();
             render();
+            refresh();
           }, "danger pc-edit-only"));
           tCard.appendChild(tHead);
 
@@ -95,6 +98,7 @@
           categorie.techniques.push({ name: "", cout: 0, desc: "" });
           save();
           render();
+          refresh();
         }, "pc-edit-only"));
         box.appendChild(card);
       });
@@ -103,6 +107,7 @@
         state.energie.push({ name: "", techniques: [] });
         save();
         render();
+        refresh();
       }, "pc-edit-only"));
       applyEdit(b, "energie");
     }
