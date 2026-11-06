@@ -130,7 +130,13 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-id-meters { grid-column: 1 / -1; display: flex; align-items: flex-end; gap: .4rem 1.1rem; flex-wrap: wrap; margin-top: .15rem; }
 .pc-id-meters .pc-meter { flex: 1 1 9rem; min-width: 0; }
 .pc-id-meters .pc-meter .bar { flex: 1; width: auto; min-width: 3rem; }
-.pc-id-meters .pc-f { flex: 0 0 5.5rem; }
+.pc-id-progression { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: .4rem 1.1rem; }
+.pc-id-progression .pc-meter { min-width: 0; gap: .3rem; }
+.pc-id-progression .pc-meter .bar { flex: 1; width: auto; min-width: 2rem; }
+.pc-meter-total { box-sizing: border-box; width: 3.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--line-2); border-radius: 0; background: transparent; color: var(--ink); font: inherit; font-size: .72rem; font-weight: 700; text-align: center; padding: 0; font-variant-numeric: tabular-nums; }
+.pc-meter-total:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-meter-total::-webkit-inner-spin-button, .pc-meter-total::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-id-em-total { width: 3.2rem; }
 .pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }
 .pc-f { display: flex; flex-direction: column; gap: .08rem; min-width: 0; }
 .pc-f > label { font-size: .52rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
@@ -466,48 +472,54 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 /* tuiles (Vitesse, Régén) : leviers centrés sous la valeur */
 .pc-big .pc-mmods { display: flex; justify-content: center; margin-top: .12rem; }
 
-/* Réserves PV / EM : composition empruntée à Outward, palette et typographie JJK.
-   La jauge traverse le module de bord à bord ; les valeurs et commandes restent
-   dans la carte, et les courants restent jouables même en mode Consultation. */
+/* Réserves PV / EO : squelette et jauge pleine largeur repris d'Outward,
+   avec la palette JJK. Le coût des techniques EO reste hors de cette réserve. */
 .pc-vital-block { padding: 0; overflow: hidden; }
-.pc-vital-block > .pc-block-title { margin: 0; padding: .35rem .5rem .2rem; }
-.pc-vital-head { display: flex; align-items: baseline; gap: .24rem; padding: .22rem .5rem .18rem; }
+.pc-vital-res { min-width: 0; }
+.pc-vital-tete {
+  position: relative; display: flex; flex-wrap: wrap; align-items: baseline;
+  gap: .4rem; padding: .3rem .55rem .32rem; background: transparent;
+}
+.pc-vital-nom {
+  flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; font-family: "Proxima Nova Condensed", "Proxima Nova", proxima-nova, "Nunito Sans", Helvetica, Arial, sans-serif;
+  font-weight: 800; font-size: .66rem; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--ink); line-height: 1.1;
+}
+.pc-vital-res.t-pv { --teinte: #881112; }
+.pc-vital-res.t-em { --teinte: var(--accent); }
+.pc-vital-tete .pc-gear-float { top: .08rem; right: .16rem; }
+.pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 .pc-vital-num {
-  width: 3.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
-  border-radius: 0; background: transparent; color: var(--ink); font: inherit;
-  font-size: .9rem; font-weight: 700; text-align: right; padding: 0 .08rem .03rem;
-  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+  flex: 0 0 auto; width: 3.4ch; min-width: 0; border: none; background: transparent;
+  color: var(--ink); font: inherit; font-size: .9rem; font-weight: 800;
+  text-align: right; padding: 0; font-variant-numeric: tabular-nums; line-height: 1;
+  -moz-appearance: textfield; appearance: textfield;
 }
 .pc-vital-num::-webkit-inner-spin-button, .pc-vital-num::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-vital-num:focus { outline: none; border-bottom: 2px solid var(--vital-color); }
-.pc-vital-separator, .pc-vital-max { color: var(--ink-3); font-size: .66rem; font-variant-numeric: tabular-nums; }
-.pc-vital-max.adj { color: var(--vital-color); font-weight: 700; }
-.pc-vital-block.pc-vital-pv { --vital-color: #97454A; --vital-low: #B17F49; }
-.pc-vital-block.pc-vital-em { --vital-color: #438C96; --vital-low: #356F78; }
-html.night .pc-vital-block.pc-vital-pv { --vital-color: #A94B50; --vital-low: #D0A45F; }
-html.night .pc-vital-block.pc-vital-em { --vital-color: #4B929B; --vital-low: #3A747C; }
-.pc-vital-jauge {
-  width: 100%; height: .48rem; overflow: hidden; border-radius: 0;
-  background: var(--line-2);
+.pc-vital-num:focus { outline: none; }
+.pc-vital-max {
+  font-size: .66rem; font-weight: 700; letter-spacing: .02em;
+  color: var(--ink-3); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
-.pc-vital-jauge > i {
-  display: block; width: 0; height: 100%; border-radius: inherit;
-  background: var(--vital-color); transition: width .15s ease, background-color .15s ease;
-}
-.pc-vital-jauge.low > i { background: var(--vital-low); }
-.pc-vital-jauge.critical > i { background: var(--red); }
-.pc-vital-commandes { display: flex; align-items: center; gap: .28rem; padding: .25rem .5rem .38rem; }
-.pc-vital-commandes .sp { flex: 1; }
+.pc-vital-max.adj { color: var(--accent); font-weight: 700; }
+.pc-vital-jauge { position: relative; display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
+.pc-vital-jauge > i { display: block; width: 0; height: 100%; background: var(--teinte, var(--accent)); transition: width .15s; }
+.pc-vital-jauge > i.over { background: var(--red); }
+.pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
+.pc-vital-cmd > .pc-mini { flex: 2 2 0; padding-inline: .4rem; }
 .pc-vital-delta {
-  box-sizing: border-box; width: 3.4rem; min-width: 0; border: 1px solid var(--line-2);
-  border-radius: 4px; padding: .13rem .25rem; background: var(--panel); color: var(--ink);
-  font: inherit; font-size: .62rem; text-align: center; -moz-appearance: textfield; appearance: textfield;
+  flex: 1 1 0; min-width: 1.8rem; padding: .2rem .3rem;
+  border: 1px solid var(--line-2); border-radius: 5px;
+  background: var(--panel); color: var(--ink); font: inherit;
+  font-size: .7rem; font-weight: 700; line-height: 1.15;
+  text-align: center; font-variant-numeric: tabular-nums;
+  -moz-appearance: textfield; appearance: textfield;
 }
 .pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-vital-delta:focus { outline: none; border-color: var(--vital-color); }
-.pc-vital-commandes .pc-mini { padding: .13rem .34rem; }
-.pc-vital-em .pc-block-title::after { background: #438C96; }
-html.night .pc-vital-em .pc-block-title::after { background: #4B929B; }
+.pc-vital-delta:focus { outline: none; border-color: var(--accent); }
+.pc-vital-res.over .pc-vital-tete { background: #6e2415; border-bottom-color: var(--red); }
+.pc-vital-res.over .pc-vital-nom, .pc-vital-res.over .pc-vital-num, .pc-vital-res.over .pc-vital-max { color: #fff; }
 .pc-pvmax { display: flex; align-items: center; gap: .35rem; padding: .1rem .5rem .4rem; font-size: .62rem; color: var(--ink-3); }
 .pc-pvmax .lbl { font-size: .5rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); }
 .pc-pvmax input.force {
@@ -521,28 +533,12 @@ html.night .pc-vital-em .pc-block-title::after { background: #4B929B; }
 .pc-pvmax .sp { flex: 1; }
 .pc-em-max-input { font-variant-numeric: tabular-nums; }
 
-/* mêmes leviers, version étroite : dans une tuile (Vitesse, Régén / jour), où
-   « Forcé » et « Modificateurs » s'empilent sous la valeur */
-/* le libellé se pose AU-DESSUS de son contrôle : une tuile est trop étroite
-   pour « Modificateurs » et trois cases côte à côte (elles se chevauchaient) */
-.pc-bigedit { display: flex; flex-direction: column; align-items: center; gap: .02rem; margin-top: .18rem; }
-.pc-bigedit .lbl {
-  font-size: .45rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--ink-3); white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
-}
-.pc-bigedit input.force {
-  width: 2.2rem; min-width: 0; border: none; border-bottom: 1px solid var(--hair);
-  background: transparent; color: var(--ink); font: inherit; font-size: .62rem;
-  text-align: center; padding: 0 0 .05rem; border-radius: 0;
-  -moz-appearance: textfield; appearance: textfield;
-}
-.pc-bigedit input.force::-webkit-inner-spin-button,
-.pc-bigedit input.force::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-bigedit input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
-/* dans une tuile, les leviers restent visibles dès le mode édition (ils ne se
-   révèlent pas au survol comme ailleurs : la tuile est trop petite pour ça) */
-.pc-bigedit .pc-mmods { opacity: 1; margin-top: 0; }
 
+.pc-creation-budget { margin-top: .65rem; --teinte: var(--accent); }
+.pc-creation-budget .pc-vital-tete { padding: 0; margin-bottom: .25rem; }
+.pc-creation-budget .pc-vital-nom { color: var(--ink-3); }
+.pc-creation-budget .pc-vital-val { font-size: .68rem; font-weight: 700; color: var(--ink-2); }
+.pc-creation-budget .pc-vital-jauge { height: .5rem; border: 1px solid var(--line-2); border-radius: 4px; }
 /* xp par champ : où le personnage a mis son expérience */
 .pc-xpchamp { display: flex; align-items: center; gap: .4rem; padding: .12rem 0; }
 .pc-xpchamp .pc-meter { flex: 1; min-width: 0; }

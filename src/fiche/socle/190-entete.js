@@ -243,49 +243,69 @@
     id.appendChild(fld("Sexe", champEntete(function () { return state.sexe; }, function (v) { state.sexe = v; }), "c2"));
     id.appendChild(fld("Genre", champEntete(function () { return state.genre; }, function (v) { state.genre = v; }), "c2"));
 
-    // 2e ligne : compteurs de budgets + XP total
-    var mrow = el("div", "pc-id-meters");
-    function meter(label, getUsed, getTotal) {
+    // Deux budgets côte à côte : XP et EO, chacun avec sa dépense, son total
+    // éditable et sa barre. La réserve courante du module EO n'entre pas ici.
+    var mrow = el("div", "pc-id-meters pc-id-progression");
+    function meter(label, getUsed, getTotal, totalInput, titre) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
       var b = el("b", null, "");
       m.appendChild(b);
+      if (totalInput) {
+        m.appendChild(el("span", null, "/"));
+        m.appendChild(totalInput);
+      }
       var bar = el("span", "bar");
       var fill = el("i");
       bar.appendChild(fill);
       m.appendChild(bar);
+      if (titre) m.title = titre;
       hooks.push(function () {
-        var used = getUsed(), total = getTotal();
-        b.textContent = used + " / " + total;
+        var used = Number(getUsed()) || 0, total = Math.max(0, Number(getTotal()) || 0);
+        b.textContent = fmtP(used);
         var over = used > total;
         b.classList.toggle("over", over);
         fill.classList.toggle("over", over);
-        fill.style.width = clamp(total ? (used / total) * 100 : 0, 0, 100) + "%";
+        fill.style.width = clamp(total ? used / total * 100 : 0, 0, 100) + "%";
       });
       return m;
     }
-    mrow.appendChild(meter("Création", ptsCreation, ptsCreaMax));
-    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; }));
-    var xpIn = el("input", "pc-edit-field pc-global-edit-field");
+    function eoDepense() {
+      var total = 0;
+      (Array.isArray(state.energie) ? state.energie : []).forEach(function (categorie) {
+        if (!categorie || !Array.isArray(categorie.techniques)) return;
+        categorie.techniques.forEach(function (technique) {
+          var cout = Number(technique && technique.cout);
+          if (isFinite(cout) && cout > 0) total += Math.floor(cout);
+        });
+      });
+      return total;
+    }
+
+    var xpIn = el("input", "pc-meter-total pc-id-xp-total pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
-    xpIn.value = state.xpTotal;
+    xpIn.setAttribute("aria-label", "XP total");
+    xpIn.title = "XP total";
+    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
     xpIn.addEventListener("input", function () {
       var v = parseInt(xpIn.value, 10);
       if (isFinite(v)) { state.xpTotal = Math.max(0, v); refresh(); }
     });
-    hooks.push(function () { if (document.activeElement !== xpIn) xpIn.value = state.xpTotal; });
-    mrow.appendChild(fld("XP total", xpIn));
-    var emMaxIn = el("input", "pc-edit-field pc-global-edit-field pc-em-max-input");
+    mrow.appendChild(meter("XP dépensé", xpDepense, function () { return state.xpTotal; },
+      xpIn, "Expérience dépensée / totale"));
+
+    var emMaxIn = el("input", "pc-meter-total pc-id-em-total pc-edit-field pc-global-edit-field pc-em-max-input");
     emMaxIn.type = "number"; emMaxIn.min = "0"; emMaxIn.max = "9999"; emMaxIn.step = "1";
-    emMaxIn.setAttribute("aria-label", "Énergie occulte maximale");
+    emMaxIn.setAttribute("aria-label", "EO total");
     emMaxIn.title = "Réserve totale d'énergie occulte";
+    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
     emMaxIn.addEventListener("input", function () {
       var v = parseInt(emMaxIn.value, 10);
       state.emMax = isFinite(v) ? clamp(v, 0, 9999) : 0;
       refresh();
     });
-    hooks.push(function () { if (document.activeElement !== emMaxIn) emMaxIn.value = state.emMax; });
-    mrow.appendChild(fld("EO max", emMaxIn));
+    mrow.appendChild(meter("EO dépensé", eoDepense, function () { return state.emMax; },
+      emMaxIn, "Énergie occulte dépensée / totale"));
     id.appendChild(mrow);
 
     head.appendChild(id);
@@ -300,6 +320,8 @@
         warns.appendChild(el("div", "pc-warn", "Points de création dépassés : " + ptsCreation() + " / " + ptsCreaMax() + "."));
       if (xpRestant() < 0)
         warns.appendChild(el("div", "pc-warn", "XP dépensé au-delà du total (" + xpDepense() + " / " + state.xpTotal + ")."));
+      if (eoDepense() > state.emMax)
+        warns.appendChild(el("div", "pc-warn", "EO dépensée au-delà du total (" + fmtP(eoDepense()) + " / " + fmtP(state.emMax) + ")."));
       var cap = compCap();
       Object.keys(state.comps).forEach(function (k) {
         if (compXp(state.comps[k]) > cap)

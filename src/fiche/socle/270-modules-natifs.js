@@ -12,15 +12,14 @@
   // avant d'être touché (appliqueDisposition).
   var MODULES_NATIFS = [
     // ---- onglet Fiche ----
-    { id: "narration",  titre: "Narration",         onglet: "fiche", colonne: "gauche", build: buildNarration },
     { id: "caracs",     titre: "Caractéristiques",  onglet: "fiche", colonne: "gauche", build: buildCaracs },
     { id: "langues",    titre: "Langues",           onglet: "fiche", colonne: "gauche", build: buildLangues },
     { id: "initiative", titre: "Initiative",        onglet: "fiche", colonne: "milieu", build: buildInitiative },
     // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
+    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
-    { id: "em",         titre: "EM",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
