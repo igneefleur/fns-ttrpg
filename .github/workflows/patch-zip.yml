@@ -1,0 +1,64 @@
+name: Package JJK 4.5.1 patch
+on:
+  push:
+    branches:
+      - jjk-beta-patch-4.5.1
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Fetch base branch
+        run: git fetch origin refs/heads/jjk-beta:refs/remotes/origin/jjk-beta
+      - name: Verify assembled JavaScript
+        run: python scripts/assembler.py --verifie
+      - name: Verify release and cache references
+        run: python scripts/verif_versions.py
+      - name: Verify JavaScript syntax
+        run: node --check docs/javascripts/jjk-fiche.js
+      - name: Check whitespace errors
+        run: git diff --check origin/jjk-beta...HEAD
+      - name: Build ZIP with modified project files only
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import subprocess
+          import zipfile
+
+          raw = subprocess.check_output(
+              ["git", "diff", "--name-only", "origin/jjk-beta...HEAD"],
+              text=True,
+          )
+          paths = [
+              item.strip() for item in raw.splitlines()
+              if item.strip()
+              and item.strip() != ".github/workflows/patch-zip.yml"
+          ]
+          if not paths:
+              raise SystemExit("No modified project files found.")
+          archive_path = Path("JJK-4.5.1.zip")
+          with zipfile.ZipFile(archive_path, "w", zipfile.ZIP_DEFLATED) as archive:
+              for name in paths:
+                  source = Path(name)
+                  if not source.is_file():
+                      raise SystemExit("Missing file: " + name)
+                  archive.write(source, name)
+          print(f"ZIP contains {len(paths)} modified files:")
+          for name in paths:
+              print(" - " + name)
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: JJK-4.5.1-only-modified-files
+          path: JJK-4.5.1.zip
+          if-no-files-found: error
+          retention-days: 7
