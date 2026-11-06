@@ -84,6 +84,7 @@
   var taillesPostees = [];      // tailles récentes de jjk_state posté (repère du chien de garde)
   var gele = false;             // fiche lue à moitié ou transport non fiable : aucune écriture
   var compactActif = false, compactSession = null, compactPoll = null, compactPollEnCours = false;
+  var compactMirrorsEnAttente = false;
   var compactRecovering = false, compactErrorMessage = "";
   var compactMigrationSentAt = 0;
   var compactRemote = null, saveModulesValues = null;
@@ -187,7 +188,7 @@
   // commande de tchat COMPOSÉE par la fiche (carte « objet donné » et son lien
   // « Prendre ») : l'extension ne fait que l'envoyer, le format vit côté site
   window.__jjkChat = function (raw) { post({ type: "chat", raw: raw }); };
-  // Objet pris au tchat : l'extension relaie le payload du lien. Il peut
+  // Objet pris au tchat : le pont relaie le payload du lien. Il peut
   // arriver AVANT que jjk-creation.js soit monté (clic pendant le chargement) :
   // on le met alors en attente et on le rejoue dès que la fiche répond.
   var takeQueue = [];
@@ -313,11 +314,29 @@
       }
       // Après l'activation, les modifications vont dans le journal append-only.
       // Les attributs miroirs restent limités aux macros et barres de jetons.
-      var changedMirrors = diff(fusion(lastAttrs, enVol), mirrors);
-      if (Object.keys(changedMirrors).length) {
-        enVol = fusion(enVol, changedMirrors);
+      // Comme dans Outward, ils sont une projection secondaire : ils partent
+      // séparément du journal Compact et ne sont pas placés dans enVol. Un
+      // retard de lecture ou un miroir refusé ne peut donc pas déclencher le
+      // watchdog de la sauvegarde du journal ni son bandeau d'échec fatal.
+      var changedMirrors = diff(lastAttrs, mirrors);
+      if (Object.keys(compactSession.pending || {}).length) {
+        // Comme Outward : tant que le journal a des opérations en attente,
+        // seule la version lisible est publiée. Les autres miroirs attendent.
+        var deltaVersion = {}, versionName = M.PREFIX + "version";
+        if (changedMirrors[versionName]) deltaVersion[versionName] = changedMirrors[versionName];
+        compactMirrorsEnAttente = Object.keys(changedMirrors).some(function (name) { return name !== versionName; });
+        if (Object.keys(deltaVersion).length) {
+          post({ type: "save", attrs: deltaVersion });
+          planifieCompactPoll(900);
+        }
+      } else if (Object.keys(changedMirrors).length) {
+        compactMirrorsEnAttente = false;
         post({ type: "save", attrs: changedMirrors });
-        armerConfirmation(); armerGarde();
+        // Les miroirs sont secondaires : la relecture rafraîchit lastAttrs,
+        // sans les traiter comme un lot d'enVol ni armer le watchdog legacy.
+        planifieCompactPoll(900);
+      } else {
+        compactMirrorsEnAttente = false;
       }
       var operations = compactSession.outgoing(), ids = Object.keys(operations);
       if (ids.length || Object.keys(compactSession.payloads || {}).length) {
@@ -333,6 +352,13 @@
   function planifieCompactPoll(delai) {
     if (!compactActif || compactPoll !== null) return;
     compactPoll = setTimeout(function () { compactPoll = null; pollCompact(); }, delai || 1400);
+  }
+  function relanceMiroirsCompactSiPret() {
+    if (!compactMirrorsEnAttente || !compactActif || !compactSession) return;
+    if (Object.keys(compactSession.pending || {}).length || Object.keys(compactSession.payloads || {}).length) return;
+    compactMirrorsEnAttente = false;
+    // Le journal est confirmé : recalculer les projections sur l'état courant.
+    scheduleSave();
   }
   function verrouilleVersionFuture(state) {
     if (!state || versionBloquee) return versionBloquee;
@@ -378,6 +404,7 @@
       if (resultat.incomplete) throw new Error("La lecture actualisée contient des blocs ou des journaux incomplets.");
       appliqueCycleStockage(attrs);
       lastAttrs = attrs;
+      relanceMiroirsCompactSiPret();
       if (resultat.conflict) bandeau("La synchronisation a détecté une modification concurrente sur les mêmes données. Vérifiez le personnage et ses sauvegardes avant de poursuivre.");
       if (resultat.lost) bandeauPerte();
       var prochain = JSON.stringify(resultat.state), avant = mem["jjk-perso"] || "";
@@ -421,6 +448,7 @@
         // La fiche ne se déverrouille qu'après une lecture Compact COMPLETE,
         // reconstruite par le même lecteur que celui qui applique les journaux.
         lastAttrs = attrs;
+        relanceMiroirsCompactSiPret();
         if (compactRecovering) {
           compactRecovering = false;
           compactErrorMessage = "";
@@ -992,12 +1020,6 @@
     if (spec.attrmap != null && !urlSure(spec.attrmap)) return null;
     return spec;
   }
-
-  // Version de la fiche trouvée dans le personnage, { schema, release } ou null.
-  //
-  // C'est jjk_state qui fait foi : lui seul est réécrit par la version qui a
-  // réellement enregistré la fiche. Le max de jjk_version, lui, porte la
-  // release que l'amorce croyait servir au moment de l'écriture, et une archive
   // qui tourne sous le manifeste du jour y inscrit la version DU SITE : s'y
   // fier ferait passer une fiche d'archive pour une fiche à jour, et « ouvrir
   // avec sa version » n'aurait plus d'objet. ficheDe() applique cette priorité
@@ -1109,7 +1131,7 @@
     ecranErreurOuverture("Impossible d’ouvrir le personnage",
       "Roll20 n’a pas transmis toutes les données nécessaires pour ouvrir ce personnage. " +
       "La lecture a détecté des données manquantes ou illisibles (" + raison + "). " +
-      "La fiche n’a PAS été montée : aucune écriture ne partira et les données restantes ne seront pas écrasées. " +
+      "La fiche n'a PAS été montée : aucune écriture ne partira et les données restantes ne seront pas écrasées. " +
       "Vérifiez les attributs du personnage ou restaurez une sauvegarde locale depuis l’extension.",
       { reessayer: relireOuverture, exporterAttrs: true });
   }
@@ -1535,7 +1557,6 @@
     }
     chargerApresAttrMap();
   }
-
   // Le moteur de migration est livré avec le BUNDLE, pas avec l'amorce : au
   // moment de l'écran il n'est donc pas encore là, alors que c'est lui qui sait
   // dire ce que la montée change. On charge ce seul fichier (il ne fait que
@@ -1693,7 +1714,7 @@
   // qui n'empêche rien mais met l'export à portée avant la première frappe. Il
   // se masque, contrairement à ceux du gel : ici la fiche s'enregistre vraiment,
   // le cacher ne fait donc croire à rien de faux.
-  
+
 
   // ---------- l'écran lui-même ----------
   //
@@ -1705,7 +1726,6 @@
   // rapport. Les identifiants, eux, gardent « site » (relSite, releaseSite) :
   // ils nomment l'endroit d'où la version est lue, personne ne les lit en jeu,
   // et les renommer ne changerait rien pour un joueur.
-  
 
   function ecranVersion(f, relSite, schSite) {
     var relFiche = f.release || null;
@@ -1738,7 +1758,7 @@
     });
     if (!arch) {
       griser(open, relFiche
-        ? "Cette version de la fiche n’est plus disponible. Le personnage ne peut pas être ouvert avec cette version."
+        ? "Cette version de la fiche n'est plus disponible. Le personnage ne peut pas être ouvert avec cette version."
         : "La version utilisée pour enregistrer ce personnage est inconnue. Le personnage ne peut pas être ouvert avec son ancienne version.", b);
     }
     if (duFutur) bouton(z, "Réessayer", "reessayer-version", function () { location.reload(); });
