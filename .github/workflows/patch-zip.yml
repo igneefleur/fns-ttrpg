@@ -13,12 +13,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 3
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
       - name: Fetch base branch
-        run: git fetch origin refs/heads/jjk-beta:refs/remotes/origin/jjk-beta
+        run: git fetch --depth=1 origin refs/heads/jjk-beta:refs/remotes/origin/jjk-beta
       - name: Verify assembled JavaScript
         run: python scripts/assembler.py --verifie
       - name: Verify release and cache references
