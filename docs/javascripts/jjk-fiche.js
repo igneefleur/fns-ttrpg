@@ -5990,7 +5990,8 @@
       var d = modSum(state.divers.eoMax), max = emReserveMax();
       eoTotal.textContent = fmtP(max);
       eoTotal.classList.toggle("adj", d !== 0);
-      eoTotal.title = "Réserve EO : base " + state.emBarreMax + (d ? " · modificateurs " + sign(d) : "");
+      eoTotal.title = "Réserve EO : base " + state.emBarreMax +
+        (d ? " · modificateurs " + sign(d) : "");
       eo.classList.toggle("on", d !== 0);
     });
     table.appendChild(eo);
