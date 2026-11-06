@@ -18,8 +18,8 @@
     // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
-    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
@@ -52,6 +52,7 @@
     { id: "jets",       titre: "Jets",              onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",    titre: "Fiche",             onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",  titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    { id: "modbarres",  titre: "Modificateur de Barre", onglet: "options", colonne: "gauche", build: buildModBarres },
     { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "droite", build: buildXpChamps },
     // Création passe à DROITE, et ce n'est pas un choix de goût : mesuré sous
     // Firefox, les deux longues listes du bas démarraient à 139 px d'écart avec

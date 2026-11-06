@@ -249,16 +249,16 @@
     function meter(label, getUsed, getTotal, totalInput, titre) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
+      var bar = el("span", "bar");
+      var fill = el("i");
+      bar.appendChild(fill);
+      m.appendChild(bar);
       var b = el("b", null, "");
       m.appendChild(b);
       if (totalInput) {
         m.appendChild(el("span", null, "/"));
         m.appendChild(totalInput);
       }
-      var bar = el("span", "bar");
-      var fill = el("i");
-      bar.appendChild(fill);
-      m.appendChild(bar);
       if (titre) m.title = titre;
       hooks.push(function () {
         var used = Number(getUsed()) || 0, total = Math.max(0, Number(getTotal()) || 0);

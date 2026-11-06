@@ -1,8 +1,59 @@
   // ---------- outils ----------
+  // Les zones de texte s'ouvrent à la hauteur de leur contenu, quel que soit
+  // le module ou le mode. Une hauteur choisie à la souris devient un plancher :
+  // le texte peut les agrandir, mais ne leur retire jamais la place choisie.
+  function ajusteHauteurTextarea(area) {
+    if (!area || area.tagName !== "TEXTAREA" || area.__jjkHauteurEnCours) return;
+    area.__jjkHauteurEnCours = true;
+    var frame = window.requestAnimationFrame || function (fn) { return window.setTimeout(fn, 0); };
+    frame(function () {
+      area.__jjkHauteurEnCours = false;
+      if (!area.isConnected) return;
+      var plancher = parseFloat(area.dataset.jjkHauteurManuelle) || 0;
+      var rows = area.rows;
+      area.style.height = "auto";
+      area.rows = 1;
+      var contenu = area.scrollHeight || 0;
+      area.rows = rows;
+      area.style.height = Math.ceil(Math.max(contenu, plancher)) + "px";
+    });
+  }
+  function brancheTextarea(area) {
+    if (!area || area.tagName !== "TEXTAREA" || area.__jjkAutoHauteur) return;
+    area.__jjkAutoHauteur = true;
+    area.style.resize = "vertical";
+    area.style.overflowY = "hidden";
+    area.addEventListener("input", function () { ajusteHauteurTextarea(area); });
+    area.addEventListener("change", function () { ajusteHauteurTextarea(area); });
+    try {
+      var valeur = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value");
+      if (valeur && valeur.get && valeur.set) Object.defineProperty(area, "value", {
+        configurable: true, enumerable: valeur.enumerable,
+        get: function () { return valeur.get.call(this); },
+        set: function (v) { valeur.set.call(this, v); ajusteHauteurTextarea(this); }
+      });
+    } catch (e) {}
+    area.addEventListener("pointerdown", function (ev) {
+      var r = area.getBoundingClientRect();
+      if (ev.clientX < r.right - 22 || ev.clientY < r.bottom - 22) return;
+      var avant = r.height;
+      function termine() {
+        document.removeEventListener("pointerup", termine, true);
+        document.removeEventListener("pointercancel", termine, true);
+        var apres = area.getBoundingClientRect().height;
+        if (Math.abs(apres - avant) > 2) area.dataset.jjkHauteurManuelle = String(Math.round(apres));
+        ajusteHauteurTextarea(area);
+      }
+      document.addEventListener("pointerup", termine, true);
+      document.addEventListener("pointercancel", termine, true);
+    });
+    ajusteHauteurTextarea(area);
+  }
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (txt != null) e.textContent = txt;
+    if (String(tag).toLowerCase() === "textarea") brancheTextarea(e);
     return e;
   }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre

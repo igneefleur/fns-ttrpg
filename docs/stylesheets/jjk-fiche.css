@@ -133,10 +133,15 @@ body:has(#perso-atelier) .md-sidebar--primary { display: none !important; }
 .pc-id-progression { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; gap: .4rem 1.1rem; }
 .pc-id-progression .pc-meter { min-width: 0; gap: .3rem; }
 .pc-id-progression .pc-meter .bar { flex: 1; width: auto; min-width: 2rem; }
-.pc-meter-total { box-sizing: border-box; width: 3.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--line-2); border-radius: 0; background: transparent; color: var(--ink); font: inherit; font-size: .72rem; font-weight: 700; text-align: center; padding: 0; font-variant-numeric: tabular-nums; }
+.pc-meter-total { box-sizing: border-box; width: 3.4rem; min-width: 0; border: none; border-bottom: 1px solid var(--line-2); border-radius: 0; background: transparent; color: var(--ink); font: inherit; font-size: .72rem; font-weight: 700; text-align: center; padding: 0; font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield; }
 .pc-meter-total:focus { outline: none; border-bottom: 2px solid var(--accent); }
-.pc-meter-total::-webkit-inner-spin-button, .pc-meter-total::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.pc-meter-total::-webkit-inner-spin-button, .pc-meter-total::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
 .pc-id-em-total { width: 3.2rem; }
+.pc-id-progression .pc-meter { white-space: nowrap; }
+.pc-id-progression .pc-meter > span:first-child { flex: 0 0 auto; }
+.pc-id-progression .pc-meter .bar { flex: 1 1 auto; min-width: 1.5rem; }
+.pc-id-progression .pc-meter b { flex: 0 0 auto; }
+.pc-id-progression .pc-meter > input { flex: 0 0 auto; }
 .pc-id { flex: 1; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: .35rem .6rem; align-content: start; }
 .pc-f { display: flex; flex-direction: column; gap: .08rem; min-width: 0; }
 .pc-f > label { font-size: .52rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
@@ -291,6 +296,8 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: flex; align-items: center; gap: .35rem; }
+.pc-crow-top .pc-abbr { flex: 1 1 auto; min-width: 0; text-align: left; }
+.pc-crow-top .pc-cval { flex: 0 0 auto; margin-left: auto; min-width: 2.6rem; text-align: right; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #E4ECEC; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {
@@ -539,6 +546,34 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 .pc-creation-budget .pc-vital-nom { color: var(--ink-3); }
 .pc-creation-budget .pc-vital-val { font-size: .68rem; font-weight: 700; color: var(--ink-2); }
 .pc-creation-budget .pc-vital-jauge { height: .5rem; border: 1px solid var(--line-2); border-radius: 4px; }
+
+/* Modificateur de Barre : deux lignes compactes, mêmes contrôles que les
+   modificateurs de caractéristiques ; le max EO de réserve reste indépendant. */
+.pc-barres-table { display: flex; flex-direction: column; gap: .08rem; }
+.pc-barres-row {
+  display: grid; grid-template-columns: minmax(2.5rem,.5fr) minmax(2.5rem,.6fr) minmax(4.2rem,1fr) minmax(2.2rem,.5fr);
+  align-items: center; gap: .3rem; padding: .24rem .16rem; border-bottom: 1px solid var(--hair);
+}
+.pc-barres-row.head > span {
+  font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--ink-3); text-align: center; white-space: nowrap; overflow: hidden;
+}
+.pc-barres-row.head > span:first-child { text-align: left; }
+.pc-barres-row .pc-comp-name { font-size: .64rem; font-weight: 700; }
+.pc-barres-row .pc-comp-total { text-align: right; font-size: .64rem; font-variant-numeric: tabular-nums; }
+.pc-barres-row .pc-mmods { justify-content: center; opacity: 1; gap: .08rem; }
+.pc-barres-row .pc-mmod { width: 1.15rem; }
+.pc-barres-row input.force {
+  width: 100%; min-width: 0; box-sizing: border-box; border: none;
+  border-bottom: 1px solid var(--hair); background: transparent; color: var(--ink);
+  font: inherit; font-size: .66rem; text-align: center; padding: 0 0 .05rem;
+  -moz-appearance: textfield; appearance: textfield;
+}
+.pc-barres-row input.force::-webkit-inner-spin-button,
+.pc-barres-row input.force::-webkit-outer-spin-button { -webkit-appearance: none; appearance: none; margin: 0; }
+.pc-barres-row input.force:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-barres-row.on { border-left: 2px solid var(--accent); }
+
 /* xp par champ : où le personnage a mis son expérience */
 .pc-xpchamp { display: flex; align-items: center; gap: .4rem; padding: .12rem 0; }
 .pc-xpchamp .pc-meter { flex: 1; min-width: 0; }
@@ -935,7 +970,7 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 .pc-f > .pc-notes { min-height: 2.6rem; font-size: .7rem; }
 /* bouton « Chat » d'un champ étiqueté : rangé sous la zone, à droite */
 .pc-f > .pc-mini { align-self: flex-end; margin-top: .18rem; }
-.pc-notes { width: 100%; min-height: 4.5rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; box-sizing: border-box; }
+.pc-notes { display: block; width: 100%; min-height: 2.6rem; border: 1px solid var(--line-2); border-radius: 7px; background: var(--card); color: var(--ink); font: inherit; font-size: .72rem; padding: .5rem .6rem; resize: vertical; overflow-y: hidden; box-sizing: border-box; }
 .pc-notes:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--wash); }
 .pc-empty { font-size: .72rem; color: var(--ink-3); font-style: italic; padding: .3rem .3rem; text-align: center; }
 

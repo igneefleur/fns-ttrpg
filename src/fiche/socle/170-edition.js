@@ -54,7 +54,7 @@
     // Liste d'actions de jeu/lecture, calquée sur OWD : les champs de saisie,
     // les jauges modifiables et les quantités ne sont pas des commandes de jeu.
     return target.matches(
-      ".pc-tab, .pc-rollable, .pc-obj-tile, " +
+      ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
       ".pc-note-toggle, .pc-journal-toggle, summary, a[href]"

@@ -127,11 +127,16 @@
   }
 
   function buildEm() {
-    function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
-    function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
+    function emCourant() { return state.em == null ? emReserveMax() : Number(state.em) || 0; }
     return buildReserve({
       title: "EO", moduleId: "em", themeClass: "t-em",
-      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emMax,
-      setCurrent: function (v) { state.em = v; }
+      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emReserveMax,
+      setCurrent: function (v) { state.em = v; },
+      updateMaximum: function (node) {
+        var d = modSum(state.divers.eoMax);
+        node.classList.toggle("adj", d !== 0);
+        node.title = "Réserve EO : base " + state.emBarreMax +
+          (d ? " · modificateurs " + sign(d) : "");
+      }
     });
   }

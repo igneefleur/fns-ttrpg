@@ -186,6 +186,7 @@ fin = lf
   src/fiche/options/jets.js
   src/fiche/options/commun-champs.js
   src/fiche/options/modcaracs.js
+  src/fiche/options/modbarres.js
   src/fiche/options/creation.js
   src/fiche/options/optcomps.js
   src/fiche/options/filtres.js
