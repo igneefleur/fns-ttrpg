@@ -5939,6 +5939,7 @@
     var table = el("div", "pc-barres-table");
     wrap.appendChild(table);
     b.appendChild(wrap);
+
     var head = el("div", "pc-barres-row head");
     ["Barre", "Forcé / base", "Modificateurs", "Maximum"].forEach(function (label) {
       head.appendChild(el("span", null, label));
