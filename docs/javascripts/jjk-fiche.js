@@ -5967,6 +5967,7 @@
       pv.classList.toggle("on", state.pvMaxOverride !== null || d !== 0);
     });
     table.appendChild(pv);
+
     var eo = el("div", "pc-barres-row pc-mods-host");
     eo.appendChild(el("span", "pc-comp-name", "EO"));
     var eoBase = el("input", "force pc-barre-base");
