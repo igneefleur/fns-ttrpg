@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.5.1b";
+  var RELEASE = "4.5.2b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -101,10 +101,61 @@
   // rouge sur un échec critique, sans que la fiche ait à le calculer.
   var DE_DEFAUT = "1d100cs>96cf<5";
   // ---------- outils ----------
+  // Les zones de texte s'ouvrent à la hauteur de leur contenu, quel que soit
+  // le module ou le mode. Une hauteur choisie à la souris devient un plancher :
+  // le texte peut les agrandir, mais ne leur retire jamais la place choisie.
+  function ajusteHauteurTextarea(area) {
+    if (!area || area.tagName !== "TEXTAREA" || area.__jjkHauteurEnCours) return;
+    area.__jjkHauteurEnCours = true;
+    var frame = window.requestAnimationFrame || function (fn) { return window.setTimeout(fn, 0); };
+    frame(function () {
+      area.__jjkHauteurEnCours = false;
+      if (!area.isConnected) return;
+      var plancher = parseFloat(area.dataset.jjkHauteurManuelle) || 0;
+      var rows = area.rows;
+      area.style.height = "auto";
+      area.rows = 1;
+      var contenu = area.scrollHeight || 0;
+      area.rows = rows;
+      area.style.height = Math.ceil(Math.max(contenu, plancher)) + "px";
+    });
+  }
+  function brancheTextarea(area) {
+    if (!area || area.tagName !== "TEXTAREA" || area.__jjkAutoHauteur) return;
+    area.__jjkAutoHauteur = true;
+    area.style.resize = "vertical";
+    area.style.overflowY = "hidden";
+    area.addEventListener("input", function () { ajusteHauteurTextarea(area); });
+    area.addEventListener("change", function () { ajusteHauteurTextarea(area); });
+    try {
+      var valeur = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value");
+      if (valeur && valeur.get && valeur.set) Object.defineProperty(area, "value", {
+        configurable: true, enumerable: valeur.enumerable,
+        get: function () { return valeur.get.call(this); },
+        set: function (v) { valeur.set.call(this, v); ajusteHauteurTextarea(this); }
+      });
+    } catch (e) {}
+    area.addEventListener("pointerdown", function (ev) {
+      var r = area.getBoundingClientRect();
+      if (ev.clientX < r.right - 22 || ev.clientY < r.bottom - 22) return;
+      var avant = r.height;
+      function termine() {
+        document.removeEventListener("pointerup", termine, true);
+        document.removeEventListener("pointercancel", termine, true);
+        var apres = area.getBoundingClientRect().height;
+        if (Math.abs(apres - avant) > 2) area.dataset.jjkHauteurManuelle = String(Math.round(apres));
+        ajusteHauteurTextarea(area);
+      }
+      document.addEventListener("pointerup", termine, true);
+      document.addEventListener("pointercancel", termine, true);
+    });
+    ajusteHauteurTextarea(area);
+  }
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
     if (cls) e.className = cls;
     if (txt != null) e.textContent = txt;
+    if (String(tag).toLowerCase() === "textarea") brancheTextarea(e);
     return e;
   }
   // URL du jeu de données. Une ARCHIVE de version embarque son propre
@@ -194,7 +245,7 @@
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, em: null, emMax: 0, narration: 3,
+      pv: null, em: null, emMax: 0, emBarreMax: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
       // module (le poids de JJK est un nombre SANS unité)
@@ -218,7 +269,7 @@
         // garde pour ne pas le leur effacer, mais rien ne le lit.
         opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
       },
-      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
+      divers: { pvMax: [0, 0, 0], eoMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       vitesseOverride: null,
       regenOverride: null,
@@ -359,6 +410,7 @@
     // PV max, régén et vitesse en portent encore
     if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
     s.divers.pvMax = modArr(s.divers.pvMax);
+    s.divers.eoMax = modArr(s.divers.eoMax);
     s.divers.regen = modArr(s.divers.regen);
     s.divers.vitesse = modArr(s.divers.vitesse);
     if (!s.compsMod || typeof s.compsMod !== "object" || Array.isArray(s.compsMod)) s.compsMod = {};
@@ -737,6 +789,11 @@
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
     if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
     s.emMax = clamp(Math.floor(num(s.emMax, 0)), 0, 9999);
+    // Ancien format : emMax alimentait aussi le maximum de la réserve fiche.
+    // Le copier une seule fois préserve les fiches existantes.
+    if (s.emBarreMax === null || s.emBarreMax === undefined || s.emBarreMax === "")
+      s.emBarreMax = s.emMax;
+    s.emBarreMax = clamp(Math.floor(num(s.emBarreMax, s.emMax)), 0, 9999);
     s.em = (s.em === null || s.em === undefined || s.em === "") ? null : parseFloat(s.em);
     if (s.em !== null && !isFinite(s.em)) s.em = null;
     return s;
@@ -1109,6 +1166,11 @@
   function pvMax() {
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
+  }
+  // Maximum de la réserve EO sur la fiche, distinct du budget EO dépensable
+  // dans l'en-tête par les techniques occultes.
+  function emReserveMax() {
+    return Math.max(0, Math.floor((Number(state.emBarreMax) || 0) + modSum(state.divers.eoMax)));
   }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
   function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
@@ -2046,7 +2108,7 @@
     // Liste d'actions de jeu/lecture, calquée sur OWD : les champs de saisie,
     // les jauges modifiables et les quantités ne sont pas des commandes de jeu.
     return target.matches(
-      ".pc-tab, .pc-rollable, .pc-obj-tile, " +
+      ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
       ".pc-note-toggle, .pc-journal-toggle, summary, a[href]"
@@ -2604,16 +2666,16 @@
     function meter(label, getUsed, getTotal, totalInput, titre) {
       var m = el("span", "pc-meter");
       m.appendChild(el("span", null, label));
+      var bar = el("span", "bar");
+      var fill = el("i");
+      bar.appendChild(fill);
+      m.appendChild(bar);
       var b = el("b", null, "");
       m.appendChild(b);
       if (totalInput) {
         m.appendChild(el("span", null, "/"));
         m.appendChild(totalInput);
       }
-      var bar = el("span", "bar");
-      var fill = el("i");
-      bar.appendChild(fill);
-      m.appendChild(bar);
       if (titre) m.title = titre;
       hooks.push(function () {
         var used = Number(getUsed()) || 0, total = Math.max(0, Number(getTotal()) || 0);
@@ -3724,21 +3786,11 @@
   // Réserves PV / EO : même charpente pleine largeur que la jauge vitale OWD.
   // Le courant reste une action de jeu indépendante du budget EO de l'en-tête.
   function buildReserve(cfg) {
-    var b = cfg.editId ? block("", null, cfg.editId) : el("div", "pc-block");
-    b.classList.add("pc-vital-block");
-    if (!cfg.editId) b.dataset.module = cfg.moduleId;
-
-    // Le titre natif porte aussi le bouton de réglage du module PV : on le
-    // déplace dans le bandeau, à côté du nom, sans perdre son action.
-    var ancienTitre = b.querySelector(".pc-block-title");
-    var gear = ancienTitre && (ancienTitre.querySelector(".pc-gear-float") || ancienTitre.querySelector("button"));
-    if (gear && gear.parentNode) gear.parentNode.removeChild(gear);
-    if (ancienTitre && ancienTitre.parentNode) ancienTitre.parentNode.removeChild(ancienTitre);
-
+    var b = el("div", "pc-block pc-vital-block");
+    b.dataset.module = cfg.moduleId;
     var reserve = el("div", "pc-vital-res " + cfg.themeClass);
     var head = el("div", "pc-vital-tete");
     head.appendChild(el("span", "pc-vital-nom", cfg.title));
-    if (gear) head.appendChild(gear);
 
     var val = el("span", "pc-vital-val");
     var current = el("input", "pc-vital-num");
@@ -3806,13 +3858,12 @@
       if (cfg.updateMaximum) cfg.updateMaximum(maximum);
     });
 
-    if (cfg.appendOptions) cfg.appendOptions(b);
     return b;
   }
 
   function buildPv() {
     return buildReserve({
-      title: "PV", moduleId: "pv", editId: "pv", themeClass: "t-pv",
+      title: "PV", moduleId: "pv", themeClass: "t-pv",
       accessibleName: "Points de vie", getCurrent: pvCourant, getMaximum: pvMax,
       setCurrent: function (v) { state.pv = v; },
       updateMaximum: function (node) {
@@ -3822,40 +3873,22 @@
           ? "Maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
           : "(20 + Body) / 2 = " + Math.floor((20 + caracTotal("Body")) / 2) +
             (d ? " · modificateurs " + sign(d) : "");
-      },
-      appendOptions: function (b) {
-        // Le maximum de PV garde ses leviers JJK : valeur forcée ou calcul
-        // habituel avec les trois emplacements de modificateurs.
-        var mrow = el("div", "pc-pvmax pc-mods-host pc-edit-only");
-        mrow.appendChild(el("span", "lbl", "Forcé"));
-        var force = el("input", "force pc-edit-field");
-        force.type = "number"; force.step = "1"; force.min = "0";
-        force.title = "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; une valeur le force.";
-        force.addEventListener("input", function () {
-          var v = parseFloat(force.value);
-          state.pvMaxOverride = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : null;
-          refresh();
-        });
-        hooks.push(function () {
-          force.placeholder = String(pvMaxAuto());
-          if (document.activeElement !== force) force.value = state.pvMaxOverride === null ? "" : state.pvMaxOverride;
-        });
-        mrow.appendChild(force);
-        mrow.appendChild(el("span", "lbl", "Modificateurs"));
-        mrow.appendChild(multiMod(state.divers, "pvMax"));
-        mrow.appendChild(el("span", "sp"));
-        b.appendChild(mrow);
       }
     });
   }
 
   function buildEm() {
-    function emMax() { return Math.max(0, Math.floor(Number(state.emMax) || 0)); }
-    function emCourant() { return state.em == null ? emMax() : Number(state.em) || 0; }
+    function emCourant() { return state.em == null ? emReserveMax() : Number(state.em) || 0; }
     return buildReserve({
       title: "EO", moduleId: "em", themeClass: "t-em",
-      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emMax,
-      setCurrent: function (v) { state.em = v; }
+      accessibleName: "Énergie occulte", getCurrent: emCourant, getMaximum: emReserveMax,
+      setCurrent: function (v) { state.em = v; },
+      updateMaximum: function (node) {
+        var d = modSum(state.divers.eoMax);
+        node.classList.toggle("adj", d !== 0);
+        node.title = "Réserve EO : base " + state.emBarreMax +
+          (d ? " · modificateurs " + sign(d) : "");
+      }
     });
   }
   // opts : { module, reg, onDrop } — le module dont le rouage déverrouille la
@@ -4132,7 +4165,7 @@
                              function (v) { compFilter = v; }, null, rebuildComps);
     if (search) line1.appendChild(search);
     if (filtreChampOn()) {
-      var champSel = el("select", "pc-select pc-edit-field");
+      var champSel = el("select", "pc-select pc-comp-filter");
       ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
         var o = el("option");
         o.value = ch === "Tous les champs" ? "" : ch;
@@ -5898,6 +5931,72 @@
     return bM;
   }
 
+  // Deux jauges indépendantes : PV calculés sur Body et réserve EO,
+  // dont le maximum est propre au module et non au budget de l'en-tête.
+  function buildModBarres() {
+    var b = block("Modificateur de Barre");
+    var wrap = el("div", "pc-optcomp-wrap");
+    var table = el("div", "pc-barres-table");
+    wrap.appendChild(table);
+    b.appendChild(wrap);
+
+    var head = el("div", "pc-barres-row head");
+    ["Barre", "Forcé / base", "Modificateurs", "Maximum"].forEach(function (label) {
+      head.appendChild(el("span", null, label));
+    });
+    table.appendChild(head);
+
+    var pv = el("div", "pc-barres-row pc-mods-host");
+    pv.appendChild(el("span", "pc-comp-name", "PV"));
+    pv.appendChild(champForceVal(
+      function () { return state.pvMaxOverride === null ? undefined : state.pvMaxOverride; },
+      function (v) { state.pvMaxOverride = v === undefined ? null : v; },
+      function () { return pvMaxAuto(); },
+      "Vide = maximum calculé ((20 + Body) / 2, modificateurs compris) ; une valeur le force."
+    ));
+    pv.appendChild(multiMod(state.divers, "pvMax"));
+    var pvTotal = el("span", "pc-comp-total", "");
+    pv.appendChild(pvTotal);
+    hooks.push(function () {
+      var d = modSum(state.divers.pvMax), max = pvMax();
+      pvTotal.textContent = fmtP(max);
+      pvTotal.classList.toggle("adj", state.pvMaxOverride !== null || d !== 0);
+      pvTotal.title = state.pvMaxOverride !== null
+        ? "PV maximum forcé à " + state.pvMaxOverride + " (calculé : " + pvMaxAuto() + ")"
+        : "(20 + Body) / 2" + (d ? " · modificateurs " + sign(d) : "");
+      pv.classList.toggle("on", state.pvMaxOverride !== null || d !== 0);
+    });
+    table.appendChild(pv);
+
+    var eo = el("div", "pc-barres-row pc-mods-host");
+    eo.appendChild(el("span", "pc-comp-name", "EO"));
+    var eoBase = el("input", "force pc-barre-base");
+    eoBase.type = "number"; eoBase.min = "0"; eoBase.max = "9999"; eoBase.step = "1";
+    eoBase.setAttribute("aria-label", "Maximum de base de la réserve EO");
+    eoBase.title = "Maximum de la réserve EO sur la fiche, indépendant du total EO de l'en-tête.";
+    eoBase.addEventListener("input", function () {
+      var n = parseFloat(eoBase.value);
+      state.emBarreMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
+      refresh();
+    });
+    hooks.push(function () {
+      if (document.activeElement !== eoBase) eoBase.value = state.emBarreMax;
+    });
+    eo.appendChild(eoBase);
+    eo.appendChild(multiMod(state.divers, "eoMax"));
+    var eoTotal = el("span", "pc-comp-total", "");
+    eo.appendChild(eoTotal);
+    hooks.push(function () {
+      var d = modSum(state.divers.eoMax), max = emReserveMax();
+      eoTotal.textContent = fmtP(max);
+      eoTotal.classList.toggle("adj", d !== 0);
+      eoTotal.title = "Réserve EO : base " + state.emBarreMax +
+        (d ? " · modificateurs " + sign(d) : "");
+      eo.classList.toggle("on", d !== 0);
+    });
+    table.appendChild(eo);
+    return b;
+  }
   // ---- création : plafond des caractéristiques et budget de points ----
   // Ce bloc a remplacé la case « Sans limite » (2026-08-04), qui ne savait que
   // lever le plafond, et pour les trois caractéristiques à la fois. Mêmes
@@ -7037,8 +7136,8 @@
     // Vitesse et Régén partagent une grille à deux cases qui ne se découpe
     // pas : elles ne forment qu'UN module, même si chacune garde son rouage
     { id: "tuiles",     titre: "Vitesse et Régén",  onglet: "fiche", colonne: "milieu", build: buildVitesse },
-    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "pv",         titre: "PV",                onglet: "fiche", colonne: "milieu", build: buildPv },
+    { id: "em",         titre: "EO",                onglet: "fiche", colonne: "milieu", build: buildEm },
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
@@ -7071,6 +7170,7 @@
     { id: "jets",       titre: "Jets",              onglet: "options", colonne: "gauche", build: buildJets },
     { id: "actions",    titre: "Fiche",             onglet: "options", colonne: "droite", build: buildActions },
     { id: "modcaracs",  titre: "Modificateurs de caractéristiques", onglet: "options", colonne: "gauche", build: buildModCaracs },
+    { id: "modbarres",  titre: "Modificateur de Barre", onglet: "options", colonne: "gauche", build: buildModBarres },
     { id: "xpchamps",   titre: "XP par champ",      onglet: "options", colonne: "droite", build: buildXpChamps },
     // Création passe à DROITE, et ce n'est pas un choix de goût : mesuré sous
     // Firefox, les deux longues listes du bas démarraient à 139 px d'écart avec

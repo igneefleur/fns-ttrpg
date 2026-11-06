@@ -11,6 +11,11 @@
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
   }
+  // Maximum de la réserve EO sur la fiche, distinct du budget EO dépensable
+  // dans l'en-tête par les techniques occultes.
+  function emReserveMax() {
+    return Math.max(0, Math.floor((Number(state.emBarreMax) || 0) + modSum(state.divers.eoMax)));
+  }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
   function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
   function regenBrut() { return state.regenOverride !== null ? state.regenOverride : regenAuto(); }

@@ -75,7 +75,7 @@
                              function (v) { compFilter = v; }, null, rebuildComps);
     if (search) line1.appendChild(search);
     if (filtreChampOn()) {
-      var champSel = el("select", "pc-select pc-edit-field");
+      var champSel = el("select", "pc-select pc-comp-filter");
       ["Tous les champs", "Body", "Mind", "Prestance"].forEach(function (ch) {
         var o = el("option");
         o.value = ch === "Tous les champs" ? "" : ch;

@@ -84,6 +84,7 @@
     // PV max, régén et vitesse en portent encore
     if (!s.divers || typeof s.divers !== "object" || Array.isArray(s.divers)) s.divers = b.divers;
     s.divers.pvMax = modArr(s.divers.pvMax);
+    s.divers.eoMax = modArr(s.divers.eoMax);
     s.divers.regen = modArr(s.divers.regen);
     s.divers.vitesse = modArr(s.divers.vitesse);
     if (!s.compsMod || typeof s.compsMod !== "object" || Array.isArray(s.compsMod)) s.compsMod = {};
@@ -462,6 +463,11 @@
     s.pv = (s.pv === null || s.pv === undefined || s.pv === "") ? null : parseFloat(s.pv);
     if (s.pv !== null && !isFinite(s.pv)) s.pv = null;
     s.emMax = clamp(Math.floor(num(s.emMax, 0)), 0, 9999);
+    // Ancien format : emMax alimentait aussi le maximum de la réserve fiche.
+    // Le copier une seule fois préserve les fiches existantes.
+    if (s.emBarreMax === null || s.emBarreMax === undefined || s.emBarreMax === "")
+      s.emBarreMax = s.emMax;
+    s.emBarreMax = clamp(Math.floor(num(s.emBarreMax, s.emMax)), 0, 9999);
     s.em = (s.em === null || s.em === undefined || s.em === "") ? null : parseFloat(s.em);
     if (s.em !== null && !isFinite(s.em)) s.em = null;
     return s;

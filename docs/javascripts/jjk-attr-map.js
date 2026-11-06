@@ -58,7 +58,7 @@
   // est. Il ne change PAS le rang du numéro (« 3.6.0b » et « 3.6.0 » sont la
   // même version, la beta étant ce que le stable recevra à la fusion) : ce qui
   // compare des versions doit donc l'ôter avant de lire les nombres.
-  var RELEASE_DEFAUT = "4.5.1b";
+  var RELEASE_DEFAUT = "4.5.2b";
   // Entier INDÉPENDANT de la release : il ne monte qu'au changement de forme de
   // l'état du personnage, jamais parce que le majeur a bougé. Le manifeste
   // publie les deux séparément, et c'est ce repli-ci que l'amorce prend quand le
@@ -107,7 +107,7 @@
     ["background", "background", "s"], ["notes", "notes", "s"],
     ["inventaire", "inventaire", "s"], ["de", "de", "s"],
     ["xpTotal", "xp_total", "n"], ["narration", "narration", "n"],
-    ["pvMaxOverride", "pv_max_force", "N"], ["emMax", "em_max", "n"],
+    ["pvMaxOverride", "pv_max_force", "N"], ["emMax", "em_max", "n"], ["emBarreMax", "em_barre_max", "n"],
     ["vitesseOverride", "vitesse_force", "N"],
     ["regenOverride", "regen_force", "N"],
     ["langueBase", "langue_base", "s"],
@@ -222,7 +222,7 @@
       comps: {}, customComps: [],
       energie: [],
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, em: null, emMax: 0, narration: 3,
+      pv: null, em: null, emMax: 0, emBarreMax: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       inv: {
         texte: [], groupes: ["Sur soi"], objets: [],
@@ -233,7 +233,7 @@
         comptes: [true],
         opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
       },
-      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
+      divers: { pvMax: [0, 0, 0], eoMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       vitesseOverride: null,
       regenOverride: null,
@@ -348,7 +348,7 @@
       em: state.em == null ? null : state.em
     }));
     // Miroir direct utilisable dans les macros Roll20, avec le maximum en max.
-    put("em", state.em == null ? state.emMax : state.em, state.emMax);
+    put("em", state.em == null ? state.emBarreMax : state.em, state.emBarreMax);
 
     // ---- miroir dérivé (macros / barres de jetons), seulement si la carte est fournie ----
     if (card) {

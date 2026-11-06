@@ -36,7 +36,7 @@
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
       compsForce: {}, compsXpForce: {}, compsXpMod: {},
-      pv: null, em: null, emMax: 0, narration: 3,
+      pv: null, em: null, emMax: 0, emBarreMax: null, narration: 3,
       armes: [], armures: [], inventaire: "",
       // inventaire illustré : groupes, objets, et les réglages d'affichage du
       // module (le poids de JJK est un nombre SANS unité)
@@ -60,7 +60,7 @@
         // garde pour ne pas le leur effacer, mais rien ne le lit.
         opts: { cols: 4, nom: true, qte: true, poids: false, total: true, vign: true }
       },
-      divers: { pvMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
+      divers: { pvMax: [0, 0, 0], eoMax: [0, 0, 0], regen: [0, 0, 0], vitesse: [0, 0, 0] },
       pvMaxOverride: null,
       vitesseOverride: null,
       regenOverride: null,
