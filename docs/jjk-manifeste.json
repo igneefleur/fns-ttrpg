@@ -235,6 +235,20 @@
       ],
       "attrmap": "fiche/v4.4.0/jjk-attr-map.js",
       "data": "fiche/v4.4.0/jjk-creation.json"
+    },
+    "4.5.1": {
+      "schema": 4,
+      "js": [
+        "fiche/v4.5.1/jjk-migrations.js",
+        "fiche/v4.5.1/jjk-mods.js",
+        "fiche/v4.5.1/jjk-fiche.js"
+      ],
+      "css": [
+        "fiche/v4.5.1/jjk-fiche.css",
+        "fiche/v4.5.1/jjk-roll20.css"
+      ],
+      "attrmap": "fiche/v4.5.1/jjk-attr-map.js",
+      "data": "fiche/v4.5.1/jjk-creation.json"
     }
   },
   "extension": {
