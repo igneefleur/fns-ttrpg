@@ -54,15 +54,15 @@ test('Techniques : arts, techniques et rangs détaillés, envoi au tchat utilisa
  const send=(function seek(n){if(n.textContent==='Envoyer')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(firstRank);
  assert.ok(send);send.click();assert.equal(chats.length,1);assert.equal(chats[0].fields[0][1],'À classer');assert.equal(chats[0].fields[2][1],'Rang I');
  const hooks=ctx.hooks.length;assert.equal(hooks,2);
- const addArt=(function seek(n){if(n.textContent==='+ Ajouter un art')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ const addArt=(function seek(n){if(n.textContent==='+ Art')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addArt);addArt.click();
  assert.equal(ctx.state.techniques.length,2);assert.equal(ctx.hooks.length,hooks);
 });
 test('Techniques : commandes d’édition, formats Notes, description et pied de rang respectent le placement demandé',()=>{
  const w=techniques(),ui=w.ui,rank=w.find(ui,'pc-tech-rank');assert.ok(rank);
  const head=w.find(rank,'pc-tech-rank-head');assert.ok(head);
- assert.equal(head.children[1].textContent,'×');assert.ok(String(head.children[1].className).includes('pc-edit-only'));
- assert.equal(head.children[2].children[1].type,'text');assert.equal(head.children[3].children[1].type,'text');
+ assert.equal(head.children[2].children[0].textContent,'×');assert.ok(String(head.children[2].children[0].className).includes('pc-edit-only'));
+ assert.equal(head.children[3].children[1].type,'text');assert.equal(head.children[4].children[1].type,'text');
  const read=w.find(rank,'pc-tech-rank-read');assert.equal(read.textContent,'Description du rang');
  const footer=w.find(rank,'pc-tech-rank-footer');assert.ok(footer);
  assert.ok(rank.children.indexOf(read)<rank.children.indexOf(footer));
@@ -80,15 +80,15 @@ test('Techniques : commandes d’édition, formats Notes, description et pied de
 });
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
- const addTech=(function seek(n){if(n.textContent==='+ Ajouter une technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ const addTech=(function seek(n){if(n.textContent==='+ Technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addTech);addTech.click();const art=ctx.state.techniques[0];assert.equal(art.techniques.length,2);
- const addRank=(function seek(n){if(n.textContent==='+ Ajouter un rang')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ const addRank=(function seek(n){if(n.textContent==='+ Rang')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addRank);addRank.click();assert.equal(art.techniques[1].rangs.length,2);
  assert.equal(art.techniques[1].rangs[1].nom,'Rang 2');
 });
 test('Techniques : glisser vers un autre art conserve les rangs et leurs données, réordonner les arts',()=>{
  const w=techniques(),{ctx,ui}=w;
- const addArt=w.findText(ui,'+ Ajouter un art');assert.ok(addArt);addArt.click();
+ const addArt=w.findText(ui,'+ Art');assert.ok(addArt);addArt.click();
  const sourceArt=w.findText(ui,'À classer');assert.ok(sourceArt);sourceArt.click();
  const techLabel=w.findText(ui,'Test');assert.ok(techLabel);const techRow=techLabel.parentNode,techGrip=techRow.children[0];
  const transfer={value:'',setData(type,value){this.value=value;},getData(){return this.value;}};

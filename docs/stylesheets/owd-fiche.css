@@ -2574,22 +2574,29 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 .pc-tech-item .pc-mini { flex: 0 0 auto; padding: .06rem .22rem; }
 .pc-tech-add { flex: 0 0 auto; align-self: stretch; margin: .25rem; }
 .pc-tech-acquired {
-  display: flex; align-items: baseline; justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   gap: .4rem; padding: .24rem .45rem; border-bottom: 1px solid var(--hair);
   color: var(--ink-3); font-size: .59rem;
 }
-.pc-tech-acquired-value { color: var(--ink); font-size: .68rem; font-variant-numeric: tabular-nums; }
+.pc-tech-acquired-bar { flex: 0 1 15rem; width: min(15rem, 65%); }
+.pc-tech-acquired-bar .seg { height: .98rem; padding: 0; }
 .pc-tech-rank {
   min-width: 0; margin: 0 0 .35rem; padding: .4rem;
   border: 1px solid var(--hair); border-radius: 7px; background: var(--panel);
 }
 .pc-tech-rank.acquired { border-left: 2px solid var(--accent); }
 .pc-tech-rank-head {
-  display: grid; grid-template-columns: minmax(0, 1fr) auto 3.1rem 3.1rem;
+  display: grid; grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 3.1rem 3.1rem;
   align-items: end; gap: .3rem; min-width: 0;
 }
-.pc-tech-rank-del { align-self: end; min-width: 1.35rem; height: 1.45rem; padding: 0 .2rem; }
+.pc-tech-rank-drag-slot, .pc-tech-rank-del-slot {
+  display: flex; align-items: end; justify-content: center; min-width: 0; width: 100%;
+}
+.pc-tech-rank-drag-slot .pc-comp-drag { width: 100%; flex: 0 0 100%; }
+.pc-tech-rank-del { align-self: end; min-width: 1.35rem; width: 1.35rem; height: .98rem; padding: 0 .2rem; }
 .pc-tech-rank-name, .pc-tech-rank-number { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
+.pc-tech-rank-number { align-items: center; text-align: center; }
+.pc-tech-rank-number .pc-tech-rank-label { width: 100%; text-align: center; }
 .pc-tech-rank-label {
   color: var(--ink-3); font-size: .48rem; font-weight: 800;
   letter-spacing: .055em; text-transform: uppercase;
@@ -2603,10 +2610,10 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 .pc-tech-rank-head input:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-tech-rank-number input { text-align: center; font-variant-numeric: tabular-nums; }
 .pc-tech-rank-footer {
-  display: flex; align-items: center; justify-content: flex-end;
+  display: flex; align-items: center; justify-content: space-between;
   gap: .25rem; margin-top: .3rem;
 }
-.pc-tech-rank-format-wrap { display: flex; justify-content: flex-end; }
+.pc-tech-rank-format-wrap { display: flex; justify-content: flex-start; margin-right: auto; }
 .pc-tech-rank-format-wrap .pc-notes-modes { margin: 0; }
 .pc-tech-rank-read, .pc-tech-legacy-desc {
   min-width: 0; margin-top: .28rem; color: var(--ink); font-size: .68rem;
@@ -2645,4 +2652,12 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   .pc-tech-pane { min-height: 8rem; max-height: 15rem; }
   .pc-tech-ranks-pane { min-height: 14rem; max-height: none; }
   .pc-tech-ranks-list { overflow: visible; }
+  .pc-tech-rank-head { grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 3.1rem 3.1rem; }
+  .pc-tech-acquired-bar { flex-basis: 12rem; }
 }
+
+/* Réorganisation des rangs : mêmes repères de dépôt que les compétences. */
+.pc-tech-rank.avant { box-shadow: 0 -2px var(--accent); }
+.pc-tech-rank.apres { box-shadow: 0 2px var(--accent); }
+.pc-tech-rank.pris { opacity: .45; }
+.pc-editable:not(.editing) .pc-tech-rank-read { display: block; }
