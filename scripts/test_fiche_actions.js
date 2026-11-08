@@ -18,14 +18,71 @@ test('munition équipée épuisée : objet conservé, emplacement libéré',()=>
 function consumption(){const state=M.blank();state.etat.pv=50;state.inv.objets=[{ref:'sac',qte:2,ou:'poches'},{ref:'potion',nom:'Potion',qte:2,dans:'sac',ou:'poches',effets:['test'],restaurations:{pv:5}}];const ctx={state,window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,effetDefinition:id=>({id,ops:id==='impr'?{impregnation:{}}:{}}),flash(){},defenseArme:()=>null,invEstIngerable:()=>false,maxDe:()=>100,appliqueEffet(){},bougeReserve:(k,v)=>state.etat[k]+=v,effetPerteInnocence:v=>v,contenancePrise:()=>0,fmtP:String,sayChat(){},refresh(){},invRender:null};vm.createContext(ctx);const src=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8'),a=src.indexOf('  function invConsommer('),b=src.indexOf('  function invConsommerDialogue(',a);vm.runInContext(src.slice(a,b),ctx);return ctx;}
 test('consommation refusée : demi-dose, quantité zéro et cible absente ne changent aucun objet',()=>{for(const scenario of ['demi','zero','cible']){const c=consumption(),it=c.state.inv.objets[1];if(scenario==='cible')it.effets=['impr'];const before=I.stable(c.state);assert.equal(c.invConsommer(it,scenario==='demi'?.5:scenario==='zero'?0:1,''),false);assert.equal(I.stable(c.state),before);}});
 test('consommation valide : un seul contenant isolé, dose consommée et restauration appliquée',()=>{const c=consumption(),it=c.state.inv.objets[1];assert.equal(c.invConsommer(it,1,''),true);assert.equal(c.state.etat.pv,55);assert.equal(c.state.inv.objets.filter(o=>o.nom==='Potion').reduce((n,o)=>n+I.totalQuantity(c.state.inv.objets,o),0),3);});
-function techniques(){function el(tag,cls,text){const classes=new Set();return {tag,className:cls||'',textContent:text||'',dataset:{},children:[],listeners:{},style:{},classList:{toggle(k,on){if(on)classes.add(k);else classes.delete(k)},contains:k=>classes.has(k)},appendChild(c){this.children.push(c)},addEventListener(k,fn){this.listeners[k]=fn},set innerHTML(v){this.children=[]},get innerHTML(){return ''}}}const state=M.blank();state.techniques=[{id:'t',nom:'Test',rang:1,rangs:2,xp:10,offert:0,rupture:0,desc:''}];let id=0;const ctx={state,hooks:[],document:{activeElement:null},el,block:()=>el('div'),chatBtn:()=>el('button'),miniBtn:(text,title,fn)=>{const b=el('button','',text);b.listeners.click=fn;return b;},fld:(label,input)=>{const row=el('div','',label);row.appendChild(input);return row;},num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),applyEdit(){},refresh(){},isEdit:()=>true,confirmer:(_,__,___,fn)=>fn(),uid:()=>String(++id)};vm.createContext(ctx);vm.runInContext(fs.readFileSync(root+'src/fiche/art/techniques.js','utf8'),ctx);return {ctx,ui:ctx.buildTechniques()};}
-test('Techniques : un seul rappel après 100 reconstructions, aucun rappel ajouté aux autres modules',()=>{const {ctx,ui}=techniques(),owner=ctx.hooks;assert.equal(owner.length,1);ctx.hooks=[];const old=ui.children[0].children[0].children[2].children[0].children[0];old.value='3';for(let i=0;i<100;i++)old.listeners.input();assert.equal(owner.length,1);assert.equal(ctx.hooks.length,0);ctx.state.techniques[0].rangs=7;owner[0]();const current=ui.children[0].children[0].children[2].children[0].children[0];assert.equal(current.value,7);assert.equal(old.value,'3');});
-test('Techniques : ajout et suppression ne conservent pas les rappels des anciennes cartes',()=>{const {ctx,ui}=techniques(),owner=ctx.hooks;for(let i=0;i<20;i++){let box=ui.children[0];box.children.at(-1).listeners.click();box=ui.children[0];box.children[box.children.length-2].children[0].children.at(-1).listeners.click();}assert.equal(ctx.state.techniques.length,1);assert.equal(owner.length,1);owner[0]();});
-test('Techniques : aucun quota pour monter ou ajouter parmi 500 entrées',()=>{
- const {ctx,ui}=techniques();ctx.D=()=>({limites:{techniques:{diviseur:10}}});ctx.state.techniques.push(...Array.from({length:499},(_,i)=>({id:'a'+i,nom:'Art '+i,rang:2,rangs:2,xp:10,rupture:0,desc:''})));
- ui.children[0].children[0].children[0].children[1].children[2].listeners.click();assert.equal(ctx.state.techniques[0].rang,2);
- ui.children[0].children.at(-1).listeners.click();assert.equal(ctx.state.techniques.length,501);
- const saved=C.Compact.read(C.Compact.encode(ctx.state)).state;assert.equal(saved.techniques.length,501);assert.equal(saved.techniques[0].rang,2);assert.equal(saved.techniques[0].xp,10);
+function techniques(){
+ function el(tag,cls,text){
+  const classes=new Set(String(cls||'').split(/\s+/).filter(Boolean));
+  const node={tag,className:cls||'',textContent:text||'',dataset:{},children:[],listeners:{},style:{},attributes:{},
+   classList:{add(...ks){ks.forEach(k=>classes.add(k));},remove(...ks){ks.forEach(k=>classes.delete(k));},toggle(k,on){if(on===undefined)on=!classes.has(k);if(on)classes.add(k);else classes.delete(k);return on;},contains:k=>classes.has(k)},
+   appendChild(c){c.parentNode=this;this.children.push(c);return c;},
+   addEventListener(k,fn){(this.listeners[k]||(this.listeners[k]=[])).push(fn);},
+   setAttribute(k,v){this.attributes[k]=String(v);},getAttribute(k){return this.attributes[k];},
+   set innerHTML(v){this.children=[];this._html=v;},get innerHTML(){return this._html||'';},
+   get isConnected(){return true;},get offsetParent(){return this;},
+   getBoundingClientRect(){return {top:100};},contains(n){return this.children.includes(n);},
+   click(){(this.listeners.click||[]).forEach(fn=>fn({preventDefault(){},stopPropagation(){}}));}
+  };
+  return node;
+ }
+ const state=M.blank();
+ state.techniques=[{id:'art-a-classer',nom:'À classer',techniques:[{id:'t',nom:'Test',rang:1,rangs:[{id:'r1',nom:'Rang I',xp:10,rupture:2,desc:'Description du rang',mode:'plain'}],legacyXp:3,legacyRupture:1,legacyDesc:'Ancienne description',offert:0}]}];
+ let id=0;const chats=[],ctx={state,hooks:[],remontageNettoyage:[],document:{activeElement:null,querySelector(){return null;}},window:{innerHeight:900,addEventListener(){},removeEventListener(){}},
+  el,block:(title,small,id,onToggle)=>{const b=el('div','pc-block');b.appendChild(el('div','pc-block-title',title));return b;},
+  miniBtn:(text,title,fn,cls)=>{const b=el('button','pc-mini '+(cls||''),text);b.listeners.click=[fn];return b;},
+  sayChat:(title,fields)=>chats.push({title,fields}),notesRendu:(target,text,mode)=>{target.textContent=text;target.mode=mode;},
+  num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),
+  applyEdit(){},refresh(){},save(){},isEdit:()=>true,confirmer:(_,__,___,fn)=>fn(),uid:()=>String(++id),flash(){}};
+ vm.createContext(ctx);vm.runInContext(fs.readFileSync(root+'src/fiche/art/techniques.js','utf8'),ctx);
+ return {ctx,ui:ctx.buildTechniques(),chats,
+  find(node,cls){if(String(node.className||'').split(/\s+/).includes(cls))return node;for(const c of node.children||[]){const found=this.find(c,cls);if(found)return found;}return null;},
+  findText(node,text){if(node.textContent===text)return node;for(const c of node.children||[]){const found=this.findText(c,text);if(found)return found;}return null;},
+  fire(node,type,extra){assert.ok(node,'élément attendu pour '+type);(node.listeners[type]||[]).forEach(fn=>fn(Object.assign({preventDefault(){},stopPropagation(){},relatedTarget:null},extra||{})));}
+ };
+}
+test('Techniques : arts, techniques et rangs détaillés, envoi au tchat utilisable en lecture',()=>{
+ const w=techniques(),{ctx,ui,chats}=w;
+ const firstRank=w.find(ui,'pc-tech-rank');assert.ok(firstRank);assert.equal(firstRank.dataset.syncEntity,'r1');
+ const send=(function seek(n){if(n.textContent==='Envoyer')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(firstRank);
+ assert.ok(send);send.click();assert.equal(chats.length,1);assert.equal(chats[0].fields[0][1],'À classer');assert.equal(chats[0].fields[2][1],'Rang I');
+ const hooks=ctx.hooks.length;assert.equal(hooks,2);
+ const addArt=(function seek(n){if(n.textContent==='+ Ajouter un art')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ assert.ok(addArt);addArt.click();
+ assert.equal(ctx.state.techniques.length,2);assert.equal(ctx.hooks.length,hooks);
+});
+test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
+ const w=techniques(),{ctx,ui}=w;
+ const addTech=(function seek(n){if(n.textContent==='+ Ajouter une technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ assert.ok(addTech);addTech.click();const art=ctx.state.techniques[0];assert.equal(art.techniques.length,2);
+ const addRank=(function seek(n){if(n.textContent==='+ Ajouter un rang')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
+ assert.ok(addRank);addRank.click();assert.equal(art.techniques[1].rangs.length,2);
+ assert.equal(art.techniques[1].rangs[1].nom,'Rang 2');
+});
+test('Techniques : glisser vers un autre art conserve les rangs et leurs données, réordonner les arts',()=>{
+ const w=techniques(),{ctx,ui}=w;
+ const addArt=w.findText(ui,'+ Ajouter un art');assert.ok(addArt);addArt.click();
+ const sourceArt=w.findText(ui,'À classer');assert.ok(sourceArt);sourceArt.click();
+ const techLabel=w.findText(ui,'Test');assert.ok(techLabel);const techRow=techLabel.parentNode,techGrip=techRow.children[0];
+ const transfer={value:'',setData(type,value){this.value=value;},getData(){return this.value;}};
+ w.fire(techGrip,'dragstart',{dataTransfer:transfer});
+ const newArtLabel=w.findText(ui,'Nouvel art');assert.ok(newArtLabel);
+ w.fire(newArtLabel.parentNode,'drop',{dataTransfer:transfer});
+ assert.equal(ctx.state.techniques[1].techniques[0].id,'t');
+ assert.equal(ctx.state.techniques[1].techniques[0].rangs[0].id,'r1');
+ assert.equal(ctx.state.techniques[1].techniques[0].rangs[0].desc,'Description du rang');
+ const movedArtLabel=w.findText(ui,'Nouvel art');const artGrip=movedArtLabel.parentNode.children[0];
+ const firstArtLabel=w.findText(ui,'À classer');
+ w.fire(artGrip,'dragstart',{dataTransfer:transfer});w.fire(firstArtLabel.parentNode,'drop',{dataTransfer:transfer});
+ assert.equal(ctx.state.techniques[0].nom,'Nouvel art');
+ assert.equal(ctx.state.techniques[0].techniques[0].id,'t');
 });
 test('persistance : la munition zéro et les nouveaux contenus restent identiques après synchronisation',()=>{const before=M.blank();before.inv.objets=[weapon(),ammo()];const attrs=C.Compact.encode(before),session=new C.Compact.Session(attrs,before),w=attackContext(before.inv.objets);w.ctx.envoieAttaqueSimple({munition:'ammo'},before.inv.objets[0],def());session.capture(before);attrs.owd_ops_test={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};const saved=C.Compact.read(attrs).state;assert.equal(saved.inv.objets.find(o=>o.ref==='ammo').qte,0);assert.deepEqual(saved.inv.objets.find(o=>o.ref==='ammo').munitionStats,before.inv.objets[1].munitionStats);});
 test('imprégnation : pourcentage élémentaire indépendant du multiplicateur et des MOD',()=>{const it=weapon();it.arme.degats=100;it.arme.modsDegats=['Force'];it.arme.repartition={physique:80,feu:20};const w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='fire-imbue';assert.equal(w.ctx.brutCoup(it,{mult:1.2}),124);assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',false,it), '99 physique + 38 feu');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',true,it), '49 physique + 19 feu');});

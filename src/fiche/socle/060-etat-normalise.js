@@ -278,22 +278,66 @@
       };
     });
 
-    // ---- techniques ----
+    // ---- arts, techniques et rangs ----
+    // La migration 19 transforme les anciennes techniques en un art « À classer ».
+    // Cette lecture tolère aussi une fiche partiellement migrée : aucune entrée
+    // plate ne disparaît si elle arrive sans être passée par OwdMigr.
+    function normRangTechnique(r) {
+      r = r && typeof r === "object" ? r : {};
+      return {
+        id: String(r.id || "") || uid("tr"),
+        nom: String(r.nom == null ? "" : r.nom),
+        xp: Math.max(0, num(r.xp, 0)),
+        rupture: clamp(num(r.rupture, 0), 0, 999),
+        desc: String(r.desc == null ? "" : r.desc),
+        mode: r.mode === "markdown" ? "markdown" : "plain"
+      };
+    }
+    function normTechnique(t) {
+      t = t && typeof t === "object" ? t : {};
+      // Une technique à structure ancienne peut être trouvée dans un art après
+      // un import incomplet : on la garde en conservant son coût global.
+      var ancien = !Array.isArray(t.rangs), listeRangs;
+      if (ancien) {
+        var nbAncien = clamp(num(t.rangs, 1), 1, 20);
+        listeRangs = [];
+        for (var ar = 0; ar < nbAncien; ar++) listeRangs.push(normRangTechnique({ nom: "Rang " + (ar + 1) }));
+      } else {
+        listeRangs = t.rangs.filter(function (r) { return r && typeof r === "object"; })
+          .slice(0, 20).map(normRangTechnique);
+      }
+      if (!listeRangs.length) listeRangs.push(normRangTechnique({ nom: "Rang 1" }));
+      var acquis = clamp(num(t.rang, 0), 0, listeRangs.length);
+      return {
+        id: String(t.id || "") || uid("t"),
+        nom: String(t.nom == null ? "" : t.nom),
+        rang: acquis,
+        rangs: listeRangs,
+        legacyXp: Math.max(0, num(t.legacyXp, ancien ? num(t.xp, 0) : 0)),
+        legacyRupture: clamp(num(t.legacyRupture, ancien ? num(t.rupture, 0) : 0), 0, 999),
+        legacyDesc: String(t.legacyDesc == null ? (ancien ? (t.desc || "") : "") : t.legacyDesc),
+        offert: clamp(num(t.offert, 0), 0, listeRangs.length)
+      };
+    }
     if (!Array.isArray(s.techniques)) s.techniques = [];
-    s.techniques = s.techniques.filter(function (t) { return t && typeof t === "object"; })
-      .map(function (t) {
-        var nb = clamp(num(t.rangs, 1), 1, 20);
-        return {
-          id: String(t.id || "") || uid("t"),
-          nom: String(t.nom == null ? "" : t.nom),
-          rangs: nb,
-          rang: clamp(num(t.rang, 0), 0, nb),
-          xp: Math.max(0, num(t.xp, 0)),
-          offert: clamp(num(t.offert, 0), 0, nb),
-          rupture: clamp(num(t.rupture, 0), 0, 99),
-          desc: String(t.desc == null ? "" : t.desc)
-        };
+    var artsNormalises = [], techniquesAnciennes = [];
+    s.techniques.filter(function (a) { return a && typeof a === "object"; }).forEach(function (a) {
+      if (!Array.isArray(a.techniques)) { techniquesAnciennes.push(a); return; }
+      artsNormalises.push({
+        id: String(a.id || "") || uid("art"),
+        nom: String(a.nom == null ? "" : a.nom),
+        techniques: a.techniques.filter(function (t) { return t && typeof t === "object"; }).map(normTechnique)
       });
+    });
+    if (techniquesAnciennes.length) {
+      var aClasser = artsNormalises.filter(function (a) { return a.id === "art-a-classer"; })[0];
+      if (!aClasser) {
+        aClasser = artsNormalises.filter(function (a) { return a.nom.toLocaleLowerCase() === "à classer"; })[0];
+      }
+      if (!aClasser) { aClasser = { id: "art-a-classer", nom: "À classer", techniques: [] }; artsNormalises.unshift(aClasser); }
+      techniquesAnciennes.forEach(function (t) { aClasser.techniques.push(normTechnique(t)); });
+    }
+    s.techniques = artsNormalises;
 
     // ---- armes et leurs gestes ----
     if (!Array.isArray(s.armes)) s.armes = [];

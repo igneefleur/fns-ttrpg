@@ -138,3 +138,54 @@ test('migration 17 → 16 → 17 : nouveau consommable reste consommable',()=>{
   const up=Migr.appliquer(down.state,16,17);assert.ok(up.ok);assert.deepEqual(up.state,s);
 });
 console.log(checks+' scénarios de concurrence validés.');
+
+test('migration 18 → 19 : techniques anciennes conservées dans À classer, coûts historiques et rangs préservés',()=>{
+  const s=seed();s.v=18;s.techniques=[
+    {id:'t-ancien',nom:'Cadence',rang:2,rangs:3,xp:45,offert:1,rupture:4,desc:'Description générale'},
+    {id:'t-vide',nom:'Garde',rang:0,rangs:1,xp:0,offert:0,rupture:0,desc:''}
+  ];
+  const up=Migr.appliquer(s,18,19);assert.ok(up.ok,up.erreur&&up.erreur.message);
+  assert.equal(up.state.techniques.length,1);assert.equal(up.state.techniques[0].nom,'À classer');
+  const cadence=up.state.techniques[0].techniques[0];
+  assert.equal(cadence.id,'t-ancien');assert.equal(cadence.rang,2);assert.equal(cadence.rangs.length,3);
+  assert.equal(cadence.legacyXp,45);assert.equal(cadence.legacyRupture,4);assert.equal(cadence.legacyDesc,'Description générale');
+  assert.equal(cadence.offert,1);assert.equal(cadence.rangs[1].nom,'Rang 2');
+  const down=Migr.appliquer(up.state,19,18);assert.ok(down.ok,down.erreur&&down.erreur.message);
+  assert.deepEqual(down.state.techniques,s.techniques);
+  assert.ok(down.state.grenier && down.state.grenier['19']['techniques-arts-schema19']);
+  const retour=Migr.appliquer(down.state,18,19);assert.ok(retour.ok,retour.erreur&&retour.erreur.message);
+  assert.deepEqual(retour.state,up.state);
+});
+test('migration 19 → 18 : coûts acquis et descriptions rang par rang restent lisibles',()=>{
+  const s=seed();s.v=19;s.techniques=[{id:'art',nom:'Art',techniques:[{
+    id:'t',nom:'Technique',rang:1,offert:0,legacyXp:5,legacyRupture:2,legacyDesc:'Générale',
+    rangs:[{id:'r1',nom:'Cadence',xp:12,rupture:3,desc:'Rang acquis',mode:'markdown'},
+      {id:'r2',nom:'Finale',xp:30,rupture:8,desc:'Rang non acquis',mode:'plain'}]
+  }]}];
+  const down=Migr.appliquer(s,19,18);assert.ok(down.ok,down.erreur&&down.erreur.message);
+  assert.equal(down.state.techniques[0].xp,17);assert.equal(down.state.techniques[0].rupture,5);
+  assert.ok(down.state.techniques[0].desc.includes('Générale'));
+  assert.ok(down.state.techniques[0].desc.includes('[Cadence]'));
+  assert.ok(down.state.techniques[0].desc.includes('[Finale]'));
+});
+
+test('synchronisation : les arts, techniques et rangs imbriqués gardent leurs identifiants',()=>{
+  const w=world();
+  change(w,w.a,s=>s.techniques=[{id:'art',nom:'Art',techniques:[{id:'t',nom:'Technique',rang:1,rangs:[{id:'r1',nom:'I',xp:4,rupture:1,desc:'A',mode:'plain'}],legacyXp:2,legacyRupture:1,legacyDesc:''}]}]);
+  change(w,w.b,s=>s.techniques=[{id:'art',nom:'Art',techniques:[{id:'t',nom:'Technique',rang:1,rangs:[{id:'r2',nom:'II',xp:8,rupture:2,desc:'B',mode:'markdown'}],legacyXp:2,legacyRupture:1,legacyDesc:''}]}]);
+  const arts=w.value().techniques;assert.equal(arts.length,1);assert.equal(arts[0].techniques.length,1);
+  assert.deepEqual(arts[0].techniques[0].rangs.map(r=>r.id),['r1','r2']);
+});
+test('calculs : seuls les rangs acquis et les coûts historiques comptent en XP et rupture',()=>{
+  const fs=require('node:fs'),vm=require('node:vm'),src=fs.readFileSync(require('node:path').join(__dirname,'../src/fiche/socle/090-calculs-comps.js'),'utf8');
+  const start=src.indexOf('  // ---- arts, techniques, expérience et rupture ----');
+  const end=src.indexOf('  function xpDepense()',start);
+  const rStart=src.indexOf('  function ruptureTechs()',end),rEnd=src.indexOf('  function ruptureDepense()',rStart);
+  const state={comps:[],techniques:[{id:'art',techniques:[
+    {id:'t1',rang:1,legacyXp:4,legacyRupture:1,rangs:[{xp:20,rupture:2},{xp:99,rupture:99}]},
+    {id:'t2',rang:2,legacyXp:0,legacyRupture:0,rangs:[{xp:5,rupture:0},{xp:6,rupture:3}]}
+  ]}]};
+  const ctx={state,num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,compXp:()=>0,caracsXpDepense:()=>0};
+  vm.createContext(ctx);vm.runInContext(src.slice(start,end),ctx);vm.runInContext(src.slice(rStart,rEnd),ctx);
+  assert.equal(ctx.xpDepenseBrut(),35);assert.equal(ctx.ruptureTechs(),6);
+});

@@ -141,13 +141,9 @@
       compsLeviers: {},
 
       // ---- techniques ----
-      // Les rangs d'une technique LUI APPARTIENNENT : les règles le disent, la
-      // fiche ne les barème donc pas et se contente de les compter.
-      // Une entrée : { id, nom, rang, rangs, xp, offert, rupture, desc }.
-      //   rangs   combien de rangs cette technique-là possède
-      //   offert  ancien champ conservé à l’import, sans effet sur les règles
-      //   xp      ce que le joueur a payé pour elle, saisi (aucune règle ne le fixe)
-      //   rupture combien de points de rupture elle a demandés
+      // Arts > techniques > rangs. Chaque rang porte son propre nom, son XP,
+      // sa rupture et sa description. Les coûts historiques d'anciennes fiches
+      // restent dans legacyXp / legacyRupture jusqu'à ventilation manuelle.
       techniques: [],
 
       // ---- combat ----

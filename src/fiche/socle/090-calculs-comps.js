@@ -62,13 +62,37 @@
   }
   function compGroupe(c) { return String(c.groupe || "").trim(); }
 
-  // ---- techniques, expérience, rupture ----
-  function techXp(t) { return Math.max(0, num(t.xp, 0)); }
-  function techRupture(t) { return Math.max(0, num(t.rupture, 0)); }
+  // ---- arts, techniques, expérience et rupture ----
+  // Les coûts historiques restent comptés tant que le joueur ne les a pas
+  // ventilés entre les rangs. Les coûts de rang ne comptent qu'une fois acquis.
+  function techXp(t) {
+    var ancien = !Array.isArray(t.rangs);
+    var total = Math.max(0, num(t.legacyXp, ancien ? num(t.xp, 0) : 0));
+    (Array.isArray(t.rangs) ? t.rangs : []).forEach(function (r, i) {
+      if (i < Math.max(0, num(t.rang, 0))) total += Math.max(0, num(r.xp, 0));
+    });
+    return total;
+  }
+  function techRupture(t) {
+    var ancien = !Array.isArray(t.rangs);
+    var total = Math.max(0, num(t.legacyRupture, ancien ? num(t.rupture, 0) : 0));
+    (Array.isArray(t.rangs) ? t.rangs : []).forEach(function (r, i) {
+      if (i < Math.max(0, num(t.rang, 0))) total += Math.max(0, num(r.rupture, 0));
+    });
+    return total;
+  }
+  function techniquesToutes() {
+    var out = [];
+    (Array.isArray(state.techniques) ? state.techniques : []).forEach(function (a) {
+      if (a && Array.isArray(a.techniques)) out = out.concat(a.techniques);
+      else if (a && typeof a === "object") out.push(a); // compatibilité avant normalisation
+    });
+    return out;
+  }
   function xpDepenseBrut() {
     var xp = 0;
     state.comps.forEach(function (c) { xp += compXp(c); });
-    state.techniques.forEach(function (t) { xp += techXp(t); });
+    techniquesToutes().forEach(function (t) { xp += techXp(t); });
     return xp + caracsXpDepense();
   }
   function xpDepense() { return pub("xpDepense", xpDepenseBrut(), {}); }
@@ -83,7 +107,7 @@
   }
   function ruptureTechs() {
     var t = 0;
-    state.techniques.forEach(function (x) { t += techRupture(x); });
+    techniquesToutes().forEach(function (x) { t += techRupture(x); });
     return t;
   }
   function ruptureDepense() { return ruptureComps() + ruptureTechs(); }

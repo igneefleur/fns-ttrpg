@@ -42,10 +42,11 @@ seul non-recul disponible est le plancher des trois porteurs (voir
 scripts/version_fiche.py). Le jour où une archive existera, une étape reviendra
 ici, entre le 3 et le 4.
 
-Il n'éprouve PAS le moteur de migrations : la chaîne est vide (schéma 1 = le
-socle), il n'y a pas un seul pas à faire monter ni redescendre. Cette épreuve
-revient le jour du premier pas, et elle passera AVANT toute écriture — un moteur
-fautif doit arrêter la publication avant qu'elle ait laissé la moindre trace.
+Il éprouve AUSSI le moteur de migrations, dans scripts/test_sync.js, avant
+toute écriture de version. Chaque pas doit monter et redescendre sans perdre
+les données qu'il prétend conserver ; la cohérence de la chaîne est ensuite
+vérifiée à la dernière étape par scripts/verif_versions.py. Un moteur fautif
+doit arrêter la publication avant qu'elle ait laissé la moindre trace.
 """
 
 import argparse
@@ -507,11 +508,9 @@ def main():
     if not lancer("cartes d’objets et réception compatible", ["node", "scripts/test_item_cards.js"], racine):
         return 1
 
-    # 2. LE NUMÉRO S'ÉCRIT ICI. Il n'y a rien avant lui qui puisse encore
-    # arrêter la publication : la seule épreuve qui devrait le précéder est
-    # celle du moteur de migrations, et elle n'existera qu'avec le premier pas
-    # (voir l'en-tête). Le jour où elle reviendra, elle se placera AVANT cette
-    # ligne, pour qu'une publication arrêtée ne laisse rien derrière elle.
+    # 2. LE NUMÉRO S'ÉCRIT ICI. Les tests de migration et de concurrence
+    # tournent déjà plus haut, avant toute écriture ; la cohérence structurelle
+    # de la chaîne sera contrôlée en dernier par verif_versions.py.
     if cible is not None:
         print("")
         print("  --- numéro %s" % cible.texte())

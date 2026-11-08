@@ -1417,6 +1417,76 @@
       }return s;
     }
   });
+  OwdMigr.ajouter({ schema: 19,
+    titre: "Arts et rangs détaillés",
+    notes: "Les techniques sont regroupées par arts. Chaque rang reçoit ses propres coûts et sa description ; les coûts et textes historiques non ventilés sont conservés.",
+    monter: function (s, ctx) {
+      var retour = ctx.reprendre("techniques-arts-schema19");
+      if (retour && Array.isArray(retour)) { s.techniques = retour; return s; }
+      var anciens = Array.isArray(s.techniques) ? s.techniques : [];
+      var arts = [], techniques = [];
+      anciens.forEach(function (t, index) {
+        if (!t || typeof t !== "object") return;
+        if (Array.isArray(t.techniques)) {
+          arts.push(t);
+          return;
+        }
+        var nb = Math.max(1, Math.min(20, Math.floor(Number(t.rangs) || 1)));
+        var rangs = [];
+        for (var i = 0; i < nb; i++) rangs.push({
+          id: "tr-legacy-" + String(t.id || index) + "-" + (i + 1),
+          nom: "Rang " + (i + 1), xp: 0, rupture: 0, desc: "", mode: "plain"
+        });
+        techniques.push({
+          id: String(t.id || "t-legacy-" + index), nom: String(t.nom == null ? "" : t.nom),
+          rang: Math.max(0, Math.min(nb, Math.floor(Number(t.rang) || 0))), rangs: rangs,
+          legacyXp: Math.max(0, Number(t.xp) || 0),
+          legacyRupture: Math.max(0, Number(t.rupture) || 0),
+          legacyDesc: String(t.desc == null ? "" : t.desc),
+          offert: Math.max(0, Math.min(nb, Math.floor(Number(t.offert) || 0)))
+        });
+      });
+      if (techniques.length) {
+        var cible = arts.filter(function (a) { return a.id === "art-a-classer"; })[0];
+        if (!cible) { cible = { id: "art-a-classer", nom: "À classer", techniques: [] }; arts.unshift(cible); }
+        if (!Array.isArray(cible.techniques)) cible.techniques = [];
+        cible.techniques = cible.techniques.concat(techniques);
+      }
+      s.techniques = arts;
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var arts = Array.isArray(s.techniques) ? s.techniques : [];
+      var conserveArts = ctx.grenier("techniques-arts-schema19", arts);
+      if (!conserveArts) ctx.perte("Organisation des arts et détails des rangs", "Le schéma précédent ne sait pas représenter les arts ni les descriptions et coûts rang par rang. Les noms, les coûts acquis et les textes sont rassemblés dans les techniques historiques.");
+      var plats = [];
+      arts.forEach(function (a) {
+        (Array.isArray(a && a.techniques) ? a.techniques : []).forEach(function (t) {
+          var rangs = Array.isArray(t.rangs) ? t.rangs : [];
+          var xp = Math.max(0, Number(t.legacyXp) || 0);
+          var rupture = Math.max(0, Number(t.legacyRupture) || 0);
+          var descriptions = [];
+          if (String(t.legacyDesc || "").trim()) descriptions.push(String(t.legacyDesc));
+          rangs.forEach(function (r, i) {
+            if (i < Math.max(0, Number(t.rang) || 0)) {
+              xp += Math.max(0, Number(r && r.xp) || 0);
+              rupture += Math.max(0, Number(r && r.rupture) || 0);
+            }
+            if (String(r && r.desc || "").trim()) descriptions.push("[" + String(r.nom || ("Rang " + (i + 1))) + "]\n" + String(r.desc));
+          });
+          plats.push({
+            id: String(t.id || ""), nom: String(t.nom || ""),
+            rangs: Math.max(1, rangs.length), rang: Math.max(0, Math.min(rangs.length, Number(t.rang) || 0)),
+            xp: xp, offert: Math.max(0, Math.min(rangs.length, Number(t.offert) || 0)),
+            rupture: rupture, desc: descriptions.join("\n\n")
+          });
+        });
+      });
+      s.techniques = plats;
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
