@@ -2573,30 +2573,63 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 .pc-tech-item-name:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-tech-item .pc-mini { flex: 0 0 auto; padding: .06rem .22rem; }
 .pc-tech-add { flex: 0 0 auto; align-self: stretch; margin: .25rem; }
+/* Deux actions d'ajout empilées gardent le même vide sous la seconde
+   qu'entre elles : pas de double marge au milieu du pied de colonne. */
+.pc-tech-add + .pc-tech-add { margin-top: 0; }
 .pc-tech-acquired {
   display: flex; align-items: center; justify-content: space-between;
   gap: .4rem; padding: .24rem .45rem; border-bottom: 1px solid var(--hair);
   color: var(--ink-3); font-size: .59rem;
 }
-.pc-tech-acquired-bar { flex: 0 1 15rem; width: min(15rem, 65%); }
+.pc-tech-acquired-bar {
+  flex: 0 1 15rem; width: min(15rem, 65%);
+  --tech-rang-couleur-debut: #fbf1da;
+  --tech-rang-couleur-fin: var(--accent-deep);
+}
 .pc-tech-acquired-bar .seg { height: .98rem; padding: 0; }
+/* Dégradé continu sur TOUS les rangs. La dernière nuance reste exactement
+   celle du dernier palier historique ; seul le chemin entre les deux change. */
+.pc-stadebar.pc-tech-acquired-bar .seg.on {
+  background: color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin));
+  border-color: color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin));
+  color: color-mix(in srgb, var(--ink) var(--tech-rang-debut), #fff var(--tech-rang-fin));
+}
+html.night .pc-tech-acquired-bar {
+  --tech-rang-couleur-debut: #2a2415;
+  --tech-rang-couleur-fin: #6b5a2e;
+}
+html.night .pc-stadebar.pc-tech-acquired-bar .seg.on {
+  background: color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin));
+  border-color: color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin));
+  color: #eef2e6;
+}
 .pc-tech-rank {
   min-width: 0; margin: 0 0 .35rem; padding: .4rem;
   border: 1px solid var(--hair); border-radius: 7px; background: var(--panel);
 }
 .pc-tech-rank.acquired { border-left: 2px solid var(--accent); }
 .pc-tech-rank-head {
-  display: grid; grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 1.55rem 1.55rem;
-  align-items: end; gap: .3rem; min-width: 0;
+  --tech-rank-control-height: 1.75rem;
+  display: grid; grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 2.325rem 2.325rem;
+  align-items: stretch; gap: .3rem; min-width: 0;
 }
 .pc-tech-rank-drag-slot, .pc-tech-rank-del-slot {
-  display: flex; align-items: end; justify-content: center; min-width: 0; width: 100%;
+  display: flex; align-items: stretch; justify-content: center; min-width: 0; width: 100%;
 }
-.pc-tech-rank-drag-slot .pc-comp-drag { width: 100%; flex: 0 0 100%; }
-.pc-tech-rank-del { align-self: end; min-width: 1.35rem; width: 1.35rem; height: .98rem; padding: 0 .2rem; }
+.pc-tech-rank-drag-slot .pc-comp-drag {
+  width: 100%; height: var(--tech-rank-control-height); min-height: var(--tech-rank-control-height);
+  flex: 0 0 100%; align-self: stretch;
+}
+.pc-tech-rank-del {
+  align-self: stretch; min-width: 1.35rem; width: 1.35rem;
+  height: var(--tech-rank-control-height); min-height: var(--tech-rank-control-height);
+  padding: 0 .2rem;
+}
 .pc-tech-rank-name, .pc-tech-rank-number { display: flex; flex-direction: column; gap: .1rem; min-width: 0; }
-.pc-tech-rank-number { align-items: center; text-align: center; }
-.pc-tech-rank-number .pc-tech-rank-label { width: 100%; text-align: center; white-space: nowrap; font-size: .37rem; letter-spacing: 0; }
+.pc-tech-rank-name { justify-content: center; }
+.pc-tech-rank-number { align-items: center; justify-content: center; text-align: center; }
+.pc-tech-rank-number .pc-tech-rank-label { width: 100%; text-align: center; white-space: nowrap; }
+.pc-editable:not(.editing) .pc-tech-rank-number.is-zero { visibility: hidden; }
 .pc-tech-rank-label {
   color: var(--ink-3); font-size: .48rem; font-weight: 800;
   letter-spacing: .055em; text-transform: uppercase;
@@ -2608,7 +2641,7 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   font-size: .68rem; font-weight: 650; padding: .08rem .12rem;
 }
 .pc-tech-rank-head input:focus { outline: none; border-bottom: 2px solid var(--accent); }
-.pc-tech-rank-number input { text-align: center; font-variant-numeric: tabular-nums; font-size: .55rem; }
+.pc-tech-rank-number input { text-align: center; font-variant-numeric: tabular-nums; font-size: .68rem; }
 .pc-tech-rank-footer {
   display: flex; align-items: center; justify-content: flex-end;
   gap: .25rem; margin-top: .3rem;
@@ -2652,7 +2685,7 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   .pc-tech-pane { min-height: 8rem; max-height: 15rem; }
   .pc-tech-ranks-pane { min-height: 14rem; max-height: none; }
   .pc-tech-ranks-list { overflow: visible; }
-  .pc-tech-rank-head { grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 1.55rem 1.55rem; }
+  .pc-tech-rank-head { grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 2.325rem 2.325rem; }
   .pc-tech-acquired-bar { flex-basis: 12rem; }
 }
 
@@ -2668,10 +2701,11 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
    jusqu'au suivant. Les contrôles d'organisation restent réservés à l'édition. */
 .pc-tech-list > [hidden] { display: none !important; }
 .pc-tech-divider {
-  display: flex; align-items: center; gap: .22rem; min-width: 0;
-  margin: .32rem .06rem .12rem; padding: .13rem .08rem .16rem;
-  border: 0; border-bottom: 1px solid var(--line-2); border-radius: 0;
-  box-sizing: border-box;
+  display: flex; align-items: center; gap: .2rem; min-width: 0;
+  margin: 0 0 .2rem; padding: .2rem .18rem;
+  /* Même contour et même filet bas que les lignes Art / Technique. */
+  border: 1px solid transparent; border-bottom-color: var(--hair);
+  border-radius: 5px; box-sizing: border-box;
 }
 .pc-tech-divider-toggle {
   display: flex; align-items: center; gap: .24rem; flex: 1 1 auto; min-width: 0;
@@ -2693,6 +2727,7 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 .pc-tech-divider-name:focus { outline: none; border-bottom: 2px solid var(--accent); }
 .pc-tech-divider-del { flex: 0 0 auto; }
 .pc-editable.editing .pc-tech-divider-toggle { flex: 0 0 auto; padding: .05rem .12rem; }
+.pc-editable.editing .pc-tech-divider-name { border-bottom-color: var(--line-2); }
 .pc-editable.editing .pc-tech-divider-label { display: none; }
 .pc-editable.editing .pc-tech-divider-name { display: block; }
 .pc-tech-divider.collapsed { border-bottom-style: dashed; }

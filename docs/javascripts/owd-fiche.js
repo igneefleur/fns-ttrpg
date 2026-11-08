@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.34.0b";
+  var RELEASE = "4.34.1b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7884,6 +7884,11 @@
       input.value = String(objet[cle] == null ? 0 : objet[cle]);
       input.setAttribute("aria-label", label);
       saveNombre(input, objet, cle, min, max);
+      // En lecture, une valeur nulle et son en-tête disparaissent sans
+      // supprimer sa case : XP ne décale donc jamais la colonne Rupture.
+      techHooks.push(function () {
+        wrap.classList.toggle("is-zero", num(objet[cle], 0) === 0);
+      });
       wrap.appendChild(input); parent.appendChild(wrap);
       return input;
     }
@@ -8348,8 +8353,13 @@
       var bar = el("span", "pc-stadebar pc-tech-acquired-bar");
       var segments = [];
       t.rangs.forEach(function (rang, i) {
-        var lettre = String.fromCharCode(65 + i);
-        var segment = el("button", "seg s" + Math.min(i + 1, 5), lettre);
+        var segment = el("button", "seg s" + Math.min(i + 1, 5), String(i + 1));
+        // Dégradé continu entre la première nuance et la teinte finale
+        // historique, quel que soit le nombre de rangs (jusqu'à 20).
+        var progression = t.rangs.length <= 1 ? 0 : i / (t.rangs.length - 1);
+        var fin = Math.round(progression * 1000) / 10;
+        segment.style.setProperty("--tech-rang-debut", (100 - fin) + "%");
+        segment.style.setProperty("--tech-rang-fin", fin + "%");
         segment.type = "button";
         segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
         segment.addEventListener("click", function () {

@@ -21,7 +21,7 @@ test('consommation valide : un seul contenant isolé, dose consommée et restaur
 function techniques(initial){
  function el(tag,cls,text){
   const classes=new Set(String(cls||'').split(/\s+/).filter(Boolean));
-  const node={tag,className:cls||'',textContent:text||'',dataset:{},children:[],listeners:{},style:{},attributes:{},
+  const node={tag,className:cls||'',textContent:text||'',dataset:{},children:[],listeners:{},style:{setProperty(k,v){this[k]=v;}},attributes:{},
    classList:{add(...ks){ks.forEach(k=>classes.add(k));},remove(...ks){ks.forEach(k=>classes.delete(k));},toggle(k,on){if(on===undefined)on=!classes.has(k);if(on)classes.add(k);else classes.delete(k);return on;},contains:k=>classes.has(k)},
    appendChild(c){c.parentNode=this;this.children.push(c);return c;},
    addEventListener(k,fn){(this.listeners[k]||(this.listeners[k]=[])).push(fn);},
@@ -78,8 +78,27 @@ test('Techniques : commandes d’édition, formats Notes, description et pied de
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-edit-only { display: none !important; }'));
  assert.ok(css.includes('.pc-editable.editing .pc-tech-rank-read { display: none; }'));
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-editor { display: none; }'));
- assert.ok(css.includes('grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 1.55rem 1.55rem;'));
+ assert.ok(css.includes('grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 2.325rem 2.325rem;'));
+ assert.ok(css.includes('--tech-rank-control-height: 1.75rem;'));
+ assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-number.is-zero { visibility: hidden; }'));
  assert.ok(css.includes('display: flex; align-items: center; justify-content: flex-end;'));
+});
+test('Techniques : sélecteur numérique et dégradé continu jusqu’à la teinte finale',()=>{
+ const w=techniques([{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:4,rangs:Array.from({length:8},(_,i)=>({id:'r'+i,nom:'Rang '+(i+1),xp:i,rupture:i,desc:'',mode:'plain'}))}]}]);
+ const bar=w.find(w.ui,'pc-tech-acquired-bar');assert.ok(bar);assert.deepEqual(bar.children.map(x=>x.textContent),['1','2','3','4','5','6','7','8']);
+ assert.equal(bar.children[0].style['--tech-rang-debut'],'100%');assert.equal(bar.children[0].style['--tech-rang-fin'],'0%');
+ assert.equal(bar.children[7].style['--tech-rang-debut'],'0%');assert.equal(bar.children[7].style['--tech-rang-fin'],'100%');
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin))'));
+ assert.ok(css.includes('--tech-rang-couleur-fin: var(--accent-deep);'));
+ assert.ok(css.includes('--tech-rang-couleur-fin: #6b5a2e;'));
+});
+test('Techniques : valeurs XP et Rupture nulles identifiées sans supprimer leurs cases',()=>{
+ const w=techniques([{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:0,rangs:[{id:'r',nom:'I',xp:0,rupture:0,desc:'',mode:'plain'}]}]}]);
+ const rank=w.find(w.ui,'pc-tech-rank'),numbers=w.findAll(rank,'pc-tech-rank-number');assert.equal(numbers.length,2);
+ assert.ok(numbers.every(n=>n.classList.contains('is-zero')));
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-number.is-zero { visibility: hidden; }'));
 });
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
