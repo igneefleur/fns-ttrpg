@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.33.1b";
+  var RELEASE = "4.33.2b";
   var SCHEMA = 19;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7817,7 +7817,7 @@
     b.appendChild(layout);
 
     var artSelection = "", techniqueSelection = "";
-    var techHooks = [];
+    var techHooks = [], dragRang = null;
     hooks.push(function () { techHooks.forEach(function (fn) { try { fn(); } catch (e) {} }); });
 
     function arts() { return Array.isArray(state.techniques) ? state.techniques : (state.techniques = []); }
@@ -7863,18 +7863,90 @@
       return input;
     }
     function changeMode(parent, rang, read) {
-      var modes = el("div", "pc-notes-modes");
-      modes.setAttribute("role", "group"); modes.setAttribute("aria-label", "Format de la description");
-      var brut = miniBtn("Brut", null, function () { rang.mode = "plain"; actualise(); save(); });
-      var markdown = miniBtn("Markdown", null, function () { rang.mode = "markdown"; actualise(); save(); });
+      var group = el("div", "pc-notes-modes"), buttons = [];
+      group.setAttribute("role", "group");
+      group.setAttribute("aria-label", "Format de la description");
+      [["plain", "Brut"], ["markdown", "Markdown"]].forEach(function (pair) {
+        var button = miniBtn(pair[1], null, function () {
+          rang.mode = pair[0];
+          sync();
+          notesRendu(read, rang.desc || "", rang.mode);
+          save();
+        });
+        buttons.push([button, pair[0]]);
+        group.appendChild(button);
+      });
+      function sync() {
+        buttons.forEach(function (pair) {
+          pair[0].setAttribute("aria-pressed", String(rang.mode === pair[1]));
+        });
+      }
       function actualise() {
-        brut.setAttribute("aria-pressed", String(rang.mode !== "markdown"));
-        markdown.setAttribute("aria-pressed", String(rang.mode === "markdown"));
+        sync();
         notesRendu(read, rang.desc || "", rang.mode);
       }
-      modes.appendChild(brut); modes.appendChild(markdown);
-      actualise(); techHooks.push(actualise); parent.appendChild(modes);
+      actualise();
+      parent.appendChild(group);
+      techHooks.push(actualise);
       return actualise;
+    }
+    function coutRangs(liste, nombre, cle) {
+      var total = 0;
+      for (var i = 0; i < Math.min(Math.max(0, nombre), liste.length); i++)
+        total += Math.max(0, num(liste[i] && liste[i][cle], 0));
+      return total;
+    }
+    function changeRangsAcquis(t, cible) {
+      cible = clamp(cible, 0, t.rangs.length);
+      if (cible === t.rang) return;
+      var deltaXp = coutRangs(t.rangs, cible, "xp") - coutRangs(t.rangs, t.rang, "xp");
+      var deltaRupture = coutRangs(t.rangs, cible, "rupture") - coutRangs(t.rangs, t.rang, "rupture");
+      if (deltaXp > 0 && xpRestant() < deltaXp) { flash("XP insuffisant."); return; }
+      if (deltaRupture > 0 && ruptureRestante() < deltaRupture) { flash("Aucun point de rupture disponible."); return; }
+      t.rang = cible;
+      refresh();
+    }
+    function nettoieDragRang() {
+      dragRang = null;
+      Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (node) {
+        node.classList.remove("pris", "avant", "apres");
+      });
+    }
+    function deplaceRang(t, sourceId, cibleId, avant) {
+      if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id) return false;
+      var source = t.rangs.findIndex(function (r) { return r.id === sourceId; });
+      var cible = t.rangs.findIndex(function (r) { return r.id === cibleId; });
+      if (source < 0 || cible < 0 || source === cible) return false;
+      var ordre = t.rangs.slice(), element = ordre.splice(source, 1)[0];
+      cible = ordre.findIndex(function (r) { return r.id === cibleId; });
+      ordre.splice(cible + (avant ? 0 : 1), 0, element);
+      var deltaXp = coutRangs(ordre, t.rang, "xp") - coutRangs(t.rangs, t.rang, "xp");
+      var deltaRupture = coutRangs(ordre, t.rang, "rupture") - coutRangs(t.rangs, t.rang, "rupture");
+      if (deltaXp > 0 && xpRestant() < deltaXp) { flash("Réorganisation refusée : XP insuffisant pour les rangs acquis."); return false; }
+      if (deltaRupture > 0 && ruptureRestante() < deltaRupture) { flash("Réorganisation refusée : points de rupture insuffisants pour les rangs acquis."); return false; }
+      t.rangs = ordre;
+      refresh(); rendre();
+      return true;
+    }
+    function cibleRang(card, t, rang) {
+      card.addEventListener("dragover", function (e) {
+        if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
+        card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      card.addEventListener("dragleave", function (e) {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+        card.classList.remove("avant", "apres");
+      });
+      card.addEventListener("drop", function (e) {
+        if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect();
+        deplaceRang(t, dragRang.rangId, rang.id, e.clientY < r.top + r.height / 2);
+        nettoieDragRang();
+      });
     }
 
     function idGlisse(e, type, id) {
@@ -8012,7 +8084,7 @@
         else if (sel.art) termineGlisse(deplaceTechnique(drag.id, sel.art.id, null));
       });
       pane.appendChild(liste);
-      pane.appendChild(miniBtn("+ Ajouter un art", null, function () {
+      pane.appendChild(miniBtn("+ Art", null, function () {
         var a = { id: uid("art"), nom: "Nouvel art", techniques: [] };
         arts().push(a); artSelection = a.id; techniqueSelection = ""; refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
@@ -8030,7 +8102,7 @@
         });
       } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un art."));
       pane.appendChild(liste);
-      if (a) pane.appendChild(miniBtn("+ Ajouter une technique", null, function () {
+      if (a) pane.appendChild(miniBtn("+ Technique", null, function () {
         var t = nouvelleTechnique(); a.techniques.push(t); techniqueSelection = t.id; refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       return pane;
@@ -8041,13 +8113,33 @@
       var card = el("article", "pc-tech-rank" + (index < t.rang ? " acquired" : ""));
       card.dataset.syncEntity = rang.id;
       var head = el("div", "pc-tech-rank-head");
+
+      var dragSlot = el("span", "pc-tech-rank-drag-slot");
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les rangs";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation();
+        if (!isEdit("techniques")) { e.preventDefault(); return; }
+        dragRang = { techniqueId: t.id, rangId: rang.id };
+        card.classList.add("pris");
+        if (e.dataTransfer) {
+          e.dataTransfer.setData("text/plain", "owd-techniques-rang");
+          e.dataTransfer.effectAllowed = "move";
+        }
+      });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); nettoieDragRang(); });
+      dragSlot.appendChild(drag); head.appendChild(dragSlot);
+
       var nameWrap = el("label", "pc-tech-rank-name");
       nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
       var name = el("input", "pc-edit-field"); name.type = "text"; name.value = rang.nom || "";
       name.placeholder = "Nom du rang"; name.setAttribute("aria-label", "Nom du rang");
       name.addEventListener("input", function () { rang.nom = name.value; save(); });
       nameWrap.appendChild(name); head.appendChild(nameWrap);
-      head.appendChild(miniBtn("×", "Supprimer ce rang", function () {
+
+      var deleteSlot = el("span", "pc-tech-rank-del-slot");
+      deleteSlot.appendChild(miniBtn("×", "Supprimer ce rang", function () {
         function retire() {
           rangsDe(t).splice(index, 1);
           if (index < t.rang) t.rang = Math.max(0, t.rang - 1);
@@ -8058,6 +8150,7 @@
           confirmer("Supprimer un rang", "Supprimer « " + (rang.nom || ("Rang " + (index + 1))) + " » ? Les coûts de ce rang ne seront plus comptés.", "Supprimer", retire);
         else retire();
       }, "danger pc-edit-only pc-tech-rank-del"));
+      head.appendChild(deleteSlot);
       champNombre(head, rang, "rupture", "RUPTURE", 0, 99);
       champNombre(head, rang, "xp", "XP", 0, 99999);
       card.appendChild(head);
@@ -8081,10 +8174,11 @@
         ]);
       }, "primary"));
       card.appendChild(footer);
+      cibleRang(card, t, rang);
       techHooks.push(function () {
         if (document.activeElement !== name) name.value = rang.nom || "";
         if (document.activeElement !== editor) editor.value = rang.desc || "";
-        card.classList.toggle("acquired", index < t.rang);
+        card.classList.toggle("acquired", t.rangs.indexOf(rang) < t.rang);
       });
       return card;
     }
@@ -8123,17 +8217,38 @@
       }
       var progress = el("div", "pc-tech-acquired");
       progress.appendChild(el("span", "pc-tech-acquired-label", "Rangs acquis"));
-      var value = el("strong", "pc-tech-acquired-value", t.rang + " / " + t.rangs.length);
-      progress.appendChild(value); pane.appendChild(progress);
+      var bar = el("span", "pc-stadebar pc-tech-acquired-bar");
+      var segments = [];
+      t.rangs.forEach(function (rang, i) {
+        var lettre = String.fromCharCode(65 + i);
+        var segment = el("button", "seg s" + Math.min(i + 1, 5), lettre);
+        segment.type = "button";
+        segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
+        segment.addEventListener("click", function () {
+          if (!isEdit("techniques")) return;
+          // Un second clic sur le rang déjà sélectionné remet la technique à 0.
+          changeRangsAcquis(t, t.rang === i + 1 ? 0 : i + 1);
+        });
+        bar.appendChild(segment); segments.push(segment);
+      });
+      progress.appendChild(bar); pane.appendChild(progress);
+      function actualiseRangsAcquis() {
+        segments.forEach(function (segment, i) {
+          segment.classList.toggle("on", i < t.rang);
+          segment.classList.toggle("cur", i === t.rang - 1);
+          segment.title = (t.rangs[i].nom || ("Rang " + (i + 1))) + " — " +
+            (i < t.rang ? "acquis" : "non acquis") + " · cliquer pour " + (i + 1) + " rang(s) acquis";
+        });
+      }
+      actualiseRangsAcquis(); techHooks.push(actualiseRangsAcquis);
       var list = el("div", "pc-tech-ranks-list");
       panneauHistorique(list, t);
       t.rangs.forEach(function (r, i) { list.appendChild(rangCarte(a, t, r, i)); });
       pane.appendChild(list);
-      pane.appendChild(miniBtn("+ Ajouter un rang", null, function () {
+      pane.appendChild(miniBtn("+ Rang", null, function () {
         if (t.rangs.length >= 20) { flash("Une technique ne peut pas dépasser 20 rangs."); return; }
         t.rangs.push(nouveauRang("Rang " + (t.rangs.length + 1))); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
-      techHooks.push(function () { value.textContent = t.rang + " / " + t.rangs.length; });
       return pane;
     }
 
