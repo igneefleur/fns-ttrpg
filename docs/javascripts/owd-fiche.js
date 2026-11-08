@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.33.0b";
+  var RELEASE = "4.33.1b";
   var SCHEMA = 19;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7855,7 +7855,7 @@
       var wrap = el("label", "pc-tech-rank-number");
       wrap.appendChild(el("span", "pc-tech-rank-label", label));
       var input = el("input", "pc-edit-field");
-      input.type = "number"; input.step = "1"; input.min = String(min); input.max = String(max);
+      input.type = "text"; input.inputMode = "numeric"; input.pattern = "[0-9]*";
       input.value = String(objet[cle] == null ? 0 : objet[cle]);
       input.setAttribute("aria-label", label);
       saveNombre(input, objet, cle, min, max);
@@ -7863,28 +7863,17 @@
       return input;
     }
     function changeMode(parent, rang, read) {
-      var modes = el("div", "pc-tech-formats");
+      var modes = el("div", "pc-notes-modes");
       modes.setAttribute("role", "group"); modes.setAttribute("aria-label", "Format de la description");
-      var brut = el("button", "pc-mini pc-tech-format pc-tech-format-plain", "Brut");
-      var markdown = el("button", "pc-mini pc-tech-format pc-tech-format-markdown", "Markdown");
-      brut.type = "button"; markdown.type = "button";
-      brut.title = "Afficher la description en texte brut";
-      markdown.title = "Afficher la description au format Markdown";
+      var brut = miniBtn("Brut", null, function () { rang.mode = "plain"; actualise(); save(); });
+      var markdown = miniBtn("Markdown", null, function () { rang.mode = "markdown"; actualise(); save(); });
       function actualise() {
-        brut.classList.toggle("on", rang.mode !== "markdown");
         brut.setAttribute("aria-pressed", String(rang.mode !== "markdown"));
-        markdown.classList.toggle("on", rang.mode === "markdown");
         markdown.setAttribute("aria-pressed", String(rang.mode === "markdown"));
         notesRendu(read, rang.desc || "", rang.mode);
       }
-      // Le choix du rendu reste accessible en lecture : il ne déverrouille pas
-      // le texte et ne remplace pas le verrou d'édition du module.
-      brut.addEventListener("click", function () { rang.mode = "plain"; actualise(); save(); });
-      markdown.addEventListener("click", function () { rang.mode = "markdown"; actualise(); save(); });
       modes.appendChild(brut); modes.appendChild(markdown);
-      actualise();
-      techHooks.push(actualise);
-      parent.appendChild(modes);
+      actualise(); techHooks.push(actualise); parent.appendChild(modes);
       return actualise;
     }
 
@@ -7953,9 +7942,10 @@
     }
     function ligneArt(a, liste) {
       var item = el("div", "pc-tech-item" + (a.id === artSelection ? " selected" : ""));
-      var drag = el("span", "pc-tech-drag", "↕");
-      drag.title = "Glisser pour réordonner les arts"; drag.draggable = true;
-      drag.addEventListener("dragstart", function (e) { idGlisse(e, "art", a.id); });
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les arts"; drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "art", a.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
       item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", a.nom || "Art sans nom");
       read.type = "button"; read.addEventListener("click", function () {
@@ -7967,8 +7957,6 @@
       name.setAttribute("aria-label", "Nom de l’art");
       name.addEventListener("input", function () { a.nom = name.value; read.textContent = name.value || "Art sans nom"; save(); });
       item.appendChild(name);
-      var count = el("span", "pc-tech-count", String(a.techniques.length));
-      count.title = a.techniques.length + " technique(s)"; item.appendChild(count);
       item.appendChild(miniBtn("×", "Supprimer cet art", function () {
         function retire() {
           arts().splice(arts().indexOf(a), 1);
@@ -7986,9 +7974,10 @@
     }
     function ligneTechnique(t, a, liste) {
       var item = el("div", "pc-tech-item pc-tech-item-tech" + (t.id === techniqueSelection ? " selected" : ""));
-      var drag = el("span", "pc-tech-drag", "↕");
-      drag.title = "Glisser vers un autre art ou pour réordonner"; drag.draggable = true;
-      drag.addEventListener("dragstart", function (e) { idGlisse(e, "tech", t.id); });
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser vers un autre art ou pour réordonner"; drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "tech", t.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
       item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", t.nom || "Technique sans nom");
       read.type = "button"; read.addEventListener("click", function () { artSelection = a.id; techniqueSelection = t.id; rendre(); });
@@ -7998,18 +7987,6 @@
       name.setAttribute("aria-label", "Nom de la technique");
       name.addEventListener("input", function () { t.nom = name.value; read.textContent = name.value || "Technique sans nom"; save(); });
       item.appendChild(name);
-      var progress = el("div", "pc-stadebar pc-tech-progress pc-edit-only");
-      for (var i = 0; i <= t.rangs.length; i++) (function (i) {
-        var segment = el("button", "seg s" + clamp(i, 0, 5), String(i));
-        segment.type = "button"; segment.title = "Rangs acquis : " + i;
-        segment.addEventListener("click", function () { t.rang = i; refresh(); });
-        progress.appendChild(segment);
-        techHooks.push(function () {
-          segment.classList.toggle("on", i <= t.rang);
-          segment.classList.toggle("cur", i === t.rang);
-        });
-      })(i);
-      item.appendChild(progress);
       item.appendChild(miniBtn("×", "Supprimer cette technique", function () {
         confirmer("Supprimer une technique", "Supprimer « " + (t.nom || "cette technique") + " » et tous ses rangs ? Ses coûts ne seront plus comptés.", "Supprimer", function () {
           a.techniques.splice(a.techniques.indexOf(t), 1);
@@ -8025,7 +8002,7 @@
 
     function rendreArts() {
       var pane = el("section", "pc-tech-pane pc-tech-arts");
-      panneauTitre(pane, "Arts", "Classement");
+      panneauTitre(pane, "Arts", "");
       var liste = el("div", "pc-tech-list pc-tech-art-list");
       var sel = selectionValide();
       arts().forEach(function (a) { ligneArt(a, liste); });
@@ -8043,7 +8020,7 @@
     }
     function rendreTechniques(a) {
       var pane = el("section", "pc-tech-pane pc-tech-list-pane");
-      panneauTitre(pane, "Techniques", a ? (a.nom || "Art sans nom") : "");
+      panneauTitre(pane, "Techniques", "");
       var liste = el("div", "pc-tech-list pc-technique-list");
       if (a) {
         a.techniques.forEach(function (t) { ligneTechnique(t, a, liste); });
@@ -8070,22 +8047,7 @@
       name.placeholder = "Nom du rang"; name.setAttribute("aria-label", "Nom du rang");
       name.addEventListener("input", function () { rang.nom = name.value; save(); });
       nameWrap.appendChild(name); head.appendChild(nameWrap);
-      champNombre(head, rang, "rupture", "RUPTURE", 0, 99);
-      champNombre(head, rang, "xp", "XP", 0, 99999);
-      card.appendChild(head);
-
-      var top = el("div", "pc-tech-rank-tools");
-      var read = el("div", "pc-tech-rank-read");
-      notesRendu(read, rang.desc || "", rang.mode);
-      changeMode(top, rang, read);
-      top.appendChild(miniBtn("Envoyer", "Envoyer ce rang dans le tchat Roll20", function () {
-        sayChat("Technique — " + (t.nom || "sans nom"), [
-          ["Art", a.nom || "Sans nom"], ["Technique", t.nom || "Sans nom"],
-          ["Rang", rang.nom || ("Rang " + (index + 1))], ["XP", rang.xp],
-          ["Rupture", rang.rupture], ["", rang.desc]
-        ]);
-      }, "primary"));
-      top.appendChild(miniBtn("×", "Supprimer ce rang", function () {
+      head.appendChild(miniBtn("×", "Supprimer ce rang", function () {
         function retire() {
           rangsDe(t).splice(index, 1);
           if (index < t.rang) t.rang = Math.max(0, t.rang - 1);
@@ -8095,14 +8057,30 @@
         if (index < t.rang || rang.xp || rang.rupture || rang.desc.trim() || rang.nom.trim())
           confirmer("Supprimer un rang", "Supprimer « " + (rang.nom || ("Rang " + (index + 1))) + " » ? Les coûts de ce rang ne seront plus comptés.", "Supprimer", retire);
         else retire();
-      }, "danger pc-edit-only"));
-      card.appendChild(top);
+      }, "danger pc-edit-only pc-tech-rank-del"));
+      champNombre(head, rang, "rupture", "RUPTURE", 0, 99);
+      champNombre(head, rang, "xp", "XP", 0, 99999);
+      card.appendChild(head);
 
+      var read = el("div", "pc-tech-rank-read");
+      notesRendu(read, rang.desc || "", rang.mode); card.appendChild(read);
       var editor = el("textarea", "pc-edit-field pc-tech-rank-editor");
       editor.rows = 3; editor.value = rang.desc || ""; editor.placeholder = "Description propre à ce rang";
       editor.setAttribute("aria-label", "Description du rang");
       editor.addEventListener("input", function () { rang.desc = editor.value; notesRendu(read, rang.desc, rang.mode); save(); });
       card.appendChild(editor);
+
+      var footer = el("div", "pc-tech-rank-footer");
+      var formats = el("div", "pc-tech-rank-format-wrap pc-edit-only");
+      changeMode(formats, rang, read); footer.appendChild(formats);
+      footer.appendChild(miniBtn("Envoyer", "Envoyer ce rang dans le tchat Roll20", function () {
+        sayChat("Technique — " + (t.nom || "sans nom"), [
+          ["Art", a.nom || "Sans nom"], ["Technique", t.nom || "Sans nom"],
+          ["Rang", rang.nom || ("Rang " + (index + 1))], ["XP", rang.xp],
+          ["Rupture", rang.rupture], ["", rang.desc]
+        ]);
+      }, "primary"));
+      card.appendChild(footer);
       techHooks.push(function () {
         if (document.activeElement !== name) name.value = rang.nom || "";
         if (document.activeElement !== editor) editor.value = rang.desc || "";
@@ -8110,6 +8088,7 @@
       });
       return card;
     }
+
     function panneauHistorique(parent, t) {
       var aXp = Math.max(0, Number(t.legacyXp) || 0), aRupture = Math.max(0, Number(t.legacyRupture) || 0);
       if (!aXp && !aRupture && !String(t.legacyDesc || "").trim()) return;
@@ -8137,7 +8116,7 @@
     }
     function rendreRangs(a, t) {
       var pane = el("section", "pc-tech-pane pc-tech-ranks-pane");
-      panneauTitre(pane, "Rangs", t ? (t.nom || "Technique sans nom") : "");
+      panneauTitre(pane, "Rangs", "");
       if (!t) {
         pane.appendChild(el("div", "pc-empty", a ? "Sélectionnez ou créez une technique." : "Sélectionnez un art puis une technique."));
         return pane;

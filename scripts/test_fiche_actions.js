@@ -58,6 +58,26 @@ test('Techniques : arts, techniques et rangs détaillés, envoi au tchat utilisa
  assert.ok(addArt);addArt.click();
  assert.equal(ctx.state.techniques.length,2);assert.equal(ctx.hooks.length,hooks);
 });
+test('Techniques : commandes d’édition, formats Notes, description et pied de rang respectent le placement demandé',()=>{
+ const w=techniques(),ui=w.ui,rank=w.find(ui,'pc-tech-rank');assert.ok(rank);
+ const head=w.find(rank,'pc-tech-rank-head');assert.ok(head);
+ assert.equal(head.children[1].textContent,'×');assert.ok(String(head.children[1].className).includes('pc-edit-only'));
+ assert.equal(head.children[2].children[1].type,'text');assert.equal(head.children[3].children[1].type,'text');
+ const read=w.find(rank,'pc-tech-rank-read');assert.equal(read.textContent,'Description du rang');
+ const footer=w.find(rank,'pc-tech-rank-footer');assert.ok(footer);
+ assert.ok(rank.children.indexOf(read)<rank.children.indexOf(footer));
+ const modes=w.find(footer,'pc-notes-modes');assert.ok(modes);
+ assert.equal(modes.children[0].textContent,'Brut');assert.equal(modes.children[1].textContent,'Markdown');
+ assert.equal(footer.children[1].textContent,'Envoyer');
+ const arts=w.find(ui,'pc-tech-arts'),techs=w.find(ui,'pc-tech-list-pane');
+ assert.ok(w.findText(arts,'Arts'));assert.ok(w.findText(techs,'Techniques'));assert.equal(arts.children[0].children.length,1);assert.equal(techs.children[0].children.length,1);
+ assert.equal(w.find(ui,'pc-tech-item').children[0].textContent,'⠿');
+ assert.ok(w.find(ui,'pc-tech-item').children[0].className.includes('pc-comp-drag'));
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('.pc-editable:not(.editing) .pc-edit-only { display: none !important; }'));
+ assert.ok(css.includes('.pc-editable.editing .pc-tech-rank-read { display: none; }'));
+ assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-editor { display: none; }'));
+});
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
  const addTech=(function seek(n){if(n.textContent==='+ Ajouter une technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
