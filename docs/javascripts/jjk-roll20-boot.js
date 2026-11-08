@@ -1471,7 +1471,9 @@
     window.__jjkDataUrl = spec.data || null;
     if (M && M.setRelease) M.setRelease(spec.release || null);
 
+    var nettoyerAttenteFiche = null;
     function echec(fichier, detail) {
+      if (nettoyerAttenteFiche) { nettoyerAttenteFiche(); nettoyerAttenteFiche = null; }
       bundleEnCours = false;
       bundleCharge = false;
       ready = false;
@@ -1500,7 +1502,54 @@
     }
     function chargerScripts() {
       var urls = spec.js, i = 0;
+      var scriptsPrets = false, ficheMontee = false, erreurMontage = "", finalise = false;
+      var ecouteMontage = null, ecouteErreur = null;
       if (!Array.isArray(urls) || !urls.length) { echec("bundle.js", "liste de scripts vide"); return; }
+      // Le script de fiche peut démarrer un fetch asynchrone. Son onload ne
+      // signifie donc PAS que l'état est normalisé : Compact ne doit démarrer
+      // qu'après jjk-fiche-mounted, émis après load()/normalize() et le premier
+      // refresh() qui réécrit l'état normalisé dans le shim mémoire.
+      function nettoyer() {
+        if (ecouteMontage) window.removeEventListener("jjk-fiche-mounted", ecouteMontage);
+        if (ecouteErreur) window.removeEventListener("jjk-fiche-mount-error", ecouteErreur);
+        if (nettoyerAttenteFiche === nettoyer) nettoyerAttenteFiche = null;
+      }
+      function finaliser() {
+        if (!scriptsPrets || finalise) return;
+        if (spec.compactStorage === true) {
+          if (erreurMontage) {
+            finalise = true; nettoyer();
+            echec("jjk-fiche.js", "montage impossible : " + erreurMontage);
+            return;
+          }
+          if (!ficheMontee && window.Jjk && window.Jjk.__pret === true) ficheMontee = true;
+          if (!ficheMontee) return;
+        }
+        finalise = true;
+        nettoyer();
+        ready = true;
+        if (spec.compactStorage === true && !demarreStockageCompact(spec)) {
+          ready = false;
+          echec("stockage Compact", compactErrorMessage || "impossible d'activer la session Compact");
+          return;
+        }
+        bundleEnCours = false;
+        bundleCharge = true;
+        attendreMontageFiche();
+        post({ type: "mounted" });
+      }
+      if (spec.compactStorage === true) {
+        ecouteMontage = function () { ficheMontee = true; finaliser(); };
+        ecouteErreur = function (ev) {
+          erreurMontage = String(ev && ev.detail && (ev.detail.message || ev.detail) ||
+            "la fiche n'a pas pu être montée");
+          finaliser();
+        };
+        nettoyerAttenteFiche = nettoyer;
+        window.addEventListener("jjk-fiche-mounted", ecouteMontage);
+        window.addEventListener("jjk-fiche-mount-error", ecouteErreur);
+        if (window.Jjk && window.Jjk.__pret === true) ficheMontee = true;
+      }
       function suivant() {
         if (i >= urls.length) {
           if (spec.compactStorage === true && (!window.JjkSync || !window.JjkSync.Compact || !window.JjkSync.Compact.Session)) {
@@ -1513,18 +1562,8 @@
           if (!M || typeof M.attrsToState !== "function" || typeof M.stateToAttrs !== "function") {
             echec("jjk-attr-map.js", "correspondance des attributs invalide"); return;
           }
-          ready = true;
-          if (spec.compactStorage === true && !demarreStockageCompact(spec)) {
-            ready = false;
-            echec("stockage Compact", compactErrorMessage || "impossible d'activer la session Compact");
-            return;
-          }
-          bundleEnCours = false;
-          bundleCharge = true;
-          // Repli si la fiche était déjà montée ; sinon le listener créé avant
-          // l'injection posera le bandeau à l'événement jjk-fiche-mounted.
-          attendreMontageFiche();
-          post({ type: "mounted" });
+          scriptsPrets = true;
+          finaliser();
           return;
         }
         var u = urls[i++], script = document.createElement("script");
