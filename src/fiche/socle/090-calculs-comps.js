@@ -84,8 +84,10 @@
   function techniquesToutes() {
     var out = [];
     (Array.isArray(state.techniques) ? state.techniques : []).forEach(function (a) {
-      if (a && Array.isArray(a.techniques)) out = out.concat(a.techniques);
-      else if (a && typeof a === "object") out.push(a); // compatibilité avant normalisation
+      if (a && a.type === "divider") return;
+      if (a && Array.isArray(a.techniques)) {
+        out = out.concat(a.techniques.filter(function (t) { return t && t.type !== "divider"; }));
+      } else if (a && typeof a === "object") out.push(a); // compatibilité avant normalisation
     });
     return out;
   }

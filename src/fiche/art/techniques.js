@@ -12,16 +12,19 @@
     hooks.push(function () { techHooks.forEach(function (fn) { try { fn(); } catch (e) {} }); });
 
     function arts() { return Array.isArray(state.techniques) ? state.techniques : (state.techniques = []); }
-    function artDe(id) { return arts().filter(function (a) { return a.id === id; })[0] || null; }
+    function estDiviseur(entree) { return !!(entree && entree.type === "divider"); }
+    function artDe(id) {
+      return arts().filter(function (a) { return !estDiviseur(a) && a && a.id === id && Array.isArray(a.techniques); })[0] || null;
+    }
     function techniqueDe(a, id) {
-      return a && Array.isArray(a.techniques) ? a.techniques.filter(function (t) { return t.id === id; })[0] || null : null;
+      return a && Array.isArray(a.techniques) ? a.techniques.filter(function (t) { return !estDiviseur(t) && t.id === id; })[0] || null : null;
     }
     function rangsDe(t) { return t && Array.isArray(t.rangs) ? t.rangs : []; }
     function selectionValide() {
       var a = artDe(artSelection);
-      if (!a) { a = arts()[0] || null; artSelection = a ? a.id : ""; }
+      if (!a) { a = arts().filter(function (x) { return !estDiviseur(x); })[0] || null; artSelection = a ? a.id : ""; }
       var t = techniqueDe(a, techniqueSelection);
-      if (!t) { t = a && a.techniques[0] || null; techniqueSelection = t ? t.id : ""; }
+      if (!t) { t = a && a.techniques.filter(function (x) { return !estDiviseur(x); })[0] || null; techniqueSelection = t ? t.id : ""; }
       return { art: a, technique: t };
     }
     function nouveauRang(nom) {
@@ -30,6 +33,13 @@
     function nouvelleTechnique() {
       return { id: uid("t"), nom: "", rang: 0, rangs: [nouveauRang("Rang 1")],
                legacyXp: 0, legacyRupture: 0, legacyDesc: "", offert: 0 };
+    }
+    function nouveauDiviseur() {
+      return { id: uid("td"), type: "divider", nom: "Nouveau groupe", replie: false };
+    }
+    function premierIdTechnique(a) {
+      var t = a && a.techniques ? a.techniques.filter(function (x) { return !estDiviseur(x); })[0] : null;
+      return t ? t.id : "";
     }
 
     function saveNombre(input, objet, cle, min, max) {
@@ -149,7 +159,8 @@
       if (!e.dataTransfer) return null;
       var raw = e.dataTransfer.getData("text/plain") || "";
       var p = raw.split("|");
-      return p.length === 2 && (p[0] === "art" || p[0] === "tech") ? { type: p[0], id: p[1] } : null;
+      return p.length === 2 && ["art", "tech", "divider-art", "divider-tech"].indexOf(p[0]) >= 0
+        ? { type: p[0], id: p[1] } : null;
     }
     function zoneDepot(node, reception) {
       node.addEventListener("dragover", function (e) {
@@ -168,18 +179,22 @@
         reception(drag);
       });
     }
-    function deplaceArt(id, avantId) {
-      var liste = arts(), from = liste.findIndex(function (a) { return a.id === id; });
+    function deplaceEntree(liste, id, avantId) {
+      var from = liste.findIndex(function (x) { return x && x.id === id; });
       if (from < 0 || id === avantId) return false;
       var item = liste.splice(from, 1)[0];
-      var to = avantId ? liste.findIndex(function (a) { return a.id === avantId; }) : -1;
+      var to = avantId ? liste.findIndex(function (x) { return x && x.id === avantId; }) : -1;
       liste.splice(to < 0 ? liste.length : to, 0, item);
       return true;
+    }
+    function deplaceArt(id, avantId) {
+      return deplaceEntree(arts(), id, avantId);
     }
     function deplaceTechnique(id, artCibleId, avantId) {
       var sourceArt = null, sourceIndex = -1, technique = null;
       arts().some(function (a) {
-        var i = a.techniques.findIndex(function (t) { return t.id === id; });
+        if (!a || !Array.isArray(a.techniques)) return false;
+        var i = a.techniques.findIndex(function (t) { return !estDiviseur(t) && t.id === id; });
         if (i < 0) return false;
         sourceArt = a; sourceIndex = i; technique = a.techniques[i]; return true;
       });
@@ -187,9 +202,35 @@
       if (!technique || !sourceArt || !cible) return false;
       if (sourceArt === cible && avantId === id) return false;
       sourceArt.techniques.splice(sourceIndex, 1);
-      var to = avantId ? cible.techniques.findIndex(function (t) { return t.id === avantId; }) : -1;
+      var to = avantId ? cible.techniques.findIndex(function (x) { return x && x.id === avantId; }) : -1;
       cible.techniques.splice(to < 0 ? cible.techniques.length : to, 0, technique);
       return true;
+    }
+    function deplaceDiviseurTechnique(id, artCibleId, avantId) {
+      var sourceArt = null, sourceIndex = -1, diviseur = null;
+      arts().some(function (a) {
+        if (!a || !Array.isArray(a.techniques)) return false;
+        var i = a.techniques.findIndex(function (x) { return estDiviseur(x) && x.id === id; });
+        if (i < 0) return false;
+        sourceArt = a; sourceIndex = i; diviseur = a.techniques[i]; return true;
+      });
+      var cible = artDe(artCibleId);
+      if (!diviseur || !sourceArt || !cible) return false;
+      if (sourceArt === cible && avantId === id) return false;
+      sourceArt.techniques.splice(sourceIndex, 1);
+      var to = avantId ? cible.techniques.findIndex(function (x) { return x && x.id === avantId; }) : -1;
+      cible.techniques.splice(to < 0 ? cible.techniques.length : to, 0, diviseur);
+      return true;
+    }
+    function appliqueReplis(liste) {
+      var replie = false;
+      Array.prototype.forEach.call(liste.children || [], function (node) {
+        if (node.classList && node.classList.contains("pc-tech-divider")) {
+          replie = node.dataset.collapsed === "true";
+          node.hidden = false;
+          node.classList.toggle("collapsed", replie);
+        } else node.hidden = replie;
+      });
     }
     function termineGlisse(changement) {
       if (!changement) return;
@@ -212,7 +253,7 @@
       item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", a.nom || "Art sans nom");
       read.type = "button"; read.addEventListener("click", function () {
-        artSelection = a.id; techniqueSelection = a.techniques[0] ? a.techniques[0].id : ""; rendre();
+        artSelection = a.id; techniqueSelection = premierIdTechnique(a); rendre();
       });
       item.appendChild(read);
       var name = el("input", "pc-edit-field pc-tech-item-name");
@@ -226,12 +267,13 @@
           if (artSelection === a.id) { artSelection = ""; techniqueSelection = ""; }
           refresh(); rendre();
         }
-        if (a.techniques.length) confirmer("Supprimer un art", "« " + (a.nom || "Cet art") + " » contient " + a.techniques.length + " technique(s). Supprimer l’art et toutes ses techniques ?", "Tout supprimer", retire);
+        var nbTechniques = a.techniques.filter(function (x) { return !estDiviseur(x); }).length;
+        if (nbTechniques) confirmer("Supprimer un art", "« " + (a.nom || "Cet art") + " » contient " + nbTechniques + " technique(s). Supprimer l’art et toutes ses techniques ?", "Tout supprimer", retire);
         else retire();
       }, "danger pc-edit-only"));
       zoneDepot(item, function (drag) {
-        if (drag.type === "art") termineGlisse(deplaceArt(drag.id, a.id));
-        else termineGlisse(deplaceTechnique(drag.id, a.id, null));
+        if (drag.type === "art" || drag.type === "divider-art") termineGlisse(deplaceArt(drag.id, a.id));
+        else if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, null));
       });
       liste.appendChild(item);
     }
@@ -253,14 +295,68 @@
       item.appendChild(miniBtn("×", "Supprimer cette technique", function () {
         confirmer("Supprimer une technique", "Supprimer « " + (t.nom || "cette technique") + " » et tous ses rangs ? Ses coûts ne seront plus comptés.", "Supprimer", function () {
           a.techniques.splice(a.techniques.indexOf(t), 1);
-          if (techniqueSelection === t.id) techniqueSelection = a.techniques[0] ? a.techniques[0].id : "";
+          if (techniqueSelection === t.id) techniqueSelection = premierIdTechnique(a);
           refresh(); rendre();
         });
       }, "danger pc-edit-only"));
       zoneDepot(item, function (drag) {
         if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, t.id));
+        else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, a.id, t.id));
       });
       liste.appendChild(item);
+    }
+    function ligneDiviseur(diviseur, liste, colonne, art) {
+      var item = el("div", "pc-tech-divider pc-tech-divider-" + colonne);
+      item.dataset.collapsed = String(diviseur.replie === true);
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner ce diviseur";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation(); idGlisse(e, colonne === "art" ? "divider-art" : "divider-tech", diviseur.id);
+      });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      item.appendChild(drag);
+
+      var toggle = el("button", "pc-tech-divider-toggle");
+      toggle.type = "button";
+      var arrow = el("span", "pc-tech-divider-arrow", diviseur.replie ? "▸" : "▾");
+      var label = el("span", "pc-tech-divider-label", diviseur.nom || "Diviseur sans nom");
+      toggle.appendChild(arrow); toggle.appendChild(label);
+      toggle.setAttribute("aria-expanded", String(diviseur.replie !== true));
+      toggle.addEventListener("click", function () {
+        diviseur.replie = diviseur.replie !== true;
+        item.dataset.collapsed = String(diviseur.replie);
+        item.classList.toggle("collapsed", diviseur.replie);
+        arrow.textContent = diviseur.replie ? "▸" : "▾";
+        toggle.setAttribute("aria-expanded", String(!diviseur.replie));
+        appliqueReplis(liste); save();
+      });
+      item.appendChild(toggle);
+
+      var name = el("input", "pc-edit-field pc-tech-divider-name");
+      name.type = "text"; name.value = diviseur.nom || ""; name.placeholder = "Nom du groupe";
+      name.setAttribute("aria-label", "Nom du diviseur");
+      name.addEventListener("input", function () {
+        diviseur.nom = name.value; label.textContent = name.value || "Diviseur sans nom"; save();
+      });
+      item.appendChild(name);
+      item.appendChild(miniBtn("×", "Supprimer ce diviseur", function () {
+        var cible = colonne === "art" ? arts() : (art && art.techniques);
+        if (!cible) return;
+        cible.splice(cible.indexOf(diviseur), 1);
+        refresh(); rendre();
+      }, "danger pc-edit-only pc-tech-divider-del"));
+
+      zoneDepot(item, function (drag) {
+        if (colonne === "art") {
+          if (drag.type === "art" || drag.type === "divider-art") termineGlisse(deplaceArt(drag.id, diviseur.id));
+        } else {
+          if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, art.id, diviseur.id));
+          else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, art.id, diviseur.id));
+        }
+      });
+      liste.appendChild(item);
+      return item;
     }
 
     function rendreArts() {
@@ -268,16 +364,23 @@
       panneauTitre(pane, "Arts", "");
       var liste = el("div", "pc-tech-list pc-tech-art-list");
       var sel = selectionValide();
-      arts().forEach(function (a) { ligneArt(a, liste); });
-      if (!arts().length) liste.appendChild(el("div", "pc-empty", "Aucun art."));
+      arts().forEach(function (a) {
+        if (estDiviseur(a)) ligneDiviseur(a, liste, "art", null);
+        else ligneArt(a, liste);
+      });
+      if (!arts().some(function (a) { return !estDiviseur(a); })) liste.appendChild(el("div", "pc-empty", "Aucun art."));
+      appliqueReplis(liste);
       zoneDepot(liste, function (drag) {
-        if (drag.type === "art") termineGlisse(deplaceArt(drag.id, null));
-        else if (sel.art) termineGlisse(deplaceTechnique(drag.id, sel.art.id, null));
+        if (drag.type === "art" || drag.type === "divider-art") termineGlisse(deplaceArt(drag.id, null));
+        else if (drag.type === "tech" && sel.art) termineGlisse(deplaceTechnique(drag.id, sel.art.id, null));
       });
       pane.appendChild(liste);
       pane.appendChild(miniBtn("+ Art", null, function () {
         var a = { id: uid("art"), nom: "Nouvel art", techniques: [] };
         arts().push(a); artSelection = a.id; techniqueSelection = ""; refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      pane.appendChild(miniBtn("+ Diviseur", null, function () {
+        arts().push(nouveauDiviseur()); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       return pane;
     }
@@ -286,16 +389,26 @@
       panneauTitre(pane, "Techniques", "");
       var liste = el("div", "pc-tech-list pc-technique-list");
       if (a) {
-        a.techniques.forEach(function (t) { ligneTechnique(t, a, liste); });
-        if (!a.techniques.length) liste.appendChild(el("div", "pc-empty", "Aucune technique dans cet art."));
+        a.techniques.forEach(function (t) {
+          if (estDiviseur(t)) ligneDiviseur(t, liste, "technique", a);
+          else ligneTechnique(t, a, liste);
+        });
+        if (!a.techniques.some(function (t) { return !estDiviseur(t); })) liste.appendChild(el("div", "pc-empty", "Aucune technique dans cet art."));
+        appliqueReplis(liste);
         zoneDepot(liste, function (drag) {
           if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, null));
+          else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, a.id, null));
         });
       } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un art."));
       pane.appendChild(liste);
-      if (a) pane.appendChild(miniBtn("+ Technique", null, function () {
-        var t = nouvelleTechnique(); a.techniques.push(t); techniqueSelection = t.id; refresh(); rendre();
-      }, "pc-edit-only pc-tech-add"));
+      if (a) {
+        pane.appendChild(miniBtn("+ Technique", null, function () {
+          var t = nouvelleTechnique(); a.techniques.push(t); techniqueSelection = t.id; refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+        pane.appendChild(miniBtn("+ Diviseur", null, function () {
+          a.techniques.push(nouveauDiviseur()); refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+      }
       return pane;
     }
 

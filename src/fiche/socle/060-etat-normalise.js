@@ -279,7 +279,7 @@
     });
 
     // ---- arts, techniques et rangs ----
-    // La migration 19 transforme les anciennes techniques en un art « À classer ».
+    // La migration 19 crée les arts ; le schéma 20 conserve les diviseurs dans les listes.
     // Cette lecture tolère aussi une fiche partiellement migrée : aucune entrée
     // plate ne disparaît si elle arrive sans être passée par OwdMigr.
     function normRangTechnique(r) {
@@ -291,6 +291,15 @@
         rupture: clamp(num(r.rupture, 0), 0, 999),
         desc: String(r.desc == null ? "" : r.desc),
         mode: r.mode === "markdown" ? "markdown" : "plain"
+      };
+    }
+    function normDiviseurTechnique(d) {
+      d = d && typeof d === "object" ? d : {};
+      return {
+        id: String(d.id || "") || uid("td"),
+        type: "divider",
+        nom: String(d.nom == null ? "" : d.nom),
+        replie: d.replie === true
       };
     }
     function normTechnique(t) {
@@ -320,13 +329,17 @@
       };
     }
     if (!Array.isArray(s.techniques)) s.techniques = [];
+    function normEntreeTechnique(t) {
+      return t && t.type === "divider" ? normDiviseurTechnique(t) : normTechnique(t);
+    }
     var artsNormalises = [], techniquesAnciennes = [];
     s.techniques.filter(function (a) { return a && typeof a === "object"; }).forEach(function (a) {
+      if (a.type === "divider") { artsNormalises.push(normDiviseurTechnique(a)); return; }
       if (!Array.isArray(a.techniques)) { techniquesAnciennes.push(a); return; }
       artsNormalises.push({
         id: String(a.id || "") || uid("art"),
         nom: String(a.nom == null ? "" : a.nom),
-        techniques: a.techniques.filter(function (t) { return t && typeof t === "object"; }).map(normTechnique)
+        techniques: a.techniques.filter(function (t) { return t && typeof t === "object"; }).map(normEntreeTechnique)
       });
     });
     if (techniquesAnciennes.length) {

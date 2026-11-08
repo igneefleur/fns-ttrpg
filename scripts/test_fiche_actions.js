@@ -18,7 +18,7 @@ test('munition équipée épuisée : objet conservé, emplacement libéré',()=>
 function consumption(){const state=M.blank();state.etat.pv=50;state.inv.objets=[{ref:'sac',qte:2,ou:'poches'},{ref:'potion',nom:'Potion',qte:2,dans:'sac',ou:'poches',effets:['test'],restaurations:{pv:5}}];const ctx={state,window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,effetDefinition:id=>({id,ops:id==='impr'?{impregnation:{}}:{}}),flash(){},defenseArme:()=>null,invEstIngerable:()=>false,maxDe:()=>100,appliqueEffet(){},bougeReserve:(k,v)=>state.etat[k]+=v,effetPerteInnocence:v=>v,contenancePrise:()=>0,fmtP:String,sayChat(){},refresh(){},invRender:null};vm.createContext(ctx);const src=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8'),a=src.indexOf('  function invConsommer('),b=src.indexOf('  function invConsommerDialogue(',a);vm.runInContext(src.slice(a,b),ctx);return ctx;}
 test('consommation refusée : demi-dose, quantité zéro et cible absente ne changent aucun objet',()=>{for(const scenario of ['demi','zero','cible']){const c=consumption(),it=c.state.inv.objets[1];if(scenario==='cible')it.effets=['impr'];const before=I.stable(c.state);assert.equal(c.invConsommer(it,scenario==='demi'?.5:scenario==='zero'?0:1,''),false);assert.equal(I.stable(c.state),before);}});
 test('consommation valide : un seul contenant isolé, dose consommée et restauration appliquée',()=>{const c=consumption(),it=c.state.inv.objets[1];assert.equal(c.invConsommer(it,1,''),true);assert.equal(c.state.etat.pv,55);assert.equal(c.state.inv.objets.filter(o=>o.nom==='Potion').reduce((n,o)=>n+I.totalQuantity(c.state.inv.objets,o),0),3);});
-function techniques(){
+function techniques(initial){
  function el(tag,cls,text){
   const classes=new Set(String(cls||'').split(/\s+/).filter(Boolean));
   const node={tag,className:cls||'',textContent:text||'',dataset:{},children:[],listeners:{},style:{},attributes:{},
@@ -34,7 +34,7 @@ function techniques(){
   return node;
  }
  const state=M.blank();
- state.techniques=[{id:'art-a-classer',nom:'À classer',techniques:[{id:'t',nom:'Test',rang:1,rangs:[{id:'r1',nom:'Rang I',xp:10,rupture:2,desc:'Description du rang',mode:'plain'}],legacyXp:3,legacyRupture:1,legacyDesc:'Ancienne description',offert:0}]}];
+ state.techniques=initial||[{id:'art-a-classer',nom:'À classer',techniques:[{id:'t',nom:'Test',rang:1,rangs:[{id:'r1',nom:'Rang I',xp:10,rupture:2,desc:'Description du rang',mode:'plain'}],legacyXp:3,legacyRupture:1,legacyDesc:'Ancienne description',offert:0}]}];
  let id=0;const chats=[],ctx={state,hooks:[],remontageNettoyage:[],document:{activeElement:null,querySelector(){return null;}},window:{innerHeight:900,addEventListener(){},removeEventListener(){}},
   el,block:(title,small,id,onToggle)=>{const b=el('div','pc-block');b.appendChild(el('div','pc-block-title',title));return b;},
   miniBtn:(text,title,fn,cls)=>{const b=el('button','pc-mini '+(cls||''),text);b.listeners.click=[fn];return b;},
@@ -44,6 +44,7 @@ function techniques(){
  vm.createContext(ctx);vm.runInContext(fs.readFileSync(root+'src/fiche/art/techniques.js','utf8'),ctx);
  return {ctx,ui:ctx.buildTechniques(),chats,
   find(node,cls){if(String(node.className||'').split(/\s+/).includes(cls))return node;for(const c of node.children||[]){const found=this.find(c,cls);if(found)return found;}return null;},
+  findAll(node,cls,out){out=out||[];if(String(node.className||'').split(/\s+/).includes(cls))out.push(node);for(const c of node.children||[])this.findAll(c,cls,out);return out;},
   findText(node,text){if(node.textContent===text)return node;for(const c of node.children||[]){const found=this.findText(c,text);if(found)return found;}return null;},
   fire(node,type,extra){assert.ok(node,'élément attendu pour '+type);(node.listeners[type]||[]).forEach(fn=>fn(Object.assign({preventDefault(){},stopPropagation(){},relatedTarget:null},extra||{})));}
  };
@@ -77,6 +78,8 @@ test('Techniques : commandes d’édition, formats Notes, description et pied de
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-edit-only { display: none !important; }'));
  assert.ok(css.includes('.pc-editable.editing .pc-tech-rank-read { display: none; }'));
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-editor { display: none; }'));
+ assert.ok(css.includes('grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 1.55rem 1.55rem;'));
+ assert.ok(css.includes('display: flex; align-items: center; justify-content: flex-end;'));
 });
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
@@ -103,6 +106,48 @@ test('Techniques : glisser vers un autre art conserve les rangs et leurs donnée
  w.fire(artGrip,'dragstart',{dataTransfer:transfer});w.fire(firstArtLabel.parentNode,'drop',{dataTransfer:transfer});
  assert.equal(ctx.state.techniques[0].nom,'Nouvel art');
  assert.equal(ctx.state.techniques[0].techniques[0].id,'t');
+});
+test('Techniques : diviseurs nommés, repli des groupes et suppression sans toucher aux entrées',()=>{
+ const data=[
+  {id:'a1',nom:'Art premier',techniques:[
+   {id:'t1',nom:'Technique première',rang:0,rangs:[{id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]},
+   {id:'dt',type:'divider',nom:'Techniques avancées',replie:false},
+   {id:'t2',nom:'Technique masquée',rang:0,rangs:[{id:'r2',nom:'II',xp:2,rupture:2,desc:'',mode:'plain'}]}
+  ]},
+  {id:'da',type:'divider',nom:'Arts de combat',replie:false},
+  {id:'a2',nom:'Art second',techniques:[]}
+ ];
+ const w=techniques(data),artsList=w.find(w.ui,'pc-tech-art-list'),techList=w.find(w.ui,'pc-technique-list');
+ const dividerArt=w.find(artsList,'pc-tech-divider-art'),dividerTech=w.find(techList,'pc-tech-divider-technique');
+ assert.ok(dividerArt);assert.ok(dividerTech);
+ const nameArt=dividerArt.children[2];nameArt.value='Arts martiaux';w.fire(nameArt,'input');assert.equal(data[1].nom,'Arts martiaux');
+ const artRows=w.findAll(artsList,'pc-tech-item');assert.equal(artRows.length,2);assert.equal(artRows[1].hidden,false);
+ dividerArt.children[1].click();assert.equal(data[1].replie,true);assert.equal(artRows[1].hidden,true);
+ dividerArt.children[1].click();assert.equal(artRows[1].hidden,false);
+ const techRows=w.findAll(techList,'pc-tech-item');assert.equal(techRows.length,2);assert.equal(techRows[1].hidden,false);
+ dividerTech.children[1].click();assert.equal(data[0].techniques[1].replie,true);assert.equal(techRows[1].hidden,true);
+ dividerTech.children[1].click();assert.equal(techRows[1].hidden,false);
+ assert.ok(w.findText(artsList,'+ Diviseur')===null); // les actions d'ajout restent dans le pied du panneau
+ assert.ok(w.findText(w.ui,'+ Diviseur'));
+});
+test('Techniques : les diviseurs se réorganisent par glisser-déposer sans déplacer leur contenu',()=>{
+ const data=[
+  {id:'a1',nom:'Art premier',techniques:[
+   {id:'t1',nom:'Technique première',rang:0,rangs:[{id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]},
+   {id:'dt',type:'divider',nom:'Groupe',replie:false},
+   {id:'t2',nom:'Technique seconde',rang:0,rangs:[{id:'r2',nom:'II',xp:2,rupture:2,desc:'',mode:'plain'}]}
+  ]},
+  {id:'da',type:'divider',nom:'Groupe d’arts',replie:false},
+  {id:'a2',nom:'Art second',techniques:[]}
+ ];
+ const w=techniques(data),transfer={value:'',setData(type,value){this.value=value;},getData(){return this.value;}};
+ let artDivider=w.find(w.ui,'pc-tech-divider-art'),artList=w.find(w.ui,'pc-tech-art-list'),artFirst=w.findAll(artList,'pc-tech-item')[0];
+ w.fire(artDivider.children[0],'dragstart',{dataTransfer:transfer});w.fire(artFirst,'drop',{dataTransfer:transfer});
+ assert.deepEqual(data.map(x=>x.id),['da','a1','a2']);
+ let techDivider=w.find(w.ui,'pc-tech-divider-technique'),techList=w.find(w.ui,'pc-technique-list'),techFirst=w.findAll(techList,'pc-tech-item')[0];
+ w.fire(techDivider.children[0],'dragstart',{dataTransfer:transfer});w.fire(techFirst,'drop',{dataTransfer:transfer});
+ assert.deepEqual(data[1].techniques.map(x=>x.id),['dt','t1','t2']);
+ assert.equal(data[1].techniques[0].nom,'Groupe');assert.equal(data[1].techniques[2].rangs[0].id,'r2');
 });
 test('persistance : la munition zéro et les nouveaux contenus restent identiques après synchronisation',()=>{const before=M.blank();before.inv.objets=[weapon(),ammo()];const attrs=C.Compact.encode(before),session=new C.Compact.Session(attrs,before),w=attackContext(before.inv.objets);w.ctx.envoieAttaqueSimple({munition:'ammo'},before.inv.objets[0],def());session.capture(before);attrs.owd_ops_test={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};const saved=C.Compact.read(attrs).state;assert.equal(saved.inv.objets.find(o=>o.ref==='ammo').qte,0);assert.deepEqual(saved.inv.objets.find(o=>o.ref==='ammo').munitionStats,before.inv.objets[1].munitionStats);});
 test('imprégnation : pourcentage élémentaire indépendant du multiplicateur et des MOD',()=>{const it=weapon();it.arme.degats=100;it.arme.modsDegats=['Force'];it.arme.repartition={physique:80,feu:20};const w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='fire-imbue';assert.equal(w.ctx.brutCoup(it,{mult:1.2}),124);assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',false,it), '99 physique + 38 feu');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',true,it), '49 physique + 19 feu');});

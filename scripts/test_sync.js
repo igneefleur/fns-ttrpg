@@ -169,6 +169,30 @@ test('migration 19 → 18 : coûts acquis et descriptions rang par rang restent 
   assert.ok(down.state.techniques[0].desc.includes('[Finale]'));
 });
 
+test('migration 20 → 19 → 20 : les diviseurs nommés et leur ordre sont conservés',()=>{
+  const s=seed();s.v=20;s.techniques=[
+    {id:'art-a',nom:'Art A',techniques:[
+      {id:'t1',nom:'Technique 1',rang:0,rangs:[{id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]},
+      {id:'dt',type:'divider',nom:'Techniques avancées',replie:true},
+      {id:'t2',nom:'Technique 2',rang:0,rangs:[{id:'r2',nom:'II',xp:2,rupture:2,desc:'',mode:'plain'}]}
+    ]},
+    {id:'da',type:'divider',nom:'Arts spéciaux',replie:false},
+    {id:'art-b',nom:'Art B',techniques:[]}
+  ];
+  const down=Migr.appliquer(s,20,19);assert.ok(down.ok,down.erreur&&down.erreur.message);
+  assert.deepEqual(down.state.techniques.map(a=>a.id),['art-a','art-b']);
+  const up=Migr.appliquer(down.state,19,20);assert.ok(up.ok,up.erreur&&up.erreur.message);
+  assert.deepEqual(up.state.techniques,s.techniques);
+});
+test('synchronisation : les diviseurs des deux colonnes conservent leur ordre et leur repli',()=>{
+  const s=M.blank();s.techniques=[
+    {id:'art-a',nom:'Art A',techniques:[{id:'d-tech',type:'divider',nom:'Techniques spéciales',replie:true},{id:'t',nom:'Technique',rang:0,rangs:[{id:'r',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]}]},
+    {id:'d-art',type:'divider',nom:'Arts avancés',replie:false},
+    {id:'art-b',nom:'Art B',techniques:[]}
+  ];
+  const encoded=C.Compact.encode(s),decoded=C.Compact.read(encoded).state;
+  assert.deepEqual(decoded.techniques,s.techniques);
+});
 test('synchronisation : les arts, techniques et rangs imbriqués gardent leurs identifiants',()=>{
   const w=world();
   change(w,w.a,s=>s.techniques=[{id:'art',nom:'Art',techniques:[{id:'t',nom:'Technique',rang:1,rangs:[{id:'r1',nom:'I',xp:4,rupture:1,desc:'A',mode:'plain'}],legacyXp:2,legacyRupture:1,legacyDesc:''}]}]);
@@ -176,12 +200,27 @@ test('synchronisation : les arts, techniques et rangs imbriqués gardent leurs i
   const arts=w.value().techniques;assert.equal(arts.length,1);assert.equal(arts[0].techniques.length,1);
   assert.deepEqual(arts[0].techniques[0].rangs.map(r=>r.id),['r1','r2']);
 });
+test('normalisation : les diviseurs Arts/Techniques gardent nom, ordre et état replié',()=>{
+  const src=require('node:fs').readFileSync(require('node:path').join(__dirname,'../src/fiche/socle/060-etat-normalise.js'),'utf8');
+  const start=src.indexOf('    function normRangTechnique('),end=src.indexOf('    // ---- armes et leurs gestes ----',start);
+  assert.ok(start>=0&&end>start);
+  let id=0;const ctx={s:{techniques:[
+    {id:'a',nom:'Art',techniques:[{id:'dt',type:'divider',nom:'Rangs avancés',replie:true},{id:'t',nom:'Technique',rang:0,rangs:[{id:'r',nom:'I',xp:3,rupture:2,desc:'',mode:'plain'}]}]},
+    {id:'da',type:'divider',nom:'Arts spéciaux',replie:false}
+  ]},uid:p=>p+'-'+(++id),num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,clamp:(v,a,b)=>Math.max(a,Math.min(b,v))};
+  require('node:vm').runInNewContext(src.slice(start,end),ctx);
+  assert.equal(JSON.stringify(ctx.s.techniques.map(x=>x.id)),JSON.stringify(['a','da']));
+  assert.equal(ctx.s.techniques[1].type,'divider');assert.equal(ctx.s.techniques[1].nom,'Arts spéciaux');
+  assert.equal(ctx.s.techniques[0].techniques[0].type,'divider');assert.equal(ctx.s.techniques[0].techniques[0].replie,true);
+  assert.equal(ctx.s.techniques[0].techniques[1].rangs[0].id,'r');
+});
 test('calculs : seuls les rangs acquis et les coûts historiques comptent en XP et rupture',()=>{
   const fs=require('node:fs'),vm=require('node:vm'),src=fs.readFileSync(require('node:path').join(__dirname,'../src/fiche/socle/090-calculs-comps.js'),'utf8');
   const start=src.indexOf('  // ---- arts, techniques, expérience et rupture ----');
   const end=src.indexOf('  function xpDepense()',start);
   const rStart=src.indexOf('  function ruptureTechs()',end),rEnd=src.indexOf('  function ruptureDepense()',rStart);
-  const state={comps:[],techniques:[{id:'art',techniques:[
+  const state={comps:[],techniques:[{id:'da',type:'divider',nom:'Arts',replie:false},{id:'art',techniques:[
+    {id:'dt',type:'divider',nom:'Groupe',replie:true},
     {id:'t1',rang:1,legacyXp:4,legacyRupture:1,rangs:[{xp:20,rupture:2},{xp:99,rupture:99}]},
     {id:'t2',rang:2,legacyXp:0,legacyRupture:0,rangs:[{xp:5,rupture:0},{xp:6,rupture:3}]}
   ]}]};

@@ -1487,6 +1487,47 @@
     }
   });
 
+  OwdMigr.ajouter({ schema: 20,
+    titre: "Diviseurs nommés pour les arts et techniques",
+    notes: "Les listes d’arts et de techniques peuvent maintenant contenir des diviseurs nommés et repliables.",
+    monter: function (s, ctx) {
+      var retour = ctx.reprendre("techniques-diviseurs-schema20");
+      if (!Array.isArray(retour) || !retour.length || !Array.isArray(s.techniques)) return s;
+      retour.forEach(function (r) {
+        var liste = r.colonne === "arts" ? s.techniques : null;
+        if (r.colonne === "techniques") {
+          var art = s.techniques.filter(function (a) { return a && a.id === r.artId && Array.isArray(a.techniques); })[0];
+          liste = art && art.techniques;
+        }
+        if (!liste) return;
+        var index = Math.max(0, Math.min(liste.length, Number(r.index) || 0));
+        liste.splice(index, 0, r.diviseur);
+      });
+      return s;
+    },
+    descendre: function (s, ctx) {
+      var sauvegarde = [], arts = Array.isArray(s.techniques) ? s.techniques : [];
+      for (var i = 0; i < arts.length; i++) {
+        var art = arts[i];
+        if (art && art.type === "divider") {
+          sauvegarde.push({ colonne: "arts", index: i, diviseur: art });
+          continue;
+        }
+        if (!art || !Array.isArray(art.techniques)) continue;
+        for (var j = 0; j < art.techniques.length; j++) {
+          var entree = art.techniques[j];
+          if (entree && entree.type === "divider") {
+            sauvegarde.push({ colonne: "techniques", artId: art.id, index: j, diviseur: entree });
+          }
+        }
+        art.techniques = art.techniques.filter(function (t) { return !t || t.type !== "divider"; });
+      }
+      if (sauvegarde.length) ctx.grenier("techniques-diviseurs-schema20", sauvegarde);
+      s.techniques = arts.filter(function (a) { return !a || a.type !== "divider"; });
+      return s;
+    }
+  });
+
   global.OwdMigr = OwdMigr;
   if (typeof module === "object" && module && module.exports) module.exports = OwdMigr;
 })(typeof window !== "undefined" ? window : (typeof global !== "undefined" ? global : this));
