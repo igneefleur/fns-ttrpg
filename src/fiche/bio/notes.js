@@ -90,7 +90,7 @@
   function buildNotes(){
     var vueKey=(location.hash.match(/(?:^#|&)c=([^&]+)/)||[])[1]||state.name||"local";
     var remembered=notesVues[vueKey]||null;
-    var b=block('Notes');b.classList.add('pc-notes-chat');
+    var b=block('Journal');b.classList.add('pc-notes-chat');
     var searchBar=el('div','pc-notes-search'),search=el('input');search.type='search';search.placeholder='Rechercher dans les notes…';search.setAttribute('aria-label','Rechercher dans toutes les notes');
     var clear=miniBtn('×','Effacer la recherche',function(){search.value='';recherche();search.focus();});searchBar.appendChild(search);searchBar.appendChild(clear);b.appendChild(searchBar);
     var count=el('div','pc-notes-count');count.setAttribute('role','status');b.appendChild(count);

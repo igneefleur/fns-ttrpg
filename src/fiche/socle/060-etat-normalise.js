@@ -353,6 +353,45 @@
     }
     s.techniques = artsNormalises;
 
+    // ---- classements Recettes et Notes : groupes / éléments / entrées ----
+    // Les deux modules partagent la même forme. Les diviseurs ne sont permis
+    // que dans les deux premières listes ; une entrée finale ne porte que son
+    // nom, son texte et le format Brut / Markdown.
+    function normaliseListeOrganisee(liste, prefixe) {
+      if (!Array.isArray(liste)) return [];
+      function normaliseDiviseur(d, prefix) {
+        return { id: String(d.id || "") || uid(prefix), type: "divider",
+          nom: String(d.nom == null ? "" : d.nom), replie: d.replie === true };
+      }
+      function normaliseEntrees(listeEntrees) {
+        if (!Array.isArray(listeEntrees)) return [];
+        var vus = {};
+        return listeEntrees.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+          var id = String(e.id || ""); if (!id || vus[id]) id = uid("li"); vus[id] = 1;
+          return { id: id, nom: String(e.nom == null ? "" : e.nom),
+            desc: String(e.desc == null ? "" : e.desc), mode: e.mode === "markdown" ? "markdown" : "plain" };
+        });
+      }
+      function normaliseElements(listeElements) {
+        if (!Array.isArray(listeElements)) return [];
+        var vus = {};
+        return listeElements.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+          if (e.type === "divider") return normaliseDiviseur(e, "ld");
+          var id = String(e.id || ""); if (!id || vus[id]) id = uid("le"); vus[id] = 1;
+          return { id: id, nom: String(e.nom == null ? "" : e.nom),
+            entrees: normaliseEntrees(e.entrees) };
+        });
+      }
+      var vusGroupes = {};
+      return liste.filter(function (g) { return g && typeof g === "object"; }).map(function (g) {
+        if (g.type === "divider") return normaliseDiviseur(g, "ld");
+        var id = String(g.id || ""); if (!id || vusGroupes[id]) id = uid(prefixe); vusGroupes[id] = 1;
+        return { id: id, nom: String(g.nom == null ? "" : g.nom), elements: normaliseElements(g.elements) };
+      });
+    }
+    s.recettes = normaliseListeOrganisee(s.recettes, "lg");
+    s.notesOrganisees = normaliseListeOrganisee(s.notesOrganisees, "lg");
+
     // ---- armes et leurs gestes ----
     if (!Array.isArray(s.armes)) s.armes = [];
     s.armes = s.armes.filter(function (a) { return a && typeof a === "object"; }).map(function (a) {

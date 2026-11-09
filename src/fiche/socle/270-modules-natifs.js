@@ -31,11 +31,13 @@
     { id: "comps",        titre: "COMPÉTENCES",      onglet: "fiche", colonne: "droite", build: buildComps },
     { id: "recuperation", titre: "RÉCUPÉRATION",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
     { id: "effets", titre: "EFFETS", onglet: "fiche", colonne: "droite", build: buildEffets },
-    // ---- onglet Art ----
-    // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
-    // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
-    // Fiche, c'est-à-dire là où personne n'allait la chercher.
-    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "milieu",  build: buildTechniques },
+    // ---- onglet Recettes ----
+    // Trois colonnes comme les Arts : Catégories, Recettes, Entrées.
+    { id: "recettes", titre: "RECETTES", onglet: "recettes", colonne: "milieu", build: buildRecettes },
+    // ---- onglet Arts ----
+    // Pleine largeur, seul de son onglet : les trois colonnes sont portées par
+    // le module lui-même, comme dans l'architecture des listes organisées.
+    { id: "techniques", titre: "TECHNIQUES", onglet: "art", colonne: "milieu", build: buildTechniques },
     // ---- onglet Équipement ----
     { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "milieu",    build: buildInv },
     // ---- onglet Bio ----
@@ -44,7 +46,10 @@
     // consulte pas en combat. « bg » porte le nom de son champ d'état.
     { id: "bg",           titre: "BIO",              onglet: "bio", colonne: "gauche", build: buildBio },
     { id: "avantages",    titre: "AVANTAGES",        onglet: "bio", colonne: "gauche", build: buildAvantages },
-    { id: "notes",        titre: "NOTES",            onglet: "bio", colonne: "droite", build: buildNotes },
+    { id: "notes",        titre: "JOURNAL",          onglet: "bio", colonne: "droite", build: buildNotes },
+    // ---- onglet Notes ----
+    // Un espace de classement indépendant du journal chronologique de Bio.
+    { id: "notesOrganisees", titre: "NOTES", onglet: "notes", colonne: "milieu", build: buildNotesOrganisees },
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
     // dispositif, à droite ce qui touche à la fiche et aux longues listes.

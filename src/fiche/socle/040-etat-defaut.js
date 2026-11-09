@@ -145,6 +145,9 @@
       // sa rupture et sa description. Les coûts historiques d'anciennes fiches
       // restent dans legacyXp / legacyRupture jusqu'à ventilation manuelle.
       techniques: [],
+      // Deux classements libres : catégories/dossiers > recettes/notes > entrées.
+      // Une entrée porte seulement un nom et une description (texte brut ou Markdown).
+      recettes: [], notesOrganisees: [],
 
       // ---- combat ----
       // Les entrées référencent une arme ou conservent leurs propres valeurs.

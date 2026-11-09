@@ -14,9 +14,11 @@
   // faire derrière une jauge de satiété.
   var TABS = [
     { id: "fiche", label: "Fiche" },
-    { id: "art", label: "Art" },
+    { id: "recettes", label: "Recettes" },
+    { id: "art", label: "Arts" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
+    { id: "notes", label: "Notes" },
     { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {

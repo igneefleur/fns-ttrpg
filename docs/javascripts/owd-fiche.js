@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.34.4b";
+  var RELEASE = "4.35.0b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -486,6 +486,9 @@
       // sa rupture et sa description. Les coûts historiques d'anciennes fiches
       // restent dans legacyXp / legacyRupture jusqu'à ventilation manuelle.
       techniques: [],
+      // Deux classements libres : catégories/dossiers > recettes/notes > entrées.
+      // Une entrée porte seulement un nom et une description (texte brut ou Markdown).
+      recettes: [], notesOrganisees: [],
 
       // ---- combat ----
       // Les entrées référencent une arme ou conservent leurs propres valeurs.
@@ -943,6 +946,45 @@
       techniquesAnciennes.forEach(function (t) { aClasser.techniques.push(normTechnique(t)); });
     }
     s.techniques = artsNormalises;
+
+    // ---- classements Recettes et Notes : groupes / éléments / entrées ----
+    // Les deux modules partagent la même forme. Les diviseurs ne sont permis
+    // que dans les deux premières listes ; une entrée finale ne porte que son
+    // nom, son texte et le format Brut / Markdown.
+    function normaliseListeOrganisee(liste, prefixe) {
+      if (!Array.isArray(liste)) return [];
+      function normaliseDiviseur(d, prefix) {
+        return { id: String(d.id || "") || uid(prefix), type: "divider",
+          nom: String(d.nom == null ? "" : d.nom), replie: d.replie === true };
+      }
+      function normaliseEntrees(listeEntrees) {
+        if (!Array.isArray(listeEntrees)) return [];
+        var vus = {};
+        return listeEntrees.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+          var id = String(e.id || ""); if (!id || vus[id]) id = uid("li"); vus[id] = 1;
+          return { id: id, nom: String(e.nom == null ? "" : e.nom),
+            desc: String(e.desc == null ? "" : e.desc), mode: e.mode === "markdown" ? "markdown" : "plain" };
+        });
+      }
+      function normaliseElements(listeElements) {
+        if (!Array.isArray(listeElements)) return [];
+        var vus = {};
+        return listeElements.filter(function (e) { return e && typeof e === "object"; }).map(function (e) {
+          if (e.type === "divider") return normaliseDiviseur(e, "ld");
+          var id = String(e.id || ""); if (!id || vus[id]) id = uid("le"); vus[id] = 1;
+          return { id: id, nom: String(e.nom == null ? "" : e.nom),
+            entrees: normaliseEntrees(e.entrees) };
+        });
+      }
+      var vusGroupes = {};
+      return liste.filter(function (g) { return g && typeof g === "object"; }).map(function (g) {
+        if (g.type === "divider") return normaliseDiviseur(g, "ld");
+        var id = String(g.id || ""); if (!id || vusGroupes[id]) id = uid(prefixe); vusGroupes[id] = 1;
+        return { id: id, nom: String(g.nom == null ? "" : g.nom), elements: normaliseElements(g.elements) };
+      });
+    }
+    s.recettes = normaliseListeOrganisee(s.recettes, "lg");
+    s.notesOrganisees = normaliseListeOrganisee(s.notesOrganisees, "lg");
 
     // ---- armes et leurs gestes ----
     if (!Array.isArray(s.armes)) s.armes = [];
@@ -2832,7 +2874,7 @@
     enregistrementEtat=json;
     var out={},caps=card.capacites,caracs=card.caracs;
     function set(id,parts){out[id]=JSON.stringify(parts);}
-    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','temperatureMonde','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
+    var own={caracs:['caracs','caracsXp','xpTotal'],effort:['effort','qualiteSommeil','horloge'],exposition:['temperature','temperatureMonde','horlogeExposition'],mouvement:['allure','allureCran'],effondrement:['effParties','effAutre','effAlcool','effAlcoolSecondes','horlogeAlcool','effDesactive','effPause'],desaction:['desTailles','desUtilises'],attaque:['attaques'],defense:['defenses'],comps:['comps','compsGroupes'],effets:['effetsActifs','effetsPermanents'],techniques:['techniques'],recettes:['recettes'],notesOrganisees:['notesOrganisees'],avantages:['avantages'],notes:['notes'],jets:['de'],modcaracs:['caracsLeviers'],optcaps:['capsLeviers'],optcomps:['compsLeviers'],modules:['modules','modActifs'],mods:['mods'],bg:['background'],inv:['inv']};
     Object.keys(own).forEach(function(id){set(id,own[id].map(function(k){return state[k];}));});
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}
@@ -3154,7 +3196,7 @@
     effVu = e;
   }
   var refreshEmpreintes=null;
-  var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
+  var VUE_DEPENDANCES={notes:['notes'],notesOrganisees:['notesOrganisees'],recettes:['recettes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
   function refresh(force) {
     recupSynchroniseSuivi();
     actualiseHorlogeAlcool();
@@ -3959,9 +4001,11 @@
   // faire derrière une jauge de satiété.
   var TABS = [
     { id: "fiche", label: "Fiche" },
-    { id: "art", label: "Art" },
+    { id: "recettes", label: "Recettes" },
+    { id: "art", label: "Arts" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
+    { id: "notes", label: "Notes" },
     { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {
@@ -4084,7 +4128,13 @@
     // feuille. Rendre le panneau au lieu d'un enfant est la convention qui dit
     // « pleine largeur » — le plan des modules la reconnaît et dessine alors sa
     // propre rangée.
+    recettes: function (pane) {
+      return { milieu: pane };
+    },
     art: function (pane) {
+      return { milieu: pane };
+    },
+    notes: function (pane) {
       return { milieu: pane };
     },
     equipement: function (pane) {
@@ -8791,7 +8841,7 @@
   function buildNotes(){
     var vueKey=(location.hash.match(/(?:^#|&)c=([^&]+)/)||[])[1]||state.name||"local";
     var remembered=notesVues[vueKey]||null;
-    var b=block('Notes');b.classList.add('pc-notes-chat');
+    var b=block('Journal');b.classList.add('pc-notes-chat');
     var searchBar=el('div','pc-notes-search'),search=el('input');search.type='search';search.placeholder='Rechercher dans les notes…';search.setAttribute('aria-label','Rechercher dans toutes les notes');
     var clear=miniBtn('×','Effacer la recherche',function(){search.value='';recherche();search.focus();});searchBar.appendChild(search);searchBar.appendChild(clear);b.appendChild(searchBar);
     var count=el('div','pc-notes-count');count.setAttribute('role','status');b.appendChild(count);
@@ -8875,6 +8925,621 @@
     updatePreview();redrawData(true);
     if(remembered&&!remembered.following){var index=results.findIndex(function(m){return m.id===remembered.first;});if(index>=0){from=index;to=Math.min(results.length,from+Math.max(BATCH,remembered.count));render(false);}}
     requestAnimationFrame(function(){if(dead)return;if(remembered&&!remembered.following){following=false;history.scrollTop=remembered.scroll;}else if(following)history.scrollTop=history.scrollHeight;});return b;
+  }
+  // ---- listes organisées : Recettes et Notes --------------------------------
+  // Même charpente que les Arts : groupes, éléments et entrées. Les deux
+  // derniers niveaux n'ont ici aucune mécanique de rang, de coût ou d'acquis.
+  //
+  // Etat commun :
+  //   [{ id, nom, elements: [ {id, nom, entrees:[{id,nom,desc,mode}]} | diviseur ] } | diviseur]
+  // Les diviseurs vivent dans les deux premières colonnes, comme pour Arts.
+  function buildListeOrganisee(config) {
+    var b = block(config.titre, null, null);
+    var layout = el("div", "pc-techniques-layout pc-liste-organisee-layout");
+    b.appendChild(layout);
+
+    var selectionGroupe = "", selectionElement = "";
+    var editionGroupes = false, editionElementsGroupe = "", editionEntreesElement = "";
+    var panneaux = {}, listeHooks = [], dragEntree = null, empreinteRendu = "";
+
+    function groupes() {
+      if (!Array.isArray(state[config.cle])) state[config.cle] = [];
+      return state[config.cle];
+    }
+    function estDiviseur(x) { return !!(x && x.type === "divider"); }
+    function groupeDe(id) {
+      return groupes().filter(function (g) { return g && !estDiviseur(g) && g.id === id && Array.isArray(g.elements); })[0] || null;
+    }
+    function elementDe(g, id) {
+      return g && Array.isArray(g.elements)
+        ? g.elements.filter(function (x) { return x && !estDiviseur(x) && x.id === id; })[0] || null
+        : null;
+    }
+    function entreesDe(x) { return x && Array.isArray(x.entrees) ? x.entrees : []; }
+    function premierElement(g) {
+      var x = g && g.elements ? g.elements.filter(function (e) { return e && !estDiviseur(e); })[0] : null;
+      return x ? x.id : "";
+    }
+    function selectionValide() {
+      var ancienGroupe = selectionGroupe, ancienElement = selectionElement;
+      var g = groupeDe(selectionGroupe);
+      if (!g) g = groupes().filter(function (x) { return x && !estDiviseur(x); })[0] || null;
+      var nouvelGroupe = g ? g.id : "";
+      var x = elementDe(g, selectionElement);
+      if (!x) x = g && g.elements.filter(function (e) { return e && !estDiviseur(e); })[0] || null;
+      var nouvelElement = x ? x.id : "";
+      if (nouvelGroupe !== ancienGroupe) {
+        editionElementsGroupe = "";
+        editionEntreesElement = "";
+      }
+      if (nouvelElement !== ancienElement) editionEntreesElement = "";
+      selectionGroupe = nouvelGroupe;
+      selectionElement = nouvelElement;
+      return { groupe: g, element: x };
+    }
+    function editionActive(colonne) {
+      if (!ficheModifiable()) return false;
+      if (colonne === "groupes") return editionGroupes;
+      if (colonne === "elements") return !!selectionGroupe && editionElementsGroupe === selectionGroupe && !!groupeDe(selectionGroupe);
+      if (colonne === "entrees") return !!selectionElement && editionEntreesElement === selectionElement && !!elementDe(groupeDe(selectionGroupe), selectionElement);
+      return false;
+    }
+    function actualiseEdition(pane, colonne) {
+      if (!pane) return;
+      var actif = editionActive(colonne);
+      pane.classList.toggle("editing", actif);
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-field") : [], function (field) {
+        field.disabled = !actif;
+      });
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-only") : [], function (control) {
+        if ("disabled" in control) control.disabled = !actif;
+      });
+      var gear = pane.querySelector ? pane.querySelector(".pc-tech-pane-gear") : null;
+      if (gear) {
+        var disponible = colonne === "groupes" || (colonne === "elements" ? !!groupeDe(selectionGroupe) : !!elementDe(groupeDe(selectionGroupe), selectionElement));
+        gear.disabled = !ficheModifiable() || !disponible;
+        gear.title = actif ? "Terminer les modifications de cette colonne" : "Modifier cette colonne";
+        gear.setAttribute("aria-label", gear.title);
+        gear.setAttribute("aria-pressed", String(actif));
+      }
+      if (window.__owdApplyMode) window.__owdApplyMode(pane);
+    }
+    function basculeEdition(pane, colonne) {
+      if (!ficheModifiable()) return;
+      if (colonne === "groupes") editionGroupes = !editionGroupes;
+      else if (colonne === "elements") {
+        if (!groupeDe(selectionGroupe)) return;
+        editionElementsGroupe = editionElementsGroupe === selectionGroupe ? "" : selectionGroupe;
+      } else if (colonne === "entrees") {
+        if (!elementDe(groupeDe(selectionGroupe), selectionElement)) return;
+        editionEntreesElement = editionEntreesElement === selectionElement ? "" : selectionElement;
+      }
+      actualiseEdition(pane, colonne);
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    }
+    function gearColonne(pane, colonne) {
+      var gear = el("button", "pc-gear pc-tech-pane-gear", "⚙");
+      gear.type = "button";
+      gear.addEventListener("click", function () { basculeEdition(pane, colonne); });
+      return gear;
+    }
+    function titreColonne(pane, titre, colonne) {
+      var head = el("div", "pc-tech-pane-title");
+      head.appendChild(el("span", null, titre));
+      head.appendChild(gearColonne(pane, colonne));
+      pane.appendChild(head);
+    }
+    function nouveauDiviseur() {
+      return { id: uid("ld"), type: "divider", nom: "Nouveau groupe", replie: false };
+    }
+    function nouveauGroupe() {
+      return { id: uid("lg"), nom: config.nouveauGroupe, elements: [] };
+    }
+    function nouvelElement() {
+      return { id: uid("le"), nom: config.nouvelElement, entrees: [] };
+    }
+    function nouvelleEntree() {
+      return { id: uid("li"), nom: "", desc: "", mode: "plain" };
+    }
+    function choixGroupe(id) {
+      var ancien = selectionGroupe;
+      selectionGroupe = id;
+      var g = groupeDe(id);
+      selectionElement = premierElement(g);
+      if (ancien !== id) { editionElementsGroupe = ""; editionEntreesElement = ""; }
+      rendre();
+    }
+    function choixElement(id) {
+      if (selectionElement !== id) editionEntreesElement = "";
+      selectionElement = id;
+      rendre();
+    }
+
+    function appliquerReplis(liste) {
+      var replie = false;
+      Array.prototype.forEach.call(liste.children || [], function (node) {
+        if (node.classList && node.classList.contains("pc-tech-divider")) {
+          replie = node.dataset.collapsed === "true";
+          node.hidden = false;
+          node.classList.toggle("collapsed", replie);
+        } else node.hidden = replie;
+      });
+    }
+    function termineGlisse(changement) {
+      if (!changement) return;
+      refresh(); rendre();
+    }
+    function colonnePourType(type) {
+      if (type === "groupe" || type === "diviseur-groupe") return "groupes";
+      if (type === "element" || type === "diviseur-element") return "elements";
+      if (type === "entree") return "entrees";
+      return "";
+    }
+    function idGlisse(e, type, id) {
+      if (!editionActive(colonnePourType(type)) || !e.dataTransfer) { e.preventDefault(); return; }
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", type + "|" + id);
+    }
+    function lireGlisse(e) {
+      if (!e.dataTransfer) return null;
+      var p = String(e.dataTransfer.getData("text/plain") || "").split("|");
+      return p.length === 2 && ["groupe", "diviseur-groupe", "element", "diviseur-element", "entree"].indexOf(p[0]) >= 0
+        ? { type: p[0], id: p[1] } : null;
+    }
+    function reordonne(liste, id, avantId) {
+      var from = liste.findIndex(function (x) { return x && x.id === id; });
+      if (from < 0 || id === avantId) return false;
+      var objet = liste.splice(from, 1)[0];
+      var to = avantId ? liste.findIndex(function (x) { return x && x.id === avantId; }) : -1;
+      liste.splice(to < 0 ? liste.length : to, 0, objet);
+      return true;
+    }
+    function deplaceElement(id, groupeCibleId, avantId) {
+      var source = null, index = -1, objet = null;
+      groupes().some(function (g) {
+        if (!g || !Array.isArray(g.elements)) return false;
+        var i = g.elements.findIndex(function (x) { return x && !estDiviseur(x) && x.id === id; });
+        if (i < 0) return false;
+        source = g; index = i; objet = g.elements[i]; return true;
+      });
+      var cible = groupeDe(groupeCibleId);
+      if (!objet || !source || !cible) return false;
+      if (source === cible && avantId === id) return false;
+      source.elements.splice(index, 1);
+      var to = avantId ? cible.elements.findIndex(function (x) { return x && x.id === avantId; }) : -1;
+      cible.elements.splice(to < 0 ? cible.elements.length : to, 0, objet);
+      selectionGroupe = cible.id;
+      selectionElement = objet.id;
+      if (source.id !== cible.id) { editionElementsGroupe = ""; editionEntreesElement = ""; }
+      return true;
+    }
+    function deplaceDiviseurElement(id, groupeCibleId, avantId) {
+      var source = null, index = -1, objet = null;
+      groupes().some(function (g) {
+        if (!g || !Array.isArray(g.elements)) return false;
+        var i = g.elements.findIndex(function (x) { return estDiviseur(x) && x.id === id; });
+        if (i < 0) return false;
+        source = g; index = i; objet = g.elements[i]; return true;
+      });
+      var cible = groupeDe(groupeCibleId);
+      if (!objet || !source || !cible || source !== cible || avantId === id) return false;
+      return reordonne(cible.elements, id, avantId);
+    }
+    function zoneDepotListe(node, reception, colonne) {
+      node.addEventListener("dragover", function (e) {
+        if (!editionActive(colonne)) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        node.classList.add("drop-target");
+      });
+      node.addEventListener("dragleave", function (e) {
+        if (!node.contains(e.relatedTarget)) node.classList.remove("drop-target");
+      });
+      node.addEventListener("drop", function (e) {
+        var drag = lireGlisse(e);
+        if (!drag || !editionActive(colonne)) return;
+        e.preventDefault(); e.stopPropagation(); node.classList.remove("drop-target");
+        reception(drag);
+      });
+    }
+    function cibleElement(card, groupe, element) {
+      card.addEventListener("dragover", function (e) {
+        var drag = lireGlisse(e);
+        var ok = editionActive("elements") && drag && (drag.type === "element" || (drag.type === "diviseur-element" && groupeDe(selectionGroupe) === groupe));
+        if (!ok || drag.id === element.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
+        card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      card.addEventListener("dragleave", function (e) {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+        card.classList.remove("avant", "apres");
+      });
+      card.addEventListener("drop", function (e) {
+        var drag = lireGlisse(e);
+        if (!drag || !editionActive("elements") || drag.id === element.id) return;
+        e.preventDefault(); e.stopPropagation();
+        if (drag.type === "element") termineGlisse(deplaceElement(drag.id, groupe.id, element.id));
+        else if (drag.type === "diviseur-element") termineGlisse(deplaceDiviseurElement(drag.id, groupe.id, element.id));
+      });
+    }
+    function cibleEntree(card, element, entree) {
+      card.addEventListener("dragover", function (e) {
+        if (!editionActive("entrees") || !dragEntree || dragEntree.elementId !== element.id || dragEntree.entreeId === entree.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
+        card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      card.addEventListener("dragleave", function (e) {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+        card.classList.remove("avant", "apres");
+      });
+      card.addEventListener("drop", function (e) {
+        if (!editionActive("entrees") || !dragEntree || dragEntree.elementId !== element.id || dragEntree.entreeId === entree.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect();
+        var liste = entreesDe(element);
+        var indexCible = liste.indexOf(entree);
+        var avantId = r && e.clientY < r.top + r.height / 2
+          ? entree.id
+          : (liste[indexCible + 1] ? liste[indexCible + 1].id : null);
+        termineGlisse(reordonne(liste, dragEntree.entreeId, avantId));
+        dragEntree = null;
+      });
+    }
+    function panneauTitre(pane, titre, colonne) {
+      var head = el("div", "pc-tech-pane-title");
+      head.appendChild(el("span", null, titre));
+      head.appendChild(gearColonne(pane, colonne));
+      pane.appendChild(head);
+    }
+
+    function ligneGroupe(g, liste) {
+      var item = el("div", "pc-tech-item" + (g.id === selectionGroupe ? " selected" : ""));
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les " + config.groupes.toLocaleLowerCase();
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "groupe", g.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      item.appendChild(drag);
+      var read = el("button", "pc-tech-item-read", g.nom || config.groupeSansNom);
+      read.type = "button"; read.addEventListener("click", function () { choixGroupe(g.id); });
+      item.appendChild(read);
+      var name = el("input", "pc-edit-field pc-tech-item-name");
+      name.type = "text"; name.value = g.nom || ""; name.placeholder = config.groupes;
+      name.setAttribute("aria-label", config.groupes);
+      name.addEventListener("input", function () { g.nom = name.value; read.textContent = name.value || config.groupeSansNom; save(); });
+      item.appendChild(name);
+      item.appendChild(miniBtn("×", "Supprimer ce " + config.groupeSingulier.toLowerCase(), function () {
+        if (!editionActive("groupes")) return;
+        function retire() {
+          var index = groupes().indexOf(g); if (index >= 0) groupes().splice(index, 1);
+          if (selectionGroupe === g.id) { selectionGroupe = ""; selectionElement = ""; }
+          refresh(); rendre();
+        }
+        var nombre = g.elements.filter(function (x) { return x && !estDiviseur(x); }).length;
+        if (nombre) confirmer("Supprimer " + config.groupeSingulier.toLowerCase(), "« " + (g.nom || config.groupeSansNom) + " » contient " + nombre + " " + config.elementPluriel.toLowerCase() + ". Supprimer le groupe et tout son contenu ?", "Tout supprimer", retire);
+        else retire();
+      }, "danger pc-edit-only"));
+      item.addEventListener("dragover", function (e) {
+        var dragData = lireGlisse(e);
+        var ok = (editionActive("groupes") && dragData && (dragData.type === "groupe" || dragData.type === "diviseur-groupe")) ||
+                 (editionActive("elements") && dragData && dragData.type === "element");
+        if (!ok || dragData.id === g.id) return;
+        e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+      item.addEventListener("drop", function (e) {
+        var dragData = lireGlisse(e); if (!dragData) return;
+        if (dragData.type === "element" && editionActive("elements")) {
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(deplaceElement(dragData.id, g.id, null));
+        } else if ((dragData.type === "groupe" || dragData.type === "diviseur-groupe") && editionActive("groupes")) {
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupes(), dragData.id, g.id));
+        }
+      });
+      liste.appendChild(item);
+    }
+    function ligneElement(x, g, liste) {
+      var item = el("div", "pc-tech-item pc-tech-item-tech" + (x.id === selectionElement ? " selected" : ""));
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner ou déplacer vers un autre " + config.groupeSingulier.toLowerCase();
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "element", x.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      item.appendChild(drag);
+      var read = el("button", "pc-tech-item-read", x.nom || config.elementSansNom);
+      read.type = "button"; read.addEventListener("click", function () { choixElement(x.id); });
+      item.appendChild(read);
+      var name = el("input", "pc-edit-field pc-tech-item-name");
+      name.type = "text"; name.value = x.nom || ""; name.placeholder = config.elements;
+      name.setAttribute("aria-label", config.elements);
+      name.addEventListener("input", function () { x.nom = name.value; read.textContent = name.value || config.elementSansNom; save(); });
+      item.appendChild(name);
+      item.appendChild(miniBtn("×", "Supprimer cet élément", function () {
+        if (!editionActive("elements")) return;
+        function retire() {
+          var index = g.elements.indexOf(x); if (index >= 0) g.elements.splice(index, 1);
+          if (selectionElement === x.id) selectionElement = premierElement(g);
+          refresh(); rendre();
+        }
+        var nombre = entreesDe(x).length;
+        if (nombre) confirmer("Supprimer " + config.elementSingulier.toLowerCase(), "« " + (x.nom || config.elementSansNom) + " » contient " + nombre + " entrée(s). Supprimer " + config.elementSingulier.toLowerCase() + " et tout son contenu ?", "Tout supprimer", retire);
+        else retire();
+      }, "danger pc-edit-only"));
+      cibleElement(item, g, x);
+      liste.appendChild(item);
+    }
+    function ligneDiviseur(diviseur, liste, colonne, groupe) {
+      var item = el("div", "pc-tech-divider pc-tech-divider-" + colonne);
+      item.dataset.collapsed = String(diviseur.replie === true);
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner ce diviseur";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation(); idGlisse(e, colonne === "groupes" ? "diviseur-groupe" : "diviseur-element", diviseur.id);
+      });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      item.appendChild(drag);
+      var toggle = el("button", "pc-tech-divider-toggle");
+      toggle.type = "button";
+      var arrow = el("span", "pc-tech-divider-arrow", diviseur.replie ? "▸" : "▾");
+      var label = el("span", "pc-tech-divider-label", diviseur.nom || "Diviseur sans nom");
+      toggle.appendChild(arrow); toggle.appendChild(label);
+      toggle.setAttribute("aria-expanded", String(diviseur.replie !== true));
+      toggle.addEventListener("click", function () {
+        diviseur.replie = diviseur.replie !== true;
+        item.dataset.collapsed = String(diviseur.replie);
+        item.classList.toggle("collapsed", diviseur.replie);
+        arrow.textContent = diviseur.replie ? "▸" : "▾";
+        toggle.setAttribute("aria-expanded", String(!diviseur.replie));
+        appliquerReplis(liste); save();
+      });
+      item.appendChild(toggle);
+      var name = el("input", "pc-edit-field pc-tech-divider-name");
+      name.type = "text"; name.value = diviseur.nom || ""; name.placeholder = "Nom du groupe";
+      name.setAttribute("aria-label", "Nom du diviseur");
+      name.addEventListener("input", function () { diviseur.nom = name.value; label.textContent = name.value || "Diviseur sans nom"; save(); });
+      item.appendChild(name);
+      item.appendChild(miniBtn("×", "Supprimer ce diviseur", function () {
+        var cible = colonne === "groupes" ? groupes() : (groupe && groupe.elements);
+        if (!cible || !editionActive(colonne)) return;
+        var index = cible.indexOf(diviseur); if (index >= 0) cible.splice(index, 1);
+        refresh(); rendre();
+      }, "danger pc-edit-only pc-tech-divider-del"));
+      if (colonne === "groupes") {
+        item.addEventListener("dragover", function (e) {
+          var d = lireGlisse(e); if (!editionActive("groupes") || !d || (d.type !== "groupe" && d.type !== "diviseur-groupe") || d.id === diviseur.id) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        });
+        item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+        item.addEventListener("drop", function (e) {
+          var d = lireGlisse(e); if (!editionActive("groupes") || !d || (d.type !== "groupe" && d.type !== "diviseur-groupe")) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupes(), d.id, diviseur.id));
+        });
+      } else {
+        item.addEventListener("dragover", function (e) {
+          var d = lireGlisse(e); if (!editionActive("elements") || !d || d.type !== "diviseur-element" || d.id === diviseur.id) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        });
+        item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+        item.addEventListener("drop", function (e) {
+          var d = lireGlisse(e); if (!editionActive("elements") || !d || d.type !== "diviseur-element") return;
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupe.elements, d.id, diviseur.id));
+        });
+      }
+      liste.appendChild(item);
+      return item;
+    }
+    function basculeMode(parent, entree, read) {
+      var group = el("div", "pc-notes-modes"), buttons = [];
+      group.setAttribute("role", "group"); group.setAttribute("aria-label", "Format de la description");
+      [["plain", "Brut"], ["markdown", "Markdown"]].forEach(function (pair) {
+        var button = miniBtn(pair[1], null, function () {
+          entree.mode = pair[0]; sync(); notesRendu(read, entree.desc || "", entree.mode); save();
+        });
+        buttons.push([button, pair[0]]); group.appendChild(button);
+      });
+      function sync() { buttons.forEach(function (pair) { pair[0].setAttribute("aria-pressed", String(entree.mode === pair[1])); }); }
+      function actualise() { sync(); notesRendu(read, entree.desc || "", entree.mode); }
+      actualise(); parent.appendChild(group); listeHooks.push(actualise);
+    }
+    function carteEntree(entree, element, index) {
+      if (entree.mode !== "markdown") entree.mode = "plain";
+      var card = el("article", "pc-tech-rank pc-catalog-entry");
+      card.dataset.syncEntity = entree.id;
+      var head = el("div", "pc-tech-rank-head pc-catalog-entry-head");
+      var dragSlot = el("span", "pc-tech-rank-drag-slot");
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les entrées";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation();
+        if (!editionActive("entrees") || !e.dataTransfer) { e.preventDefault(); return; }
+        dragEntree = { elementId: element.id, entreeId: entree.id };
+        card.classList.add("pris");
+        e.dataTransfer.setData("text/plain", "entree|" + entree.id); e.dataTransfer.effectAllowed = "move";
+      });
+      drag.addEventListener("dragend", function (e) {
+        e.stopPropagation(); dragEntree = null;
+        Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (n) { n.classList.remove("pris", "avant", "apres"); });
+      });
+      dragSlot.appendChild(drag); head.appendChild(dragSlot);
+      var nameWrap = el("label", "pc-tech-rank-name");
+      nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
+      var name = el("input", "pc-edit-field pc-catalog-entry-name");
+      name.type = "text"; name.value = entree.nom || ""; name.placeholder = "Nom de l’entrée";
+      name.setAttribute("aria-label", "Nom de l’entrée");
+      name.addEventListener("input", function () { entree.nom = name.value; save(); });
+      nameWrap.appendChild(name); head.appendChild(nameWrap);
+      var deleteSlot = el("span", "pc-tech-rank-del-slot");
+      deleteSlot.appendChild(miniBtn("×", "Supprimer cette entrée", function () {
+        if (!editionActive("entrees")) return;
+        confirmer("Supprimer une entrée", "Supprimer « " + (entree.nom || "cette entrée") + " » ?", "Supprimer", function () {
+          var liste = entreesDe(element), pos = liste.indexOf(entree); if (pos >= 0) liste.splice(pos, 1);
+          refresh(); rendre();
+        });
+      }, "danger pc-edit-only pc-tech-rank-del"));
+      head.appendChild(deleteSlot); card.appendChild(head);
+      var read = el("div", "pc-tech-rank-read");
+      notesRendu(read, entree.desc || "", entree.mode); card.appendChild(read);
+      var editor = el("textarea", "pc-edit-field pc-tech-rank-editor");
+      editor.rows = 4; editor.value = entree.desc || ""; editor.placeholder = "Description";
+      editor.setAttribute("aria-label", "Description de l’entrée");
+      editor.addEventListener("input", function () { entree.desc = editor.value; notesRendu(read, entree.desc, entree.mode); save(); });
+      card.appendChild(editor);
+      var footer = el("div", "pc-tech-rank-footer");
+      var formats = el("div", "pc-tech-rank-format-wrap pc-edit-only");
+      basculeMode(formats, entree, read); footer.appendChild(formats);
+      card.appendChild(footer);
+      cibleEntree(card, element, entree);
+      listeHooks.push(function () {
+        if (document.activeElement !== name) name.value = entree.nom || "";
+        if (document.activeElement !== editor) editor.value = entree.desc || "";
+      });
+      return card;
+    }
+
+    function rendreGroupes() {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-arts"); panneaux.groupes = pane;
+      panneauTitre(pane, config.groupes, "groupes");
+      var liste = el("div", "pc-tech-list pc-tech-art-list");
+      groupes().forEach(function (g) {
+        if (estDiviseur(g)) ligneDiviseur(g, liste, "groupes", null);
+        else ligneGroupe(g, liste);
+      });
+      if (!groupes().some(function (g) { return g && !estDiviseur(g); })) liste.appendChild(el("div", "pc-empty", "Aucun " + config.groupeSingulier.toLowerCase() + "."));
+      appliquerReplis(liste);
+      zoneDepotListe(liste, function (drag) {
+        if (drag.type === "groupe" || drag.type === "diviseur-groupe") termineGlisse(reordonne(groupes(), drag.id, null));
+      }, "groupes");
+      pane.appendChild(liste);
+      pane.appendChild(miniBtn("+ " + config.groupeSingulier, null, function () {
+        if (!editionActive("groupes")) return;
+        var g = nouveauGroupe(); groupes().push(g); selectionGroupe = g.id; selectionElement = "";
+        refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      pane.appendChild(miniBtn("+ Diviseur", null, function () {
+        if (!editionActive("groupes")) return;
+        groupes().push(nouveauDiviseur()); refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      return pane;
+    }
+    function rendreElements(g) {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-list-pane"); panneaux.elements = pane;
+      panneauTitre(pane, config.elements, "elements");
+      var liste = el("div", "pc-tech-list pc-technique-list");
+      if (g) {
+        g.elements.forEach(function (x) {
+          if (estDiviseur(x)) ligneDiviseur(x, liste, "elements", g);
+          else ligneElement(x, g, liste);
+        });
+        if (!g.elements.some(function (x) { return x && !estDiviseur(x); })) liste.appendChild(el("div", "pc-empty", "Aucun " + config.elementSingulier.toLowerCase() + " dans ce " + config.groupeSingulier.toLowerCase() + "."));
+        appliquerReplis(liste);
+        zoneDepotListe(liste, function (drag) {
+          if (drag.type === "element") termineGlisse(deplaceElement(drag.id, g.id, null));
+          else if (drag.type === "diviseur-element") termineGlisse(deplaceDiviseurElement(drag.id, g.id, null));
+        }, "elements");
+      } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un " + config.groupeSingulier.toLowerCase() + "."));
+      pane.appendChild(liste);
+      if (g) {
+        pane.appendChild(miniBtn("+ " + config.elementSingulier, null, function () {
+          if (!editionActive("elements")) return;
+          var x = nouvelElement(); g.elements.push(x); selectionElement = x.id;
+          editionEntreesElement = ""; refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+        pane.appendChild(miniBtn("+ Diviseur", null, function () {
+          if (!editionActive("elements")) return;
+          g.elements.push(nouveauDiviseur()); refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+      }
+      return pane;
+    }
+    function rendreEntrees(g, x) {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-ranks-pane pc-catalog-entries-pane"); panneaux.entrees = pane;
+      panneauTitre(pane, config.entrees, "entrees");
+      if (!x) {
+        pane.appendChild(el("div", "pc-empty", g ? "Sélectionnez ou créez un " + config.elementSingulier.toLowerCase() + "." : "Sélectionnez un " + config.groupeSingulier.toLowerCase() + " puis un " + config.elementSingulier.toLowerCase() + "."));
+        actualiseEdition(pane, "entrees"); return pane;
+      }
+      var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
+      entreesDe(x).forEach(function (entree, i) { liste.appendChild(carteEntree(entree, x, i)); });
+      if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", "Aucune entrée."));
+      zoneDepotListe(liste, function (drag) {
+        if (drag.type === "entree") {
+          var source = entreesDe(x).findIndex(function (e) { return e.id === drag.id; });
+          if (source >= 0) termineGlisse(reordonne(entreesDe(x), drag.id, null));
+        }
+      }, "entrees");
+      pane.appendChild(liste);
+      pane.appendChild(miniBtn("+ Entrée", null, function () {
+        if (!editionActive("entrees")) return;
+        entreesDe(x).push(nouvelleEntree()); save(); refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      return pane;
+    }
+    function rendre() {
+      empreinteRendu = JSON.stringify(groupes());
+      listeHooks = []; panneaux = {}; layout.innerHTML = "";
+      var selection = selectionValide();
+      layout.appendChild(rendreGroupes());
+      layout.appendChild(rendreElements(selection.groupe));
+      layout.appendChild(rendreEntrees(selection.groupe, selection.element));
+      actualiseEdition(panneaux.groupes, "groupes");
+      actualiseEdition(panneaux.elements, "elements");
+      actualiseEdition(panneaux.entrees, "entrees");
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    }
+
+    function ajusteHauteur() {
+      if (!layout.isConnected || !layout.offsetParent) return;
+      var fixe = document.querySelector(".md-header");
+      var autour = (layout.getBoundingClientRect().top - b.getBoundingClientRect().top) +
+                   28 + (fixe ? fixe.offsetHeight : 0);
+      var h = Math.max(420, Math.floor(window.innerHeight - autour));
+      layout.style.setProperty("--tech-h", h + "px");
+    }
+    window.addEventListener("resize", ajusteHauteur);
+    remontageNettoyage.push(function () { window.removeEventListener("resize", ajusteHauteur); });
+    if (window.IntersectionObserver) {
+      var observateur = new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); });
+      observateur.observe(layout);
+      remontageNettoyage.push(function () { observateur.disconnect(); });
+    }
+    hooks.push(function () {
+      var signature = JSON.stringify(groupes());
+      if (signature !== empreinteRendu) { rendre(); }
+      actualiseEdition(panneaux.groupes, "groupes");
+      actualiseEdition(panneaux.elements, "elements");
+      actualiseEdition(panneaux.entrees, "entrees");
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+      ajusteHauteur();
+    });
+    rendre();
+    return b;
+  }
+
+  function buildRecettes() {
+    return buildListeOrganisee({
+      cle: "recettes", titre: "Recettes", groupes: "Catégories", elements: "Recettes", entrees: "Entrées",
+      groupeSingulier: "Catégorie", elementSingulier: "Recette", elementPluriel: "Recettes",
+      groupeSansNom: "Catégorie sans nom", elementSansNom: "Recette sans nom",
+      nouveauGroupe: "Nouvelle catégorie", nouvelElement: "Nouvelle recette"
+    });
+  }
+  function buildNotesOrganisees() {
+    return buildListeOrganisee({
+      cle: "notesOrganisees", titre: "Notes", groupes: "Dossiers", elements: "Notes", entrees: "Entrées",
+      groupeSingulier: "Dossier", elementSingulier: "Note", elementPluriel: "Notes",
+      groupeSansNom: "Dossier sans nom", elementSansNom: "Note sans nom",
+      nouveauGroupe: "Nouveau dossier", nouvelElement: "Nouvelle note"
+    });
   }
   // ---------- boîte de dialogue ----------
   // Dans Roll20 la fiche est une iframe d'une AUTRE ORIGINE : prompt() et
@@ -12369,11 +13034,13 @@
     { id: "comps",        titre: "COMPÉTENCES",      onglet: "fiche", colonne: "droite", build: buildComps },
     { id: "recuperation", titre: "RÉCUPÉRATION",     onglet: "fiche", colonne: "droite", build: buildRecuperation },
     { id: "effets", titre: "EFFETS", onglet: "fiche", colonne: "droite", build: buildEffets },
-    // ---- onglet Art ----
-    // Pleine largeur, seul de son onglet : une technique est une CARTE, avec
-    // ses rangs, son coût et son effet. Elle vivait sous les huit blocs de la
-    // Fiche, c'est-à-dire là où personne n'allait la chercher.
-    { id: "techniques",   titre: "TECHNIQUES",       onglet: "art", colonne: "milieu",  build: buildTechniques },
+    // ---- onglet Recettes ----
+    // Trois colonnes comme les Arts : Catégories, Recettes, Entrées.
+    { id: "recettes", titre: "RECETTES", onglet: "recettes", colonne: "milieu", build: buildRecettes },
+    // ---- onglet Arts ----
+    // Pleine largeur, seul de son onglet : les trois colonnes sont portées par
+    // le module lui-même, comme dans l'architecture des listes organisées.
+    { id: "techniques", titre: "TECHNIQUES", onglet: "art", colonne: "milieu", build: buildTechniques },
     // ---- onglet Équipement ----
     { id: "inv",          titre: "INVENTAIRE",       onglet: "equipement", colonne: "milieu",    build: buildInv },
     // ---- onglet Bio ----
@@ -12382,7 +13049,10 @@
     // consulte pas en combat. « bg » porte le nom de son champ d'état.
     { id: "bg",           titre: "BIO",              onglet: "bio", colonne: "gauche", build: buildBio },
     { id: "avantages",    titre: "AVANTAGES",        onglet: "bio", colonne: "gauche", build: buildAvantages },
-    { id: "notes",        titre: "NOTES",            onglet: "bio", colonne: "droite", build: buildNotes },
+    { id: "notes",        titre: "JOURNAL",          onglet: "bio", colonne: "droite", build: buildNotes },
+    // ---- onglet Notes ----
+    // Un espace de classement indépendant du journal chronologique de Bio.
+    { id: "notesOrganisees", titre: "NOTES", onglet: "notes", colonne: "milieu", build: buildNotesOrganisees },
     // ---- onglet Options ----
     // Deux colonnes qui se répondent : à gauche ce qui touche aux valeurs et au
     // dispositif, à droite ce qui touche à la fiche et aux longues listes.

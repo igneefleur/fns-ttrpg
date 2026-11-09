@@ -75,6 +75,7 @@ fin = lf
   src/fiche/bio/bg.js
   src/fiche/bio/avantages.js
   src/fiche/bio/notes.js
+  src/fiche/socle/235-listes-organisees.js
   src/fiche/socle/260-dialogue.js
   src/fiche/equipement/inv-don.js
   src/fiche/equipement/armes.js

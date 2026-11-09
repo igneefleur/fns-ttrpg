@@ -87,7 +87,13 @@
     // feuille. Rendre le panneau au lieu d'un enfant est la convention qui dit
     // « pleine largeur » — le plan des modules la reconnaît et dessine alors sa
     // propre rangée.
+    recettes: function (pane) {
+      return { milieu: pane };
+    },
     art: function (pane) {
+      return { milieu: pane };
+    },
+    notes: function (pane) {
       return { milieu: pane };
     },
     equipement: function (pane) {

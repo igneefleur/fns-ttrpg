@@ -77,7 +77,7 @@
     effVu = e;
   }
   var refreshEmpreintes=null;
-  var VUE_DEPENDANCES={notes:['notes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
+  var VUE_DEPENDANCES={notes:['notes'],notesOrganisees:['notesOrganisees'],recettes:['recettes'],bg:['background'],avantages:['avantages'],techniques:['techniques'],journal:[],modules:['modules','modActifs'],mods:['mods']};
   function refresh(force) {
     recupSynchroniseSuivi();
     actualiseHorlogeAlcool();

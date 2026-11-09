@@ -440,6 +440,8 @@ def main():
 
     if not lancer("Notes et icônes de l’extension", ["node", "scripts/test_notes.js"], racine):
         return 1
+    if not lancer("classements Recettes et Notes", ["node", "scripts/test_listes_organisees.js"], racine):
+        return 1
 
     # 0. L'ASSEMBLAGE, AVANT MÊME DE LIRE LE NUMÉRO.
     #

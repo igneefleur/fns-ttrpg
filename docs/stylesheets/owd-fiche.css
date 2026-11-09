@@ -2726,6 +2726,21 @@ html.night .pc-stadebar.pc-tech-acquired-bar .seg.on {
   .pc-tech-acquired-bar { max-width: 58vw; }
 }
 
+/* Entrées Recettes / Notes : poignée, nom, suppression (pas de colonnes XP/Rupture). */
+.pc-catalog-entry { background: var(--panel); color: var(--ink); }
+.pc-catalog-entry .pc-tech-rank-read,
+.pc-catalog-entry .pc-tech-rank-read a,
+.pc-catalog-entry .pc-tech-rank-head input,
+.pc-catalog-entry .pc-tech-rank-editor { color: var(--ink); }
+.pc-tech-rank-head.pc-catalog-entry-head {
+  grid-template-columns: var(--tech-rank-action-width) minmax(0, 1fr) var(--tech-rank-action-width);
+}
+@media (max-width: 44em) {
+  .pc-tech-rank-head.pc-catalog-entry-head {
+    grid-template-columns: var(--tech-rank-action-width) minmax(0, 1fr) var(--tech-rank-action-width);
+  }
+}
+
 /* Réorganisation des rangs : mêmes repères de dépôt que les compétences. */
 .pc-tech-rank.avant { box-shadow: 0 -2px var(--accent); }
 .pc-tech-rank.apres { box-shadow: 0 2px var(--accent); }
