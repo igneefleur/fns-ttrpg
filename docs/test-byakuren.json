@@ -1,0 +1,701 @@
+{
+  "age": "28",
+  "armes": [
+    {
+      "nom": "Yūgetsusō",
+      "poids": "10",
+      "reach": "1.5",
+      "degats": "6d6+5",
+      "props": "+ Avantages +\n%NEWLINE%\n1. Saignement +2 \n%NEWLINE%\n--- Avantage gratuite de l'arme\n%NEWLINE%\n2. Précise (touche plus facilement les points faibles [/2 la stat de DEF d'une armure])\n%NEWLINE%\n3. 5d6 DGTS Physiques + Body / 10\n%NEWLINE%\n4. Lame requin (Lorsqu'une attaque est réussi et inflige des dégâts, j'ajoute le nombre de saignement de la cible aux dégâts)\n%NEWLINE%\n--- Si j'attaque une créature ensanglanté de niveau 7 et que je lui inflige des dégâts, je lui inflige les dégâts de mon arme + 7 (niveau de saignement)\n%NEWLINE%%NEWLINE%\n\n- Désavantages -\n%NEWLINE%\n1. Désaffuter (perds 1d6 de DGTS physiques)\n%NEWLINE%\n2. Très légère (donne un malus à la parade [-25])\n%NEWLINE%\n3. Body = 10"
+    }
+  ],
+  "armesComps": [
+    "Yūgetsusō"
+  ],
+  "armures": [],
+  "avantages": [
+    {
+      "name": "Lame jumelle occulte : Yūgetsusō",
+      "desc": "- Description - \n%NEWLINE%\nYūgetsusō est une lame jumelle un peu plus grande que les Tantos. Elles ont la particularité de faire devenir son porteur ambidextre pendant leur utilisation. Pour pouvoir l'utiliser il faut être assez habile pour pouvoir les séparer.\n%NEWLINE%%NEWLINE%\n- Effet - \n%NEWLINE%\n1. Vous ne subissez pas le malus de l'ambidextrie.\n%NEWLINE%\n2. Elle bénéficie des attributs du Tantos.\n%NEWLINE%\n3. Elle double l'amplification de saignement (+2 à la place de +1 à chaque coup).\n%NEWLINE%\n4. Si la créature touchée par les dagues ont 10 ou plus de saignement, qu'importe les dégâts que vous infligez, la créature subit un coup critique.\n%NEWLINE%\n5. Cette arme touche les esprits et vous infligez 2d6 de dégâts occultes supplémentaire.\n%NEWLINE%"
+    },
+    {
+      "name": "Aura Farming",
+      "desc": "- Description -\n%NEWLINE%\nVotre Art \"Aura Farming\" est poussé à l'excellence (variante de style). Les gens autour de vous remarque très facilement votre présence dans une interaction sociale. En fonction des interactions dans votre environnement vous pouvez gagner et perdre de l'aura. Vous pourrez utiliser votre aura pour avoir des bonus sur des interactions sociales. \n%NEWLINE%%NEWLINE%\n- Effet -\n%NEWLINE%\n1. Vous débloquez l'art \"Aura Farming\".\n%NEWLINE%\n2. Vous débloquer la première technique passive de l'art : \"Aura Maxing\"\n%NEWLINE%\n3. Je peux utiliser ma valeur d'art de \"Aura Farming\" sur ces compétences si j'ai assez d'aura.\n%NEWLINE%\na. Intimider\n%NEWLINE%\nb. Persuader\n%NEWLINE%\nc. Séduire\n%NEWLINE%\nd. Commander\n%NEWLINE%\ne. Dressage\n%NEWLINE%\nf. Aura\n%NEWLINE%\ng. Style\n%NEWLINE%\nh. Reconforter\n%NEWLINE%\ni. Inspirer\n%NEWLINE%\nj. Motiver\n%NEWLINE%\nk. Réconcilier\n%NEWLINE%\nl. Sympathiser\n%NEWLINE%\nm. Provoquer\n%NEWLINE%\n--- Je vais pouvoir mettre de l'xp et ajouter des techniques.\n%NEWLINE%\n--- Le but est de gagner ou perdre de l'aura, et d'utiliser l'aura gagnée pour interagir avec les gens sans nécessairement parler"
+    }
+  ],
+  "background": "Byakuren a vécu la moitié de son enfance en tant que Warabe, jusqu'à ses 13 ans. Elle l'était car sa mère était une nyōbō, nourricière de la famille Kiyohara. \n\nNotre mère a perdu son statut après un drame arriver à ma petite sœur. Un homme de la cour aurait abuser de son innocence... \nCet évènement à tirailler notre famille. Nous étions forcer de devenir des bouseux, des paysans. \nNotre mère, ma sœur et moi étions obligées de se salir les mains pour se nourrir. \n\nAu fil des années j'ai appris à me battre grâce à un ami à moi, Kitsuyo. Il était très brave, cependant la maladie l'a touché et je ne l'ai plus jamais revu. \n\nJ'ai commencer à voyager à l'âge de 18 ans pour permettre à ma famille d'avoir une situation stable. Mon but était de redonner du travail à ma mère dans une maison de noble. \nJ'ai voyagé dans les environs, j'ai aidé les autres par bienveillance. Ceux qui étaient redevable me donner des objets en échange. C'est ainsi que j'ai commencer à augmenter mon rythme de vie et celle de ma famille. J'ai pu obtenir des vêtements de qualités, des instruments, des outils de poésie japonaise, tel que des manuscrits et de l'encre... \n\nAu fil des années j'ai réussi à donner à ma mère à nouveau un statut dans une maison de noble. Ma sœur est devenu une nyōbō. Ma mère elle, a du se suffire du rôle ingrat des femmes de foyer, une shimobito.\n\n5 longues années sont passées à visiter le pays et à acquérir du savoir et de l'expérience. Ma double vie fonctionne très bien, il y a l'artiste ambulante (asobime), et la guerriere silencieuse (rōtō). Venant en aide à un noble, il m'offra une lame jumelle de très haute qualité, mais aussi très mortelle.  \n\nAyant assez pour vivre, j'ai ralenti ma vie de guerrier pendant 5 ans, j'ai essayé de m'épanouir et de m'intéresser au pays, même si il est difficile pour moi de tout comprendre, je fais des efforts pour devenir une sage femme.\n\nAu vu des conflits internes du pays et le chamboulement des différentes puissances, je repris mon accoutrement de guerrier, et reprend une mission avec des connaissances que j'ai déjà rencontré auparavant, des femmes puissantes...\n\n",
+  "caracsBase": {
+    "Body": 50,
+    "Mind": 20,
+    "Prestance": 50
+  },
+  "caracsForce": {},
+  "caracsMod": {
+    "Body": 0,
+    "Mind": 0,
+    "Prestance": 0
+  },
+  "caracsMod2": {
+    "Body": 0,
+    "Mind": 0,
+    "Prestance": 0
+  },
+  "caracsPlafondForce": {},
+  "caracsPlafondMod": {
+    "Body": 0,
+    "Mind": 0,
+    "Prestance": 0
+  },
+  "caracsXp": {
+    "Body": 6,
+    "Mind": 6,
+    "Prestance": 6
+  },
+  "caracsXpForce": {},
+  "caracsXpMod": {
+    "Body": 0,
+    "Mind": 0,
+    "Prestance": 0
+  },
+  "caracsXpMod2": {
+    "Body": 0,
+    "Mind": 0,
+    "Prestance": 0
+  },
+  "comps": {
+    "Body/Acrobatie": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Body/Ambidextrie": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Body/Apnée": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Athlétisme": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Body/Endurance": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Escalade": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Esquive": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Body/Initiative": {
+      "stade": 3,
+      "techniques": []
+    },
+    "Body/Nage": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Prouesse de force": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Réflexe": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Body/Saut": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Sprint": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Body/Yūgetsusō": {
+      "art": {
+        "name": "Lame double sanguinaire",
+        "desc": "Lorsque je blesse un ennemi avec mes 2 armes pendant le même round, il subit 4 saignements à la fin de la deuxième attaque."
+      },
+      "stade": 4,
+      "techniques": []
+    },
+    "Body/Évasion": {
+      "stade": 2,
+      "techniques": []
+    },
+    "Mind/Biwa": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Calligraphie": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Déduction": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Histoire du Japon": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Nuances des lois": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Observation": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Poésie": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Résistance à la douleur": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Sang-froid": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Mind/Vigilance": {
+      "stade": 1,
+      "techniques": []
+    },
+    "Prestance/Aura Farming": {
+      "art": {
+        "name": "Aura Farming",
+        "desc": "Votre Art \"Aura Farming\" est poussé à l'excellence (variante de style). Les gens autour de vous remarque très facilement votre présence dans une interaction sociale. En fonction des interactions dans votre environnement vous pouvez gagner et perdre de l'aura. Vous pourrez utiliser votre aura pour avoir des bonus sur des interactions sociales. ",
+        "cout": 0
+      },
+      "stade": 4,
+      "techniques": [
+        {
+          "name": "Aura Maxing",
+          "desc": "- Description -\n%NEWLINE%\nLorsque j'effectue une action entourée de PNJ je peux gagner un certains nombres de points d'aura. Le nombre de points d'aura gagnés dépend de l'action. Je peux utiliser cette aura pour utiliser des techniques d'Aura Farming, ou utiliser ma valeur d'Aura Farming sur les compétences écrites sur l'avantage.\n%NEWLINE%%NEWLINE%\n- Effet -\n%NEWLINE%\n1. Toutes actions que je fais me fait gagner des points d'auras. La quantité gagnée dépendera du tableau d'action ci-dessous. \n%NEWLINE%\n2. Les techniques que je vais devoir utiliser DEVRONT avoir un coût d'aura. Plus le coût est élevé, plus la technique sera puissante.\n%NEWLINE%\n3. Pour lancer un jet de social avec Aura Farming je dois consommer 10 AURA, sauf si c'est une technique.\n%NEWLINE%\n4. VOIR TABLEAU \n%NEWLINE%%NEWLINE%\n\n- Conditions -\n%NEWLINE%\n1. Je ne peux pas consommer de l'aura si je suis dans le négatif (ou si la consommation actuelle de l'aura me fait passer dans le négatif)\n%NEWLINE%\n--- Pas consommer de l'aura = Ne peut pas lancer de techniques qui demande un coût d'aura\n%NEWLINE%\n2. Si je suis dans le négatif je rate forcément tout mes jets de sociales.",
+          "cout": 20
+        },
+        {
+          "name": "Aura",
+          "desc": "- Prérequis -\n%NEWLINE%\n1. Action\n%NEWLINE%\n2. Au moins 5 PNJ peuvent me voir\n%NEWLINE%%NEWLINE%\n\n- Effet -\n%NEWLINE%\n1. Je lance mon jet d'Aura Farming. Tout les PNJs qui me voient doivent lancer un jet d'impassibilité pour résister à mon aura.\n%NEWLINE%\n2. Le gain et la perte d'aura sera quantifier en fonction de la différence de réussite et du nombre de personne (voir le tableau de l'Aura Farming)\n%NEWLINE%\n3. Je ne peux utiliser mon aura qu'une fois par jour par personne.",
+          "cout": 20
+        },
+        {
+          "name": "Tableau d'Aura",
+          "desc": "- La valeur de l'action -\n%NEWLINE%\nEn fonction de l'action du joueur, le MJ devra dire à quel type correspond l'action. Voir ci-dessous pour voir les types d'actions.\n%NEWLINE%%NEWLINE%\n1. Banal +5\n%NEWLINE%\n--- Répondre de manière non-chalante sans parler\n%NEWLINE%\n2. Cool +10\n%NEWLINE%\n--- Manier un objet avec classe\n%NEWLINE%\n3. Stylé +15\n%NEWLINE%\n--- Marcher sans faire de bruit\n%NEWLINE%\n4. Légendaire +20\n%NEWLINE%\n--- Faire tomber quelqu'un seulement avec mon aura\n%NEWLINE%\n5. Aura Maxing +25\n%NEWLINE%\n--- Sauver quelqu'un et faire comme-ci rien ne s'était passé\n%NEWLINE%%NEWLINE%\n\n- La quantité de personnes me regardant farmer de l'aura -\n%NEWLINE%\n2 à 5 : +5\n%NEWLINE%\n6 à 10 : +10\n%NEWLINE%\n11 à 25 : +15\n%NEWLINE%\n25 à 100 : +20\n%NEWLINE%\n101+ : +25\n%NEWLINE%%NEWLINE%\n\n- La réussite de mon action -\n%NEWLINE%\n50+ : +5\n%NEWLINE%\n100+ : +10\n%NEWLINE%\n150+ : +15\n%NEWLINE%\n200+ : +20\n%NEWLINE%\n250+ : +25",
+          "cout": 0
+        },
+        {
+          "name": "NO PAIN NO GAIN",
+          "desc": "\nLorsque je lance un jet d'aura farming, je peux dépenser X AURA en plus pour avoir X BONUS supplémentaires.\n%NEWLINE%\n\n- VALEURS DE BOOST -\n%NEWLINE%\n30 d'aura pour +20\n%NEWLINE%\n50 d'aura pour +30\n%NEWLINE%\n80 d'aura pour +40. (Bonus maximum autorisé)\n%NEWLINE%",
+          "cout": 20
+        },
+        {
+          "name": "AURA KILL",
+          "desc": "Après avoir mis K.O. un adversaire je gagne de l'aura en fonction de sa force.\n%NEWLINE%\n\nTrop facile -> 0\n%NEWLINE%\nNormal -> 10\n%NEWLINE%\nDangereux -> 30\n%NEWLINE%\nTrès dangereux -> 50\n%NEWLINE%\nImpossible -> 100",
+          "cout": 20
+        },
+        {
+          "name": "DOMINATION",
+          "desc": "1. En action bonus, je fixe quelqu'un et fait un duel d'aura.\n%NEWLINE%\n2. DUEL de JET d'AURA. J'ai un malus de 50 à mon jet. \n%NEWLINE%\n3. En cas de réussite la personne est dominé par mon aura pendant 24h. \n%NEWLINE%\n4. Je ne peux rater un jet d'aura farming contre cette cible. \n%NEWLINE%\n5. Si je perds le duel, je perds 50 AURA.\n%NEWLINE%\n6. Cout 20 AURA"
+        }
+      ]
+    },
+    "Prestance/Tromperie": {
+      "stade": 1,
+      "techniques": []
+    }
+  },
+  "compsForce": {},
+  "compsMod": {},
+  "compsMod2": {},
+  "compsXpForce": {},
+  "compsXpMod": {},
+  "compsXpMod2": {},
+  "customComps": [
+    {
+      "name": "Aura Farming",
+      "carac": "Prestance"
+    },
+    {
+      "name": "Biwa",
+      "carac": "Mind"
+    },
+    {
+      "name": "Poésie",
+      "carac": "Mind"
+    },
+    {
+      "name": "Calligraphie",
+      "carac": "Mind"
+    },
+    {
+      "name": "Réflexe",
+      "carac": "Body"
+    }
+  ],
+  "de": "1d100cs>96cf<5",
+  "defaut": "Byakuren a une forte tendance à montrer son aura qu'importe la situation, même si ce n'est pas le moment d'attirer l'attention.",
+  "divers": {
+    "eoMax": [
+      0,
+      0,
+      0
+    ],
+    "pvMax": [
+      0,
+      0,
+      0
+    ],
+    "regen": [
+      0,
+      0,
+      0
+    ],
+    "vitesse": [
+      0,
+      0,
+      0
+    ]
+  },
+  "em": null,
+  "emBarreMax": 120,
+  "emMax": 120,
+  "energie": [],
+  "espece": "Humain",
+  "genre": "Femme",
+  "inv": {
+    "comptes": [
+      true,
+      true,
+      false,
+      false,
+      false
+    ],
+    "groupes": [
+      "Sur soi",
+      "Vêtements",
+      "Instruments",
+      "Documents",
+      "Dans le sac"
+    ],
+    "objets": [
+      {
+        "ref": "i-n2ciow",
+        "nom": "Kasa",
+        "qte": 1,
+        "poids": 0.3,
+        "img": "https://i.pinimg.com/736x/63/71/8e/63718ea1813430d7306b7c2ff4d0dd5a.jpg",
+        "desc": "笠 — chapeau de paille qui ombre le visage (porté)",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 1
+      },
+      {
+        "ref": "i-1svhc5j",
+        "nom": "Hakama cramoisi",
+        "qte": 1,
+        "poids": 0.7,
+        "img": "https://i.pinimg.com/1200x/54/3b/a0/543ba0bcc9629c3d16276f8526ecfa07.jpg",
+        "desc": "Pantalon large rouge de la danseuse (porté)",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 1
+      },
+      {
+        "ref": "i-dmse7o",
+        "nom": "Kosode",
+        "qte": 1,
+        "poids": 0.6,
+        "img": "https://i.pinimg.com/736x/af/ce/a8/afcea823e9ce7015c714956888438b5d.jpg",
+        "desc": "Sous-vêtements",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 1
+      },
+      {
+        "ref": "i-1yxwbiy",
+        "nom": "Waraji",
+        "qte": 1,
+        "poids": 0.1,
+        "img": "https://i.pinimg.com/736x/39/e0/3b/39e03b4893c0832369f7600dc6b9f955.jpg",
+        "desc": "草鞋 — sandales de paille (porté)",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 1
+      },
+      {
+        "ref": "i-1ynstcg",
+        "nom": "Biwa",
+        "qte": 1,
+        "poids": 2.5,
+        "img": "https://i.pinimg.com/1200x/8a/9c/6e/8a9c6ea63088aecc25951c520ff6233f.jpg",
+        "desc": "琵琶 — luth : désormais un outil de travail, pas un souvenir. Son gagne-pain apparent",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 2
+      },
+      {
+        "ref": "i-139d5yv",
+        "nom": "Yamabushi",
+        "qte": 1,
+        "poids": 3,
+        "img": "https://i.pinimg.com/736x/54/fd/99/54fd99a9e2a62b2470fc0c4f613d8edb.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 3
+      },
+      {
+        "ref": "i-oihker",
+        "nom": "Lettre scellée au kaō",
+        "qte": 1,
+        "poids": 0.05,
+        "img": "https://i.pinimg.com/736x/c0/85/1f/c0851f754e889ea4c2bdbd93e1a0310c.jpg",
+        "desc": "花押 — sa commission secrète, preuve de mandat à ne montrer qu'aux initiés",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 3
+      },
+      {
+        "ref": "i-1leyuws",
+        "nom": "Nécessaire de maquillage",
+        "qte": 1,
+        "poids": 0,
+        "img": "https://i.pinimg.com/1200x/cc/3e/07/cc3e077f54046dbc5f07c55da8fdbcf6.jpg",
+        "desc": "Oshiroi (poudre blanche), beni (rouge) — désormais assumé, c'est son maquillage de scène",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1i0c5rz",
+        "nom": "Jeton de reconnaissance",
+        "qte": 1,
+        "poids": 0.05,
+        "img": "https://i.pinimg.com/1200x/d9/90/74/d99074da50b5a77cb975d8d47900bebb.jpg",
+        "desc": "Sceau marqué du mon de son commanditaire",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 3
+      },
+      {
+        "ref": "i-gye0gh",
+        "nom": "Laissez-passer",
+        "qte": 1,
+        "poids": 0.05,
+        "img": "https://i.pinimg.com/736x/7b/42/e0/7b42e0aca32b432c35125b54598bb951.jpg",
+        "desc": "Document pour franchir les barrières de route (sekisho)",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 3
+      },
+      {
+        "ref": "i-13cp2n7",
+        "nom": "Bourse",
+        "qte": 1,
+        "poids": 0.6,
+        "img": "https://i.pinimg.com/736x/a9/2d/13/a92d13c86563512b9a82e9b5f7b60f13.jpg",
+        "desc": "Pièces chinoises (sōsen), soie ou riz — sa paie et ce que lui rapportent ses représentations",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 0
+      },
+      {
+        "ref": "i-1y1luvv",
+        "nom": "Nécessaire à feu",
+        "qte": 1,
+        "poids": 0,
+        "img": "https://commons.wikimedia.org/wiki/Special:FilePath/Hiuchigama%20and%20hiuchiishi.jpg?width=240",
+        "desc": "Silex, briquet d'acier et amadou dans une pochette : le feu du soir.",
+        "id": "shinome-necessaire-a-feu",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-183xtkt",
+        "nom": "Éventail de danse",
+        "qte": 1,
+        "poids": 0.1,
+        "img": "https://i.pinimg.com/736x/4d/f3/40/4df340d18bd580869bff8a2453a9c661.jpg",
+        "desc": "舞扇 mai-ōgi — accessoire de spectacle, écran pour le visage… et distraction en combat",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1hku6up",
+        "nom": "Manteau de voyage",
+        "qte": 1,
+        "poids": 0.6,
+        "img": "https://i.pinimg.com/736x/01/7d/00/017d00d299e561c6059e58333e1f29a8.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1ihr6uz",
+        "nom": "Nécessaire de calligraphie",
+        "qte": 1,
+        "poids": 0.5,
+        "img": "https://i.pinimg.com/736x/c2/f4/9b/c2f49bcda74e88fbc3e706c22f095b59.jpg",
+        "desc": "Fude, suzuri, sumi, ryōshi — pour composer ses chants (imayō), négocier, signer",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1p0adld",
+        "nom": "Vêtement sombre",
+        "qte": 1,
+        "poids": 0.5,
+        "img": "https://i.pinimg.com/736x/9c/41/bf/9c41bf44600f75703f95bf247a2a2607.jpg",
+        "desc": "Tenue de rechange en teinte foncée pour le travail nocturne, hors costume de scène",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1v6g6j3",
+        "nom": "Petit nécessaire médicinal",
+        "qte": 1,
+        "poids": 0.3,
+        "img": "https://i.pinimg.com/1200x/48/77/eb/4877eb7126ead1518d147ef41bcab920.jpg",
+        "desc": "Herbes, baumes…",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-b3ucev",
+        "nom": "Corde fine",
+        "qte": 1,
+        "poids": 0.4,
+        "img": "https://i.pinimg.com/736x/f3/24/cf/f324cf9401a075ca462435f3873a97c2.jpg",
+        "desc": "Escalader, ligoter, agir de nuit\n1 mètre",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-gh2xzl",
+        "nom": "Miroir",
+        "qte": 1,
+        "poids": 0.2,
+        "img": "https://i.pinimg.com/736x/67/aa/c6/67aac6e6633f7c68f9ac5050c7f372b9.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1rdmptw",
+        "nom": "Peigne ",
+        "qte": 1,
+        "poids": 0.2,
+        "img": "https://i.pinimg.com/736x/63/3a/c2/633ac21e0b4f6227f5306bb1576398e4.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-w16ojw",
+        "nom": "Encens",
+        "qte": 1,
+        "poids": 0.1,
+        "img": "https://i.pinimg.com/736x/4c/c0/4e/4cc04e1eaedd900619b6998d36943ee9.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-msi0of",
+        "nom": "Omamori",
+        "qte": 1,
+        "poids": 0.02,
+        "img": "https://i.pinimg.com/736x/66/c6/ef/66c6efaa74e86da842bd87136345f626.jpg",
+        "desc": "お守り — amulette protectrice",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 0
+      },
+      {
+        "ref": "i-1nz765l",
+        "nom": "Nikki",
+        "qte": 1,
+        "poids": 0.3,
+        "img": "https://i.pinimg.com/736x/36/32/82/36328270179153d425291cab8b43f56e.jpg",
+        "desc": "日記 — journal : ses chants, ses contrats…",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1s8ee42",
+        "nom": "Ustensiles de cuisines",
+        "qte": 1,
+        "poids": 1,
+        "img": "https://i.pinimg.com/736x/7f/25/7f/7f257f977d1f0bb7da3b4940a6aa4c7b.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1v09hgq",
+        "nom": "Gourde",
+        "qte": 1,
+        "poids": 0.1,
+        "img": "https://i.pinimg.com/736x/50/24/88/502488984d6397e2f2b038f15621e322.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-13bpcj1",
+        "nom": "Yūgetsusō",
+        "qte": 1,
+        "poids": 0,
+        "img": "https://media.discordapp.net/attachments/564845538760065034/1532677988490018826/0c3f6afe76e3f252a9896bebd11065fb.png?ex=6a72ff1c&is=6a71ad9c&hm=046a0bc5c916c30eb2c5b8c783b9761a55a86a5619e8087ec45c7a9622b376ad&=&format=webp&quality=lossless&width=752&height=1024",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 0
+      },
+      {
+        "ref": "i-1btqlbz",
+        "nom": "Eau",
+        "qte": 10,
+        "poids": 0.1,
+        "img": "https://i.pinimg.com/236x/c1/b4/05/c1b405b551eeb4a3619d2dd510b75cce.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-1l9dpf5",
+        "nom": "Sac de couchage",
+        "qte": 1,
+        "poids": 1,
+        "img": "https://i.pinimg.com/736x/60/1a/d9/601ad943223d0f072a89bdaece04b9d0.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-102tnhi",
+        "nom": "Suikan",
+        "qte": 1,
+        "poids": 1.2,
+        "img": "https://i.pinimg.com/736x/e8/c6/8f/e8c68f4b7d716d7ed50934108990869d.jpg",
+        "desc": "水干 — la robe blanche de style masculin de la shirabyōshi (porté)",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      },
+      {
+        "ref": "i-ew2rkp",
+        "nom": "Nourriture",
+        "qte": 6,
+        "poids": 0.2,
+        "img": "https://i.pinimg.com/1200x/dd/ff/5f/ddff5f9bae3d746e6501fb8bf539f071.jpg",
+        "desc": "",
+        "id": "",
+        "achat": 0,
+        "vente": 0,
+        "groupe": 4
+      }
+    ],
+    "opts": {
+      "cols": 8,
+      "nom": true,
+      "poids": true,
+      "qte": false,
+      "total": true,
+      "vign": true
+    },
+    "texte": []
+  },
+  "inventaire": "",
+  "langueBase": "",
+  "langues": [],
+  "modActifs": {},
+  "modData": {},
+  "mods": [],
+  "modules": {
+    "ordre": [
+      "armures"
+    ],
+    "place": {}
+  },
+  "name": "Byakuren",
+  "narration": 3,
+  "notes": "1. Fujiwara, clan allié au Kiyohara\n2. Kokai, grand moine boudhiste qui est dans le temple construit a Nara. Il est tellement connu que tout le monde parle de lui.\n3. 380 aura\n4. kanemichitachibana -> conseiller de l'empereur",
+  "notesJournal": {
+    "format": 1,
+    "messages": [
+      {
+        "at": 0,
+        "id": "legacy",
+        "mode": "plain",
+        "text": "1. Fujiwara, clan allié au Kiyohara\n2. Kokai, grand moine boudhiste qui est dans le temple construit a Nara. Il est tellement connu que tout le monde parle de lui.\n3. 380 aura\n4. kanemichitachibana -> conseiller de l'empereur"
+      }
+    ]
+  },
+  "portrait": "",
+  "ptsCreaForce": null,
+  "ptsCreaMod": 0,
+  "pv": null,
+  "pvMaxOverride": null,
+  "qualites": [
+    "Byakuren est très solidaire avec les femmes.",
+    "Byakuren se fait très facilement des ami.e.s"
+  ],
+  "regenOverride": null,
+  "rel": "4.5.3b",
+  "sansLimite": false,
+  "sexe": "Hétéro",
+  "v": 4,
+  "vitesseOverride": null,
+  "xpTotal": 1320
+}
