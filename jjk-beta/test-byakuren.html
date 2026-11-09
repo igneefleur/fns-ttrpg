@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diagnostic Byakuren — JJK</title>
+  <link rel="stylesheet" href="stylesheets/fonts.css">
+  <link rel="stylesheet" href="stylesheets/extra.css">
+  <link rel="stylesheet" href="stylesheets/night.css">
+  <link rel="stylesheet" href="stylesheets/jjk.css">
+  <link rel="stylesheet" href="stylesheets/jjk-fiche.css?v=86">
+  <link rel="stylesheet" href="stylesheets/jjk-theme.css?v=86">
+  <link rel="stylesheet" href="stylesheets/jjk-theme-overrides.css?v=86">
+  <link rel="stylesheet" href="stylesheets/jjk-roll20.css">
+  <script src="javascripts/jjk-migrations.js?v=84"></script>
+  <script src="javascripts/jjk-mods.js?v=84"></script>
+  <style>
+    #jjk-diagnostic {
+      position: relative;
+      z-index: 10000;
+      margin: 1rem auto;
+      padding: 1rem;
+      max-width: 1200px;
+      border: 2px solid #b7791f;
+      border-radius: 10px;
+      background: #fffaf0;
+      color: #292524;
+      font: 14px/1.45 system-ui, sans-serif;
+    }
+    #jjk-diagnostic h1 { margin: 0 0 .35rem; font-size: 1.25rem; }
+    #jjk-diagnostic p { margin: .25rem 0 .75rem; }
+    #jjk-diagnostic pre {
+      max-height: 42vh;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      padding: .8rem;
+      border-radius: 6px;
+      background: #f4f0e8;
+      color: #292524;
+      font: 12px/1.45 ui-monospace, monospace;
+    }
+    #jjk-diagnostic button {
+      margin: 0 .4rem .3rem 0;
+      padding: .55rem .8rem;
+      border: 1px solid #8c6a35;
+      border-radius: 6px;
+      background: #fff;
+      color: #292524;
+      cursor: pointer;
+    }
+    #jjk-diagnostic .notice { font-weight: 600; }
+    #jjk-diagnostic .safe { color: #176b39; }
+    #jjk-diagnostic .bad { color: #a32929; }
+    #jjk-diagnostic code { font-family: ui-monospace, monospace; }
+    @media (prefers-color-scheme: dark) {
+      #jjk-diagnostic { background: #29251e; color: #f5ead7; border-color: #c08a35; }
+      #jjk-diagnostic pre { background: #191714; color: #f5ead7; }
+      #jjk-diagnostic button { background: #39332a; color: #f5ead7; border-color: #a98a5a; }
+    }
+  </style>
+</head>
+<body>
+  <section id="jjk-diagnostic" aria-live="polite">
+    <h1>Diagnostic de Byakuren</h1>
+    <p class="notice">Mode isolé : cette page ne modifie pas les personnages enregistrés dans ton navigateur. Les changements faits ici sont temporaires.</p>
+    <p id="jjk-diagnostic-state">Chargement du JSON et du moteur de fiche…</p>
+    <button type="button" id="jjk-diagnostic-copy">Copier le rapport</button>
+    <button type="button" id="jjk-diagnostic-refresh">Actualiser le rapport</button>
+    <pre id="jjk-diagnostic-report">Initialisation…</pre>
+  </section>
+
+  <main id="perso-atelier">
+    <p style="padding:2rem">Chargement de la fiche de test…</p>
+  </main>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // Stockage en mémoire : la fiche peut enregistrer ses changements pendant
+    // le test, mais rien n'est écrit dans le vrai localStorage du navigateur.
+    var memoire = new Map();
+    var stockageMemoire = {
+      getItem: function (k) { return memoire.has(k) ? memoire.get(k) : null; },
+      setItem: function (k, v) { memoire.set(String(k), String(v)); },
+      removeItem: function (k) { memoire.delete(String(k)); },
+      clear: function () { memoire.clear(); },
+      key: function (i) { return Array.from(memoire.keys())[i] || null; }
+    };
+    Object.defineProperty(stockageMemoire, "length", { get: function () { return memoire.size; } });
+    window.__jjkLocalStorage = stockageMemoire;
+    // La fiche utilise aussi localStorage directement pour quelques préférences
+    // d'affichage. On redirige ces accès vers le même espace mémoire temporaire.
+    try {
+      Object.defineProperty(window, "localStorage", { configurable: true, value: stockageMemoire });
+    } catch (ignore) {}
+    window.__jjkDataUrl = "jjk-creation.json";
+
+    var erreurs = [];
+    var avertissements = [];
+    var evenements = [];
+    var personnage = null;
+    var etatChargement = "Initialisation";
+    var rapport = document.getElementById("jjk-diagnostic-report");
+    var ligneEtat = document.getElementById("jjk-diagnostic-state");
+    var zone = document.getElementById("perso-atelier");
+
+    function message(v) {
+      if (v && v.stack) return String(v.stack);
+      if (v && v.message) return String(v.message);
+      try { return typeof v === "string" ? v : JSON.stringify(v); }
+      catch (e) { return String(v); }
+    }
+    function capture(type, detail) {
+      var cible = type === "error" ? erreurs : avertissements;
+      cible.push({ type: type, message: message(detail), heure: new Date().toISOString() });
+      if (cible.length > 30) cible.shift();
+      actualiseRapport();
+    }
+
+    window.addEventListener("error", function (e) {
+      capture("error", (e.message || "Erreur JavaScript") + (e.filename ? " — " + e.filename + ":" + e.lineno + ":" + e.colno : ""));
+    });
+    window.addEventListener("unhandledrejection", function (e) {
+      capture("error", "Promise rejetée : " + message(e.reason));
+    });
+    window.addEventListener("jjk-fiche-mount-error", function (e) {
+      evenements.push({ type: "jjk-fiche-mount-error", message: message(e.detail) });
+      actualiseRapport();
+    });
+    window.addEventListener("jjk-fiche-mounted", function () {
+      evenements.push({ type: "jjk-fiche-mounted", message: "Le montage initial de la fiche est terminé." });
+      etatChargement = "Fiche montée";
+      actualiseRapport();
+    });
+
+    var consoleErreur = console.error.bind(console);
+    console.error = function () {
+      var args = Array.prototype.slice.call(arguments);
+      capture("error", args.map(message).join(" "));
+      consoleErreur.apply(console, args);
+    };
+    var consoleAvertissement = console.warn.bind(console);
+    console.warn = function () {
+      var args = Array.prototype.slice.call(arguments);
+      capture("warning", args.map(message).join(" "));
+      consoleAvertissement.apply(console, args);
+    };
+
+    function statutModule(id) {
+      var api = window.Jjk;
+      var m = api && typeof api.liste === "function"
+        ? api.liste().filter(function (x) { return x.id === id; })[0] : null;
+      var e = api && typeof api.etat === "function" ? api.etat(id) : null;
+      var node = Array.prototype.find.call(zone.querySelectorAll("[data-module]"), function (x) {
+        return x.getAttribute("data-module") === id;
+      });
+      return {
+        id: id,
+        trouveDansRegistre: !!m,
+        actif: m ? m.actif : (e ? e.actif : null),
+        etat: e,
+        blocDansDom: !!node,
+        texteDuBloc: node ? (node.innerText || node.textContent || "").trim().slice(0, 500) : "",
+        lignesCompetences: id === "comps" && node ? node.querySelectorAll(".pc-comp-row:not(.head)").length : undefined,
+        cartesArts: id === "arts" && node ? node.querySelectorAll(".pc-art").length : undefined,
+        panneDom: node ? node.getAttribute("data-panne") : null
+      };
+    }
+
+    function construitRapport() {
+      var api = window.Jjk;
+      var modules = [];
+      var registre = [];
+      var pret = api ? api.__pret : false;
+      var nomErreur = api ? api.__erreur : "";
+      if (api && typeof api.liste === "function") {
+        try { registre = api.liste(); } catch (e) { erreurs.push({ type: "error", message: "Jjk.liste() : " + message(e) }); }
+      }
+      ["comps", "arts", "initiative", "armescomp", "caracs", "armures"].forEach(function (id) {
+        try { modules.push(statutModule(id)); }
+        catch (e) { modules.push({ id: id, erreurDiagnostic: message(e) }); }
+      });
+
+      var comps = personnage && personnage.comps ? Object.keys(personnage.comps) : [];
+      var arts = comps.filter(function (k) {
+        var c = personnage.comps[k] || {};
+        return !!(c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim()));
+      });
+      var techniques = arts.reduce(function (n, k) {
+        var t = personnage.comps[k] && personnage.comps[k].techniques;
+        return n + (Array.isArray(t) ? t.length : 0);
+      }, 0);
+
+      return {
+        page: location.href,
+        date: new Date().toISOString(),
+        mode: "Stockage mémoire isolé — localStorage réel non modifié",
+        chargement: etatChargement,
+        personnage: personnage ? personnage.name : null,
+        json: {
+          schema: personnage ? personnage.v : null,
+          release: personnage ? personnage.rel : null,
+          competencesDansJSON: comps.length,
+          competencesPersonnalisees: personnage && Array.isArray(personnage.customComps) ? personnage.customComps.length : null,
+          artsAvecDescription: arts,
+          nombreArtsAvecDescription: arts.length,
+          techniquesDansCesArts: techniques,
+          emMax: personnage ? personnage.emMax : null,
+          emBarreMax: personnage ? personnage.emBarreMax : null
+        },
+        moteur: {
+          objetJjkDisponible: !!api,
+          pret: pret,
+          erreurMontage: nomErreur || null,
+          modulesDeclares: registre,
+          modulesCibles: modules
+        },
+        dom: {
+          racinePresente: !!zone,
+          longueurHTML: zone ? zone.innerHTML.length : 0,
+          nombreBlocsModule: zone ? zone.querySelectorAll("[data-module]").length : 0,
+          nombreLignesCompetences: zone ? zone.querySelectorAll('[data-module="comps"] .pc-comp-row:not(.head)').length : 0,
+          nombreCartesArts: zone ? zone.querySelectorAll('[data-module="arts"] .pc-art').length : 0,
+          messageVisible: zone ? (zone.innerText || zone.textContent || "").trim().slice(0, 1000) : ""
+        },
+        evenements: evenements,
+        erreursJavaScript: erreurs,
+        avertissementsConsole: avertissements
+      };
+    }
+
+    function actualiseRapport() {
+      if (!rapport) return;
+      var r;
+      try { r = construitRapport(); }
+      catch (e) { r = { erreurConstructionRapport: message(e) }; }
+      rapport.textContent = JSON.stringify(r, null, 2);
+      if (ligneEtat) {
+        var ok = !!(window.Jjk && window.Jjk.__pret);
+        ligneEtat.className = ok ? "notice safe" : (erreurs.length ? "notice bad" : "notice");
+        ligneEtat.textContent = ok
+          ? "Moteur monté. Consulte le rapport ci-dessous pour voir si les modules Compétences et Arts sont présents."
+          : (etatChargement + (erreurs.length ? " — erreur détectée." : "…"));
+      }
+    }
+
+    document.getElementById("jjk-diagnostic-copy").addEventListener("click", function () {
+      var txt = rapport.textContent;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(txt).then(function () {
+          ligneEtat.textContent = "Rapport copié. Colle-le dans la conversation.";
+        }).catch(function () { copieManuelle(txt); });
+      } else copieManuelle(txt);
+    });
+    function copieManuelle(txt) {
+      var area = document.createElement("textarea");
+      area.value = txt;
+      document.body.appendChild(area);
+      area.select();
+      try { document.execCommand("copy"); ligneEtat.textContent = "Rapport copié. Colle-le dans la conversation."; }
+      catch (e) { ligneEtat.textContent = "Copie automatique indisponible : sélectionne le texte du rapport et copie-le."; }
+      area.remove();
+    }
+    document.getElementById("jjk-diagnostic-refresh").addEventListener("click", actualiseRapport);
+
+    fetch("test-byakuren.json", { cache: "no-cache" })
+      .then(function (r) { if (!r.ok) throw new Error("Chargement de test-byakuren.json : HTTP " + r.status); return r.json(); })
+      .then(function (s) {
+        personnage = s;
+        memoire.set("jjk-perso", JSON.stringify(s));
+        memoire.set("jjk-tab", "fiche");
+        memoire.set("jjk-filtre-texte", "1");
+        memoire.set("jjk-filtre-champ", "1");
+        etatChargement = "JSON Byakuren chargé ; démarrage du moteur";
+        actualiseRapport();
+        var script = document.createElement("script");
+        script.src = "javascripts/jjk-fiche.js?v=87";
+        script.onload = function () {
+          etatChargement = "Bundle jjk-fiche.js chargé";
+          actualiseRapport();
+          var essais = 0;
+          var timer = setInterval(function () {
+            essais++;
+            actualiseRapport();
+            if ((window.Jjk && (window.Jjk.__pret || window.Jjk.__erreur)) || essais >= 40) {
+              clearInterval(timer);
+              if (!window.Jjk || !window.Jjk.__pret) etatChargement = "Bundle chargé, mais montage non confirmé";
+              actualiseRapport();
+            }
+          }, 250);
+        };
+        script.onerror = function () {
+          etatChargement = "Échec de chargement de javascripts/jjk-fiche.js";
+          capture("error", "Impossible de charger javascripts/jjk-fiche.js");
+          actualiseRapport();
+        };
+        document.body.appendChild(script);
+      })
+      .catch(function (e) {
+        etatChargement = "Échec du chargement du JSON";
+        capture("error", e);
+        zone.innerHTML = "<p style='padding:2rem;color:#b0402c'>Impossible de charger le JSON de test : " + message(e) + "</p>";
+        actualiseRapport();
+      });
+
+    actualiseRapport();
+  })();
+  </script>
+</body>
+</html>
