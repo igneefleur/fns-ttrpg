@@ -2543,7 +2543,7 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   background: var(--card); box-sizing: border-box;
 }
 .pc-tech-pane-title {
-  display: flex; align-items: baseline; gap: .35rem; min-width: 0;
+  display: flex; align-items: center; gap: .35rem; min-width: 0;
   padding: .35rem .45rem; border-bottom: 1px solid var(--hair);
   color: var(--ink-2); font-size: .62rem; font-weight: 800;
   letter-spacing: .055em; text-transform: uppercase;
@@ -2553,6 +2553,7 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   white-space: nowrap; color: var(--ink-3); font-size: .56rem;
   font-weight: 600; letter-spacing: 0; text-transform: none;
 }
+.pc-tech-pane-title .pc-tech-pane-gear { margin-left: auto; align-self: center; }
 .pc-tech-list, .pc-tech-ranks-list {
   min-width: 0; min-height: 0; flex: 1 1 auto; overflow-y: auto;
   scrollbar-gutter: stable; padding: .3rem; box-sizing: border-box;
