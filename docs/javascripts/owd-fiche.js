@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.34.3b";
+  var RELEASE = "4.34.4b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7828,13 +7828,23 @@
   // Chaque rang est autonome (nom, XP, rupture, description et format Notes).
   // Les anciens coûts restent séparés tant que le joueur ne les a pas ventilés.
   function buildTechniques() {
-    var b = block("Techniques", null, "techniques", function () { rendre(); });
+    var b = block("Techniques", null, null);
     var layout = el("div", "pc-techniques-layout");
     b.appendChild(layout);
 
     var artSelection = "", techniqueSelection = "";
+    // L'édition est locale et liée au contexte sélectionné, comme l'édition
+    // d'un objet d'inventaire : changer d'art ferme Techniques, changer de
+    // technique ferme Rangs. Les Arts forment une liste globale.
+    var editionArts = false, editionTechniquesArt = "", editionRangsTechnique = "";
+    var panneauxTech = {};
     var techHooks = [], dragRang = null;
-    hooks.push(function () { techHooks.forEach(function (fn) { try { fn(); } catch (e) {} }); });
+    hooks.push(function () {
+      actualiseEditionColonne(panneauxTech.arts, "arts");
+      actualiseEditionColonne(panneauxTech.techniques, "techniques");
+      actualiseEditionColonne(panneauxTech.rangs, "rangs");
+      techHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    });
 
     function arts() { return Array.isArray(state.techniques) ? state.techniques : (state.techniques = []); }
     function estDiviseur(entree) { return !!(entree && entree.type === "divider"); }
@@ -7846,11 +7856,67 @@
     }
     function rangsDe(t) { return t && Array.isArray(t.rangs) ? t.rangs : []; }
     function selectionValide() {
+      var ancienArt = artSelection, ancienneTechnique = techniqueSelection;
       var a = artDe(artSelection);
-      if (!a) { a = arts().filter(function (x) { return !estDiviseur(x); })[0] || null; artSelection = a ? a.id : ""; }
+      if (!a) a = arts().filter(function (x) { return !estDiviseur(x); })[0] || null;
+      var nouvelArt = a ? a.id : "";
       var t = techniqueDe(a, techniqueSelection);
-      if (!t) { t = a && a.techniques.filter(function (x) { return !estDiviseur(x); })[0] || null; techniqueSelection = t ? t.id : ""; }
+      if (!t) t = a && a.techniques.filter(function (x) { return !estDiviseur(x); })[0] || null;
+      var nouvelleTechnique = t ? t.id : "";
+      if (nouvelArt !== ancienArt) {
+        editionTechniquesArt = "";
+        editionRangsTechnique = "";
+      }
+      if (nouvelleTechnique !== ancienneTechnique) editionRangsTechnique = "";
+      artSelection = nouvelArt;
+      techniqueSelection = nouvelleTechnique;
       return { art: a, technique: t };
+    }
+    function editionActive(colonne) {
+      if (!ficheModifiable()) return false;
+      if (colonne === "arts") return editionArts;
+      if (colonne === "techniques") return !!artSelection && editionTechniquesArt === artSelection && !!artDe(artSelection);
+      if (colonne === "rangs") return !!techniqueSelection && editionRangsTechnique === techniqueSelection && !!techniqueDe(artDe(artSelection), techniqueSelection);
+      return false;
+    }
+    function actualiseEditionColonne(pane, colonne) {
+      if (!pane) return;
+      var actif = editionActive(colonne);
+      pane.classList.toggle("editing", actif);
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-field") : [], function (field) {
+        field.disabled = !actif;
+      });
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-only") : [], function (control) {
+        if ("disabled" in control) control.disabled = !actif;
+      });
+      var gear = pane.querySelector ? pane.querySelector(".pc-tech-pane-gear") : null;
+      if (gear) {
+        var selectionDisponible = colonne === "arts" || (colonne === "techniques" ? !!artDe(artSelection) : !!techniqueDe(artDe(artSelection), techniqueSelection));
+        gear.disabled = !ficheModifiable() || !selectionDisponible;
+        gear.title = actif ? "Terminer les modifications de cette colonne" : "Modifier cette colonne";
+        gear.setAttribute("aria-label", gear.title);
+        gear.setAttribute("aria-pressed", String(actif));
+      }
+      if (window.__owdApplyMode) window.__owdApplyMode(pane);
+    }
+    function basculeEditionColonne(pane, colonne) {
+      if (!ficheModifiable()) return;
+      if (colonne === "arts") editionArts = !editionArts;
+      else if (colonne === "techniques") {
+        if (!artDe(artSelection)) return;
+        editionTechniquesArt = editionTechniquesArt === artSelection ? "" : artSelection;
+      } else if (colonne === "rangs") {
+        if (!techniqueDe(artDe(artSelection), techniqueSelection)) return;
+        editionRangsTechnique = editionRangsTechnique === techniqueSelection ? "" : techniqueSelection;
+      }
+      actualiseEditionColonne(pane, colonne);
+      techHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    }
+    function gearColonne(pane, colonne) {
+      var gear = el("button", "pc-gear pc-tech-pane-gear", "⚙");
+      gear.type = "button";
+      gear.addEventListener("click", function () { basculeEditionColonne(pane, colonne); });
+      return gear;
     }
     function nouveauRang(nom) {
       return { id: uid("tr"), nom: nom || "", xp: 0, rupture: 0, desc: "", mode: "plain" };
@@ -7944,7 +8010,7 @@
       });
     }
     function deplaceRang(t, sourceId, cibleId, avant) {
-      if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id) return false;
+      if (!editionActive("rangs") || !dragRang || dragRang.techniqueId !== t.id) return false;
       var source = t.rangs.findIndex(function (r) { return r.id === sourceId; });
       var cible = t.rangs.findIndex(function (r) { return r.id === cibleId; });
       if (source < 0 || cible < 0 || source === cible) return false;
@@ -7961,7 +8027,7 @@
     }
     function cibleRang(card, t, rang) {
       card.addEventListener("dragover", function (e) {
-        if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
+        if (!editionActive("rangs") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
         e.preventDefault(); e.stopPropagation();
         var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
         card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
@@ -7972,7 +8038,7 @@
         card.classList.remove("avant", "apres");
       });
       card.addEventListener("drop", function (e) {
-        if (!isEdit("techniques") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
+        if (!editionActive("rangs") || !dragRang || dragRang.techniqueId !== t.id || dragRang.rangId === rang.id) return;
         e.preventDefault(); e.stopPropagation();
         var r = card.getBoundingClientRect();
         deplaceRang(t, dragRang.rangId, rang.id, e.clientY < r.top + r.height / 2);
@@ -7981,7 +8047,8 @@
     }
 
     function idGlisse(e, type, id) {
-      if (!isEdit("techniques") || !e.dataTransfer) { e.preventDefault(); return; }
+      var colonne = type === "art" || type === "divider-art" ? "arts" : "techniques";
+      if (!editionActive(colonne) || !e.dataTransfer) { e.preventDefault(); return; }
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", type + "|" + id);
     }
@@ -7992,9 +8059,12 @@
       return p.length === 2 && ["art", "tech", "divider-art", "divider-tech"].indexOf(p[0]) >= 0
         ? { type: p[0], id: p[1] } : null;
     }
-    function zoneDepot(node, reception) {
+    function zoneDepot(node, reception, colonne) {
       node.addEventListener("dragover", function (e) {
-        if (!isEdit("techniques")) return;
+        // Une technique peut être déposée directement sur un art pour la
+        // déplacer : ce geste relève du rouage Techniques, même si la cible
+        // se trouve dans la colonne Arts.
+        if (!editionActive(colonne) && !(colonne === "arts" && editionActive("techniques"))) return;
         e.preventDefault();
         if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
         node.classList.add("drop-target");
@@ -8003,9 +8073,10 @@
         if (!node.contains(e.relatedTarget)) node.classList.remove("drop-target");
       });
       node.addEventListener("drop", function (e) {
-        if (!isEdit("techniques")) return;
-        e.preventDefault(); e.stopPropagation(); node.classList.remove("drop-target");
         var drag = lireGlisse(e); if (!drag) return;
+        var autorise = editionActive(colonne) || (colonne === "arts" && drag.type === "tech" && editionActive("techniques"));
+        if (!autorise) return;
+        e.preventDefault(); e.stopPropagation(); node.classList.remove("drop-target");
         reception(drag);
       });
     }
@@ -8067,10 +8138,11 @@
       refresh(); rendre();
     }
 
-    function panneauTitre(parent, titre, description) {
+    function panneauTitre(parent, titre, description, colonne) {
       var head = el("div", "pc-tech-pane-title");
       head.appendChild(el("span", null, titre));
       if (description) head.appendChild(el("small", null, description));
+      head.appendChild(gearColonne(parent, colonne));
       parent.appendChild(head);
       return head;
     }
@@ -8092,6 +8164,7 @@
       name.addEventListener("input", function () { a.nom = name.value; read.textContent = name.value || "Art sans nom"; save(); });
       item.appendChild(name);
       item.appendChild(miniBtn("×", "Supprimer cet art", function () {
+        if (!editionActive("arts")) return;
         function retire() {
           arts().splice(arts().indexOf(a), 1);
           if (artSelection === a.id) { artSelection = ""; techniqueSelection = ""; }
@@ -8104,7 +8177,7 @@
       zoneDepot(item, function (drag) {
         if (drag.type === "art" || drag.type === "divider-art") termineGlisse(deplaceArt(drag.id, a.id));
         else if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, null));
-      });
+      }, "arts");
       liste.appendChild(item);
     }
     function ligneTechnique(t, a, liste) {
@@ -8123,6 +8196,7 @@
       name.addEventListener("input", function () { t.nom = name.value; read.textContent = name.value || "Technique sans nom"; save(); });
       item.appendChild(name);
       item.appendChild(miniBtn("×", "Supprimer cette technique", function () {
+        if (!editionActive("techniques")) return;
         confirmer("Supprimer une technique", "Supprimer « " + (t.nom || "cette technique") + " » et tous ses rangs ? Ses coûts ne seront plus comptés.", "Supprimer", function () {
           a.techniques.splice(a.techniques.indexOf(t), 1);
           if (techniqueSelection === t.id) techniqueSelection = premierIdTechnique(a);
@@ -8132,7 +8206,7 @@
       zoneDepot(item, function (drag) {
         if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, t.id));
         else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, a.id, t.id));
-      });
+      }, "techniques");
       liste.appendChild(item);
     }
     function ligneDiviseur(diviseur, liste, colonne, art) {
@@ -8171,6 +8245,7 @@
       });
       item.appendChild(name);
       item.appendChild(miniBtn("×", "Supprimer ce diviseur", function () {
+        if (!editionActive(colonne === "art" ? "arts" : "techniques")) return;
         var cible = colonne === "art" ? arts() : (art && art.techniques);
         if (!cible) return;
         cible.splice(cible.indexOf(diviseur), 1);
@@ -8184,14 +8259,15 @@
           if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, art.id, diviseur.id));
           else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, art.id, diviseur.id));
         }
-      });
+      }, colonne === "art" ? "arts" : "techniques");
       liste.appendChild(item);
       return item;
     }
 
     function rendreArts() {
-      var pane = el("section", "pc-tech-pane pc-tech-arts");
-      panneauTitre(pane, "Arts", "");
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-arts");
+      panneauxTech.arts = pane;
+      panneauTitre(pane, "Arts", "", "arts");
       var liste = el("div", "pc-tech-list pc-tech-art-list");
       var sel = selectionValide();
       arts().forEach(function (a) {
@@ -8203,20 +8279,23 @@
       zoneDepot(liste, function (drag) {
         if (drag.type === "art" || drag.type === "divider-art") termineGlisse(deplaceArt(drag.id, null));
         else if (drag.type === "tech" && sel.art) termineGlisse(deplaceTechnique(drag.id, sel.art.id, null));
-      });
+      }, "arts");
       pane.appendChild(liste);
       pane.appendChild(miniBtn("+ Art", null, function () {
+        if (!editionActive("arts")) return;
         var a = { id: uid("art"), nom: "Nouvel art", techniques: [] };
         arts().push(a); artSelection = a.id; techniqueSelection = ""; refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       pane.appendChild(miniBtn("+ Diviseur", null, function () {
+        if (!editionActive("arts")) return;
         arts().push(nouveauDiviseur()); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       return pane;
     }
     function rendreTechniques(a) {
-      var pane = el("section", "pc-tech-pane pc-tech-list-pane");
-      panneauTitre(pane, "Techniques", "");
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-list-pane");
+      panneauxTech.techniques = pane;
+      panneauTitre(pane, "Techniques", "", "techniques");
       var liste = el("div", "pc-tech-list pc-technique-list");
       if (a) {
         a.techniques.forEach(function (t) {
@@ -8228,14 +8307,16 @@
         zoneDepot(liste, function (drag) {
           if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, null));
           else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, a.id, null));
-        });
+        }, "techniques");
       } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un art."));
       pane.appendChild(liste);
       if (a) {
         pane.appendChild(miniBtn("+ Technique", null, function () {
+          if (!editionActive("techniques")) return;
           var t = nouvelleTechnique(); a.techniques.push(t); techniqueSelection = t.id; refresh(); rendre();
         }, "pc-edit-only pc-tech-add"));
         pane.appendChild(miniBtn("+ Diviseur", null, function () {
+          if (!editionActive("techniques")) return;
           a.techniques.push(nouveauDiviseur()); refresh(); rendre();
         }, "pc-edit-only pc-tech-add"));
       }
@@ -8254,7 +8335,7 @@
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) {
         e.stopPropagation();
-        if (!isEdit("techniques")) { e.preventDefault(); return; }
+        if (!editionActive("rangs")) { e.preventDefault(); return; }
         dragRang = { techniqueId: t.id, rangId: rang.id };
         card.classList.add("pris");
         if (e.dataTransfer) {
@@ -8274,6 +8355,7 @@
 
       var deleteSlot = el("span", "pc-tech-rank-del-slot");
       deleteSlot.appendChild(miniBtn("×", "Supprimer ce rang", function () {
+        if (!editionActive("rangs")) return;
         function retire() {
           rangsDe(t).splice(index, 1);
           if (index < t.rang) t.rang = Math.max(0, t.rang - 1);
@@ -8343,10 +8425,12 @@
       parent.appendChild(box);
     }
     function rendreRangs(a, t) {
-      var pane = el("section", "pc-tech-pane pc-tech-ranks-pane");
-      panneauTitre(pane, "Rangs", "");
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-ranks-pane");
+      panneauxTech.rangs = pane;
+      panneauTitre(pane, "Rangs", "", "rangs");
       if (!t) {
         pane.appendChild(el("div", "pc-empty", a ? "Sélectionnez ou créez une technique." : "Sélectionnez un art puis une technique."));
+        actualiseEditionColonne(pane, "rangs");
         return pane;
       }
       var affichage = el("div", "pc-tech-display");
@@ -8363,7 +8447,7 @@
         cartesRangs.forEach(function (card, i) {
           var visible = mode === "tout" ||
             (mode === "acquis" && i < t.rang) ||
-            (mode === "meilleur" && i >= Math.max(0, t.rang - 1));
+            (mode === "meilleur" && t.rang > 0 && i === t.rang - 1);
           card.hidden = !visible;
         });
       }
@@ -8392,12 +8476,12 @@
         champRangsAcquis.pattern = "[0-9]*";
         champRangsAcquis.maxLength = 2;
         champRangsAcquis.value = String(t.rang);
-        champRangsAcquis.readOnly = !isEdit("techniques");
+        champRangsAcquis.readOnly = !editionActive("rangs");
         champRangsAcquis.setAttribute("aria-label", "Nombre de rangs acquis");
         champRangsAcquis.title = "Rangs acquis (0 à " + t.rangs.length + ")";
         var totalRangs = el("span", "pc-tech-acquired-total", "/ " + t.rangs.length);
         function valideChampRangsAcquis() {
-          if (!isEdit("techniques")) { champRangsAcquis.value = String(t.rang); return; }
+          if (!editionActive("rangs")) { champRangsAcquis.value = String(t.rang); return; }
           var brut = String(champRangsAcquis.value || "").trim();
           if (!/^\d+$/.test(brut)) {
             champRangsAcquis.value = String(t.rang);
@@ -8418,7 +8502,7 @@
         bar.appendChild(totalRangs);
         techHooks.push(function () {
           if (document.activeElement !== champRangsAcquis) champRangsAcquis.value = String(t.rang);
-          champRangsAcquis.readOnly = !isEdit("techniques");
+          champRangsAcquis.readOnly = !editionActive("rangs");
           totalRangs.textContent = "/ " + t.rangs.length;
         });
       } else {
@@ -8433,7 +8517,7 @@
           segment.type = "button";
           segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
           segment.addEventListener("click", function () {
-            if (!isEdit("techniques")) return;
+            if (!editionActive("rangs")) return;
             // Un second clic sur le rang déjà sélectionné remet la technique à 0.
             changeRangsAcquis(t, t.rang === i + 1 ? 0 : i + 1);
           });
@@ -8463,20 +8547,25 @@
       techHooks.push(actualiseAffichage);
       pane.appendChild(list);
       pane.appendChild(miniBtn("+ Rang", null, function () {
+        if (!editionActive("rangs")) return;
         if (t.rangs.length >= 20) { flash("Une technique ne peut pas dépasser 20 rangs."); return; }
         t.rangs.push(nouveauRang("Rang " + (t.rangs.length + 1))); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
+      actualiseEditionColonne(pane, "rangs");
       return pane;
     }
 
     function rendre() {
       techHooks = [];
+      panneauxTech = {};
       layout.innerHTML = "";
       var selection = selectionValide();
       layout.appendChild(rendreArts());
       layout.appendChild(rendreTechniques(selection.art));
       layout.appendChild(rendreRangs(selection.art, selection.technique));
-      applyEdit(b, "techniques");
+      actualiseEditionColonne(panneauxTech.arts, "arts");
+      actualiseEditionColonne(panneauxTech.techniques, "techniques");
+      actualiseEditionColonne(panneauxTech.rangs, "rangs");
       techHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
     }
 

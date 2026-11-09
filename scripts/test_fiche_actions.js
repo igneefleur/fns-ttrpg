@@ -28,8 +28,10 @@ function techniques(initial){
    setAttribute(k,v){this.attributes[k]=String(v);},getAttribute(k){return this.attributes[k];},
    set innerHTML(v){this.children=[];this._html=v;},get innerHTML(){return this._html||'';},
    get isConnected(){return true;},get offsetParent(){return this;},
-   getBoundingClientRect(){return {top:100};},contains(n){return this.children.includes(n);},
-   click(){(this.listeners.click||[]).forEach(fn=>fn({preventDefault(){},stopPropagation(){}}));}
+   getBoundingClientRect(){return {top:100,height:40};},contains(n){return this.children.includes(n);},
+   click(){(this.listeners.click||[]).forEach(fn=>fn({preventDefault(){},stopPropagation(){}}));},
+   querySelectorAll(selector){const cls=selector.charAt(0)==='.'?selector.slice(1):selector;const out=[];function walk(n){(n.children||[]).forEach(c=>{if(String(c.className||'').split(/\s+/).includes(cls))out.push(c);walk(c);});}walk(this);return out;},
+   querySelector(selector){return this.querySelectorAll(selector)[0]||null;}
   };
   return node;
  }
@@ -41,12 +43,14 @@ function techniques(initial){
   sayChat:(title,fields)=>chats.push({title,fields}),notesRendu:(target,text,mode)=>{target.textContent=text;target.mode=mode;},
   num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),
   xpRestant:()=>999999,ruptureRestante:()=>999999,
-  applyEdit(){},refresh(){},save(){},isEdit:()=>true,confirmer:(_,__,___,fn)=>fn(),uid:()=>String(++id),flash(){}};
+  ficheModifiable:()=>true,applyEdit(){},refresh(){},save(){},confirmer:(_,__,___,fn)=>fn(),uid:()=>String(++id),flash(){}};
  vm.createContext(ctx);vm.runInContext(fs.readFileSync(root+'src/fiche/art/techniques.js','utf8'),ctx);
  return {ctx,ui:ctx.buildTechniques(),chats,
   find(node,cls){if(String(node.className||'').split(/\s+/).includes(cls))return node;for(const c of node.children||[]){const found=this.find(c,cls);if(found)return found;}return null;},
   findAll(node,cls,out){out=out||[];if(String(node.className||'').split(/\s+/).includes(cls))out.push(node);for(const c of node.children||[])this.findAll(c,cls,out);return out;},
   findText(node,text){if(node.textContent===text)return node;for(const c of node.children||[]){const found=this.findText(c,text);if(found)return found;}return null;},
+  gear(node){return this.find(node,'pc-tech-pane-gear');},
+  enable(node){const g=this.gear(node);assert.ok(g,'rouage de colonne attendu');g.click();return g;},
   fire(node,type,extra){assert.ok(node,'élément attendu pour '+type);(node.listeners[type]||[]).forEach(fn=>fn(Object.assign({preventDefault(){},stopPropagation(){},relatedTarget:null},extra||{})));}
  };
 }
@@ -57,9 +61,32 @@ test('Techniques : arts, techniques et rangs détaillés, envoi au tchat utilisa
  assert.ok(send);send.click();assert.equal(chats.length,1);assert.equal(chats[0].fields[0][1],'À classer');assert.equal(chats[0].fields[2][1],'Rang I');
  const display=w.find(ui,'pc-tech-display-modes');assert.ok(display);assert.equal(display.children[0].getAttribute('aria-pressed'),'true');
  const hooks=ctx.hooks.length;assert.equal(hooks,2);
+ const artsPane=w.find(ui,'pc-tech-arts');w.enable(artsPane);
  const addArt=(function seek(n){if(n.textContent==='+ Art')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addArt);addArt.click();
  assert.equal(ctx.state.techniques.length,2);assert.equal(ctx.hooks.length,hooks);
+});
+test('Techniques : les trois rouages activent seulement leur colonne et suivent le contexte sélectionné',()=>{
+ const data=[
+  {id:'a1',nom:'Art 1',techniques:[{id:'t1',nom:'Tech 1',rang:0,rangs:[{id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]},{id:'t2',nom:'Tech 2',rang:0,rangs:[{id:'r2',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]}]},
+  {id:'a2',nom:'Art 2',techniques:[{id:'t3',nom:'Tech 3',rang:0,rangs:[{id:'r3',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]},{id:'t4',nom:'Tech 4',rang:0,rangs:[{id:'r4',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'}]}]}
+ ];
+ const w=techniques(data),arts=w.find(w.ui,'pc-tech-arts'),techs=w.find(w.ui,'pc-tech-list-pane'),ranks=w.find(w.ui,'pc-tech-ranks-pane');
+ const techNameInput=w.find(techs,'pc-tech-item-name');assert.equal(techNameInput.disabled,true);
+ w.enable(techs);assert.equal(techs.classList.contains('editing'),true);assert.equal(techNameInput.disabled,false);assert.equal(arts.classList.contains('editing'),false);assert.equal(ranks.classList.contains('editing'),false);
+ const rankNameInput=w.find(ranks,'pc-tech-rank-editor');assert.equal(rankNameInput.disabled,true);
+ w.enable(ranks);assert.equal(ranks.classList.contains('editing'),true);assert.equal(rankNameInput.disabled,false);
+ const art2=w.findText(arts,'Art 2');art2.click();
+ const techs2=w.find(w.ui,'pc-tech-list-pane'),ranks2=w.find(w.ui,'pc-tech-ranks-pane');
+ assert.equal(techs2.classList.contains('editing'),false,'changer d’art ferme l’édition Techniques');
+ assert.equal(ranks2.classList.contains('editing'),false,'changer d’art ferme l’édition Rangs');
+ w.enable(techs2);w.enable(ranks2);
+ const tech4=w.findText(techs2,'Tech 4');tech4.click();
+ const ranks3=w.find(w.ui,'pc-tech-ranks-pane');
+ assert.equal(ranks3.classList.contains('editing'),false,'changer de technique ferme l’édition Rangs');
+ assert.equal(w.find(w.ui,'pc-tech-list-pane').classList.contains('editing'),true,'l’édition Techniques reste liée à l’art sélectionné');
+ w.enable(w.find(w.ui,'pc-tech-arts'));
+ assert.equal(w.find(w.ui,'pc-tech-arts').classList.contains('editing'),true,'l’édition de la liste globale Arts reste active');
 });
 test('Techniques : commandes d’édition, formats Notes, description et pied de rang respectent le placement demandé',()=>{
  const w=techniques(),ui=w.ui,rank=w.find(ui,'pc-tech-rank');assert.ok(rank);
@@ -72,8 +99,10 @@ test('Techniques : commandes d’édition, formats Notes, description et pied de
  const modes=w.find(footer,'pc-notes-modes');assert.ok(modes);
  assert.equal(modes.children[0].textContent,'Brut');assert.equal(modes.children[1].textContent,'Markdown');
  assert.equal(footer.children[1].textContent,'Envoyer');
- const arts=w.find(ui,'pc-tech-arts'),techs=w.find(ui,'pc-tech-list-pane');
- assert.ok(w.findText(arts,'Arts'));assert.ok(w.findText(techs,'Techniques'));assert.equal(arts.children[0].children.length,1);assert.equal(techs.children[0].children.length,1);
+ const arts=w.find(ui,'pc-tech-arts'),techs=w.find(ui,'pc-tech-list-pane'),ranks=w.find(ui,'pc-tech-ranks-pane');
+ assert.ok(w.findText(arts,'Arts'));assert.ok(w.findText(techs,'Techniques'));assert.equal(arts.children[0].children.length,2);assert.equal(techs.children[0].children.length,2);assert.equal(ranks.children[0].children.length,2);
+ assert.ok(w.gear(arts));assert.ok(w.gear(techs));assert.ok(w.gear(ranks));
+ assert.equal(arts.classList.contains('editing'),false);assert.equal(techs.classList.contains('editing'),false);assert.equal(ranks.classList.contains('editing'),false);
  assert.equal(w.find(ui,'pc-tech-item').children[0].textContent,'⠿');
  assert.ok(w.find(ui,'pc-tech-item').children[0].className.includes('pc-comp-drag'));
  const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
@@ -102,6 +131,7 @@ test('Techniques : sélecteur numérique et dégradé continu jusqu’à la tein
 test('Techniques : au-delà de dix rangs, le sélecteur devient un champ numérique borné',()=>{
  const data=[{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:3,rangs:Array.from({length:12},(_,i)=>({id:'r'+i,nom:'Rang '+(i+1),xp:1,rupture:1,desc:'',mode:'plain'}))}]}];
  const w=techniques(data),bar=w.find(w.ui,'pc-tech-acquired-bar');assert.ok(bar);
+ w.enable(w.find(w.ui,'pc-tech-ranks-pane'));
  const input=w.find(bar,'pc-tech-acquired-input');assert.ok(input);assert.equal(input.type,'text');assert.equal(input.inputMode,'numeric');assert.equal(input.value,'3');
  assert.equal(bar.children.length,2);assert.equal(bar.children[1].textContent,'/ 12');
  input.value='8';w.fire(input,'change');assert.equal(data[0].techniques[0].rang,8);assert.equal(input.value,'8');
@@ -122,8 +152,9 @@ test('Techniques : affichage Tout, Acquis et Meilleur filtre les rangs sans modi
  assert.deepEqual(cards.map(x=>x.hidden===true),[false,false,true,true]);
  assert.equal(group.children[1].getAttribute('aria-pressed'),'true');assert.equal(group.children[0].getAttribute('aria-pressed'),'false');
  group.children[2].click();assert.equal(data[0].techniques[0].affichage,'meilleur');
- assert.deepEqual(cards.map(x=>x.hidden===true),[true,false,false,false]);
+ assert.deepEqual(cards.map(x=>x.hidden===true),[true,false,true,true]);
  group.children[0].click();assert.deepEqual(cards.map(x=>x.hidden===true),[false,false,false,false]);
+ data[0].techniques[0].rang=0;group.children[2].click();assert.deepEqual(cards.map(x=>x.hidden===true),[true,true,true,true]);
  const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
  assert.ok(css.includes('.pc-tech-ranks-list > [hidden] { display: none !important; }'));
  assert.ok(css.includes('.pc-tech-display-modes { margin: 0; flex: 0 0 auto; }'));
@@ -152,16 +183,20 @@ test('Techniques : valeurs XP et Rupture nulles identifiées sans supprimer leur
 });
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
+ const techPane=w.find(ui,'pc-tech-list-pane');w.enable(techPane);
  const addTech=(function seek(n){if(n.textContent==='+ Technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addTech);addTech.click();const art=ctx.state.techniques[0];assert.equal(art.techniques.length,2);assert.equal(art.techniques[1].affichage,'tout');
+ w.enable(w.find(ui,'pc-tech-ranks-pane'));
  const addRank=(function seek(n){if(n.textContent==='+ Rang')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addRank);addRank.click();assert.equal(art.techniques[1].rangs.length,2);
  assert.equal(art.techniques[1].rangs[1].nom,'Rang 2');
 });
 test('Techniques : glisser vers un autre art conserve les rangs et leurs données, réordonner les arts',()=>{
  const w=techniques(),{ctx,ui}=w;
+ w.enable(w.find(ui,'pc-tech-arts'));
  const addArt=w.findText(ui,'+ Art');assert.ok(addArt);addArt.click();
  const sourceArt=w.findText(ui,'À classer');assert.ok(sourceArt);sourceArt.click();
+ w.enable(w.find(ui,'pc-tech-list-pane'));
  const techLabel=w.findText(ui,'Test');assert.ok(techLabel);const techRow=techLabel.parentNode,techGrip=techRow.children[0];
  const transfer={value:'',setData(type,value){this.value=value;},getData(){return this.value;}};
  w.fire(techGrip,'dragstart',{dataTransfer:transfer});
@@ -187,6 +222,7 @@ test('Techniques : diviseurs nommés, repli des groupes et suppression sans touc
   {id:'a2',nom:'Art second',techniques:[]}
  ];
  const w=techniques(data),artsList=w.find(w.ui,'pc-tech-art-list'),techList=w.find(w.ui,'pc-technique-list');
+ w.enable(w.find(w.ui,'pc-tech-arts'));w.enable(w.find(w.ui,'pc-tech-list-pane'));
  const dividerArt=w.find(artsList,'pc-tech-divider-art'),dividerTech=w.find(techList,'pc-tech-divider-technique');
  assert.ok(dividerArt);assert.ok(dividerTech);
  const nameArt=dividerArt.children[2];nameArt.value='Arts martiaux';w.fire(nameArt,'input');assert.equal(data[1].nom,'Arts martiaux');
@@ -210,6 +246,7 @@ test('Techniques : les diviseurs se réorganisent par glisser-déposer sans dép
   {id:'a2',nom:'Art second',techniques:[]}
  ];
  const w=techniques(data),transfer={value:'',setData(type,value){this.value=value;},getData(){return this.value;}};
+ w.enable(w.find(w.ui,'pc-tech-arts'));w.enable(w.find(w.ui,'pc-tech-list-pane'));
  let artDivider=w.find(w.ui,'pc-tech-divider-art'),artList=w.find(w.ui,'pc-tech-art-list'),artFirst=w.findAll(artList,'pc-tech-item')[0];
  w.fire(artDivider.children[0],'dragstart',{dataTransfer:transfer});w.fire(artFirst,'drop',{dataTransfer:transfer});
  assert.deepEqual(data.map(x=>x.id),['da','a1','a2']);
