@@ -322,6 +322,7 @@
         nom: String(t.nom == null ? "" : t.nom),
         rang: acquis,
         rangs: listeRangs,
+        affichage: ["tout", "acquis", "meilleur"].indexOf(t.affichage) >= 0 ? t.affichage : "tout",
         legacyXp: Math.max(0, num(t.legacyXp, ancien ? num(t.xp, 0) : 0)),
         legacyRupture: clamp(num(t.legacyRupture, ancien ? num(t.rupture, 0) : 0), 0, 999),
         legacyDesc: String(t.legacyDesc == null ? (ancien ? (t.desc || "") : "") : t.legacyDesc),

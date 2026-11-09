@@ -54,6 +54,7 @@ test('Techniques : arts, techniques et rangs détaillés, envoi au tchat utilisa
  const firstRank=w.find(ui,'pc-tech-rank');assert.ok(firstRank);assert.equal(firstRank.dataset.syncEntity,'r1');
  const send=(function seek(n){if(n.textContent==='Envoyer')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(firstRank);
  assert.ok(send);send.click();assert.equal(chats.length,1);assert.equal(chats[0].fields[0][1],'À classer');assert.equal(chats[0].fields[2][1],'Rang I');
+ const display=w.find(ui,'pc-tech-display-modes');assert.ok(display);assert.equal(display.children[0].getAttribute('aria-pressed'),'true');
  const hooks=ctx.hooks.length;assert.equal(hooks,2);
  const addArt=(function seek(n){if(n.textContent==='+ Art')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addArt);addArt.click();
@@ -78,7 +79,7 @@ test('Techniques : commandes d’édition, formats Notes, description et pied de
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-edit-only { display: none !important; }'));
  assert.ok(css.includes('.pc-editable.editing .pc-tech-rank-read { display: none; }'));
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-editor { display: none; }'));
- assert.ok(css.includes('grid-template-columns: 1.03rem minmax(0, 1fr) 1.35rem 2.325rem 2.325rem;'));
+ assert.ok(css.includes('grid-template-columns: var(--tech-rank-action-width) minmax(0, 1fr) var(--tech-rank-action-width) 2.325rem 2.325rem;'));
  assert.ok(css.includes('--tech-rank-control-height: 1.75rem;'));
  assert.ok(css.includes('.pc-editable:not(.editing) .pc-tech-rank-number.is-zero { visibility: hidden; }'));
  assert.ok(css.includes('display: flex; align-items: center; justify-content: flex-end;'));
@@ -92,8 +93,38 @@ test('Techniques : sélecteur numérique et dégradé continu jusqu’à la tein
  assert.ok(css.includes('color-mix(in srgb, var(--tech-rang-couleur-debut) var(--tech-rang-debut), var(--tech-rang-couleur-fin) var(--tech-rang-fin))'));
  assert.ok(css.includes('--tech-rang-couleur-fin: var(--accent-deep);'));
  assert.ok(css.includes('--tech-rang-couleur-fin: #6b5a2e;'));
+ assert.ok(css.includes('flex: 0 0 1.2rem; width: 1.2rem;'));assert.ok(css.includes('justify-content: flex-end;'));
+ assert.ok(css.includes('margin-left: auto; overflow-x: auto;'));
+ assert.ok(css.includes('--tech-rank-action-width: 1.1rem;'));
+ assert.ok(css.includes('height: var(--tech-rank-control-height); min-height: var(--tech-rank-control-height);\n  padding: 0; line-height: 1;'));
 });
-test('Techniques : valeurs XP et Rupture nulles identifiées sans supprimer leurs cases',()=>{
+test('Techniques : affichage Tout, Acquis et Meilleur filtre les rangs sans modifier leur ordre',()=>{
+ const data=[{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:2,affichage:'tout',rangs:[
+  {id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'},
+  {id:'r2',nom:'II',xp:2,rupture:2,desc:'',mode:'plain'},
+  {id:'r3',nom:'III',xp:3,rupture:3,desc:'',mode:'plain'},
+  {id:'r4',nom:'IV',xp:4,rupture:4,desc:'',mode:'plain'}]}]}];
+ const w=techniques(data),cards=w.findAll(w.ui,'pc-tech-rank'),group=w.find(w.ui,'pc-tech-display-modes');
+ assert.equal(cards.length,4);assert.ok(group);assert.deepEqual(group.children.map(x=>x.textContent),['Tout','Acquis','Meilleur']);
+ assert.equal(group.children[0].getAttribute('aria-pressed'),'true');assert.ok(cards.every(x=>x.hidden!==true));
+ group.children[1].click();assert.equal(data[0].techniques[0].affichage,'acquis');
+ assert.deepEqual(cards.map(x=>x.hidden===true),[false,false,true,true]);
+ assert.equal(group.children[1].getAttribute('aria-pressed'),'true');assert.equal(group.children[0].getAttribute('aria-pressed'),'false');
+ group.children[2].click();assert.equal(data[0].techniques[0].affichage,'meilleur');
+ assert.deepEqual(cards.map(x=>x.hidden===true),[true,false,false,false]);
+ group.children[0].click();assert.deepEqual(cards.map(x=>x.hidden===true),[false,false,false,false]);
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('.pc-tech-ranks-list > [hidden] { display: none !important; }'));
+ assert.ok(css.includes('.pc-tech-display-modes { margin: 0; flex: 0 0 auto; }'));
+});
+test('Techniques : diviseurs alignés sur la typographie et la hauteur des lignes Arts/Techniques',()=>{
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('padding: .12rem .18rem; border: 0; background: transparent;\n  color: var(--ink-2); font: inherit; font-size: .66rem; line-height: normal;'));
+ assert.ok(css.includes('font-size: .66rem; line-height: normal; font-weight: 800;'));
+ assert.ok(css.includes('padding: .1rem .15rem; border: 0; border-bottom: 1px solid var(--line-2);'));
+ assert.ok(css.includes('.pc-tech-divider-del { flex: 0 0 auto; padding: .06rem .22rem; }'));
+});
+test('Techniques : valeurs XP et Rupture nulles identifiées sans supprimer leurs cases',()=>{ 
  const w=techniques([{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:0,rangs:[{id:'r',nom:'I',xp:0,rupture:0,desc:'',mode:'plain'}]}]}]);
  const rank=w.find(w.ui,'pc-tech-rank'),numbers=w.findAll(rank,'pc-tech-rank-number');assert.equal(numbers.length,2);
  assert.ok(numbers.every(n=>n.classList.contains('is-zero')));
@@ -103,7 +134,7 @@ test('Techniques : valeurs XP et Rupture nulles identifiées sans supprimer leur
 test('Techniques : une nouvelle technique et ses rangs se créent sans quotas artificiels',()=>{
  const w=techniques(),{ctx,ui}=w;
  const addTech=(function seek(n){if(n.textContent==='+ Technique')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
- assert.ok(addTech);addTech.click();const art=ctx.state.techniques[0];assert.equal(art.techniques.length,2);
+ assert.ok(addTech);addTech.click();const art=ctx.state.techniques[0];assert.equal(art.techniques.length,2);assert.equal(art.techniques[1].affichage,'tout');
  const addRank=(function seek(n){if(n.textContent==='+ Rang')return n;for(const c of n.children||[]){const r=seek(c);if(r)return r;}return null;})(ui);
  assert.ok(addRank);addRank.click();assert.equal(art.techniques[1].rangs.length,2);
  assert.equal(art.techniques[1].rangs[1].nom,'Rang 2');

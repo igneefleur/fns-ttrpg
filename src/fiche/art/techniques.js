@@ -32,7 +32,7 @@
     }
     function nouvelleTechnique() {
       return { id: uid("t"), nom: "", rang: 0, rangs: [nouveauRang("Rang 1")],
-               legacyXp: 0, legacyRupture: 0, legacyDesc: "", offert: 0 };
+               affichage: "tout", legacyXp: 0, legacyRupture: 0, legacyDesc: "", offert: 0 };
     }
     function nouveauDiviseur() {
       return { id: uid("td"), type: "divider", nom: "Nouveau groupe", replie: false };
@@ -524,6 +524,36 @@
         pane.appendChild(el("div", "pc-empty", a ? "Sélectionnez ou créez une technique." : "Sélectionnez un art puis une technique."));
         return pane;
       }
+      var affichage = el("div", "pc-tech-display");
+      affichage.appendChild(el("span", "pc-tech-display-label", "Affichage"));
+      var affichageModes = el("div", "pc-notes-modes pc-tech-display-modes");
+      affichageModes.setAttribute("role", "group");
+      affichageModes.setAttribute("aria-label", "Affichage des rangs");
+      var boutonsAffichage = [], cartesRangs = [];
+      function actualiseAffichage() {
+        var mode = ["tout", "acquis", "meilleur"].indexOf(t.affichage) >= 0 ? t.affichage : "tout";
+        boutonsAffichage.forEach(function (pair) {
+          pair[0].setAttribute("aria-pressed", String(mode === pair[1]));
+        });
+        cartesRangs.forEach(function (card, i) {
+          var visible = mode === "tout" ||
+            (mode === "acquis" && i < t.rang) ||
+            (mode === "meilleur" && i >= Math.max(0, t.rang - 1));
+          card.hidden = !visible;
+        });
+      }
+      [["tout", "Tout"], ["acquis", "Acquis"], ["meilleur", "Meilleur"]].forEach(function (pair) {
+        var button = miniBtn(pair[1], null, function () {
+          t.affichage = pair[0];
+          actualiseAffichage();
+          save();
+        });
+        boutonsAffichage.push([button, pair[0]]);
+        affichageModes.appendChild(button);
+      });
+      affichage.appendChild(affichageModes);
+      pane.appendChild(affichage);
+
       var progress = el("div", "pc-tech-acquired");
       progress.appendChild(el("span", "pc-tech-acquired-label", "Rangs acquis"));
       var bar = el("span", "pc-stadebar pc-tech-acquired-bar");
@@ -557,7 +587,13 @@
       actualiseRangsAcquis(); techHooks.push(actualiseRangsAcquis);
       var list = el("div", "pc-tech-ranks-list");
       panneauHistorique(list, t);
-      t.rangs.forEach(function (r, i) { list.appendChild(rangCarte(a, t, r, i)); });
+      t.rangs.forEach(function (r, i) {
+        var card = rangCarte(a, t, r, i);
+        cartesRangs.push(card);
+        list.appendChild(card);
+      });
+      actualiseAffichage();
+      techHooks.push(actualiseAffichage);
       pane.appendChild(list);
       pane.appendChild(miniBtn("+ Rang", null, function () {
         if (t.rangs.length >= 20) { flash("Une technique ne peut pas dépasser 20 rangs."); return; }
