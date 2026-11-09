@@ -1864,7 +1864,10 @@
     pv: ["pv", "pvMaxOverride", "divers"],
     armescomp: ["armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
     comps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
-    arts: ["mods", "modData", "modActifs"],
+    // Arts dépend de la liste des compétences et de leurs investissements, pas
+    // seulement des mods. Ces clés sont aussi structurelles : leur changement
+    // doit rejouer le hook qui reconstruit les cartes d'arts et de passifs.
+    arts: ["comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
     armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
     armures: ["armures", "inv", "inventaire"],
     inv: ["inv", "inventaire", "armes", "armures", "divers"],
@@ -1893,6 +1896,12 @@
     return JSON.stringify(v);
   }
   function refresh(force) {
+    // Pendant le montage, certains modules demandent un refresh() pour initialiser
+    // leurs valeurs. Le registre est alors incomplet : exécuter les hooks à ce
+    // moment photographie un état sans les modules construits ensuite (notamment
+    // Arts, qui dépend des compétences). Le montage appelle refresh() une fois
+    // tous les modules installés ; cette passe unique initialise tout le monde.
+    if (enMontage) return;
     save();
     var stamps = {}, changes = [], invalidStamp = false;
     try {
@@ -2230,7 +2239,7 @@
     return !!(root && target && root.contains(target));
   }
   function guardConsultation(ev) {
-    if (!ready || ficheModifiable() || !dansFiche(ev.target)) return;
+    if (ficheModifiable() || !dansFiche(ev.target)) return;
     var target = ev.target && ev.target.closest ? ev.target.closest(
       "button, input, textarea, select, a, summary, [contenteditable='true'], " +
       "[draggable='true'], .pc-tab, .pc-rollable, .pc-obj-tile"
@@ -2250,7 +2259,7 @@
     document.addEventListener(type, guardConsultation, true);
   });
   document.addEventListener("focusin", function (ev) {
-    if (!ready || ficheModifiable() || !dansFiche(ev.target)) return;
+    if (ficheModifiable() || !dansFiche(ev.target)) return;
     var target = ev.target;
     if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) && !canUseControl(target)) target.blur();
   }, true);

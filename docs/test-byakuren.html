@@ -119,6 +119,32 @@
       actualiseRapport();
     }
 
+    // Le DOM peut contenir les lignes tout en les masquant par un style ou un
+    // conteneur parent. On capture donc la visibilité calculée, pas seulement
+    // le nombre de nœuds trouvés.
+    function mesureVisibilite(node) {
+      if (!node) return null;
+      var chaine = [], parent = node, style, rect;
+      while (parent && parent.nodeType === 1 && chaine.length < 7) {
+        style = window.getComputedStyle ? window.getComputedStyle(parent) : null;
+        chaine.push({
+          tag: parent.tagName,
+          classe: typeof parent.className === "string" ? parent.className : "",
+          display: style ? style.display : null,
+          visibility: style ? style.visibility : null,
+          opacity: style ? style.opacity : null
+        });
+        parent = parent.parentElement;
+      }
+      rect = node.getBoundingClientRect ? node.getBoundingClientRect() : null;
+      return {
+        largeur: rect ? Math.round(rect.width) : null,
+        hauteur: rect ? Math.round(rect.height) : null,
+        offsetParentPresent: !!node.offsetParent,
+        chaineAncetres: chaine
+      };
+    }
+
     window.addEventListener("error", function (e) {
       capture("error", (e.message || "Erreur JavaScript") + (e.filename ? " — " + e.filename + ":" + e.lineno + ":" + e.colno : ""));
     });
@@ -164,7 +190,11 @@
         blocDansDom: !!node,
         texteDuBloc: node ? (node.innerText || node.textContent || "").trim().slice(0, 500) : "",
         lignesCompetences: id === "comps" && node ? node.querySelectorAll(".pc-comp-row:not(.head)").length : undefined,
+        visibilitePremiereCompetence: id === "comps" && node
+          ? mesureVisibilite(node.querySelector(".pc-comp-row:not(.head)")) : undefined,
         cartesArts: id === "arts" && node ? node.querySelectorAll(".pc-art").length : undefined,
+        visibilitePremiereCarteArt: id === "arts" && node
+          ? mesureVisibilite(node.querySelector(".pc-art")) : undefined,
         panneDom: node ? node.getAttribute("data-panne") : null
       };
     }
@@ -276,7 +306,7 @@
         etatChargement = "JSON Byakuren chargé ; démarrage du moteur";
         actualiseRapport();
         var script = document.createElement("script");
-        script.src = "javascripts/jjk-fiche.js?v=87";
+        script.src = "javascripts/jjk-fiche.js?v=88";
         script.onload = function () {
           etatChargement = "Bundle jjk-fiche.js chargé";
           actualiseRapport();

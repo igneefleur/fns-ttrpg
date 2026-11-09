@@ -12,6 +12,7 @@ assert.ok(start >= 0 && end > start, 'bloc refresh sélectif absent');
 const code = source.slice(start, end);
 const calls = [];
 const context = {
+  enMontage: false,
   state: {
     v: 4, rel: '4.2.2b', portrait: '', name: 'Test',
     pv: 10, caracsBase: { Mind: 10 }, background: 'texte', sansLimite: false
@@ -42,7 +43,15 @@ const context = {
 vm.createContext(context);
 vm.runInContext(code, context);
 
-// Première passe : toutes les références DOM sont neuves, tous les hooks tournent.
+// Un refresh demandé PENDANT le montage doit être ignoré : les registres
+// sont incomplets jusqu'à ce que tous les modules soient construits.
+context.enMontage = true;
+context.refresh();
+assert.deepEqual(calls, [], 'aucun hook ne doit tourner pendant le montage');
+assert.equal(context.refreshEmpreintes, null, 'le montage ne doit pas figer une empreinte partielle');
+context.enMontage = false;
+
+// Première passe après montage : toutes les références DOM sont neuves, tous les hooks tournent.
 context.refresh();
 assert.ok(calls.includes('caracs') && calls.includes('pv') && calls.includes('bg'));
 
@@ -72,6 +81,17 @@ calls.length = 0;
 context.state.caracsBase = { Mind: 10, Body: 10 };
 context.refresh();
 assert.deepEqual(calls, [''], 'un ordre de clés différent ne doit pas déclencher de rafraîchissement');
+
+// Les Arts doivent suivre toutes les clés dont leur liste dépend.
+for (const key of ['comps', 'customComps', 'armesComps', 'langues']) {
+  assert.ok(context.VUE_DEPENDANCES.arts.includes(key), `Arts doit dépendre de ${key}`);
+}
+
+// Un changement de compétence doit bien rejouer le registre Arts.
+calls.length = 0;
+context.state.comps = { 'Prestance/Aura Farming': { stade: 4, art: { name: 'Aura Farming', desc: 'test' }, techniques: [] } };
+context.refresh();
+assert.ok(calls.includes('arts'), 'un changement de comps doit rafraîchir les Arts');
 
 // Les clés conservées par le schéma JJK ont toutes une dépendance connue.
 assert.equal(context.DEPENDANCES_CONNues.sansLimite, 1);

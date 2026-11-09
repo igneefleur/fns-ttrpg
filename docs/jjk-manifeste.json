@@ -26,7 +26,7 @@
     "js": [
       "javascripts/jjk-migrations.js?v=84",
       "javascripts/jjk-mods.js?v=84",
-      "javascripts/jjk-fiche.js?v=87"
+      "javascripts/jjk-fiche.js?v=88"
     ],
     "css": [
       "stylesheets/jjk-fiche.css?v=86",

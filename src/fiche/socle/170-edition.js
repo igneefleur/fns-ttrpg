@@ -176,7 +176,7 @@
     return !!(root && target && root.contains(target));
   }
   function guardConsultation(ev) {
-    if (!ready || ficheModifiable() || !dansFiche(ev.target)) return;
+    if (ficheModifiable() || !dansFiche(ev.target)) return;
     var target = ev.target && ev.target.closest ? ev.target.closest(
       "button, input, textarea, select, a, summary, [contenteditable='true'], " +
       "[draggable='true'], .pc-tab, .pc-rollable, .pc-obj-tile"
@@ -196,7 +196,7 @@
     document.addEventListener(type, guardConsultation, true);
   });
   document.addEventListener("focusin", function (ev) {
-    if (!ready || ficheModifiable() || !dansFiche(ev.target)) return;
+    if (ficheModifiable() || !dansFiche(ev.target)) return;
     var target = ev.target;
     if (target && /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) && !canUseControl(target)) target.blur();
   }, true);
