@@ -91,13 +91,25 @@ test('Recettes : trois colonnes avec les intitulés attendus', () => {
   assert.equal(p.length, 3);
   assert.deepEqual(p.map(x => text(first(x, 'pc-tech-pane-title').children[0])), ['Catégories', 'Recettes', 'Entrées']);
 });
+test('Recettes : états vides correctement accordés dans les trois colonnes', () => {
+  const p = panes(recettes);
+  assert.deepEqual(p.map(x => text(first(x, 'pc-empty'))), ['Aucune catégorie.', 'Aucune recette.', 'Aucune entrée.']);
+});
 test('Recettes : création indépendante catégorie > recette > entrée', () => {
   const p = panes(recettes);
   gear(p[0]).click(); addButtons(p[0]).find(x => text(x).includes('Catégorie')).click();
   assert.equal(base.recettes.length, 1);
+  const categoryRow = first(panes(recettes)[0], 'pc-tech-item');
+  assert.equal(categoryRow.children[3].title, 'Supprimer cette catégorie');
+  assert.equal(categoryRow.children[0].title, 'Glisser pour réordonner les catégories');
+  assert.equal(text(first(panes(recettes)[1], 'pc-empty')), 'Aucune recette.');
   gear(panes(recettes)[1]).click();
   addButtons(panes(recettes)[1]).find(x => text(x).includes('Recette')).click();
   assert.equal(base.recettes[0].elements.length, 1);
+  const recipeRow = first(panes(recettes)[1], 'pc-tech-item');
+  assert.equal(recipeRow.children[3].title, 'Supprimer cette recette');
+  assert.equal(recipeRow.children[0].title, 'Glisser pour réordonner ou déplacer vers une autre catégorie');
+  assert.equal(text(first(panes(recettes)[2], 'pc-empty')), 'Aucune entrée.');
   gear(panes(recettes)[2]).click(); addButtons(panes(recettes)[2]).find(x => text(x).includes('Entrée')).click();
   assert.equal(base.recettes[0].elements[0].entrees.length, 1);
   assert.equal(base.recettes[0].elements[0].entrees[0].nom, '');
@@ -138,12 +150,23 @@ test('Notes : trois colonnes indépendantes avec les intitulés attendus', () =>
   const p = panes(notes);
   assert.equal(p.length, 3);
   assert.deepEqual(p.map(x => text(first(x, 'pc-tech-pane-title').children[0])), ['Dossiers', 'Notes', 'Entrées']);
+  assert.deepEqual(p.map(x => text(first(x, 'pc-empty'))), ['Aucun dossier.', 'Aucune note.', 'Aucune entrée.']);
   gear(p[0]).click(); addButtons(p[0]).find(x => text(x).includes('Dossier')).click();
+  assert.equal(text(first(panes(notes)[1], 'pc-empty')), 'Aucune note.');
   gear(panes(notes)[1]).click(); addButtons(panes(notes)[1]).find(x => text(x).includes('Note')).click();
+  assert.equal(text(first(panes(notes)[2], 'pc-empty')), 'Aucune entrée.');
   gear(panes(notes)[2]).click(); addButtons(panes(notes)[2]).find(x => text(x).includes('Entrée')).click();
   assert.equal(base.notesOrganisees.length, 1);
   assert.equal(base.notesOrganisees[0].elements[0].entrees.length, 1);
   assert.equal(base.notes.messages[0].text, 'Ancien journal', 'le journal historique reste intact');
+});
+test('Arts : messages vides simples et correctement accordés dans les trois colonnes', () => {
+  const arts = fs.readFileSync(path.join(root, 'src/fiche/art/techniques.js'), 'utf8');
+  assert.match(arts, /"Aucun art\."/);
+  assert.equal((arts.match(/"Aucune technique\."/g) || []).length, 2);
+  assert.match(arts, /"Aucun rang\."/);
+  assert.doesNotMatch(arts, /Sélectionnez ou créez un art|Sélectionnez ou créez une technique|Sélectionnez un art puis une technique/);
+  assert.doesNotMatch(arts, /rang\(s\) acquis|technique\(s\)\./);
 });
 test('Titres d’onglets, ordre, module Journal et stockage sont déclarés', () => {
   const tabs = fs.readFileSync(path.join(root, 'src/fiche/socle/200-onglets.js'), 'utf8');

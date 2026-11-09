@@ -168,6 +168,9 @@
         total += Math.max(0, num(liste[i] && liste[i][cle], 0));
       return total;
     }
+    function libelleRangsAcquis(nombre) {
+      return nombre + (nombre > 1 ? " rangs acquis" : " rang acquis");
+    }
     function changeRangsAcquis(t, cible) {
       cible = clamp(cible, 0, t.rangs.length);
       if (cible === t.rang) return;
@@ -346,7 +349,7 @@
           refresh(); rendre();
         }
         var nbTechniques = a.techniques.filter(function (x) { return !estDiviseur(x); }).length;
-        if (nbTechniques) confirmer("Supprimer un art", "« " + (a.nom || "Cet art") + " » contient " + nbTechniques + " technique(s). Supprimer l’art et toutes ses techniques ?", "Tout supprimer", retire);
+        if (nbTechniques) confirmer("Supprimer un art", "« " + (a.nom || "Cet art") + " » contient " + nbTechniques + (nbTechniques > 1 ? " techniques. " : " technique. ") + "Supprimer l’art et toutes ses techniques ?", "Tout supprimer", retire);
         else retire();
       }, "danger pc-edit-only"));
       zoneDepot(item, function (drag) {
@@ -477,13 +480,13 @@
           if (estDiviseur(t)) ligneDiviseur(t, liste, "technique", a);
           else ligneTechnique(t, a, liste);
         });
-        if (!a.techniques.some(function (t) { return !estDiviseur(t); })) liste.appendChild(el("div", "pc-empty", "Aucune technique dans cet art."));
+        if (!a.techniques.some(function (t) { return !estDiviseur(t); })) liste.appendChild(el("div", "pc-empty", "Aucune technique."));
         appliqueReplis(liste);
         zoneDepot(liste, function (drag) {
           if (drag.type === "tech") termineGlisse(deplaceTechnique(drag.id, a.id, null));
           else if (drag.type === "divider-tech") termineGlisse(deplaceDiviseurTechnique(drag.id, a.id, null));
         }, "techniques");
-      } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un art."));
+      } else liste.appendChild(el("div", "pc-empty", "Aucune technique."));
       pane.appendChild(liste);
       if (a) {
         pane.appendChild(miniBtn("+ Technique", null, function () {
@@ -604,7 +607,7 @@
       panneauxTech.rangs = pane;
       panneauTitre(pane, "Rangs", "", "rangs");
       if (!t) {
-        pane.appendChild(el("div", "pc-empty", a ? "Sélectionnez ou créez une technique." : "Sélectionnez un art puis une technique."));
+        pane.appendChild(el("div", "pc-empty", "Aucun rang."));
         actualiseEditionColonne(pane, "rangs");
         return pane;
       }
@@ -690,7 +693,7 @@
           segment.style.setProperty("--tech-rang-debut", (100 - fin) + "%");
           segment.style.setProperty("--tech-rang-fin", fin + "%");
           segment.type = "button";
-          segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
+          segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + libelleRangsAcquis(i + 1);
           segment.addEventListener("click", function () {
             if (!editionActive("rangs")) return;
             // Un second clic sur le rang déjà sélectionné remet la technique à 0.
@@ -705,7 +708,7 @@
           segment.classList.toggle("on", i < t.rang);
           segment.classList.toggle("cur", i === t.rang - 1);
           segment.title = (t.rangs[i].nom || ("Rang " + (i + 1))) + " — " +
-            (i < t.rang ? "acquis" : "non acquis") + " · cliquer pour " + (i + 1) + " rang(s) acquis";
+            (i < t.rang ? "acquis" : "non acquis") + " · cliquer pour " + libelleRangsAcquis(i + 1);
         });
         if (champRangsAcquis && document.activeElement !== champRangsAcquis)
           champRangsAcquis.value = String(t.rang);

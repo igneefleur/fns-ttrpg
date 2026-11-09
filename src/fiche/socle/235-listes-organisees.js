@@ -284,7 +284,7 @@
       name.setAttribute("aria-label", config.groupes);
       name.addEventListener("input", function () { g.nom = name.value; read.textContent = name.value || config.groupeSansNom; save(); });
       item.appendChild(name);
-      item.appendChild(miniBtn("×", "Supprimer ce " + config.groupeSingulier.toLowerCase(), function () {
+      item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
         if (!editionActive("groupes")) return;
         function retire() {
           var index = groupes().indexOf(g); if (index >= 0) groupes().splice(index, 1);
@@ -292,7 +292,10 @@
           refresh(); rendre();
         }
         var nombre = g.elements.filter(function (x) { return x && !estDiviseur(x); }).length;
-        if (nombre) confirmer("Supprimer " + config.groupeSingulier.toLowerCase(), "« " + (g.nom || config.groupeSansNom) + " » contient " + nombre + " " + config.elementPluriel.toLowerCase() + ". Supprimer le groupe et tout son contenu ?", "Tout supprimer", retire);
+        if (nombre) {
+          var libelleElements = nombre + " " + (nombre > 1 ? config.elementPluriel.toLowerCase() : config.elementSingulier.toLowerCase());
+          confirmer("Supprimer " + config.groupeIndefini, "« " + (g.nom || config.groupeSansNom) + " » contient " + libelleElements + ". Supprimer le groupe et tout son contenu ?", "Tout supprimer", retire);
+        }
         else retire();
       }, "danger pc-edit-only"));
       item.addEventListener("dragover", function (e) {
@@ -319,7 +322,7 @@
     function ligneElement(x, g, liste) {
       var item = el("div", "pc-tech-item pc-tech-item-tech" + (x.id === selectionElement ? " selected" : ""));
       var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
-      drag.type = "button"; drag.title = "Glisser pour réordonner ou déplacer vers un autre " + config.groupeSingulier.toLowerCase();
+      drag.type = "button"; drag.title = "Glisser pour réordonner ou déplacer vers " + config.groupeAutre;
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "element", x.id); });
       drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
@@ -332,7 +335,7 @@
       name.setAttribute("aria-label", config.elements);
       name.addEventListener("input", function () { x.nom = name.value; read.textContent = name.value || config.elementSansNom; save(); });
       item.appendChild(name);
-      item.appendChild(miniBtn("×", "Supprimer cet élément", function () {
+      item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
         if (!editionActive("elements")) return;
         function retire() {
           var index = g.elements.indexOf(x); if (index >= 0) g.elements.splice(index, 1);
@@ -340,7 +343,10 @@
           refresh(); rendre();
         }
         var nombre = entreesDe(x).length;
-        if (nombre) confirmer("Supprimer " + config.elementSingulier.toLowerCase(), "« " + (x.nom || config.elementSansNom) + " » contient " + nombre + " entrée(s). Supprimer " + config.elementSingulier.toLowerCase() + " et tout son contenu ?", "Tout supprimer", retire);
+        if (nombre) {
+          var libelleEntrees = nombre + (nombre > 1 ? " entrées" : " entrée");
+          confirmer("Supprimer " + config.elementIndefini, "« " + (x.nom || config.elementSansNom) + " » contient " + libelleEntrees + ". Supprimer " + config.elementDefini + " et tout son contenu ?", "Tout supprimer", retire);
+        }
         else retire();
       }, "danger pc-edit-only"));
       cibleElement(item, g, x);
@@ -486,7 +492,7 @@
         if (estDiviseur(g)) ligneDiviseur(g, liste, "groupes", null);
         else ligneGroupe(g, liste);
       });
-      if (!groupes().some(function (g) { return g && !estDiviseur(g); })) liste.appendChild(el("div", "pc-empty", "Aucun " + config.groupeSingulier.toLowerCase() + "."));
+      if (!groupes().some(function (g) { return g && !estDiviseur(g); })) liste.appendChild(el("div", "pc-empty", config.videGroupe));
       appliquerReplis(liste);
       zoneDepotListe(liste, function (drag) {
         if (drag.type === "groupe" || drag.type === "diviseur-groupe") termineGlisse(reordonne(groupes(), drag.id, null));
@@ -512,13 +518,13 @@
           if (estDiviseur(x)) ligneDiviseur(x, liste, "elements", g);
           else ligneElement(x, g, liste);
         });
-        if (!g.elements.some(function (x) { return x && !estDiviseur(x); })) liste.appendChild(el("div", "pc-empty", "Aucun " + config.elementSingulier.toLowerCase() + " dans ce " + config.groupeSingulier.toLowerCase() + "."));
+        if (!g.elements.some(function (x) { return x && !estDiviseur(x); })) liste.appendChild(el("div", "pc-empty", config.videElement));
         appliquerReplis(liste);
         zoneDepotListe(liste, function (drag) {
           if (drag.type === "element") termineGlisse(deplaceElement(drag.id, g.id, null));
           else if (drag.type === "diviseur-element") termineGlisse(deplaceDiviseurElement(drag.id, g.id, null));
         }, "elements");
-      } else liste.appendChild(el("div", "pc-empty", "Sélectionnez ou créez un " + config.groupeSingulier.toLowerCase() + "."));
+      } else liste.appendChild(el("div", "pc-empty", config.videElement));
       pane.appendChild(liste);
       if (g) {
         pane.appendChild(miniBtn("+ " + config.elementSingulier, null, function () {
@@ -537,12 +543,12 @@
       var pane = el("section", "pc-tech-pane pc-editable pc-tech-ranks-pane pc-catalog-entries-pane"); panneaux.entrees = pane;
       panneauTitre(pane, config.entrees, "entrees");
       if (!x) {
-        pane.appendChild(el("div", "pc-empty", g ? "Sélectionnez ou créez un " + config.elementSingulier.toLowerCase() + "." : "Sélectionnez un " + config.groupeSingulier.toLowerCase() + " puis un " + config.elementSingulier.toLowerCase() + "."));
+        pane.appendChild(el("div", "pc-empty", config.videEntree));
         actualiseEdition(pane, "entrees"); return pane;
       }
       var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
       entreesDe(x).forEach(function (entree, i) { liste.appendChild(carteEntree(entree, x, i)); });
-      if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", "Aucune entrée."));
+      if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
       zoneDepotListe(liste, function (drag) {
         if (drag.type === "entree") {
           var source = entreesDe(x).findIndex(function (e) { return e.id === drag.id; });
@@ -601,6 +607,9 @@
     return buildListeOrganisee({
       cle: "recettes", titre: "Recettes", groupes: "Catégories", elements: "Recettes", entrees: "Entrées",
       groupeSingulier: "Catégorie", elementSingulier: "Recette", elementPluriel: "Recettes",
+      groupeDefini: "cette catégorie", groupeIndefini: "une catégorie", groupeAutre: "une autre catégorie",
+      elementDefini: "cette recette", elementIndefini: "une recette",
+      videGroupe: "Aucune catégorie.", videElement: "Aucune recette.", videEntree: "Aucune entrée.",
       groupeSansNom: "Catégorie sans nom", elementSansNom: "Recette sans nom",
       nouveauGroupe: "Nouvelle catégorie", nouvelElement: "Nouvelle recette"
     });
@@ -609,6 +618,9 @@
     return buildListeOrganisee({
       cle: "notesOrganisees", titre: "Notes", groupes: "Dossiers", elements: "Notes", entrees: "Entrées",
       groupeSingulier: "Dossier", elementSingulier: "Note", elementPluriel: "Notes",
+      groupeDefini: "ce dossier", groupeIndefini: "un dossier", groupeAutre: "un autre dossier",
+      elementDefini: "cette note", elementIndefini: "une note",
+      videGroupe: "Aucun dossier.", videElement: "Aucune note.", videEntree: "Aucune entrée.",
       groupeSansNom: "Dossier sans nom", elementSansNom: "Note sans nom",
       nouveauGroupe: "Nouveau dossier", nouvelElement: "Nouvelle note"
     });
