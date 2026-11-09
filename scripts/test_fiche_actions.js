@@ -40,6 +40,7 @@ function techniques(initial){
   miniBtn:(text,title,fn,cls)=>{const b=el('button','pc-mini '+(cls||''),text);b.listeners.click=[fn];return b;},
   sayChat:(title,fields)=>chats.push({title,fields}),notesRendu:(target,text,mode)=>{target.textContent=text;target.mode=mode;},
   num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),
+  xpRestant:()=>999999,ruptureRestante:()=>999999,
   applyEdit(){},refresh(){},save(){},isEdit:()=>true,confirmer:(_,__,___,fn)=>fn(),uid:()=>String(++id),flash(){}};
  vm.createContext(ctx);vm.runInContext(fs.readFileSync(root+'src/fiche/art/techniques.js','utf8'),ctx);
  return {ctx,ui:ctx.buildTechniques(),chats,
@@ -98,6 +99,16 @@ test('Techniques : sélecteur numérique et dégradé continu jusqu’à la tein
  assert.ok(css.includes('--tech-rank-action-width: 1.1rem;'));
  assert.ok(css.includes('height: var(--tech-rank-control-height); min-height: var(--tech-rank-control-height);\n  padding: 0; line-height: 1;'));
 });
+test('Techniques : au-delà de dix rangs, le sélecteur devient un champ numérique borné',()=>{
+ const data=[{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:3,rangs:Array.from({length:12},(_,i)=>({id:'r'+i,nom:'Rang '+(i+1),xp:1,rupture:1,desc:'',mode:'plain'}))}]}];
+ const w=techniques(data),bar=w.find(w.ui,'pc-tech-acquired-bar');assert.ok(bar);
+ const input=w.find(bar,'pc-tech-acquired-input');assert.ok(input);assert.equal(input.type,'text');assert.equal(input.inputMode,'numeric');assert.equal(input.value,'3');
+ assert.equal(bar.children.length,2);assert.equal(bar.children[1].textContent,'/ 12');
+ input.value='8';w.fire(input,'change');assert.equal(data[0].techniques[0].rang,8);assert.equal(input.value,'8');
+ input.value='99';w.fire(input,'change');assert.equal(data[0].techniques[0].rang,12);assert.equal(input.value,'12');
+ input.value='abc';w.fire(input,'change');assert.equal(data[0].techniques[0].rang,12);assert.equal(input.value,'12');
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');assert.ok(css.includes('.pc-tech-acquired-input[readonly] { cursor: default; }'));
+});
 test('Techniques : affichage Tout, Acquis et Meilleur filtre les rangs sans modifier leur ordre',()=>{
  const data=[{id:'a',nom:'Art',techniques:[{id:'t',nom:'T',rang:2,affichage:'tout',rangs:[
   {id:'r1',nom:'I',xp:1,rupture:1,desc:'',mode:'plain'},
@@ -116,6 +127,14 @@ test('Techniques : affichage Tout, Acquis et Meilleur filtre les rangs sans modi
  const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
  assert.ok(css.includes('.pc-tech-ranks-list > [hidden] { display: none !important; }'));
  assert.ok(css.includes('.pc-tech-display-modes { margin: 0; flex: 0 0 auto; }'));
+});
+test('Techniques : rangs acquis sans barre latérale et rangs non acquis assombris',()=>{
+ const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');
+ assert.ok(css.includes('.pc-tech-rank:not(.acquired) { background: var(--stripe); color: var(--ink-3); }'));
+ assert.ok(css.includes('.pc-tech-rank:not(.acquired) .pc-tech-rank-read,'));
+ assert.ok(!css.includes('.pc-tech-rank.acquired { border-left: 2px solid var(--accent); }'));
+ assert.ok(css.includes('border-radius: 0; padding: .2rem .18rem; box-sizing: border-box;'));
+ assert.ok(css.includes('border-radius: 0; box-sizing: border-box;'));
 });
 test('Techniques : diviseurs alignés sur la typographie et la hauteur des lignes Arts/Techniques',()=>{
  const css=fs.readFileSync(root+'docs/stylesheets/owd-fiche.css','utf8');

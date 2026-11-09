@@ -8,8 +8,67 @@
       ids[m.id]=true;if(m.mode!=='markdown')m.mode='plain';if(!Number.isFinite(m.at)||m.at<0||m.at>8640000000000000)m.at=0;
     });if(invalid&&strict)throw Error("Message de Notes illisible.");return value;
   }
+  // Extensions Markdown communes aux Notes et aux descriptions de Techniques.
+  // Les conteneurs d'alignement sont une syntaxe Markdown dédiée : le HTML brut
+  // reste désactivé, même si le moteur produit lui-même les balises de rendu.
+  function pluginMarkdownOWD(md){
+    function ouvreAlignement(state,startLine,endLine,silent){
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      var marqueur=/^:::\s*(center|justify|left|right)\s*$/.exec(state.src.slice(pos,state.eMarks[startLine]).trim());
+      if(!marqueur)return false;
+      if(silent)return true;
+      var token=state.push('owd_align_open','div',1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      token.attrSet('class','pc-md-align pc-md-align-'+marqueur[1]);
+      state.env.owdAlignDepth=(state.env.owdAlignDepth||0)+1;
+      state.line=startLine+1;
+      return true;
+    }
+    function fermeAlignement(state,startLine,endLine,silent){
+      if(!(state.env.owdAlignDepth>0))return false;
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      if(state.src.slice(pos,state.eMarks[startLine]).trim()!==':::')return false;
+      if(silent)return true;
+      var token=state.push('owd_align_close','div',-1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      state.env.owdAlignDepth--;
+      state.line=startLine+1;
+      return true;
+    }
+    md.block.ruler.before('paragraph','owd_align_close',fermeAlignement,{alt:['paragraph','reference']});
+    md.block.ruler.before('paragraph','owd_align_open',ouvreAlignement,{alt:['paragraph','reference']});
+    md.renderer.rules.owd_align_open=function(tokens,index){return '<div class="'+tokens[index].attrGet('class')+'">\n';};
+    md.renderer.rules.owd_align_close=function(){return '</div>\n';};
+
+    // Listes de tâches GFM : - [ ] et - [x]. Les cases sont décoratives,
+    // désactivées, et n'ajoutent aucune donnée aux Notes ou au personnage.
+    md.core.ruler.after('inline','owd_task_list',function(state){
+      var pile=[];
+      state.tokens.forEach(function(token){
+        if(token.type==='list_item_open'){pile.push({token:token,traite:false});return;}
+        if(token.type==='list_item_close'){pile.pop();return;}
+        if(!pile.length||pile[pile.length-1].traite||token.type!=='inline'||!token.children)return;
+        var index=token.children.findIndex(function(child){return child.type==='text';});
+        if(index<0)return;
+        var texte=token.children[index],match=/^\[([ xX])\](?:\s+|$)/.exec(texte.content);
+        if(!match)return;
+        var coche=match[1].toLowerCase()==='x';
+        var caseCoche=Object.assign({},texte,{type:'html_inline',tag:'',nesting:0,content:'<input class="pc-md-task-checkbox" type="checkbox" disabled'+(coche?' checked':'')+'>'});
+        token.children.splice(index,0,caseCoche);
+        texte.content=texte.content.slice(match[0].length);
+        pile[pile.length-1].token.attrJoin('class','pc-md-task-item');
+        pile[pile.length-1].traite=true;
+      });
+    });
+  }
   var notesMarkdown=null;
-  function moteurNotesMarkdown(){if(!notesMarkdown&&window.markdownit)notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true});return notesMarkdown;}
+  function moteurNotesMarkdown(){
+    if(!notesMarkdown&&window.markdownit)
+      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownOWD);
+    return notesMarkdown;
+  }
   function notesTexteRecherche(message){
     var md=moteurNotesMarkdown(),words=[];
     function visit(tokens){tokens.forEach(function(t){if(t.children)visit(t.children);else if(['text','code_inline','code_block','fence'].indexOf(t.type)>=0)words.push(t.content);else if(t.type==='softbreak'||t.type==='hardbreak'||t.block&&t.nesting===-1)words.push(' ');});}
@@ -19,7 +78,11 @@
   function notesRendu(target,text,mode){
     target.classList.toggle('pc-notes-markdown',mode==='markdown');var md=moteurNotesMarkdown();
     if(mode!=='markdown'||!md||!window.DOMPurify){target.textContent=text;return;}
-    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{ALLOWED_TAGS:['p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td'],ALLOWED_ATTR:['href','src','alt','title','start','align']});
+    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{
+      ALLOWED_TAGS:['div','p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td','input'],
+      ALLOWED_ATTR:['href','src','alt','title','start','align','class','type','checked','disabled'],
+      ALLOW_DATA_ATTR:false
+    });
     Array.prototype.forEach.call(target.querySelectorAll('a'),function(a){a.target='_blank';a.rel='noopener noreferrer';});
     Array.prototype.forEach.call(target.querySelectorAll('img'),function(img){img.loading='lazy';img.decoding='async';});
   }

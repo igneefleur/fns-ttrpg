@@ -2434,6 +2434,12 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-notes-markdown code { font-size:.9em; }.pc-notes-markdown img { display:block; max-width:100%; height:auto; max-height:32rem; object-fit:contain; margin:.4rem 0; }
 .pc-notes-markdown a { color:var(--accent); text-decoration:underline; }.pc-notes-markdown table { display:block; max-width:100%; overflow-x:auto; border-collapse:collapse; }
 .pc-notes-markdown th, .pc-notes-markdown td { border:1px solid var(--line-2); padding:.25em .5em; }
+.pc-notes-markdown .pc-md-align-center { text-align:center; }
+.pc-notes-markdown .pc-md-align-justify { text-align:justify; text-justify:inter-word; }
+.pc-notes-markdown .pc-md-align-left { text-align:left; }
+.pc-notes-markdown .pc-md-align-right { text-align:right; }
+.pc-notes-markdown .pc-md-task-item { list-style:none; }
+.pc-notes-markdown .pc-md-task-checkbox { margin:0 .4em 0 -1.35em; vertical-align:middle; pointer-events:none; accent-color:var(--accent); }
 .pc-notes-compose { border-top:1px solid var(--line); padding-top:.5rem; margin-top:.3rem; min-width:0; }
 .pc-notes-compose textarea { display:block; min-height:4.5rem; max-height:25vh; overflow-y:auto; margin-bottom:.35rem; }
 .pc-notes-controls { justify-content:flex-end; }.pc-notes-modes { display:inline-flex; margin-right:auto; }
@@ -2554,9 +2560,9 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
 .pc-tech-item {
   display: flex; align-items: center; gap: .2rem; min-width: 0;
   border: 1px solid transparent; border-bottom-color: var(--hair);
-  border-radius: 5px; padding: .2rem .18rem; box-sizing: border-box;
+  border-radius: 0; padding: .2rem .18rem; box-sizing: border-box;
 }
-.pc-tech-item.selected { background: var(--wash); border-color: var(--line); }
+.pc-tech-item.selected { background: var(--wash); border-color: transparent; border-bottom-color: var(--line); }
 .pc-tech-item.drop-target, .pc-tech-list.drop-target { outline: 1px dashed var(--accent); outline-offset: -2px; }
 .pc-tech-item-read {
   display: block; flex: 1 1 auto; min-width: 0; overflow: hidden;
@@ -2601,6 +2607,16 @@ button.pc-obj-addtile:disabled{cursor:default;opacity:.45}
   box-sizing: border-box; flex: 0 0 1.2rem; width: 1.2rem;
   height: .98rem; padding: 0;
 }
+.pc-tech-acquired-input {
+  box-sizing: border-box; flex: 0 0 2.1rem; width: 2.1rem; height: .98rem;
+  min-width: 0; padding: 0 .12rem; border: 1px solid var(--line-2);
+  border-radius: 4px; background: var(--panel); color: var(--ink);
+  font: inherit; font-size: .58rem; font-weight: 750; line-height: 1;
+  text-align: center; font-variant-numeric: tabular-nums;
+}
+.pc-tech-acquired-input:focus { outline: none; border-color: var(--accent); }
+.pc-tech-acquired-input[readonly] { cursor: default; }
+.pc-tech-acquired-total { flex: 0 0 auto; align-self: center; color: var(--ink-3); font: inherit; font-size: .58rem; font-variant-numeric: tabular-nums; }
 .pc-tech-ranks-list > [hidden] { display: none !important; }
 /* Dégradé continu sur TOUS les rangs. La dernière nuance reste exactement
    celle du dernier palier historique ; seul le chemin entre les deux change. */
@@ -2622,7 +2638,11 @@ html.night .pc-stadebar.pc-tech-acquired-bar .seg.on {
   min-width: 0; margin: 0 0 .35rem; padding: .4rem;
   border: 1px solid var(--hair); border-radius: 7px; background: var(--panel);
 }
-.pc-tech-rank.acquired { border-left: 2px solid var(--accent); }
+.pc-tech-rank:not(.acquired) { background: var(--stripe); color: var(--ink-3); }
+.pc-tech-rank:not(.acquired) .pc-tech-rank-read,
+.pc-tech-rank:not(.acquired) .pc-tech-rank-read a,
+.pc-tech-rank:not(.acquired) .pc-tech-rank-head input,
+.pc-tech-rank:not(.acquired) .pc-tech-rank-editor { color: var(--ink-3); }
 .pc-tech-rank-head {
   --tech-rank-control-height: 1.75rem;
   --tech-rank-action-width: 1.1rem;
@@ -2721,7 +2741,7 @@ html.night .pc-stadebar.pc-tech-acquired-bar .seg.on {
   margin: 0 0 .2rem; padding: .2rem .18rem;
   /* Même contour et même filet bas que les lignes Art / Technique. */
   border: 1px solid transparent; border-bottom-color: var(--hair);
-  border-radius: 5px; box-sizing: border-box;
+  border-radius: 0; box-sizing: border-box;
 }
 .pc-tech-divider-toggle {
   display: flex; align-items: center; gap: .24rem; flex: 1 1 auto; min-width: 0;

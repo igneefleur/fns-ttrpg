@@ -557,24 +557,64 @@
       var progress = el("div", "pc-tech-acquired");
       progress.appendChild(el("span", "pc-tech-acquired-label", "Rangs acquis"));
       var bar = el("span", "pc-stadebar pc-tech-acquired-bar");
-      var segments = [];
-      t.rangs.forEach(function (rang, i) {
-        var segment = el("button", "seg s" + Math.min(i + 1, 5), String(i + 1));
-        // Dégradé continu entre la première nuance et la teinte finale
-        // historique, quel que soit le nombre de rangs (jusqu'à 20).
-        var progression = t.rangs.length <= 1 ? 0 : i / (t.rangs.length - 1);
-        var fin = Math.round(progression * 1000) / 10;
-        segment.style.setProperty("--tech-rang-debut", (100 - fin) + "%");
-        segment.style.setProperty("--tech-rang-fin", fin + "%");
-        segment.type = "button";
-        segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
-        segment.addEventListener("click", function () {
-          if (!isEdit("techniques")) return;
-          // Un second clic sur le rang déjà sélectionné remet la technique à 0.
-          changeRangsAcquis(t, t.rang === i + 1 ? 0 : i + 1);
+      var segments = [], champRangsAcquis = null;
+      if (t.rangs.length > 10) {
+        // Au-delà de dix rangs, un champ numérique compact remplace les cases.
+        // Il garde l'ancrage à droite et le même contrat d'édition/coûts.
+        champRangsAcquis = el("input", "pc-tech-acquired-input");
+        champRangsAcquis.type = "text";
+        champRangsAcquis.inputMode = "numeric";
+        champRangsAcquis.pattern = "[0-9]*";
+        champRangsAcquis.maxLength = 2;
+        champRangsAcquis.value = String(t.rang);
+        champRangsAcquis.readOnly = !isEdit("techniques");
+        champRangsAcquis.setAttribute("aria-label", "Nombre de rangs acquis");
+        champRangsAcquis.title = "Rangs acquis (0 à " + t.rangs.length + ")";
+        var totalRangs = el("span", "pc-tech-acquired-total", "/ " + t.rangs.length);
+        function valideChampRangsAcquis() {
+          if (!isEdit("techniques")) { champRangsAcquis.value = String(t.rang); return; }
+          var brut = String(champRangsAcquis.value || "").trim();
+          if (!/^\d+$/.test(brut)) {
+            champRangsAcquis.value = String(t.rang);
+            return;
+          }
+          changeRangsAcquis(t, clamp(parseInt(brut, 10), 0, t.rangs.length));
+          champRangsAcquis.value = String(t.rang);
+        }
+        champRangsAcquis.addEventListener("change", valideChampRangsAcquis);
+        champRangsAcquis.addEventListener("keydown", function (e) {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            valideChampRangsAcquis();
+            if (champRangsAcquis.blur) champRangsAcquis.blur();
+          }
         });
-        bar.appendChild(segment); segments.push(segment);
-      });
+        bar.appendChild(champRangsAcquis);
+        bar.appendChild(totalRangs);
+        techHooks.push(function () {
+          if (document.activeElement !== champRangsAcquis) champRangsAcquis.value = String(t.rang);
+          champRangsAcquis.readOnly = !isEdit("techniques");
+          totalRangs.textContent = "/ " + t.rangs.length;
+        });
+      } else {
+        t.rangs.forEach(function (rang, i) {
+          var segment = el("button", "seg s" + Math.min(i + 1, 5), String(i + 1));
+          // Dégradé continu entre la première nuance et la teinte finale
+          // historique, quel que soit le nombre de rangs.
+          var progression = t.rangs.length <= 1 ? 0 : i / (t.rangs.length - 1);
+          var fin = Math.round(progression * 1000) / 10;
+          segment.style.setProperty("--tech-rang-debut", (100 - fin) + "%");
+          segment.style.setProperty("--tech-rang-fin", fin + "%");
+          segment.type = "button";
+          segment.title = (rang.nom || ("Rang " + (i + 1))) + " — définir " + (i + 1) + " rang(s) acquis";
+          segment.addEventListener("click", function () {
+            if (!isEdit("techniques")) return;
+            // Un second clic sur le rang déjà sélectionné remet la technique à 0.
+            changeRangsAcquis(t, t.rang === i + 1 ? 0 : i + 1);
+          });
+          bar.appendChild(segment); segments.push(segment);
+        });
+      }
       progress.appendChild(bar); pane.appendChild(progress);
       function actualiseRangsAcquis() {
         segments.forEach(function (segment, i) {
@@ -583,6 +623,8 @@
           segment.title = (t.rangs[i].nom || ("Rang " + (i + 1))) + " — " +
             (i < t.rang ? "acquis" : "non acquis") + " · cliquer pour " + (i + 1) + " rang(s) acquis";
         });
+        if (champRangsAcquis && document.activeElement !== champRangsAcquis)
+          champRangsAcquis.value = String(t.rang);
       }
       actualiseRangsAcquis(); techHooks.push(actualiseRangsAcquis);
       var list = el("div", "pc-tech-ranks-list");

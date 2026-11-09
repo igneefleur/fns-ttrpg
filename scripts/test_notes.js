@@ -96,6 +96,45 @@ test('recherche Markdown : contenu textuel sans casse, accents ni syntaxe',()=>{
  assert.ok(plain.includes('une grande porte a berg'));assert.ok(plain.includes('carte secrete'));
  assert.equal(notesContext.notesTexteRecherche(message('b','**brut**')),'**brut**');
 });
+test('Markdown complet : alignements center, justify, left et right en blocs imbriqués',()=>{
+ const md=notesContext.moteurNotesMarkdown();
+ for(const mode of ['center','justify','left','right']){
+  const html=md.render('::: '+mode+'\n**Texte '+mode+'**\n\n- élément\n:::\n');
+  assert.ok(html.includes('class="pc-md-align pc-md-align-'+mode+'"'),mode+' : classe d’alignement');
+  assert.ok(html.includes('<strong>Texte '+mode+'</strong>'),mode+' : Markdown conservé');
+  assert.ok(html.includes('<li>élément</li>'),mode+' : liste conservée');
+ }
+ const nested=md.render('::: justify\nParagraphe\n\n::: center\nTitre\n:::\n:::');
+ assert.ok(nested.includes('pc-md-align-justify'));assert.ok(nested.includes('pc-md-align-center'));
+ assert.ok(nested.indexOf('pc-md-align-center')>nested.indexOf('pc-md-align-justify'));
+});
+test('Markdown complet : listes de tâches, tableaux, code et HTML brut neutralisé',()=>{
+ const md=notesContext.moteurNotesMarkdown();
+ const html=md.render('- [x] Fait **important**\n- [ ] À faire\n\n| Nom | Valeur |\n| --- | ---: |\n| Test | `42` |\n\n```js\nconst a = 1;\n```\n\n<script>alert(1)</script>');
+ assert.match(html,/<input class="pc-md-task-checkbox" type="checkbox" disabled checked>/);
+ assert.match(html,/<input class="pc-md-task-checkbox" type="checkbox" disabled>/);
+ assert.ok(html.includes('<table>'));assert.ok(html.includes('<code>42</code>'));assert.ok(html.includes('<pre><code class="language-js">'));
+ assert.ok(html.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));assert.ok(!html.includes('<script>'));
+ const source=read('src/fiche/bio/notes.js');assert.ok(source.includes("'div'"));assert.ok(source.includes("'input'"));assert.ok(source.includes("'class'"));assert.ok(source.includes('ALLOW_DATA_ATTR:false'));
+});
+test('Rendu Markdown : les conteneurs et cases de tâches passent dans une liste blanche sans HTML libre',()=>{
+ let config=null,htmlRendu='';
+ notesContext.window.DOMPurify={sanitize:(html,options)=>{config=options;return html;}};
+ const target={classList:{toggle(){}},querySelectorAll:()=>[],set innerHTML(v){htmlRendu=v;},get innerHTML(){return htmlRendu;}};
+ notesContext.notesRendu(target,'::: justify\n- [x] **Fait**\n:::\n<script>alert(1)</script>','markdown');
+ assert.ok(htmlRendu.includes('pc-md-align-justify'));
+ assert.ok(htmlRendu.includes('pc-md-task-checkbox'));
+ assert.ok(htmlRendu.includes('&lt;script&gt;alert(1)&lt;/script&gt;'));
+ assert.ok(config.ALLOWED_TAGS.includes('div')&&config.ALLOWED_TAGS.includes('input'));
+ assert.ok(config.ALLOWED_ATTR.includes('class')&&config.ALLOWED_ATTR.includes('checked'));
+ assert.equal(config.ALLOW_DATA_ATTR,false);
+});
+test('Markdown dans Notes et Techniques : une seule fonction de rendu partagée',()=>{
+ assert.ok(read('src/fiche/art/techniques.js').includes('notesRendu(read, rang.desc || "", rang.mode)'));
+ assert.ok(read('src/fiche/bio/notes.js').includes('function notesRendu(target,text,mode)'));
+ const text='::: justify\nUne **description**.\n:::';
+ assert.ok(notesContext.moteurNotesMarkdown().render(text).includes('pc-md-align-justify'));
+});
 test('notes inconnues conservées pour export ; refus explicite dans le module',()=>{
  const unknown={format:2,future:'texte'};assert.equal(notesContext.normaliseNotes(unknown),unknown);assert.throws(()=>notesContext.normaliseNotes(unknown,true),/illisible/);
  const bad={format:1,messages:[{id:'a',text:'A'},{id:'a',text:'B'}]};assert.equal(notesContext.normaliseNotes(bad),bad);assert.throws(()=>notesContext.normaliseNotes(bad,true),/illisible/);
