@@ -1939,6 +1939,7 @@
   // propre carte de dépendances (les attributs Roll20 sont traduits en ces clés
   // par JjkAttrMap avant d'arriver ici).
   var refreshEmpreintes = null;
+  var compHooksRafraichis = null;
   var VUE_DEPENDANCES = {
     narration: ["narration"],
     caracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
@@ -2022,7 +2023,12 @@
     var bilan = {};
     joue("", regHors, bilan);
     Object.keys(regsModules).forEach(function (id) { if (doit(id)) joue(id, regsModules[id], bilan); });
-    if (doit("comps")) joue("comps", compHooks, bilan);
+    // Une reconstruction par le rouage ou les filtres remplace les lignes
+    // sans forcément modifier les données du personnage.
+    if (compHooksRafraichis !== compHooks || doit("comps")) {
+      compHooksRafraichis = compHooks;
+      joue("comps", compHooksRafraichis, bilan);
+    }
     if (doit("optcomps")) joue("optcomps", optHooks, bilan);
     Object.keys(bilan).forEach(function (id) {
       var e = etatModule(id);
