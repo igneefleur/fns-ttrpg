@@ -572,7 +572,8 @@
       cibleEntree(card, element, entree);
       listeHooks.push(function () {
         if (document.activeElement !== name) name.value = entree.nom || "";
-        if (document.activeElement !== editor) editor.value = entree.desc || "";
+        var description = entree.desc || "";
+        if (document.activeElement !== editor && editor.value !== description) editor.value = description;
       });
       return card;
     }

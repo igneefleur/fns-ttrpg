@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.4b";
+  var RELEASE = "4.6.5b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -3943,7 +3943,8 @@
       cibleEntree(card, element, entree);
       listeHooks.push(function () {
         if (document.activeElement !== name) name.value = entree.nom || "";
-        if (document.activeElement !== editor) editor.value = entree.desc || "";
+        var description = entree.desc || "";
+        if (document.activeElement !== editor && editor.value !== description) editor.value = description;
       });
       return card;
     }
