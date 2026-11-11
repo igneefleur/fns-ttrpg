@@ -35,6 +35,7 @@
       energieOrganisee: null,
       notesOrganisees: [],
       artCategories: {},
+      artsOrganises: [],
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût

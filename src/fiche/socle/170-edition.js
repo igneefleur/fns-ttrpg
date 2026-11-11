@@ -57,7 +57,7 @@
       ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
-      ".pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
+      ".pc-entry-send, .pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
     ) || !!target.closest(".pc-notes-search, .pc-journal-pages") ||
       !!target.closest(".pc-envoi") || target.type === "search";
   }

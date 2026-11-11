@@ -1371,16 +1371,28 @@ html.night .pc-stadebar .seg.on.s4 { background: #78BBC0; color: #071113; border
 .pc-liste-organisee-layout .pc-tech-rank:not(.pc-entry-cost) { color: var(--ink); background: var(--panel); }
 .pc-liste-organisee-layout .pc-tech-rank:not(.pc-entry-cost) .pc-tech-rank-read,
 .pc-liste-organisee-layout .pc-tech-rank:not(.pc-entry-cost) input { color: var(--ink); }
-.pc-entry-price, .pc-entry-owned { display: none; align-items: center; gap: .25rem; font-size: .65rem; white-space: nowrap; }
-.pc-tech-pane.editing .pc-entry-price, .pc-tech-pane.editing .pc-entry-owned { display: inline-flex; }
-.pc-tech-pane.editing .pc-entry-cost-summary { display: none; }
-.pc-entry-price input { width: 3.5rem; font: inherit; color: var(--ink); background: var(--card); border: 1px solid var(--line-2); border-radius: 4px; }
-.pc-entry-owned input { accent-color: var(--accent); }
-.pc-entry-cost-summary { font-size: .65rem; color: var(--ink-2); }
+/* Le catalogue utilise les accents cyan de la fiche dans les deux thèmes. */
+.pc-liste-organisee-layout .pc-tech-item.selected,
+.pc-liste-organisee-layout .pc-notes-modes button[aria-pressed="true"] {
+  background: color-mix(in srgb, var(--accent) 20%, var(--card));
+}
+.pc-tech-rank-head.pc-catalog-entry-head { grid-template-columns: 1.1rem minmax(0, 1fr) 1.1rem; }
+.pc-entry-cost .pc-catalog-entry-head { grid-template-columns: 1.1rem minmax(0, 1fr) 1.1rem 3.1rem; }
+.pc-entry-price { display: flex; flex-direction: column; min-width: 0; align-items: center; gap: .1rem; }
+.pc-entry-price input { text-align: center; font-variant-numeric: tabular-nums; }
+.pc-entry-owned { display: inline-grid; position: relative; place-items: center; flex: none; }
+.pc-entry-owned input { opacity: 0; position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+.pc-entry-switch {
+  width: 1.85rem; height: 1rem; border-radius: 1rem; border: 1px solid var(--line);
+  background: var(--stripe); display: flex; align-items: center; padding: .12rem; box-sizing: border-box;
+}
+.pc-entry-switch::before { content: ""; width: .62rem; height: .62rem; border-radius: 50%; background: var(--ink-2); transition: transform .16s ease; }
+.pc-entry-owned input:checked + .pc-entry-switch { background: var(--accent-deep); border-color: var(--accent); }
+.pc-entry-owned input:checked + .pc-entry-switch::before { transform: translateX(.82rem); background: var(--accent-hi); }
+.pc-entry-owned input:focus-visible + .pc-entry-switch { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pc-entry-owned input:disabled { cursor: default; }
 .pc-tech-rank-read.pc-notes-markdown { white-space: normal; }
 .pc-notes-compose textarea { box-sizing: border-box; width: 100%; }
-
-.pc-editable.editing .pc-tech-item-fixed.selected .pc-tech-item-read { display: block; }
 .pc-tech-rank.avant { box-shadow: 0 -2px var(--accent); }
 .pc-tech-rank.apres { box-shadow: 0 2px var(--accent); }
 .pc-tech-rank.pris { opacity: .45; }

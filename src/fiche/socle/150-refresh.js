@@ -70,12 +70,12 @@
     initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
     tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
     pv: ["pv", "pvMaxOverride", "divers"],
-    armescomp: ["armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
-    comps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
+    armescomp: ["artsOrganises", "armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
+    comps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
     // Arts dépend de la liste des compétences et de leurs investissements, pas
     // seulement des mods. Ces clés sont aussi structurelles : leur changement
     // doit rejouer le hook qui reconstruit les cartes d'arts et de passifs.
-    arts: ["artCategories", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
+    arts: ["artsOrganises", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
     armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
     armures: ["armures", "inv", "inventaire"],
     inv: ["inv", "inventaire", "armes", "armures", "divers"],
@@ -88,11 +88,11 @@
     jets: ["de"],
     actions: ["name"],
     modcaracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
-    xpchamps: ["xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
+    xpchamps: ["artsOrganises", "xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
     creation: ["ptsCreaMod", "ptsCreaForce", "caracsBase", "caracsXp", "caracsPlafondMod", "caracsPlafondForce", "sansLimite", "comps", "compsForce", "xpTotal"],
     mods: ["mods", "modData", "modActifs"],
     modules: ["modules", "modActifs"],
-    optcomps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
+    optcomps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
   };
   var DEPENDANCES_CONNues = { v: 1, rel: 1, portrait: 1 };
   Object.keys(VUE_DEPENDANCES).forEach(function (id) {

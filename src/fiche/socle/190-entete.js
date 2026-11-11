@@ -312,8 +312,8 @@
         warns.appendChild(el("div", "pc-warn", "EO dépensée au-delà du total (" + fmtP(eoDepense()) + " / " + fmtP(state.emMax) + ")."));
       var cap = compCap();
       Object.keys(state.comps).forEach(function (k) {
-        if (compXp(state.comps[k]) > cap)
-          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k]) + " / " + cap + " xp)."));
+        if (compXp(state.comps[k], k) > cap)
+          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k], k) + " / " + cap + " xp)."));
       });
     });
     sheet.appendChild(warns);

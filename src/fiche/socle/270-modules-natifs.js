@@ -23,7 +23,7 @@
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
-    { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "arts",       titre: "Arts",   onglet: "art", colonne: "seule", build: buildArt },
     { id: "notesOrganisees", titre: "Notes", onglet: "notes", colonne: "seule", build: buildNotesOrganisees },
     { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----

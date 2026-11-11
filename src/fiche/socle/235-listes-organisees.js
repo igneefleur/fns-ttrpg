@@ -40,7 +40,7 @@
       var g = groupeDe(selectionGroupe);
       if (!g) {
         var candidats = groupes().filter(function (x) { return x && !estDiviseur(x); });
-        g = (config.structureFixe && candidats.find(function (x) { return x.elements.length; })) || candidats[0] || null;
+        g = candidats[0] || null;
       }
       var nouvelGroupe = g ? g.id : "";
       var x = elementDe(g, selectionElement);
@@ -285,7 +285,7 @@
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "groupe", g.id); });
       drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
-      if (!config.structureFixe) item.appendChild(drag);
+      item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", g.nom || config.groupeSansNom);
       read.type = "button"; read.addEventListener("click", function () { choixGroupe(g.id); });
       read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
@@ -295,7 +295,7 @@
       name.setAttribute("aria-label", config.groupes);
       name.addEventListener("input", function () { g.nom = name.value; conserveRendu(); read.textContent = name.value || config.groupeSansNom; save(); });
       item.appendChild(name);
-      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
+      if (!config.groupesObligatoires) item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
         if (!editionActive("groupes")) return;
         function retire() {
           var index = groupes().indexOf(g);
@@ -312,7 +312,6 @@
         else retire();
       }, "danger pc-edit-only"));
       item.addEventListener("dragover", function (e) {
-        if (config.structureFixe) return;
         var dragData = lireGlisse(e);
         var ok = (editionActive("groupes") && dragData && (dragData.type === "groupe" || dragData.type === "diviseur-groupe")) ||
                  (editionActive("elements") && dragData && dragData.type === "element");
@@ -322,7 +321,6 @@
       });
       item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
       item.addEventListener("drop", function (e) {
-        if (config.structureFixe) return;
         var dragData = lireGlisse(e); if (!dragData) return;
         if (dragData.type === "element" && editionActive("elements")) {
           e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
@@ -342,22 +340,21 @@
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "element", x.id); });
       drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
-      if (!config.structureFixe) item.appendChild(drag);
+      item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", x.nom || config.elementSansNom);
       read.type = "button"; read.addEventListener("click", function () { choixElement(x.id); });
       read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
       item.appendChild(read);
       var name = el("input", "pc-edit-field pc-tech-item-name");
-      name.type = "text"; name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition; name.placeholder = config.elements;
+      name.type = "text"; name.value = x.nom || ""; name.placeholder = config.elements;
       name.setAttribute("aria-label", config.elements);
       name.addEventListener("input", function () { x.nom = name.value; conserveRendu(); listeHooks.forEach(function (fn) { fn(); }); save(); });
-      if (x.nomEdition !== null) item.appendChild(name);
-      else item.classList.add("pc-tech-item-fixed");
+      item.appendChild(name);
       listeHooks.push(function () {
         read.textContent = x.nom || config.elementSansNom;
-        if (document.activeElement !== name) name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition;
+        if (document.activeElement !== name) name.value = x.nom || "";
       });
-      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
+      item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
         if (!editionActive("elements")) return;
         function retire() {
           var index = g.elements.indexOf(x);
@@ -373,7 +370,7 @@
         }
         else retire();
       }, "danger pc-edit-only"));
-      if (!config.structureFixe) cibleElement(item, g, x);
+      cibleElement(item, g, x);
       liste.appendChild(item);
     }
     function ligneDiviseur(diviseur, liste, colonne, groupe) {
@@ -452,46 +449,47 @@
       function actualise() { sync(); notesRendu(read, entree.desc || "", entree.mode); }
       actualise(); parent.appendChild(group); listeHooks.push(actualise);
     }
-    function ajouteCout(card, footer, entree, element) {
-      card.classList.toggle("acquired", entree.acquis !== false);
+    function ajouteCout(card, head, footer, entree, groupeId) {
       card.classList.add("pc-entry-cost");
       var cout = el("label", "pc-entry-price");
       var champ = el("input", "pc-edit-field");
-      champ.type = "number"; champ.min = "0"; champ.max = "9999"; champ.step = "1";
-      champ.placeholder = String(config.cout(entree));
-      champ.value = entree.cout == null ? "" : entree.cout;
+      champ.type = "text"; champ.inputMode = "numeric"; champ.pattern = "[0-9]*";
       champ.setAttribute("aria-label", "Coût en " + config.unite);
-      cout.append(champ, el("span", null, config.unite));
+      cout.append(el("span", "pc-tech-rank-label", config.unite), champ);
+      head.appendChild(cout);
+
       var acquis = el("label", "pc-entry-owned");
       var coche = el("input", "pc-edit-field");
-      coche.type = "checkbox"; coche.checked = entree.acquis !== false;
-      acquis.append(coche, el("span", null, "Acquise"));
-      var resume = el("span", "pc-entry-cost-summary");
+      coche.type = "checkbox";
+      coche.setAttribute("role", "switch");
+      coche.setAttribute("aria-label", "Entrée acquise");
+      var curseur = el("span", "pc-entry-switch");
+      curseur.setAttribute("aria-hidden", "true");
+      acquis.append(coche, curseur);
+      footer.appendChild(acquis);
+
       function actualise() {
-        resume.textContent = config.cout(entree) + " " + config.unite + (entree.acquis === false ? " · Non acquise" : " · Acquise");
-        card.classList.toggle("acquired", entree.acquis !== false);
+        champ.value = String(config.cout(entree));
+        coche.checked = entree.acquis !== false;
+        card.classList.toggle("acquired", coche.checked);
       }
-      function modifie(cout, possede) {
-        if (!editionActive("entrees")) return false;
-        if (config.valideAchat && !config.valideAchat(element, entree, cout, possede)) return false;
-        entree.cout = cout;
-        entree.acquis = possede;
+      function modifie(valeur, possede) {
+        if (editionActive("entrees") && (!config.valideAchat || config.valideAchat(groupeId, entree, valeur, possede))) {
+          if (valeur === undefined) delete entree.cout;
+          else entree.cout = valeur;
+          entree.acquis = possede;
+          conserveRendu();
+          refresh();
+        }
         actualise();
-        conserveRendu();
-        refresh();
-        return true;
       }
       champ.addEventListener("change", function () {
-        var cout = champ.value === "" ? undefined : clamp(Math.floor(Number(champ.value)), 0, 9999);
-        modifie(cout, entree.acquis !== false);
-        champ.value = entree.cout == null ? "" : entree.cout;
+        var texte = champ.value.trim();
+        if (!/^\d*$/.test(texte)) { actualise(); return; }
+        modifie(texte === "" ? undefined : clamp(Number(texte), 0, 9999), entree.acquis !== false);
       });
-      coche.addEventListener("change", function () {
-        modifie(entree.cout, coche.checked);
-        coche.checked = entree.acquis !== false;
-      });
+      coche.addEventListener("change", function () { modifie(entree.cout, coche.checked); });
       actualise();
-      footer.append(resume, cout, acquis);
     }
 
     function carteEntree(entree, element, groupeId) {
@@ -515,33 +513,30 @@
         Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (n) { n.classList.remove("pris", "avant", "apres"); });
       });
       dragSlot.appendChild(drag); head.appendChild(dragSlot);
-      var nomChamp = config.nomChamp || "nom";
       var nameWrap = el("label", "pc-tech-rank-name");
       nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
       var name = el("input", "pc-edit-field pc-catalog-entry-name");
-      name.type = "text"; name.value = entree[nomChamp] || ""; name.placeholder = "Nom de l’entrée";
+      name.type = "text"; name.value = entree.nom || ""; name.placeholder = "Nom de l’entrée";
       name.setAttribute("aria-label", "Nom de l’entrée");
-      name.addEventListener("input", function () { entree[nomChamp] = name.value; conserveRendu();
-        if (entree.principale) listeHooks.forEach(function (fn) { fn(); });
+      name.addEventListener("input", function () { entree.nom = name.value; conserveRendu();
         save(); });
       nameWrap.appendChild(name); head.appendChild(nameWrap);
       var deleteSlot = el("span", "pc-tech-rank-del-slot");
       deleteSlot.appendChild(miniBtn("×", "Supprimer cette entrée", function () {
         if (!editionActive("entrees")) return;
         var avant = JSON.stringify(entree);
-        confirmer("Supprimer une entrée", "Supprimer « " + (entree[nomChamp] || "cette entrée") + " » ?", "Supprimer", function () {
+        confirmer("Supprimer une entrée", "Supprimer « " + (entree.nom || "cette entrée") + " » ?", "Supprimer", function () {
           if (!ficheModifiable()) return;
           var groupe = groupeDe(groupeId);
           var courant = elementDe(groupe, element.id);
           if (!courant) return;
           var liste = entreesDe(courant);
-          var cible = entree.principale ? courant.principale : liste.find(function (e) { return e.id === entree.id; });
+          var cible = liste.find(function (e) { return e.id === entree.id; });
           if (!cible || JSON.stringify(cible) !== avant) {
             flash("L’entrée a changé depuis l’ouverture de la confirmation.");
             return;
           }
-          if (entree.principale) config.effacePrincipale(courant);
-          else liste.splice(liste.indexOf(cible), 1);
+          liste.splice(liste.indexOf(cible), 1);
           rendre(); refresh();
         });
       }, "danger pc-edit-only pc-tech-rank-del"));
@@ -556,16 +551,14 @@
       var footer = el("div", "pc-tech-rank-footer");
       var formats = el("div", "pc-tech-rank-format-wrap pc-edit-only");
       basculeMode(formats, entree, read); footer.appendChild(formats);
-      if (config.unite) ajouteCout(card, footer, entree, element);
-      if (config.envoi) footer.appendChild(chatBtn(
-        function () { return "Passif — " + (entree[nomChamp] || element.nom); },
-        function () { return [["", entree.desc]]; }
-      ));
+      if (config.unite) ajouteCout(card, head, footer, entree, groupeId);
+      if (config.unite) footer.appendChild(miniBtn("Envoyer", "Envoyer dans le tchat Roll20", function () {
+        sayChat(entree.nom || element.nom || "Entrée", [[config.unite, config.cout(entree)], ["", entree.desc]]);
+      }, "primary pc-entry-send"));
       card.appendChild(footer);
-      if (!entree.principale) cibleEntree(card, element, entree);
-      else dragSlot.replaceChildren();
+      cibleEntree(card, element, entree);
       listeHooks.push(function () {
-        if (document.activeElement !== name) name.value = entree[nomChamp] || "";
+        if (document.activeElement !== name) name.value = entree.nom || "";
         if (document.activeElement !== editor) editor.value = entree.desc || "";
       });
       return card;
@@ -585,7 +578,7 @@
         if (drag.type === "groupe" || drag.type === "diviseur-groupe") termineGlisse(reordonne(groupes(), drag.id, null));
       }, "groupes");
       pane.appendChild(liste);
-      if (config.structureFixe) return pane;
+      if (config.groupesObligatoires) return pane;
       pane.appendChild(miniBtn("+ " + config.groupeSingulier, null, function () {
         if (!editionActive("groupes")) return;
         var g = nouveauGroupe(); groupes().push(g); selectionGroupe = g.id; selectionElement = "";
@@ -614,7 +607,7 @@
         }, "elements");
       } else liste.appendChild(el("div", "pc-empty", config.videElement));
       pane.appendChild(liste);
-      if (g && !config.structureFixe) {
+      if (g) {
         pane.appendChild(miniBtn("+ " + config.elementSingulier, null, function () {
           if (!editionActive("elements")) return;
           var x = nouvelElement(); g.elements.push(x); selectionElement = x.id;
@@ -635,9 +628,8 @@
         actualiseEdition(pane, "entrees"); return pane;
       }
       var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
-      if (x.principale) liste.appendChild(carteEntree(x.principale, x, g.id));
       entreesDe(x).forEach(function (entree) { liste.appendChild(carteEntree(entree, x, g.id)); });
-      if (!x.principale && !entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
+      if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
       zoneDepotListe(liste, function (drag) {
         if (drag.type === "entree") {
           var source = entreesDe(x).findIndex(function (e) { return e.id === drag.id; });
@@ -645,9 +637,9 @@
         }
       }, "entrees");
       pane.appendChild(liste);
-      if (!config.peutAjouter || config.peutAjouter(x)) pane.appendChild(miniBtn("+ Entrée", null, function () {
+      pane.appendChild(miniBtn("+ Entrée", null, function () {
         if (!editionActive("entrees")) return;
-        entreesDe(x).push(config.nouvelleEntree ? config.nouvelleEntree() : nouvelleEntree()); save(); refresh(); rendre();
+        entreesDe(x).push(nouvelleEntree()); save(); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       return pane;
     }

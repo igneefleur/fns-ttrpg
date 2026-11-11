@@ -54,7 +54,7 @@
       em: ["em", "emMax"],
       armescomp: ["armesComps", "comps"],
       comps: ["comps", "customComps", "compsMod", "compsMod2", "compsForce", "compsXpForce", "compsXpMod", "compsXpMod2"],
-      arts: ["comps", "customComps", "artCategories"],
+      arts: ["comps", "customComps", "artsOrganises"],
       energie: ["energieOrganisee"],
       notesOrganisees: ["notesOrganisees"],
       armes: ["armes", "armesComps"],

@@ -92,7 +92,7 @@
     var i = stadeIndex("expert");
     return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
   }
-  function compXpBrut(c, key) {
+  function compXpBrut(c, key, changement) {
     // coût forcé (Options) : il court-circuite tout le calcul
     if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
     // la langue du personnage est acquise : ses stades ne coûtent rien
@@ -105,12 +105,17 @@
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
-    return xp + artXp(c) +
+    var catalogue = key && (state.artsOrganises || []).find(function (art) { return art.id === key; });
+    if (catalogue) xp += artXpCatalogue(catalogue, changement);
+    else {
+      (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
+      xp += artXp(c);
+    }
+    return xp +
            (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
   }
-  function compXp(c, key) {
-    var v = compXpBrut(c, key);
+  function compXp(c, key, changement) {
+    var v = compXpBrut(c, key, changement);
     return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
   }
   // Ce qu'une caractéristique coûte, forçage et modificateurs compris. Elle
@@ -132,6 +137,9 @@
     var xp = 0;
     ["Mind", "Body", "Prestance"].forEach(function (c) { xp += caracXp(c); });
     Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
+    (state.artsOrganises || []).forEach(function (art) {
+      if (!state.comps[art.id]) xp += compXp({ stade: 0 }, art.id);
+    });
     return xp;
   }
   function xpDepense() {
@@ -146,6 +154,9 @@
     var xp = caracXp(carac);
     Object.keys(state.comps).forEach(function (k) {
       if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
+    });
+    (state.artsOrganises || []).forEach(function (art) {
+      if (!state.comps[art.id] && art.id.startsWith(carac + "/")) xp += compXp({ stade: 0 }, art.id);
     });
     return xp;
   }

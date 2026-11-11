@@ -140,7 +140,7 @@
     // Clés qui changent la liste ou la structure d'un module JJK. Les valeurs
     // simples restent dans les hooks de refresh, sans détruire les champs.
     var structural = {
-      notes: [], notesJournal: [], notesOrganisees: [], artCategories: [], background: ["bg"],
+      notes: [], notesJournal: [], notesOrganisees: [], artCategories: [], artsOrganises: [], background: ["bg"],
       avantages: ["avantages"],
       comps: ["comps", "optcomps", "armescomp"],
       customComps: ["comps", "optcomps"],

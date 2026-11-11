@@ -22,6 +22,7 @@
           if (avecCout) {
             if (x.cout != null && isFinite(Number(x.cout))) item.cout = clamp(Math.floor(Number(x.cout)), 0, 9999);
             item.acquis = x.acquis === true;
+            if (prefixe === "art" && x.gratuite === true) item.gratuite = true;
           }
         }
         return item;
@@ -304,6 +305,7 @@
       comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
     });
     s.comps = comps;
+    s.artsOrganises = ajouteArtsEligibles(normaliseCatalogue(s.artsOrganises, "art", true), comps);
     // renommages de compétences (2026-08-02) : les fiches d'avant migrent
     // d'elles-mêmes — investissements, modificateurs et leviers du MJ suivent
     // le nouveau nom, rien ne se perd

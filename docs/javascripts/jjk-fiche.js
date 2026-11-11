@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.0b";
+  var RELEASE = "4.6.1b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -251,6 +251,7 @@
       energieOrganisee: null,
       notesOrganisees: [],
       artCategories: {},
+      artsOrganises: [],
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
@@ -358,6 +359,7 @@
           if (avecCout) {
             if (x.cout != null && isFinite(Number(x.cout))) item.cout = clamp(Math.floor(Number(x.cout)), 0, 9999);
             item.acquis = x.acquis === true;
+            if (prefixe === "art" && x.gratuite === true) item.gratuite = true;
           }
         }
         return item;
@@ -640,6 +642,7 @@
       comps[i > 0 ? k.slice(0, i + 1) + capFirst(k.slice(i + 1)) : k] = c;
     });
     s.comps = comps;
+    s.artsOrganises = ajouteArtsEligibles(normaliseCatalogue(s.artsOrganises, "art", true), comps);
     // renommages de compétences (2026-08-02) : les fiches d'avant migrent
     // d'elles-mêmes — investissements, modificateurs et leviers du MJ suivent
     // le nouveau nom, rien ne se perd
@@ -1162,7 +1165,7 @@
     var i = stadeIndex("expert");
     return i >= 0 ? i : Math.max(0, DATA.stades.length - 2);
   }
-  function compXpBrut(c, key) {
+  function compXpBrut(c, key, changement) {
     // coût forcé (Options) : il court-circuite tout le calcul
     if (key && state.compsXpForce[key] !== undefined) return state.compsXpForce[key];
     // la langue du personnage est acquise : ses stades ne coûtent rien
@@ -1175,12 +1178,17 @@
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
-    return xp + artXp(c) +
+    var catalogue = key && (state.artsOrganises || []).find(function (art) { return art.id === key; });
+    if (catalogue) xp += artXpCatalogue(catalogue, changement);
+    else {
+      (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
+      xp += artXp(c);
+    }
+    return xp +
            (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
   }
-  function compXp(c, key) {
-    var v = compXpBrut(c, key);
+  function compXp(c, key, changement) {
+    var v = compXpBrut(c, key, changement);
     return aFiltre("compXp") ? applique("compXp", v, { cle: key, comp: c }) : v;
   }
   // Ce qu'une caractéristique coûte, forçage et modificateurs compris. Elle
@@ -1202,6 +1210,9 @@
     var xp = 0;
     ["Mind", "Body", "Prestance"].forEach(function (c) { xp += caracXp(c); });
     Object.keys(state.comps).forEach(function (k) { xp += compXp(state.comps[k], k); });
+    (state.artsOrganises || []).forEach(function (art) {
+      if (!state.comps[art.id]) xp += compXp({ stade: 0 }, art.id);
+    });
     return xp;
   }
   function xpDepense() {
@@ -1216,6 +1227,9 @@
     var xp = caracXp(carac);
     Object.keys(state.comps).forEach(function (k) {
       if (k.slice(0, carac.length + 1) === carac + "/") xp += compXp(state.comps[k], k);
+    });
+    (state.artsOrganises || []).forEach(function (art) {
+      if (!state.comps[art.id] && art.id.startsWith(carac + "/")) xp += compXp({ stade: 0 }, art.id);
     });
     return xp;
   }
@@ -1568,7 +1582,7 @@
       em: ["em", "emMax"],
       armescomp: ["armesComps", "comps"],
       comps: ["comps", "customComps", "compsMod", "compsMod2", "compsForce", "compsXpForce", "compsXpMod", "compsXpMod2"],
-      arts: ["comps", "customComps", "artCategories"],
+      arts: ["comps", "customComps", "artsOrganises"],
       energie: ["energieOrganisee"],
       notesOrganisees: ["notesOrganisees"],
       armes: ["armes", "armesComps"],
@@ -1932,12 +1946,12 @@
     initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
     tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
     pv: ["pv", "pvMaxOverride", "divers"],
-    armescomp: ["armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
-    comps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
+    armescomp: ["artsOrganises", "armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
+    comps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
     // Arts dépend de la liste des compétences et de leurs investissements, pas
     // seulement des mods. Ces clés sont aussi structurelles : leur changement
     // doit rejouer le hook qui reconstruit les cartes d'arts et de passifs.
-    arts: ["artCategories", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
+    arts: ["artsOrganises", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
     armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
     armures: ["armures", "inv", "inventaire"],
     inv: ["inv", "inventaire", "armes", "armures", "divers"],
@@ -1950,11 +1964,11 @@
     jets: ["de"],
     actions: ["name"],
     modcaracs: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "caracsPlafondMod", "caracsPlafondForce", "sansLimite"],
-    xpchamps: ["xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
+    xpchamps: ["artsOrganises", "xpTotal", "caracsXp", "caracsXpForce", "caracsXpMod", "caracsXpMod2", "comps", "compsForce", "compsXpForce", "compsXpMod"],
     creation: ["ptsCreaMod", "ptsCreaForce", "caracsBase", "caracsXp", "caracsPlafondMod", "caracsPlafondForce", "sansLimite", "comps", "compsForce", "xpTotal"],
     mods: ["mods", "modData", "modActifs"],
     modules: ["modules", "modActifs"],
-    optcomps: ["comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
+    optcomps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "armesComps", "langues"]
   };
   var DEPENDANCES_CONNues = { v: 1, rel: 1, portrait: 1 };
   Object.keys(VUE_DEPENDANCES).forEach(function (id) {
@@ -2192,7 +2206,7 @@
       ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
-      ".pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
+      ".pc-entry-send, .pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
     ) || !!target.closest(".pc-notes-search, .pc-journal-pages") ||
       !!target.closest(".pc-envoi") || target.type === "search";
   }
@@ -2811,8 +2825,8 @@
         warns.appendChild(el("div", "pc-warn", "EO dépensée au-delà du total (" + fmtP(eoDepense()) + " / " + fmtP(state.emMax) + ")."));
       var cap = compCap();
       Object.keys(state.comps).forEach(function (k) {
-        if (compXp(state.comps[k]) > cap)
-          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k]) + " / " + cap + " xp)."));
+        if (compXp(state.comps[k], k) > cap)
+          warns.appendChild(el("div", "pc-warn", "« " + k.split("/").slice(1).join("/") + " » dépasse le quart de l'xp total (" + compXp(state.comps[k], k) + " / " + cap + " xp)."));
       });
     });
     sheet.appendChild(warns);
@@ -3397,7 +3411,7 @@
       var g = groupeDe(selectionGroupe);
       if (!g) {
         var candidats = groupes().filter(function (x) { return x && !estDiviseur(x); });
-        g = (config.structureFixe && candidats.find(function (x) { return x.elements.length; })) || candidats[0] || null;
+        g = candidats[0] || null;
       }
       var nouvelGroupe = g ? g.id : "";
       var x = elementDe(g, selectionElement);
@@ -3642,7 +3656,7 @@
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "groupe", g.id); });
       drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
-      if (!config.structureFixe) item.appendChild(drag);
+      item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", g.nom || config.groupeSansNom);
       read.type = "button"; read.addEventListener("click", function () { choixGroupe(g.id); });
       read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
@@ -3652,7 +3666,7 @@
       name.setAttribute("aria-label", config.groupes);
       name.addEventListener("input", function () { g.nom = name.value; conserveRendu(); read.textContent = name.value || config.groupeSansNom; save(); });
       item.appendChild(name);
-      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
+      if (!config.groupesObligatoires) item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
         if (!editionActive("groupes")) return;
         function retire() {
           var index = groupes().indexOf(g);
@@ -3669,7 +3683,6 @@
         else retire();
       }, "danger pc-edit-only"));
       item.addEventListener("dragover", function (e) {
-        if (config.structureFixe) return;
         var dragData = lireGlisse(e);
         var ok = (editionActive("groupes") && dragData && (dragData.type === "groupe" || dragData.type === "diviseur-groupe")) ||
                  (editionActive("elements") && dragData && dragData.type === "element");
@@ -3679,7 +3692,6 @@
       });
       item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
       item.addEventListener("drop", function (e) {
-        if (config.structureFixe) return;
         var dragData = lireGlisse(e); if (!dragData) return;
         if (dragData.type === "element" && editionActive("elements")) {
           e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
@@ -3699,22 +3711,21 @@
       drag.setAttribute("aria-label", drag.title); drag.draggable = true;
       drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "element", x.id); });
       drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
-      if (!config.structureFixe) item.appendChild(drag);
+      item.appendChild(drag);
       var read = el("button", "pc-tech-item-read", x.nom || config.elementSansNom);
       read.type = "button"; read.addEventListener("click", function () { choixElement(x.id); });
       read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
       item.appendChild(read);
       var name = el("input", "pc-edit-field pc-tech-item-name");
-      name.type = "text"; name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition; name.placeholder = config.elements;
+      name.type = "text"; name.value = x.nom || ""; name.placeholder = config.elements;
       name.setAttribute("aria-label", config.elements);
       name.addEventListener("input", function () { x.nom = name.value; conserveRendu(); listeHooks.forEach(function (fn) { fn(); }); save(); });
-      if (x.nomEdition !== null) item.appendChild(name);
-      else item.classList.add("pc-tech-item-fixed");
+      item.appendChild(name);
       listeHooks.push(function () {
         read.textContent = x.nom || config.elementSansNom;
-        if (document.activeElement !== name) name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition;
+        if (document.activeElement !== name) name.value = x.nom || "";
       });
-      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
+      item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
         if (!editionActive("elements")) return;
         function retire() {
           var index = g.elements.indexOf(x);
@@ -3730,7 +3741,7 @@
         }
         else retire();
       }, "danger pc-edit-only"));
-      if (!config.structureFixe) cibleElement(item, g, x);
+      cibleElement(item, g, x);
       liste.appendChild(item);
     }
     function ligneDiviseur(diviseur, liste, colonne, groupe) {
@@ -3809,46 +3820,47 @@
       function actualise() { sync(); notesRendu(read, entree.desc || "", entree.mode); }
       actualise(); parent.appendChild(group); listeHooks.push(actualise);
     }
-    function ajouteCout(card, footer, entree, element) {
-      card.classList.toggle("acquired", entree.acquis !== false);
+    function ajouteCout(card, head, footer, entree, groupeId) {
       card.classList.add("pc-entry-cost");
       var cout = el("label", "pc-entry-price");
       var champ = el("input", "pc-edit-field");
-      champ.type = "number"; champ.min = "0"; champ.max = "9999"; champ.step = "1";
-      champ.placeholder = String(config.cout(entree));
-      champ.value = entree.cout == null ? "" : entree.cout;
+      champ.type = "text"; champ.inputMode = "numeric"; champ.pattern = "[0-9]*";
       champ.setAttribute("aria-label", "Coût en " + config.unite);
-      cout.append(champ, el("span", null, config.unite));
+      cout.append(el("span", "pc-tech-rank-label", config.unite), champ);
+      head.appendChild(cout);
+
       var acquis = el("label", "pc-entry-owned");
       var coche = el("input", "pc-edit-field");
-      coche.type = "checkbox"; coche.checked = entree.acquis !== false;
-      acquis.append(coche, el("span", null, "Acquise"));
-      var resume = el("span", "pc-entry-cost-summary");
+      coche.type = "checkbox";
+      coche.setAttribute("role", "switch");
+      coche.setAttribute("aria-label", "Entrée acquise");
+      var curseur = el("span", "pc-entry-switch");
+      curseur.setAttribute("aria-hidden", "true");
+      acquis.append(coche, curseur);
+      footer.appendChild(acquis);
+
       function actualise() {
-        resume.textContent = config.cout(entree) + " " + config.unite + (entree.acquis === false ? " · Non acquise" : " · Acquise");
-        card.classList.toggle("acquired", entree.acquis !== false);
+        champ.value = String(config.cout(entree));
+        coche.checked = entree.acquis !== false;
+        card.classList.toggle("acquired", coche.checked);
       }
-      function modifie(cout, possede) {
-        if (!editionActive("entrees")) return false;
-        if (config.valideAchat && !config.valideAchat(element, entree, cout, possede)) return false;
-        entree.cout = cout;
-        entree.acquis = possede;
+      function modifie(valeur, possede) {
+        if (editionActive("entrees") && (!config.valideAchat || config.valideAchat(groupeId, entree, valeur, possede))) {
+          if (valeur === undefined) delete entree.cout;
+          else entree.cout = valeur;
+          entree.acquis = possede;
+          conserveRendu();
+          refresh();
+        }
         actualise();
-        conserveRendu();
-        refresh();
-        return true;
       }
       champ.addEventListener("change", function () {
-        var cout = champ.value === "" ? undefined : clamp(Math.floor(Number(champ.value)), 0, 9999);
-        modifie(cout, entree.acquis !== false);
-        champ.value = entree.cout == null ? "" : entree.cout;
+        var texte = champ.value.trim();
+        if (!/^\d*$/.test(texte)) { actualise(); return; }
+        modifie(texte === "" ? undefined : clamp(Number(texte), 0, 9999), entree.acquis !== false);
       });
-      coche.addEventListener("change", function () {
-        modifie(entree.cout, coche.checked);
-        coche.checked = entree.acquis !== false;
-      });
+      coche.addEventListener("change", function () { modifie(entree.cout, coche.checked); });
       actualise();
-      footer.append(resume, cout, acquis);
     }
 
     function carteEntree(entree, element, groupeId) {
@@ -3872,33 +3884,30 @@
         Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (n) { n.classList.remove("pris", "avant", "apres"); });
       });
       dragSlot.appendChild(drag); head.appendChild(dragSlot);
-      var nomChamp = config.nomChamp || "nom";
       var nameWrap = el("label", "pc-tech-rank-name");
       nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
       var name = el("input", "pc-edit-field pc-catalog-entry-name");
-      name.type = "text"; name.value = entree[nomChamp] || ""; name.placeholder = "Nom de l’entrée";
+      name.type = "text"; name.value = entree.nom || ""; name.placeholder = "Nom de l’entrée";
       name.setAttribute("aria-label", "Nom de l’entrée");
-      name.addEventListener("input", function () { entree[nomChamp] = name.value; conserveRendu();
-        if (entree.principale) listeHooks.forEach(function (fn) { fn(); });
+      name.addEventListener("input", function () { entree.nom = name.value; conserveRendu();
         save(); });
       nameWrap.appendChild(name); head.appendChild(nameWrap);
       var deleteSlot = el("span", "pc-tech-rank-del-slot");
       deleteSlot.appendChild(miniBtn("×", "Supprimer cette entrée", function () {
         if (!editionActive("entrees")) return;
         var avant = JSON.stringify(entree);
-        confirmer("Supprimer une entrée", "Supprimer « " + (entree[nomChamp] || "cette entrée") + " » ?", "Supprimer", function () {
+        confirmer("Supprimer une entrée", "Supprimer « " + (entree.nom || "cette entrée") + " » ?", "Supprimer", function () {
           if (!ficheModifiable()) return;
           var groupe = groupeDe(groupeId);
           var courant = elementDe(groupe, element.id);
           if (!courant) return;
           var liste = entreesDe(courant);
-          var cible = entree.principale ? courant.principale : liste.find(function (e) { return e.id === entree.id; });
+          var cible = liste.find(function (e) { return e.id === entree.id; });
           if (!cible || JSON.stringify(cible) !== avant) {
             flash("L’entrée a changé depuis l’ouverture de la confirmation.");
             return;
           }
-          if (entree.principale) config.effacePrincipale(courant);
-          else liste.splice(liste.indexOf(cible), 1);
+          liste.splice(liste.indexOf(cible), 1);
           rendre(); refresh();
         });
       }, "danger pc-edit-only pc-tech-rank-del"));
@@ -3913,16 +3922,14 @@
       var footer = el("div", "pc-tech-rank-footer");
       var formats = el("div", "pc-tech-rank-format-wrap pc-edit-only");
       basculeMode(formats, entree, read); footer.appendChild(formats);
-      if (config.unite) ajouteCout(card, footer, entree, element);
-      if (config.envoi) footer.appendChild(chatBtn(
-        function () { return "Passif — " + (entree[nomChamp] || element.nom); },
-        function () { return [["", entree.desc]]; }
-      ));
+      if (config.unite) ajouteCout(card, head, footer, entree, groupeId);
+      if (config.unite) footer.appendChild(miniBtn("Envoyer", "Envoyer dans le tchat Roll20", function () {
+        sayChat(entree.nom || element.nom || "Entrée", [[config.unite, config.cout(entree)], ["", entree.desc]]);
+      }, "primary pc-entry-send"));
       card.appendChild(footer);
-      if (!entree.principale) cibleEntree(card, element, entree);
-      else dragSlot.replaceChildren();
+      cibleEntree(card, element, entree);
       listeHooks.push(function () {
-        if (document.activeElement !== name) name.value = entree[nomChamp] || "";
+        if (document.activeElement !== name) name.value = entree.nom || "";
         if (document.activeElement !== editor) editor.value = entree.desc || "";
       });
       return card;
@@ -3942,7 +3949,7 @@
         if (drag.type === "groupe" || drag.type === "diviseur-groupe") termineGlisse(reordonne(groupes(), drag.id, null));
       }, "groupes");
       pane.appendChild(liste);
-      if (config.structureFixe) return pane;
+      if (config.groupesObligatoires) return pane;
       pane.appendChild(miniBtn("+ " + config.groupeSingulier, null, function () {
         if (!editionActive("groupes")) return;
         var g = nouveauGroupe(); groupes().push(g); selectionGroupe = g.id; selectionElement = "";
@@ -3971,7 +3978,7 @@
         }, "elements");
       } else liste.appendChild(el("div", "pc-empty", config.videElement));
       pane.appendChild(liste);
-      if (g && !config.structureFixe) {
+      if (g) {
         pane.appendChild(miniBtn("+ " + config.elementSingulier, null, function () {
           if (!editionActive("elements")) return;
           var x = nouvelElement(); g.elements.push(x); selectionElement = x.id;
@@ -3992,9 +3999,8 @@
         actualiseEdition(pane, "entrees"); return pane;
       }
       var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
-      if (x.principale) liste.appendChild(carteEntree(x.principale, x, g.id));
       entreesDe(x).forEach(function (entree) { liste.appendChild(carteEntree(entree, x, g.id)); });
-      if (!x.principale && !entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
+      if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
       zoneDepotListe(liste, function (drag) {
         if (drag.type === "entree") {
           var source = entreesDe(x).findIndex(function (e) { return e.id === drag.id; });
@@ -4002,9 +4008,9 @@
         }
       }, "entrees");
       pane.appendChild(liste);
-      if (!config.peutAjouter || config.peutAjouter(x)) pane.appendChild(miniBtn("+ Entrée", null, function () {
+      pane.appendChild(miniBtn("+ Entrée", null, function () {
         if (!editionActive("entrees")) return;
-        entreesDe(x).push(config.nouvelleEntree ? config.nouvelleEntree() : nouvelleEntree()); save(); refresh(); rendre();
+        entreesDe(x).push(nouvelleEntree()); save(); refresh(); rendre();
       }, "pc-edit-only pc-tech-add"));
       return pane;
     }
@@ -4992,84 +4998,66 @@
     return b;
   }
 
+
   // ---------- onglet Art ----------
-  // La personnalisation d'une compétence vit ICI : au stade qui ouvre les
-  // passifs et l'art (« Artiste » sous les règles actuelles), sa carte porte les
-  // fiches de passifs, le nom et la description de l'art. Aucun
-  // contenu de règles : seulement les données du personnage. La liste se
-  // reconstruit seulement quand les compétences éligibles (ou leur stade)
-  // changent, pas à chaque frappe.
-  // porteArt : la compétence a un art non vide (même si le stade est redescendu)
   function porteArt(c) {
     return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim() ||
       c.art.cout !== undefined || c.art.acquis === false));
   }
-  function artComps() {
-    // même ordre que la Fiche : Body, puis Mind, puis Prestance, puis alphabétique
-    var rang = {};
-    CHAMPS.forEach(function (ch, i) { rang[ch] = i; });
-    return allComps().filter(function (it) {
-      var c = state.comps[it.key];
-      // les passifs rédigés et l'art restent VISIBLES même si le stade ne les
-      // ouvre plus (stade redescendu, ou stade d'ouverture déplacé) : les
-      // données du joueur ne disparaissent jamais en silence
-      return !!(c && (stadeInfo(c.stade).techniques || stadeInfo(c.stade).art ||
-                      (c.techniques && c.techniques.length) || porteArt(c)));
-    }).sort(function (a, b) {
-      return (rang[a.carac] || 0) - (rang[b.carac] || 0)
-        || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
-    });
-  }
-  function artGroupes() {
-    var articles = artComps();
-    return CHAMPS.map(function (champ) {
-      return {
-        id: champ,
-        get nom() { return state.artCategories[champ] || champ; },
-        set nom(nom) { state.artCategories[champ] = nom; },
-        elements: articles.filter(function (it) { return it.carac === champ; }).map(function (it) {
-          var c = state.comps[it.key];
-          var art = c.art || { name: "", desc: "", mode: "plain", acquis: true };
-          var principale = null;
-          if (stadeInfo(c.stade).art || porteArt(c)) {
-            principale = { id: "art-" + it.key, principale: true };
-            ["name", "desc", "mode", "cout", "acquis"].forEach(function (key) {
-              Object.defineProperty(principale, key, {
-                enumerable: true,
-                get: function () { return art[key]; },
-                set: function (value) {
-                  if (value === undefined) delete art[key];
-                  else art[key] = value;
-                  c.art = art;
-                }
-              });
-            });
-          }
-          return {
-            id: it.key, stade: c.stade,
-            get nom() { return art.name ? art.name + " · " + it.name : it.name; },
-            set nom(nom) {
-              art.name = nom;
-              c.art = art;
-            },
-            get nomEdition() { return principale ? art.name : null; },
-            entrees: c.techniques,
-            principale: principale
-          };
-        })
-      };
-    });
+
+  function nouvelArtCatalogue(key, c) {
+    var nomComp = key.slice(key.indexOf("/") + 1);
+    var art = { id: key, nom: c.art && c.art.name || nomComp, elements: [] };
+    function ancienneEntree(t, id, gratuite) {
+      var entree = { id: id, nom: t.name, desc: t.desc, mode: t.mode, acquis: t.acquis !== false };
+      if (t.cout != null) entree.cout = t.cout;
+      if (gratuite) entree.gratuite = true;
+      return entree;
+    }
+    if (porteArt(c)) {
+      art.elements.push({ id: key + "-principal", nom: "Art principal",
+        entrees: [ancienneEntree(c.art, key + "-passif-initial", true)] });
+    }
+    if (c.techniques && c.techniques.length) {
+      art.elements.push({ id: key + "-passifs", nom: "Passifs",
+        entrees: c.techniques.map(function (t, i) { return ancienneEntree(t, key + "-passif-" + i, false); }) });
+    }
+    return art;
   }
 
-  function valideAchatArt(element, entree, cout, acquis) {
+  function ajouteArtsEligibles(liste, comps) {
+    var presents = new Set(liste.map(function (g) { return g.id; }));
+    Object.keys(comps).forEach(function (key) {
+      if (presents.has(key)) return;
+      var c = comps[key], stade = DATA && stadeInfo(c.stade);
+      if (porteArt(c) || (c.techniques || []).length || (stade && (stade.art || stade.techniques))) {
+        liste.push(nouvelArtCatalogue(key, c));
+      }
+    });
+    return liste;
+  }
+
+  function coutEntreeArt(entree) {
+    return entree.cout == null && entree.gratuite ? 0 : techXp(entree);
+  }
+
+  function artXpCatalogue(art, changement) {
+    var total = 0;
+    art.elements.forEach(function (technique) {
+      (technique.entrees || []).forEach(function (entree) {
+        var valeur = changement && changement.entree === entree ? changement.valeur : entree;
+        if (valeur.acquis) total += coutEntreeArt(valeur);
+      });
+    });
+    return total;
+  }
+
+  function valideAchatArt(key, entree, cout, acquis) {
     if (!acquis) return true;
-    var c = state.comps[element.id];
-    var futur = Object.assign({}, c);
-    var prochaine = Object.assign({}, entree, { cout: cout, acquis: acquis });
-    if (entree.principale) futur.art = prochaine;
-    else futur.techniques = c.techniques.map(function (t) { return t === entree ? prochaine : t; });
-    var xp = compXp(futur, element.id);
-    var delta = xp - compXp(c, element.id);
+    var c = state.comps[key] || { stade: 0 };
+    var futur = { entree: entree, valeur: Object.assign({}, entree, { cout: cout, acquis: acquis }) };
+    var xp = compXp(c, key, futur);
+    var delta = xp - compXp(c, key);
     if (delta <= 0) return true;
     if (xpRestant() < delta) { flash("XP insuffisant."); return false; }
     if (xp > compCap()) {
@@ -5081,15 +5069,13 @@
 
   function buildArt() {
     return buildListeOrganisee({
-      titre: "Arts et passifs", groupes: "Champs", elements: "Arts", entrees: "Entrées",
-      groupeSansNom: "Champ sans nom", elementSansNom: "Art sans nom",
-      videGroupe: "Aucun champ.", videElement: "Aucune compétence n’ouvre d’art ou de passif.", videEntree: "Aucune entrée.",
-      groupesDe: artGroupes, structureFixe: true, unite: "XP", nomChamp: "name", envoi: true,
-      cout: function (entree) { return entree.principale ? Number(entree.cout) || 0 : techXp(entree); },
-      valideAchat: valideAchatArt,
-      effacePrincipale: function (element) { delete state.comps[element.id].art; },
-      peutAjouter: function (element) { return stadeInfo(element.stade).techniques; },
-      nouvelleEntree: function () { return { id: uid("passif"), name: "", desc: "", mode: "plain", acquis: false }; }
+      groupesDe: function () { return ajouteArtsEligibles(state.artsOrganises, state.comps); },
+      titre: "Arts", groupes: "Arts", elements: "Techniques", entrees: "Entrées",
+      groupesObligatoires: true, groupeAutre: "un autre art",
+      elementSingulier: "Technique", elementIndefini: "une technique", elementDefini: "cette technique",
+      groupeSansNom: "Art sans nom", elementSansNom: "Technique sans nom", nouvelElement: "Nouvelle technique",
+      videGroupe: "Aucune compétence n’ouvre d’art ou de passif.", videElement: "Aucune technique.", videEntree: "Aucune entrée.",
+      unite: "XP", cout: coutEntreeArt, valideAchat: valideAchatArt
     });
   }
 
@@ -7784,7 +7770,7 @@
     { id: "armescomp",  titre: "Armes",             onglet: "fiche", colonne: "milieu", build: buildArmesComps },
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
-    { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "arts",       titre: "Arts",   onglet: "art", colonne: "seule", build: buildArt },
     { id: "notesOrganisees", titre: "Notes", onglet: "notes", colonne: "seule", build: buildNotesOrganisees },
     { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----
@@ -8267,7 +8253,7 @@
     // Clés qui changent la liste ou la structure d'un module JJK. Les valeurs
     // simples restent dans les hooks de refresh, sans détruire les champs.
     var structural = {
-      notes: [], notesJournal: [], notesOrganisees: [], artCategories: [], background: ["bg"],
+      notes: [], notesJournal: [], notesOrganisees: [], artCategories: [], artsOrganises: [], background: ["bg"],
       avantages: ["avantages"],
       comps: ["comps", "optcomps", "armescomp"],
       customComps: ["comps", "optcomps"],
