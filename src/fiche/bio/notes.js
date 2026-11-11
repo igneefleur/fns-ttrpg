@@ -63,10 +63,31 @@
       });
     });
   }
+  // Markdown sépare déjà les paragraphes. On ajoute seulement les lignes
+  // vides supplémentaires entre blocs, sans modifier les listes ni le code.
+  function lignesVidesMarkdown(md) {
+    md.core.ruler.after("block", "jjk_blank_lines", function (state) {
+      var lignes = state.src.split("\n");
+      var vus = false;
+      state.tokens = state.tokens.flatMap(function (token) {
+        if (token.level !== 0 || !token.map || token.nesting < 0) return [token];
+        var ligne = token.map[0] - 1;
+        while (ligne >= 0 && !lignes[ligne].trim()) ligne--;
+        var vides = token.map[0] - 1 - ligne;
+        var ajouter = vus && vides > 1;
+        vus = true;
+        if (!ajouter) return [token];
+        var espace = new state.Token("jjk_blank_lines", "", 0);
+        espace.content = "<br>".repeat(vides - 1);
+        return [espace, token];
+      });
+    });
+    md.renderer.rules.jjk_blank_lines = function (tokens, idx) { return tokens[idx].content; };
+  }
   var notesMarkdown=null;
   function moteurNotesMarkdown(){
     if(!notesMarkdown&&window.markdownit)
-      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK);
+      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK).use(lignesVidesMarkdown);
     return notesMarkdown;
   }
   function notesTexteRecherche(message){

@@ -27,6 +27,9 @@
       // Le temps que Roll20 charge les attributs du personnage. Deux secondes en
       // général, et rien à faire pendant : pas de bouton, pas d'explication.
       e.appendChild(el("div", "nb-titre", "Lecture du plateau…"));
+    } else if (quoi === "perdu") {
+      e.appendChild(el("div", "nb-titre", "Synchronisation du plateau interrompue"));
+      e.appendChild(el("div", "nb-detail", "En attente d’une lecture complète de Roll20."));
     } else if (quoi === "ouverture") {
       // Le pont n'a pas réussi à ouvrir la fiche « Narration », donc les
       // attributs restent illisibles. Le dire pour ce que c'est : ce n'est pas

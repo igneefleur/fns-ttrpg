@@ -194,7 +194,7 @@
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
       if (partial && targets.indexOf(m.dataset.module) < 0) return;
       Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
-        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
+        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, key: n.dataset.jjkScroll, top: n.scrollTop, left: n.scrollLeft });
       });
     });
 
@@ -212,7 +212,9 @@
 
     positions.forEach(function (p) {
       var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
-      var n = m && m.querySelectorAll("*")[p.index];
+      var n = m && (p.key ? Array.from(m.querySelectorAll("[data-jjk-scroll]")).find(function (liste) {
+        return liste.dataset.jjkScroll === p.key;
+      }) : m.querySelectorAll("*")[p.index]);
       if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
     });
     if (focus) {

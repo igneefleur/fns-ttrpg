@@ -21,7 +21,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.3b";
+  var RELEASE = "4.6.4b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)

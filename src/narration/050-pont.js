@@ -13,6 +13,10 @@
   // ouverture de fiche. La demande périodique, elle, ne doit rien relancer, sinon
   // un échec s'effacerait tout seul toutes les douze secondes.
   function demandePerso(encore) {
+    if (encore) {
+      lectureCompleteNarration = true;
+      if (charId) montreEtat("attente");
+    }
     post({ type: "need-bridge" });
     post({ type: "narration-char", encore: !!encore });
   }
@@ -26,6 +30,8 @@
   // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
   // croire effacés.
   var fondsTenus = false;
+  var cacheAttributsNarration = Object.create(null);
+  var lectureCompleteNarration = false;
   // CE QUI APPARTIENT AU PLATEAU, dit par le plateau lui-même. Le pont range les
   // attributs de « Narration » : il retire les restes d'une fiche de personnage
   // ouverte un jour dessus, et dédoublonne les nôtres. Mais il ne peut pas
@@ -96,7 +102,7 @@
       if (attrs && attrs[A_STORAGE]) {
         var distant = narrationCompact.read(attrs);
         if (distant && !distant.incomplete && (Number(distant.state.v) > 1)) {
-          refuse = true; montreEtat("perdu");
+          etatSur = false; montreEtat("perdu");
           trace("version-compact-future", { version: distant.state.v });
           return;
         }
@@ -124,7 +130,7 @@
         throw new Error("La photographie Compact du plateau a disparu.");
       }
     } catch (eCompact) {
-      refuse = true;
+      etatSur = false;
       trace("erreur-compact", { message: String(eCompact && eCompact.message || eCompact) });
       montreEtat("perdu");
     }
@@ -148,9 +154,9 @@
   function demandeEtat() {
     if (!charId) { return; }
     var n = Date.now(), rs = false;
-    if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
+    if (!lectureCompleteNarration && n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE, resync: rs });
+           menageGarde: MENAGE_GARDE, resync: rs, complet: lectureCompleteNarration });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
@@ -194,6 +200,8 @@
         repondu = true;
         if (!d.charId) {
           charId = null;
+          cacheAttributsNarration = Object.create(null);
+          lectureCompleteNarration = false;
           // « pas de plateau » ne se dit que si la campagne est chargée : au
           // démarrage, Roll20 met une seconde ou deux à peupler ses
           // personnages, et l'annoncer alors afficherait un écran d'erreur qui
@@ -217,6 +225,8 @@
           narrationCompact = null; narrationSession = null; narrationCompactActive = false;
           narrationMigrationEnvoyee = 0; narrationSessionId = null;
           narrationStorageReady = false; narrationCleanupAt = 0;
+          cacheAttributsNarration = Object.create(null); lectureCompleteNarration = false;
+          fondsTenus = false; resyncQuand = 0;
           montreEtat("attente");
         }
         charId = d.charId;
@@ -226,7 +236,7 @@
         if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);
         demandeEtat();
       } else if (d.type === "hydrate" && d.charId === charId) {
-        applique(d.attrs || {}, d);
+        recoitLectureNarration(d);
       } else if (d.type === "backup-status" && d.charId === charId && d.ok === true) {
         narrationCleanupAt = 0;
         demandeEtat();
@@ -239,6 +249,26 @@
       }
     } catch (e) {}
   }, false);
+
+  function recoitLectureNarration(d) {
+    // Un fetch raté peut diffuser une collection vide ou périmée.
+    if (d.fresh === false) return;
+    var attrs = Object.create(null);
+    Object.keys(d.attrs || {}).forEach(function (nom) {
+      if (nom.indexOf(PREF) === 0) attrs[nom] = d.attrs[nom];
+    });
+    var omis = Array.isArray(d.omis) ? d.omis : [];
+    lectureCompleteNarration = omis.some(function (nom) {
+      if (typeof nom !== "string" || nom.indexOf(PREF) !== 0 || attrs[nom]) return false;
+      if (!cacheAttributsNarration[nom]) return true;
+      attrs[nom] = cacheAttributsNarration[nom];
+      return false;
+    });
+    if (lectureCompleteNarration) return;
+    cacheAttributsNarration = attrs;
+    if (d.sur === false) lectureCompleteNarration = true;
+    applique(attrs, d);
+  }
 
   window.addEventListener("pagehide", function () {
     if (!charId) return;

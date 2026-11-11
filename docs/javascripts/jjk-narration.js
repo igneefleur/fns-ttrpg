@@ -232,6 +232,10 @@
   // ouverture de fiche. La demande périodique, elle, ne doit rien relancer, sinon
   // un échec s'effacerait tout seul toutes les douze secondes.
   function demandePerso(encore) {
+    if (encore) {
+      lectureCompleteNarration = true;
+      if (charId) montreEtat("attente");
+    }
     post({ type: "need-bridge" });
     post({ type: "narration-char", encore: !!encore });
   }
@@ -245,6 +249,8 @@
   // dit lesquels le pont a retenus, pour qu'on garde les nôtres au lieu de les
   // croire effacés.
   var fondsTenus = false;
+  var cacheAttributsNarration = Object.create(null);
+  var lectureCompleteNarration = false;
   // CE QUI APPARTIENT AU PLATEAU, dit par le plateau lui-même. Le pont range les
   // attributs de « Narration » : il retire les restes d'une fiche de personnage
   // ouverte un jour dessus, et dédoublonne les nôtres. Mais il ne peut pas
@@ -315,7 +321,7 @@
       if (attrs && attrs[A_STORAGE]) {
         var distant = narrationCompact.read(attrs);
         if (distant && !distant.incomplete && (Number(distant.state.v) > 1)) {
-          refuse = true; montreEtat("perdu");
+          etatSur = false; montreEtat("perdu");
           trace("version-compact-future", { version: distant.state.v });
           return;
         }
@@ -343,7 +349,7 @@
         throw new Error("La photographie Compact du plateau a disparu.");
       }
     } catch (eCompact) {
-      refuse = true;
+      etatSur = false;
       trace("erreur-compact", { message: String(eCompact && eCompact.message || eCompact) });
       montreEtat("perdu");
     }
@@ -367,9 +373,9 @@
   function demandeEtat() {
     if (!charId) { return; }
     var n = Date.now(), rs = false;
-    if (n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
+    if (!lectureCompleteNarration && n - resyncQuand >= RESYNC) { resyncQuand = n; rs = true; }
     post({ type: "load", charId: charId, allege: fondsTenus === true,
-           menageGarde: MENAGE_GARDE, resync: rs });
+           menageGarde: MENAGE_GARDE, resync: rs, complet: lectureCompleteNarration });
   }
   // Une écriture = un lot d'attributs. On note ce qu'on vient d'écrire : l'écho
   // met un aller-retour à revenir, et sans cette note la relecture suivante
@@ -413,6 +419,8 @@
         repondu = true;
         if (!d.charId) {
           charId = null;
+          cacheAttributsNarration = Object.create(null);
+          lectureCompleteNarration = false;
           // « pas de plateau » ne se dit que si la campagne est chargée : au
           // démarrage, Roll20 met une seconde ou deux à peupler ses
           // personnages, et l'annoncer alors afficherait un écran d'erreur qui
@@ -436,6 +444,8 @@
           narrationCompact = null; narrationSession = null; narrationCompactActive = false;
           narrationMigrationEnvoyee = 0; narrationSessionId = null;
           narrationStorageReady = false; narrationCleanupAt = 0;
+          cacheAttributsNarration = Object.create(null); lectureCompleteNarration = false;
+          fondsTenus = false; resyncQuand = 0;
           montreEtat("attente");
         }
         charId = d.charId;
@@ -445,7 +455,7 @@
         if (etatMontre === "absent" || etatMontre === "pont") montreEtat(null);
         demandeEtat();
       } else if (d.type === "hydrate" && d.charId === charId) {
-        applique(d.attrs || {}, d);
+        recoitLectureNarration(d);
       } else if (d.type === "backup-status" && d.charId === charId && d.ok === true) {
         narrationCleanupAt = 0;
         demandeEtat();
@@ -458,6 +468,26 @@
       }
     } catch (e) {}
   }, false);
+
+  function recoitLectureNarration(d) {
+    // Un fetch raté peut diffuser une collection vide ou périmée.
+    if (d.fresh === false) return;
+    var attrs = Object.create(null);
+    Object.keys(d.attrs || {}).forEach(function (nom) {
+      if (nom.indexOf(PREF) === 0) attrs[nom] = d.attrs[nom];
+    });
+    var omis = Array.isArray(d.omis) ? d.omis : [];
+    lectureCompleteNarration = omis.some(function (nom) {
+      if (typeof nom !== "string" || nom.indexOf(PREF) !== 0 || attrs[nom]) return false;
+      if (!cacheAttributsNarration[nom]) return true;
+      attrs[nom] = cacheAttributsNarration[nom];
+      return false;
+    });
+    if (lectureCompleteNarration) return;
+    cacheAttributsNarration = attrs;
+    if (d.sur === false) lectureCompleteNarration = true;
+    applique(attrs, d);
+  }
 
   window.addEventListener("pagehide", function () {
     if (!charId) return;
@@ -617,14 +647,14 @@
     // la trace de dépannage le porte. « false » ici veut dire : ce joueur ne
     // verra JAMAIS bouger le plateau des autres tant que son extension n'est pas
     // à jour — c'est le premier fait à vérifier devant une panne de ce genre.
-    if (d && pontResync === null) { pontResync = d.resync === true; }
+    if (d && (pontResync === null || d.fresh === true)) { pontResync = d.resync === true || d.fresh === true; }
     trace("lecture", { pontSur: (d && d.sur), pontRaison: (d && d.raison),
                        pontResync: pontResync,
                        nbAttrs: attrs ? Object.keys(attrs).length : 0,
                        ecrits: resumeEcrits(d && d.ecrits) });
     try {
       var _k, _a = attrs || {};
-      for (_k in _a) { if (_a.hasOwnProperty(_k)) { dernierLu[_k] = String(_a[_k] && _a[_k].current != null ? _a[_k].current : _a[_k]); } }
+      for (_k in _a) { if (Object.prototype.hasOwnProperty.call(_a, _k)) { dernierLu[_k] = String(_a[_k] && _a[_k].current != null ? _a[_k].current : _a[_k]); } }
     } catch (e) {}
     // « JE NE SAIS PAS ENCORE » N'EST PAS « C'EST VIDE ». Roll20 ne peuple les
     // Attributes d'un personnage qu'à l'ouverture de sa fiche, et le plateau est
@@ -653,7 +683,7 @@
     // vaut dès la PREMIÈRE lecture quand le pont est trop ancien pour ouvrir la
     // fiche — c'est tout ce qu'on peut faire pour lui sans extension à jour ;
     // un pont récent, lui, a déjà répondu de ce vide-là.
-    if (rien && (lu || !dit)) {
+    if (rien && (lu || (!dit && !(d && d.fresh === true)))) {
       if (++vide < 5) {
         if (!lu) montreEtat("attente");   // rien de lu : pas de table à montrer
         return;
@@ -681,8 +711,11 @@
       }
     } catch (e) {}
 
-    var brutConf = attrs[A_CONF] ? String(attrs[A_CONF].current || "") : "";
-    if (!retenu(A_CONF, brutConf)) conf = litConf(brutConf);
+    var compactPresent = !!attrs[A_STORAGE] || narrationCompactActive;
+    if (!compactPresent) {
+      var brutConf = attrs[A_CONF] ? String(attrs[A_CONF].current || "") : "";
+      if (!retenu(A_CONF, brutConf)) conf = litConf(brutConf);
+    }
 
     // LES FONDS, avant les jetons : ils changent la peinture des places, pas le
     // compte. Même règle que pour un jeton — notre écriture en attente prime sur
@@ -722,33 +755,35 @@
     // retransporter.
     if (!fondsTenus && !(d && d.allege)) { fondsTenus = true; }
 
-    var neuf = {};
-    Object.keys(attrs).forEach(function (n) {
-      if (n.indexOf(A_PT) !== 0) return;
-      var id = n.slice(A_PT.length);
-      // Le nom de l'attribut vient de Roll20, donc de n'importe qui : un
-      // identifiant fantaisiste finirait dans un sélecteur CSS et ferait
-      // tomber tout le rafraîchissement, pour tout le monde et sans un mot.
-      if (!/^[A-Za-z0-9_-]{1,16}$/.test(id)) return;
-      connus[id] = 1;
-      var brut = String(attrs[n].current || "");
-      if (retenu(n, brut)) { if (points[id]) neuf[id] = points[id]; return; }
-      var p = litPoint(brut);
-      if (p) neuf[id] = p;
-      // un jeton qu'on tient et que quelqu'un vient de retirer ne doit pas
-      // ressusciter au lâcher
-      else if (prise && prise.id === id) prise.mort = true;
-    });
-    // Nos écritures en attente sur des jetons que Roll20 ne connaît pas encore
-    // (créés à l'instant) : elles ne doivent pas disparaître le temps de l'écho.
-    Object.keys(attente).forEach(function (n) {
-      if (n.indexOf(A_PT) !== 0) return;
-      var id = n.slice(A_PT.length);
-      if (!neuf[id] && points[id]) neuf[id] = points[id];
-    });
-    // le jeton qu'on tient reste sous le doigt, quoi qu'en dise Roll20
-    if (prise && points[prise.id]) neuf[prise.id] = points[prise.id];
-    points = neuf;
+    if (!compactPresent) {
+      var neuf = {};
+      Object.keys(attrs).forEach(function (n) {
+        if (n.indexOf(A_PT) !== 0) return;
+        var id = n.slice(A_PT.length);
+        // Le nom de l'attribut vient de Roll20, donc de n'importe qui : un
+        // identifiant fantaisiste finirait dans un sélecteur CSS et ferait
+        // tomber tout le rafraîchissement, pour tout le monde et sans un mot.
+        if (!/^[A-Za-z0-9_-]{1,16}$/.test(id)) return;
+        connus[id] = 1;
+        var brut = String(attrs[n].current || "");
+        if (retenu(n, brut)) { if (points[id]) neuf[id] = points[id]; return; }
+        var p = litPoint(brut);
+        if (p) neuf[id] = p;
+        // un jeton qu'on tient et que quelqu'un vient de retirer ne doit pas
+        // ressusciter au lâcher
+        else if (prise && prise.id === id) prise.mort = true;
+      });
+      // Nos écritures en attente sur des jetons que Roll20 ne connaît pas encore
+      // (créés à l'instant) : elles ne doivent pas disparaître le temps de l'écho.
+      Object.keys(attente).forEach(function (n) {
+        if (n.indexOf(A_PT) !== 0) return;
+        var id = n.slice(A_PT.length);
+        if (!neuf[id] && points[id]) neuf[id] = points[id];
+      });
+      // le jeton qu'on tient reste sous le doigt, quoi qu'en dise Roll20
+      if (prise && points[prise.id]) neuf[prise.id] = points[prise.id];
+      points = neuf;
+    }
     // La photographie Compact (puis ses journaux d'opérations) devient la
     // source canonique après relecture. Les anciens jjk_narr_conf / pt_* restent
     // présents pour les pages antérieures, mais ne pilotent plus les nouvelles.
@@ -1743,6 +1778,9 @@
       // Le temps que Roll20 charge les attributs du personnage. Deux secondes en
       // général, et rien à faire pendant : pas de bouton, pas d'explication.
       e.appendChild(el("div", "nb-titre", "Lecture du plateau…"));
+    } else if (quoi === "perdu") {
+      e.appendChild(el("div", "nb-titre", "Synchronisation du plateau interrompue"));
+      e.appendChild(el("div", "nb-detail", "En attente d’une lecture complète de Roll20."));
     } else if (quoi === "ouverture") {
       // Le pont n'a pas réussi à ouvrir la fiche « Narration », donc les
       // attributs restent illisibles. Le dire pour ce que c'est : ce n'est pas
