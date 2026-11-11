@@ -451,14 +451,15 @@
     }
     function ajouteCout(card, head, footer, entree, groupeId) {
       card.classList.add("pc-entry-cost");
-      var cout = el("label", "pc-entry-price");
+      var cout = el("label", "pc-entry-price pc-edit-only");
       var champ = el("input", "pc-edit-field");
       champ.type = "text"; champ.inputMode = "numeric"; champ.pattern = "[0-9]*";
       champ.setAttribute("aria-label", "Coût en " + config.unite);
       cout.append(el("span", "pc-tech-rank-label", config.unite), champ);
-      head.appendChild(cout);
+      var coutLecture = el("span", "pc-entry-price-read");
+      head.append(cout, coutLecture);
 
-      var acquis = el("label", "pc-entry-owned");
+      var acquis = el("label", "pc-entry-owned pc-edit-only");
       var coche = el("input", "pc-edit-field");
       coche.type = "checkbox";
       coche.setAttribute("role", "switch");
@@ -469,7 +470,9 @@
       footer.appendChild(acquis);
 
       function actualise() {
-        champ.value = String(config.cout(entree));
+        var valeur = config.cout(entree);
+        champ.value = String(valeur);
+        coutLecture.textContent = valeur > 0 ? valeur + " " + config.unite : "";
         coche.checked = entree.acquis !== false;
         card.classList.toggle("acquired", coche.checked);
       }
@@ -513,14 +516,21 @@
         Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (n) { n.classList.remove("pris", "avant", "apres"); });
       });
       dragSlot.appendChild(drag); head.appendChild(dragSlot);
+      var titreLecture = config.unite ? el("span", "pc-entry-title-read", entree.nom || "") : null;
       var nameWrap = el("label", "pc-tech-rank-name");
+      if (titreLecture) nameWrap.classList.add("pc-edit-only");
       nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
       var name = el("input", "pc-edit-field pc-catalog-entry-name");
       name.type = "text"; name.value = entree.nom || ""; name.placeholder = "Nom de l’entrée";
       name.setAttribute("aria-label", "Nom de l’entrée");
-      name.addEventListener("input", function () { entree.nom = name.value; conserveRendu();
-        save(); });
+      name.addEventListener("input", function () {
+        entree.nom = name.value;
+        if (titreLecture) titreLecture.textContent = entree.nom;
+        conserveRendu();
+        save();
+      });
       nameWrap.appendChild(name); head.appendChild(nameWrap);
+      if (titreLecture) head.appendChild(titreLecture);
       var deleteSlot = el("span", "pc-tech-rank-del-slot");
       deleteSlot.appendChild(miniBtn("×", "Supprimer cette entrée", function () {
         if (!editionActive("entrees")) return;
