@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.3b";
+  var RELEASE = "4.6.4b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -3817,8 +3817,7 @@
         buttons.push([button, pair[0]]); group.appendChild(button);
       });
       function sync() { buttons.forEach(function (pair) { pair[0].setAttribute("aria-pressed", String(entree.mode === pair[1])); }); }
-      function actualise() { sync(); notesRendu(read, entree.desc || "", entree.mode); }
-      actualise(); parent.appendChild(group); listeHooks.push(actualise);
+      sync(); parent.appendChild(group);
     }
     function ajouteCout(card, head, footer, entree, groupeId) {
       card.classList.add("pc-entry-cost");
@@ -3935,7 +3934,7 @@
       if (config.unite) ajouteCout(card, head, footer, entree, groupeId);
       if (config.unite) footer.appendChild(miniBtn("Envoyer", "Envoyer dans le tchat Roll20", function () {
         var cout = config.cout(entree);
-        var description = (entree.desc || "").trim();
+        var description = (entree.desc || "").trim().replace(/\r\n|[\r\n]/g, "%NEWLINE%");
         // Roll20 interprète %NEWLINE% dans un champ sans couper la commande.
         var message = cout > 0 ? [cout + " " + config.unite, description].filter(Boolean).join("%NEWLINE%%NEWLINE%") : description;
         sayChat(entree.nom || element.nom || "Entrée", [["", message]]);
@@ -3953,6 +3952,7 @@
       var pane = el("section", "pc-tech-pane pc-editable pc-tech-arts"); panneaux.groupes = pane;
       panneauTitre(pane, config.groupes, "groupes");
       var liste = el("div", "pc-tech-list pc-tech-art-list");
+      liste.dataset.jjkScroll = "groupes";
       groupes().forEach(function (g) {
         if (estDiviseur(g)) ligneDiviseur(g, liste, "groupes", null);
         else ligneGroupe(g, liste);
@@ -3979,6 +3979,7 @@
       var pane = el("section", "pc-tech-pane pc-editable pc-tech-list-pane"); panneaux.elements = pane;
       panneauTitre(pane, config.elements, "elements");
       var liste = el("div", "pc-tech-list pc-technique-list");
+      liste.dataset.jjkScroll = "elements";
       if (g) {
         g.elements.forEach(function (x) {
           if (estDiviseur(x)) ligneDiviseur(x, liste, "elements", g);
@@ -4013,6 +4014,7 @@
         actualiseEdition(pane, "entrees"); return pane;
       }
       var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
+      liste.dataset.jjkScroll = "entrees";
       entreesDe(x).forEach(function (entree) { liste.appendChild(carteEntree(entree, x, g.id)); });
       if (!entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
       zoneDepotListe(liste, function (drag) {
@@ -4038,13 +4040,14 @@
       layout.appendChild(rendreGroupes());
       layout.appendChild(rendreElements(selection.groupe));
       layout.appendChild(rendreEntrees(selection.groupe, selection.element));
-      Array.from(layout.querySelectorAll(".pc-tech-list, .pc-tech-ranks-list")).forEach(function (liste, i) {
-        liste.scrollTop = defilements[i] || 0;
-      });
       actualiseEdition(panneaux.groupes, "groupes");
       actualiseEdition(panneaux.elements, "elements");
       actualiseEdition(panneaux.entrees, "entrees");
       listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+      ajusteHauteur();
+      Array.from(layout.querySelectorAll(".pc-tech-list, .pc-tech-ranks-list")).forEach(function (liste, i) {
+        liste.scrollTop = defilements[i] || 0;
+      });
     }
 
     function ajusteHauteur() {
@@ -4068,7 +4071,6 @@
       actualiseEdition(panneaux.elements, "elements");
       actualiseEdition(panneaux.entrees, "entrees");
       listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
-      ajusteHauteur();
     }
     hooks.push(actualiseColonnes);
     window.addEventListener("jjk-column-mode", actualiseColonnes);
@@ -6287,10 +6289,31 @@
       });
     });
   }
+  // Markdown sépare déjà les paragraphes. On ajoute seulement les lignes
+  // vides supplémentaires entre blocs, sans modifier les listes ni le code.
+  function lignesVidesMarkdown(md) {
+    md.core.ruler.after("block", "jjk_blank_lines", function (state) {
+      var lignes = state.src.split("\n");
+      var vus = false;
+      state.tokens = state.tokens.flatMap(function (token) {
+        if (token.level !== 0 || !token.map || token.nesting < 0) return [token];
+        var ligne = token.map[0] - 1;
+        while (ligne >= 0 && !lignes[ligne].trim()) ligne--;
+        var vides = token.map[0] - 1 - ligne;
+        var ajouter = vus && vides > 1;
+        vus = true;
+        if (!ajouter) return [token];
+        var espace = new state.Token("jjk_blank_lines", "", 0);
+        espace.content = "<br>".repeat(vides - 1);
+        return [espace, token];
+      });
+    });
+    md.renderer.rules.jjk_blank_lines = function (tokens, idx) { return tokens[idx].content; };
+  }
   var notesMarkdown=null;
   function moteurNotesMarkdown(){
     if(!notesMarkdown&&window.markdownit)
-      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK);
+      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK).use(lignesVidesMarkdown);
     return notesMarkdown;
   }
   function notesTexteRecherche(message){
@@ -8321,7 +8344,7 @@
     Array.prototype.forEach.call(rootEl.querySelectorAll("[data-module]"), function (m) {
       if (partial && targets.indexOf(m.dataset.module) < 0) return;
       Array.prototype.forEach.call(m.querySelectorAll("*"), function (n, i) {
-        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, top: n.scrollTop, left: n.scrollLeft });
+        if (n.scrollTop || n.scrollLeft) positions.push({ module: m.dataset.module, index: i, key: n.dataset.jjkScroll, top: n.scrollTop, left: n.scrollLeft });
       });
     });
 
@@ -8339,7 +8362,9 @@
 
     positions.forEach(function (p) {
       var m = Array.prototype.find.call(rootEl.querySelectorAll("[data-module]"), function (n) { return n.dataset.module === p.module; });
-      var n = m && m.querySelectorAll("*")[p.index];
+      var n = m && (p.key ? Array.from(m.querySelectorAll("[data-jjk-scroll]")).find(function (liste) {
+        return liste.dataset.jjkScroll === p.key;
+      }) : m.querySelectorAll("*")[p.index]);
       if (n) { n.scrollTop = p.top; n.scrollLeft = p.left; }
     });
     if (focus) {
