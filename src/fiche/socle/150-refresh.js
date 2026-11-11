@@ -75,13 +75,15 @@
     // Arts dépend de la liste des compétences et de leurs investissements, pas
     // seulement des mods. Ces clés sont aussi structurelles : leur changement
     // doit rejouer le hook qui reconstruit les cartes d'arts et de passifs.
-    arts: ["comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
+    arts: ["artCategories", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
     armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
     armures: ["armures", "inv", "inventaire"],
     inv: ["inv", "inventaire", "armes", "armures", "divers"],
     perso: ["name", "espece", "age", "sexe", "genre", "defaut", "qualites"],
     avantages: ["avantages"],
     bg: ["background"],
+    energie: ["energieOrganisee"],
+    notesOrganisees: ["notesOrganisees"],
     notes: ["notes", "notesJournal", "name"],
     jets: ["de"],
     actions: ["name"],

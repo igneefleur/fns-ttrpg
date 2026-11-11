@@ -24,6 +24,7 @@
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "notesOrganisees", titre: "Notes", onglet: "notes", colonne: "seule", build: buildNotesOrganisees },
     { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
@@ -33,7 +34,7 @@
     { id: "perso",      titre: "Personnalité",      onglet: "bio", colonne: "gauche", build: buildPerso },
     { id: "avantages",  titre: "Avantages",         onglet: "bio", colonne: "gauche", build: buildAvantages },
     { id: "bg",         titre: "Background",        onglet: "bio", colonne: "droite", build: buildBackground },
-    { id: "notes",      titre: "Notes",             onglet: "bio", colonne: "droite", build: buildNotes },
+    { id: "notes",      titre: "Journal",             onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----
     // À GAUCHE, dans l'ordre de la Fiche : ce qui touche aux caractéristiques
     // d'abord (leurs modificateurs, puis où est parti l'xp), la création

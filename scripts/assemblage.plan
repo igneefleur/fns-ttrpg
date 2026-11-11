@@ -159,6 +159,7 @@ fin = lf
   src/fiche/socle/210-registre-modules.js
   src/fiche/socle/220-pannes-modules.js
   src/fiche/socle/230-contexte-module.js
+  src/fiche/socle/235-listes-organisees.js
   src/fiche/fiche/caracs.js
   src/fiche/fiche/tuiles.js
   src/fiche/fiche/initiative.js

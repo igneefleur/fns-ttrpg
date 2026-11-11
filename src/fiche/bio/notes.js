@@ -8,8 +8,67 @@
       ids[m.id]=true;if(m.mode!=='markdown')m.mode='plain';if(!Number.isFinite(m.at)||m.at<0||m.at>8640000000000000)m.at=0;
     });if(invalid&&strict)throw Error("Message de Notes illisible.");return value;
   }
+  // Extensions Markdown communes aux Notes et aux descriptions de Techniques.
+  // Les conteneurs d'alignement sont une syntaxe Markdown dédiée : le HTML brut
+  // reste désactivé, même si le moteur produit lui-même les balises de rendu.
+  function pluginMarkdownJJK(md){
+    function ouvreAlignement(state,startLine,endLine,silent){
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      var marqueur=/^:::\s*(center|justify|left|right)\s*$/.exec(state.src.slice(pos,state.eMarks[startLine]).trim());
+      if(!marqueur)return false;
+      if(silent)return true;
+      var token=state.push('jjk_align_open','div',1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      token.attrSet('class','pc-md-align pc-md-align-'+marqueur[1]);
+      state.env.jjkAlignDepth=(state.env.jjkAlignDepth||0)+1;
+      state.line=startLine+1;
+      return true;
+    }
+    function fermeAlignement(state,startLine,endLine,silent){
+      if(!(state.env.jjkAlignDepth>0))return false;
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      if(state.src.slice(pos,state.eMarks[startLine]).trim()!==':::')return false;
+      if(silent)return true;
+      var token=state.push('jjk_align_close','div',-1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      state.env.jjkAlignDepth--;
+      state.line=startLine+1;
+      return true;
+    }
+    md.block.ruler.before('paragraph','jjk_align_close',fermeAlignement,{alt:['paragraph','reference']});
+    md.block.ruler.before('paragraph','jjk_align_open',ouvreAlignement,{alt:['paragraph','reference']});
+    md.renderer.rules.jjk_align_open=function(tokens,index){return '<div class="'+tokens[index].attrGet('class')+'">\n';};
+    md.renderer.rules.jjk_align_close=function(){return '</div>\n';};
+
+    // Listes de tâches GFM : - [ ] et - [x]. Les cases sont décoratives,
+    // désactivées, et n'ajoutent aucune donnée aux Notes ou au personnage.
+    md.core.ruler.after('inline','jjk_task_list',function(state){
+      var pile=[];
+      state.tokens.forEach(function(token){
+        if(token.type==='list_item_open'){pile.push({token:token,traite:false});return;}
+        if(token.type==='list_item_close'){pile.pop();return;}
+        if(!pile.length||pile[pile.length-1].traite||token.type!=='inline'||!token.children)return;
+        var index=token.children.findIndex(function(child){return child.type==='text';});
+        if(index<0)return;
+        var texte=token.children[index],match=/^\[([ xX])\](?:\s+|$)/.exec(texte.content);
+        if(!match)return;
+        var coche=match[1].toLowerCase()==='x';
+        var caseCoche=Object.assign({},texte,{type:'html_inline',tag:'',nesting:0,content:'<input class="pc-md-task-checkbox" type="checkbox" disabled'+(coche?' checked':'')+'>'});
+        token.children.splice(index,0,caseCoche);
+        texte.content=texte.content.slice(match[0].length);
+        pile[pile.length-1].token.attrJoin('class','pc-md-task-item');
+        pile[pile.length-1].traite=true;
+      });
+    });
+  }
   var notesMarkdown=null;
-  function moteurNotesMarkdown(){if(!notesMarkdown&&window.markdownit)notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true});return notesMarkdown;}
+  function moteurNotesMarkdown(){
+    if(!notesMarkdown&&window.markdownit)
+      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK);
+    return notesMarkdown;
+  }
   function notesTexteRecherche(message){
     var md=moteurNotesMarkdown(),words=[];
     function visit(tokens){tokens.forEach(function(t){if(t.children)visit(t.children);else if(['text','code_inline','code_block','fence'].indexOf(t.type)>=0)words.push(t.content);else if(t.type==='softbreak'||t.type==='hardbreak'||t.block&&t.nesting===-1)words.push(' ');});}
@@ -19,7 +78,11 @@
   function notesRendu(target,text,mode){
     target.classList.toggle('pc-notes-markdown',mode==='markdown');var md=moteurNotesMarkdown();
     if(mode!=='markdown'||!md||!window.DOMPurify){target.textContent=text;return;}
-    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{ALLOWED_TAGS:['p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td'],ALLOWED_ATTR:['href','src','alt','title','start','align']});
+    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{
+      ALLOWED_TAGS:['div','p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td','input'],
+      ALLOWED_ATTR:['href','src','alt','title','start','align','class','type','checked','disabled'],
+      ALLOW_DATA_ATTR:false
+    });
     Array.prototype.forEach.call(target.querySelectorAll('a'),function(a){a.target='_blank';a.rel='noopener noreferrer';});
     Array.prototype.forEach.call(target.querySelectorAll('img'),function(img){img.loading='lazy';img.decoding='async';});
   }
@@ -27,7 +90,7 @@
   function buildNotes(){
     var vueKey=(location.hash.match(/(?:^#|&)c=([^&]+)/)||[])[1]||state.name||"local";
     var remembered=notesVues[vueKey]||null;
-    var b=block('Notes');b.classList.add('pc-notes-chat');
+    var b=block('Journal');b.classList.add('pc-notes-chat');
     var searchBar=el('div','pc-notes-search'),search=el('input');search.type='search';search.placeholder='Rechercher dans les notes…';search.setAttribute('aria-label','Rechercher dans toutes les notes');
     var clear=miniBtn('×','Effacer la recherche',function(){search.value='';recherche();search.focus();});searchBar.appendChild(search);searchBar.appendChild(clear);b.appendChild(searchBar);
     var count=el('div','pc-notes-count');count.setAttribute('role','status');b.appendChild(count);
@@ -56,7 +119,7 @@
     search.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(recherche,150);});
     search.addEventListener('keydown',function(e){if(e.key==='Escape'){search.value='';recherche();}});
     function redrawData(forceBottom){
-      var value=JSON.stringify(state.notesJournal !== undefined ? state.notesJournal : state.notes);if(value===lastValue&&!forceBottom)return;
+      var value=JSON.stringify(state.notesJournal);if(value===lastValue&&!forceBottom)return;
       var d=data(),key=JSON.stringify(d.messages);lastValue=value;if(key===lastKey&&!forceBottom)return;
       var nearBottom=history.scrollHeight-history.clientHeight-history.scrollTop<45,first=results[from]&&results[from].id;
       lastKey=key;rows=d.messages.slice().sort(function(a,c){return a.at-c.at||(a.id<c.id?-1:a.id>c.id?1:0);});filter();
@@ -65,7 +128,7 @@
       render(forceBottom||following&&nearBottom);
     }
     function commit(){state.notesJournal=data();state.notes=data().messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(false);}
-    function ajoute(text,format){clearTimeout(timer);search.value='';query='';var d=data();d.messages.push({id:'n-'+uid()+'-'+Math.random().toString(36).slice(2),at:Date.now(),text:text,mode:format});state.notesJournal=d;state.notes=d.messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(true);}
+    function ajoute(text,format){clearTimeout(timer);search.value='';query='';var d=data();d.messages.push({id:uid("n"),at:Date.now(),text:text,mode:format});state.notesJournal=d;state.notes=d.messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(true);}
     function envoie(){if(!ficheModifiable()||!input.value.trim())return;ajoute(input.value,mode);input.value='';previewing=false;updatePreview();input.focus();}
     input.addEventListener('input',updatePreview);
     input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();envoie();}});
@@ -94,7 +157,7 @@
         var message=el('article','pc-note-message');message.dataset.id=m.id;var head=el('div','pc-note-head'),time=el('time');
         if(m.at){var date=new Date(m.at);time.dateTime=date.toISOString();time.textContent=date.toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'});}else time.textContent='Anciennes notes';head.appendChild(time);
         var tools=el('div','pc-note-actions');tools.appendChild(miniBtn('Modifier',null,function(){commence(m);}));
-        tools.appendChild(miniBtn('Supprimer',null,function(){var before=version(m);confirmer('Supprimer cette note ?','Cette note sera retirée de l’historique.','Supprimer',function(){var current=record(m.id);if(!current)return;if(version(current)!==before){flash('La note a changé depuis l’ouverture de la confirmation. Relisez-la avant de la supprimer.');return;}var d=data();d.messages=d.messages.filter(function(n){return n.id!==m.id;});state.notesJournal=d;state.notes=d.messages.map(function(n){return n.text;}).join("\n\n");if(editing&&editing.id===m.id)editing=null;delete drafts[m.id];commit();});}));head.appendChild(tools);message.appendChild(head);
+        tools.appendChild(miniBtn('Supprimer',null,function(){var before=version(m);confirmer('Supprimer cette note ?','Cette note sera retirée de l’historique.','Supprimer',function(){var current=record(m.id);if(!current)return;if(version(current)!==before){flash('La note a changé depuis l’ouverture de la confirmation. Relisez-la avant de la supprimer.');return;}var d=data();d.messages=d.messages.filter(function(n){return n.id!==m.id;});state.notesJournal=d;if(editing&&editing.id===m.id)editing=null;delete drafts[m.id];commit();});}));head.appendChild(tools);message.appendChild(head);
         if(editing&&editing.id===m.id)edition(message,m);else{var body=el('div','pc-notes-body');notesRendu(body,m.text,m.mode);message.appendChild(body);}messages.appendChild(message);
       });
       // Préserver le brouillon même si son message est supprimé à distance.

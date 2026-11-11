@@ -57,7 +57,7 @@
       ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
-      ".pc-note-toggle, .pc-journal-toggle, summary, a[href]"
+      ".pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
     ) || !!target.closest(".pc-notes-search, .pc-journal-pages") ||
       !!target.closest(".pc-envoi") || target.type === "search";
   }
@@ -106,10 +106,11 @@
     // les permissions plus fines des modules : un champ pc-edit-field ne doit
     // jamais redevenir actif simplement parce que le mode global repasse en édition.
     appliqueVerrouGlobal(surface);
-    if (surface.classList && surface.classList.contains("pc-editable")) applyEdit(surface, surface.dataset.module || "");
-    Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
+    if (surface.matches && surface.matches(".pc-editable:not([data-jjk-column-edit])")) applyEdit(surface, surface.dataset.module || "");
+    Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable:not([data-jjk-column-edit])"), function (b) { applyEdit(b, b.dataset.module || ""); });
     // L'identité et les commandes hors module partagent le verrou global.
     appliqueChampsHorsModule(surface);
+    if (surface === document || surface.id === "perso-atelier") window.dispatchEvent(new Event("jjk-column-mode"));
   };
   // Toutes les interactions de CONSTRUCTION repassent par le même garde.
   // Les actions de jeu restent libres : clic sur une tuile, Montrer, Donner,
@@ -126,7 +127,7 @@
     // est en Édition. Les champs de mods portent un propriétaire explicite et
     // ont été traités plus haut par isEdit(id).
     if (!scope) return ficheModifiable();
-    return isEdit(scope.dataset.module || "");
+    return scope.hasAttribute("data-jjk-column-edit") ? scope.classList.contains("editing") : isEdit(scope.dataset.module || "");
   }
   function annuleEdition(ev) {
     ev.preventDefault();
@@ -152,7 +153,7 @@
   ["dragstart", "dragover", "drop"].forEach(function (type) {
     document.addEventListener(type, function (ev) {
       var scope = scopeEdition(ev.target);
-      if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
+      if (scope && !autoriseConstruction(ev.target)) annuleEdition(ev);
     }, true);
   });
   ["beforeinput", "paste", "cut"].forEach(function (type) {
@@ -165,7 +166,7 @@
   });
   document.addEventListener("submit", function (ev) {
     var scope = scopeEdition(ev.target);
-    if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
+    if (scope && !autoriseConstruction(ev.target)) annuleEdition(ev);
   }, true);
 
   // Verrou global de Consultation, calqué sur Outward : les commandes de

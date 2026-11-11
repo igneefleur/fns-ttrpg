@@ -270,18 +270,6 @@
       });
       return m;
     }
-    function eoDepense() {
-      var total = 0;
-      (Array.isArray(state.energie) ? state.energie : []).forEach(function (categorie) {
-        if (!categorie || !Array.isArray(categorie.techniques)) return;
-        categorie.techniques.forEach(function (technique) {
-          var cout = Number(technique && technique.cout);
-          if (isFinite(cout) && cout > 0) total += Math.floor(cout);
-        });
-      });
-      return total;
-    }
-
     var xpIn = el("input", "pc-meter-total pc-id-xp-total pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
     xpIn.setAttribute("aria-label", "XP total");

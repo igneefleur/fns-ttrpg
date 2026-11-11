@@ -5,6 +5,7 @@
     { id: "energie", label: "Énergie" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
+    { id: "notes", label: "Notes" },
     { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {

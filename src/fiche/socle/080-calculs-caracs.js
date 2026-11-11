@@ -42,7 +42,7 @@
   }
   // coût de l'art : rien par défaut (il vient avec son stade), sauf coût forcé
   function artXp(c) {
-    return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
+    return (c && c.art && c.art.acquis !== false && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
       ? c.art.cout : 0;
   }
   // clés et repères des compétences que la fiche traite à part
@@ -105,7 +105,7 @@
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { xp += techXp(t); });
+    (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
     return xp + artXp(c) +
            (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
   }

@@ -1,3 +1,49 @@
+  function normaliseCatalogue(liste, prefixe, avecCout) {
+    function niveau(valeur, chemin, profondeur) {
+      if (!Array.isArray(valeur)) return [];
+      var vus = new Set();
+      return valeur.filter(function (x) {
+        return x && typeof x === "object" && !Array.isArray(x);
+      }).map(function (x, i) {
+        var cle = chemin + "-" + i;
+        var id = String(x.id || cle);
+        while (vus.has(id)) id += "-";
+        vus.add(id);
+        var item = { id: id, nom: String(x.nom == null ? "" : x.nom) };
+        if (profondeur < 2 && x.type === "divider") {
+          item.type = "divider";
+          item.replie = x.replie === true;
+        } else if (profondeur < 2) {
+          var champ = profondeur === 0 ? "elements" : "entrees";
+          item[champ] = niveau(x[champ], cle, profondeur + 1);
+        } else {
+          item.desc = String(x.desc == null ? "" : x.desc);
+          item.mode = x.mode === "markdown" ? "markdown" : "plain";
+          if (avecCout) {
+            if (x.cout != null && isFinite(Number(x.cout))) item.cout = clamp(Math.floor(Number(x.cout)), 0, 9999);
+            item.acquis = x.acquis === true;
+          }
+        }
+        return item;
+      });
+    }
+    return niveau(liste, prefixe, 0);
+  }
+
+  function convertitEnergie(categories) {
+    return categories.map(function (categorie) {
+      return {
+        nom: categorie.name,
+        elements: categorie.techniques.map(function (technique) {
+          return {
+            nom: technique.name,
+            entrees: [{ nom: technique.name, desc: technique.desc, cout: technique.cout, acquis: true }]
+          };
+        })
+      };
+    });
+  }
+
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -10,7 +56,8 @@
         ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
     }
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
-    if (!s.notesJournal || s.notesJournal.format !== 1 || !Array.isArray(s.notesJournal.messages)) {
+    if (!s.notesJournal || s.notesJournal.format !== 1 || !Array.isArray(s.notesJournal.messages) ||
+        (!s.notesJournal.messages.length && typeof s.notes === "string" && s.notes.length)) {
       s.notesJournal = { format: 1, messages: typeof s.notes === "string" && s.notes.length
         ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
     } else {
@@ -205,6 +252,15 @@
         })
       };
     });
+    s.notesOrganisees = normaliseCatalogue(s.notesOrganisees, "notes", false);
+    s.energieOrganisee = normaliseCatalogue(
+      Array.isArray(s.energieOrganisee) ? s.energieOrganisee : convertitEnergie(s.energie), "eo", true
+    );
+    var artCategories = s.artCategories || {};
+    s.artCategories = {};
+    CHAMPS.forEach(function (champ) {
+      if (typeof artCategories[champ] === "string") s.artCategories[champ] = artCategories[champ];
+    });
     s.customComps = objArray(s.customComps);
     s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
@@ -221,25 +277,27 @@
       // devient le nom, description vide)
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
-      c.techniques = c.techniques.map(function (p) {
+      c.techniques = c.techniques.map(function (p, i) {
         // cout : coût forcé de CE passif (null = le tarif de base) ; le joueur
         // peut le régler à droite du nom, en mode édition
         if (p && typeof p === "object") {
-          var t = { name: String(p.name || ""), desc: String(p.desc || "") };
+          var t = { id: String(p.id || "passif-" + i), name: String(p.name || ""), desc: String(p.desc || ""),
+            mode: p.mode === "markdown" ? "markdown" : "plain", acquis: p.acquis !== false };
           var co = (p.cout === null || p.cout === undefined || p.cout === "") ? null : Math.floor(parseFloat(p.cout));
           if (co !== null && isFinite(co)) t.cout = clamp(co, 0, 9999);
           return t;
         }
-        return { name: p == null ? "" : String(p), desc: "" };
+        return { id: "passif-" + i, name: p == null ? "" : String(p), desc: "", mode: "plain", acquis: true };
       });
       // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
       if (c.art && typeof c.art === "object") {
         var aco = (c.art.cout === null || c.art.cout === undefined || c.art.cout === "")
           ? null : Math.floor(parseFloat(c.art.cout));
-        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
+        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || ""),
+          mode: c.art.mode === "markdown" ? "markdown" : "plain", acquis: c.art.acquis !== false };
         if (aco !== null && isFinite(aco)) c.art.cout = clamp(aco, 0, 9999);
         // un art vierge s'efface — son coût forcé n'aurait plus d'objet
-        if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
+        if (!c.art.name.trim() && !c.art.desc.trim() && c.art.cout === undefined && c.art.acquis) delete c.art;
       } else delete c.art;
       // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
       var i = k.indexOf("/");

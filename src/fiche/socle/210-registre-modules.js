@@ -89,6 +89,7 @@
     energie: function (pane) {
       return { seule: pane };   // catégories sur toute la largeur, comme les Arts
     },
+    notes: function (pane) { return { seule: pane }; },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
       var left = el("div", "pc-col");

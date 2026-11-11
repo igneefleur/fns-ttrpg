@@ -105,3 +105,10 @@
   // les compétences commencent toujours par une majuscule (« apnée » -> « Apnée »)
   function capFirst(t) { t = String(t == null ? "" : t); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
 
+
+  function uid(prefixe) {
+    var crypto = window.crypto;
+    var suffixe = crypto && typeof crypto.randomUUID === "function" ? crypto.randomUUID() :
+      Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    return prefixe + "-" + suffixe;
+  }
