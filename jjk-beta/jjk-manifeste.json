@@ -5,32 +5,32 @@
   "schema": 4,
   "blocage": "release",
   "amorce": [
-    "javascripts/jjk-sync.js?v=94",
+    "javascripts/jjk-sync.js?v=95",
     "javascripts/jjk-save-flow.js?v=84",
-    "javascripts/jjk-attr-map.js?v=94",
+    "javascripts/jjk-attr-map.js?v=95",
     "javascripts/jjk-save-progress.js?v=84",
-    "javascripts/jjk-roll20-boot.js?v=94"
+    "javascripts/jjk-roll20-boot.js?v=95"
   ],
   "narration": {
     "js": [
-      "javascripts/jjk-sync.js?v=94",
-      "javascripts/jjk-narration.js?v=94"
+      "javascripts/jjk-sync.js?v=95",
+      "javascripts/jjk-narration.js?v=95"
     ],
     "css": [
-      "stylesheets/jjk-narration.css?v=94",
+      "stylesheets/jjk-narration.css?v=95",
       "stylesheets/jjk-theme.css?v=86",
       "stylesheets/jjk-theme-overrides.css?v=86"
     ]
   },
   "bundle": {
     "js": [
-      "javascripts/jjk-migrations.js?v=94",
-      "javascripts/jjk-mods.js?v=94",
-      "javascripts/jjk-fiche.js?v=94"
+      "javascripts/jjk-migrations.js?v=95",
+      "javascripts/jjk-mods.js?v=95",
+      "javascripts/jjk-fiche.js?v=95"
     ],
     "css": [
-      "stylesheets/jjk-fiche.css?v=94",
-      "stylesheets/jjk-roll20.css?v=94",
+      "stylesheets/jjk-fiche.css?v=95",
+      "stylesheets/jjk-roll20.css?v=95",
       "stylesheets/jjk-consultation.css?v=84",
       "stylesheets/jjk-theme.css?v=86",
       "stylesheets/jjk-theme-overrides.css?v=86"
