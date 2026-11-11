@@ -563,7 +563,11 @@
       basculeMode(formats, entree, read); footer.appendChild(formats);
       if (config.unite) ajouteCout(card, head, footer, entree, groupeId);
       if (config.unite) footer.appendChild(miniBtn("Envoyer", "Envoyer dans le tchat Roll20", function () {
-        sayChat(entree.nom || element.nom || "Entrée", [[config.unite, config.cout(entree)], ["", entree.desc]]);
+        var cout = config.cout(entree);
+        var description = (entree.desc || "").trim();
+        // Roll20 interprète %NEWLINE% dans un champ sans couper la commande.
+        var message = cout > 0 ? [cout + " " + config.unite, description].filter(Boolean).join("%NEWLINE%%NEWLINE%") : description;
+        sayChat(entree.nom || element.nom || "Entrée", [["", message]]);
       }, "primary pc-entry-send"));
       card.appendChild(footer);
       cibleEntree(card, element, entree);
