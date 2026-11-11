@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.5.3b";
+  var RELEASE = "4.6.0b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -207,6 +207,13 @@
   // les compétences commencent toujours par une majuscule (« apnée » -> « Apnée »)
   function capFirst(t) { t = String(t == null ? "" : t); return t ? t.charAt(0).toUpperCase() + t.slice(1) : t; }
 
+
+  function uid(prefixe) {
+    var crypto = window.crypto;
+    var suffixe = crypto && typeof crypto.randomUUID === "function" ? crypto.randomUUID() :
+      Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+    return prefixe + "-" + suffixe;
+  }
   // ---------- état ----------
   function blank() {
     return {
@@ -241,6 +248,9 @@
       comps: {}, customComps: [],
       // Catégories de techniques et passifs d'énergie occulte.
       energie: [],
+      energieOrganisee: null,
+      notesOrganisees: [],
+      artCategories: {},
       // leviers du MJ, par compétence (clé « Carac/Nom ») : total forcé
       // (vide = calculé), coût en xp forcé (vide = calculé), et modificateur
       // de ce coût
@@ -324,6 +334,52 @@
     return r.state;
   }
 
+  function normaliseCatalogue(liste, prefixe, avecCout) {
+    function niveau(valeur, chemin, profondeur) {
+      if (!Array.isArray(valeur)) return [];
+      var vus = new Set();
+      return valeur.filter(function (x) {
+        return x && typeof x === "object" && !Array.isArray(x);
+      }).map(function (x, i) {
+        var cle = chemin + "-" + i;
+        var id = String(x.id || cle);
+        while (vus.has(id)) id += "-";
+        vus.add(id);
+        var item = { id: id, nom: String(x.nom == null ? "" : x.nom) };
+        if (profondeur < 2 && x.type === "divider") {
+          item.type = "divider";
+          item.replie = x.replie === true;
+        } else if (profondeur < 2) {
+          var champ = profondeur === 0 ? "elements" : "entrees";
+          item[champ] = niveau(x[champ], cle, profondeur + 1);
+        } else {
+          item.desc = String(x.desc == null ? "" : x.desc);
+          item.mode = x.mode === "markdown" ? "markdown" : "plain";
+          if (avecCout) {
+            if (x.cout != null && isFinite(Number(x.cout))) item.cout = clamp(Math.floor(Number(x.cout)), 0, 9999);
+            item.acquis = x.acquis === true;
+          }
+        }
+        return item;
+      });
+    }
+    return niveau(liste, prefixe, 0);
+  }
+
+  function convertitEnergie(categories) {
+    return categories.map(function (categorie) {
+      return {
+        nom: categorie.name,
+        elements: categorie.techniques.map(function (technique) {
+          return {
+            nom: technique.name,
+            entrees: [{ nom: technique.name, desc: technique.desc, cout: technique.cout, acquis: true }]
+          };
+        })
+      };
+    });
+  }
+
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -336,7 +392,8 @@
         ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
     }
     Object.keys(b).forEach(function (k) { if (s[k] === undefined) s[k] = b[k]; });
-    if (!s.notesJournal || s.notesJournal.format !== 1 || !Array.isArray(s.notesJournal.messages)) {
+    if (!s.notesJournal || s.notesJournal.format !== 1 || !Array.isArray(s.notesJournal.messages) ||
+        (!s.notesJournal.messages.length && typeof s.notes === "string" && s.notes.length)) {
       s.notesJournal = { format: 1, messages: typeof s.notes === "string" && s.notes.length
         ? [{ id: "legacy", at: 0, text: s.notes, mode: "plain" }] : [] };
     } else {
@@ -531,6 +588,15 @@
         })
       };
     });
+    s.notesOrganisees = normaliseCatalogue(s.notesOrganisees, "notes", false);
+    s.energieOrganisee = normaliseCatalogue(
+      Array.isArray(s.energieOrganisee) ? s.energieOrganisee : convertitEnergie(s.energie), "eo", true
+    );
+    var artCategories = s.artCategories || {};
+    s.artCategories = {};
+    CHAMPS.forEach(function (champ) {
+      if (typeof artCategories[champ] === "string") s.artCategories[champ] = artCategories[champ];
+    });
     s.customComps = objArray(s.customComps);
     s.customComps.forEach(function (cc) { if (cc.name) cc.name = capFirst(cc.name); });
     s.armes = objArray(s.armes);
@@ -547,25 +613,27 @@
       // devient le nom, description vide)
       if (!Array.isArray(c.techniques)) c.techniques = Array.isArray(c.passifs) ? c.passifs : [];
       delete c.passifs;
-      c.techniques = c.techniques.map(function (p) {
+      c.techniques = c.techniques.map(function (p, i) {
         // cout : coût forcé de CE passif (null = le tarif de base) ; le joueur
         // peut le régler à droite du nom, en mode édition
         if (p && typeof p === "object") {
-          var t = { name: String(p.name || ""), desc: String(p.desc || "") };
+          var t = { id: String(p.id || "passif-" + i), name: String(p.name || ""), desc: String(p.desc || ""),
+            mode: p.mode === "markdown" ? "markdown" : "plain", acquis: p.acquis !== false };
           var co = (p.cout === null || p.cout === undefined || p.cout === "") ? null : Math.floor(parseFloat(p.cout));
           if (co !== null && isFinite(co)) t.cout = clamp(co, 0, 9999);
           return t;
         }
-        return { name: p == null ? "" : String(p), desc: "" };
+        return { id: "passif-" + i, name: p == null ? "" : String(p), desc: "", mode: "plain", acquis: true };
       });
       // l'art du stade qui l'ouvre (Art) : {name, desc} ; un art resté vide s'efface
       if (c.art && typeof c.art === "object") {
         var aco = (c.art.cout === null || c.art.cout === undefined || c.art.cout === "")
           ? null : Math.floor(parseFloat(c.art.cout));
-        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || "") };
+        c.art = { name: String(c.art.name || ""), desc: String(c.art.desc || ""),
+          mode: c.art.mode === "markdown" ? "markdown" : "plain", acquis: c.art.acquis !== false };
         if (aco !== null && isFinite(aco)) c.art.cout = clamp(aco, 0, 9999);
         // un art vierge s'efface — son coût forcé n'aurait plus d'objet
-        if (!c.art.name.trim() && !c.art.desc.trim()) delete c.art;
+        if (!c.art.name.trim() && !c.art.desc.trim() && c.art.cout === undefined && c.art.acquis) delete c.art;
       } else delete c.art;
       // migration : noms de compétences capitalisés (« Body/apnée » -> « Body/Apnée »)
       var i = k.indexOf("/");
@@ -1044,7 +1112,7 @@
   }
   // coût de l'art : rien par défaut (il vient avec son stade), sauf coût forcé
   function artXp(c) {
-    return (c && c.art && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
+    return (c && c.art && c.art.acquis !== false && c.art.cout !== null && c.art.cout !== undefined && isFinite(c.art.cout))
       ? c.art.cout : 0;
   }
   // clés et repères des compétences que la fiche traite à part
@@ -1107,7 +1175,7 @@
     // les passifs PRÉSENTS restent facturés même si le stade ne les ouvre
     // plus (fiches d'avant un déplacement du stade d'ouverture : rien ne
     // doit disparaître ni se re-créditer en silence)
-    (c.techniques || []).forEach(function (t) { xp += techXp(t); });
+    (c.techniques || []).forEach(function (t) { if (t.acquis !== false) xp += techXp(t); });
     return xp + artXp(c) +
            (key ? (state.compsXpMod[key] || 0) + (state.compsXpMod2[key] || 0) : 0);
   }
@@ -1500,7 +1568,9 @@
       em: ["em", "emMax"],
       armescomp: ["armesComps", "comps"],
       comps: ["comps", "customComps", "compsMod", "compsMod2", "compsForce", "compsXpForce", "compsXpMod", "compsXpMod2"],
-      arts: ["comps", "customComps"],
+      arts: ["comps", "customComps", "artCategories"],
+      energie: ["energieOrganisee"],
+      notesOrganisees: ["notesOrganisees"],
       armes: ["armes", "armesComps"],
       armures: ["armures"],
       inv: ["inv", "armes", "armures"],
@@ -1867,13 +1937,15 @@
     // Arts dépend de la liste des compétences et de leurs investissements, pas
     // seulement des mods. Ces clés sont aussi structurelles : leur changement
     // doit rejouer le hook qui reconstruit les cartes d'arts et de passifs.
-    arts: ["comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
+    arts: ["artCategories", "comps", "customComps", "armesComps", "langues", "mods", "modData", "modActifs"],
     armes: ["armes", "comps", "armesComps", "inv", "inventaire"],
     armures: ["armures", "inv", "inventaire"],
     inv: ["inv", "inventaire", "armes", "armures", "divers"],
     perso: ["name", "espece", "age", "sexe", "genre", "defaut", "qualites"],
     avantages: ["avantages"],
     bg: ["background"],
+    energie: ["energieOrganisee"],
+    notesOrganisees: ["notesOrganisees"],
     notes: ["notes", "notesJournal", "name"],
     jets: ["de"],
     actions: ["name"],
@@ -2120,7 +2192,7 @@
       ".pc-tab, .pc-rollable, .pc-obj-tile, .pc-comp-filter, " +
       ".pc-obj-context-action:not([data-jjk-requires-edit]), " +
       ".pc-comp-roll, .pc-notes-latest, .pc-notes-older, .pc-notes-newer, " +
-      ".pc-note-toggle, .pc-journal-toggle, summary, a[href]"
+      ".pc-tech-item-read, .pc-tech-divider-toggle, .pc-note-toggle, .pc-journal-toggle, summary, a[href]"
     ) || !!target.closest(".pc-notes-search, .pc-journal-pages") ||
       !!target.closest(".pc-envoi") || target.type === "search";
   }
@@ -2169,10 +2241,11 @@
     // les permissions plus fines des modules : un champ pc-edit-field ne doit
     // jamais redevenir actif simplement parce que le mode global repasse en édition.
     appliqueVerrouGlobal(surface);
-    if (surface.classList && surface.classList.contains("pc-editable")) applyEdit(surface, surface.dataset.module || "");
-    Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable"), function (b) { applyEdit(b, b.dataset.module || ""); });
+    if (surface.matches && surface.matches(".pc-editable:not([data-jjk-column-edit])")) applyEdit(surface, surface.dataset.module || "");
+    Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable:not([data-jjk-column-edit])"), function (b) { applyEdit(b, b.dataset.module || ""); });
     // L'identité et les commandes hors module partagent le verrou global.
     appliqueChampsHorsModule(surface);
+    if (surface === document || surface.id === "perso-atelier") window.dispatchEvent(new Event("jjk-column-mode"));
   };
   // Toutes les interactions de CONSTRUCTION repassent par le même garde.
   // Les actions de jeu restent libres : clic sur une tuile, Montrer, Donner,
@@ -2189,7 +2262,7 @@
     // est en Édition. Les champs de mods portent un propriétaire explicite et
     // ont été traités plus haut par isEdit(id).
     if (!scope) return ficheModifiable();
-    return isEdit(scope.dataset.module || "");
+    return scope.hasAttribute("data-jjk-column-edit") ? scope.classList.contains("editing") : isEdit(scope.dataset.module || "");
   }
   function annuleEdition(ev) {
     ev.preventDefault();
@@ -2215,7 +2288,7 @@
   ["dragstart", "dragover", "drop"].forEach(function (type) {
     document.addEventListener(type, function (ev) {
       var scope = scopeEdition(ev.target);
-      if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
+      if (scope && !autoriseConstruction(ev.target)) annuleEdition(ev);
     }, true);
   });
   ["beforeinput", "paste", "cut"].forEach(function (type) {
@@ -2228,7 +2301,7 @@
   });
   document.addEventListener("submit", function (ev) {
     var scope = scopeEdition(ev.target);
-    if (scope && !isEdit(scope.dataset.module || "")) annuleEdition(ev);
+    if (scope && !autoriseConstruction(ev.target)) annuleEdition(ev);
   }, true);
 
   // Verrou global de Consultation, calqué sur Outward : les commandes de
@@ -2696,18 +2769,6 @@
       });
       return m;
     }
-    function eoDepense() {
-      var total = 0;
-      (Array.isArray(state.energie) ? state.energie : []).forEach(function (categorie) {
-        if (!categorie || !Array.isArray(categorie.techniques)) return;
-        categorie.techniques.forEach(function (technique) {
-          var cout = Number(technique && technique.cout);
-          if (isFinite(cout) && cout > 0) total += Math.floor(cout);
-        });
-      });
-      return total;
-    }
-
     var xpIn = el("input", "pc-meter-total pc-id-xp-total pc-edit-field pc-global-edit-field");
     xpIn.type = "number"; xpIn.min = 0; xpIn.step = 5;
     xpIn.setAttribute("aria-label", "XP total");
@@ -2764,6 +2825,7 @@
     { id: "energie", label: "Énergie" },
     { id: "equipement", label: "Équipement" },
     { id: "bio", label: "Bio" },
+    { id: "notes", label: "Notes" },
     { id: "options", label: "Options" }
   ];
   function buildTabs(sheet) {
@@ -2885,6 +2947,7 @@
     energie: function (pane) {
       return { seule: pane };   // catégories sur toute la largeur, comme les Arts
     },
+    notes: function (pane) { return { seule: pane }; },
     equipement: function (pane) {
       var cols = el("div", "pc-cols2");
       var left = el("div", "pc-col");
@@ -3292,6 +3355,719 @@
     };
   }
 
+  // ---- listes organisées : Arts, Énergie et Notes --------------------------
+  //
+  // Etat commun :
+  //   [{ id, nom, elements: [ {id, nom, entrees:[{id,nom,desc,mode}]} | diviseur ] } | diviseur]
+  // Les catalogues à coût ajoutent cout et acquis à leurs entrées.
+  // Les diviseurs vivent dans les deux premières colonnes, comme pour Arts.
+  function buildListeOrganisee(config) {
+    var b = block(config.titre, null, null);
+    var layout = el("div", "pc-techniques-layout pc-liste-organisee-layout");
+    b.appendChild(layout);
+
+    var selectionGroupe = "", selectionElement = "";
+    var editionGroupes = false, editionElementsGroupe = "", editionEntreesElement = "";
+    var panneaux = {}, listeHooks = [], dragEntree = null, empreinteRendu = "";
+    var groupesRendus = null;
+
+    function conserveRendu() { empreinteRendu = JSON.stringify(groupes()); }
+
+    function groupes() {
+      if (config.groupesDe) return config.groupesDe();
+      if (!Array.isArray(state[config.cle])) state[config.cle] = [];
+      return state[config.cle];
+    }
+    function estDiviseur(x) { return !!(x && x.type === "divider"); }
+    function groupeDe(id) {
+      return groupes().filter(function (g) { return g && !estDiviseur(g) && g.id === id && Array.isArray(g.elements); })[0] || null;
+    }
+    function elementDe(g, id) {
+      return g && Array.isArray(g.elements)
+        ? g.elements.filter(function (x) { return x && !estDiviseur(x) && x.id === id; })[0] || null
+        : null;
+    }
+    function entreesDe(x) { return x && Array.isArray(x.entrees) ? x.entrees : []; }
+    function premierElement(g) {
+      var x = g && g.elements ? g.elements.filter(function (e) { return e && !estDiviseur(e); })[0] : null;
+      return x ? x.id : "";
+    }
+    function selectionValide() {
+      var ancienGroupe = selectionGroupe, ancienElement = selectionElement;
+      var g = groupeDe(selectionGroupe);
+      if (!g) {
+        var candidats = groupes().filter(function (x) { return x && !estDiviseur(x); });
+        g = (config.structureFixe && candidats.find(function (x) { return x.elements.length; })) || candidats[0] || null;
+      }
+      var nouvelGroupe = g ? g.id : "";
+      var x = elementDe(g, selectionElement);
+      if (!x) x = g && g.elements.filter(function (e) { return e && !estDiviseur(e); })[0] || null;
+      var nouvelElement = x ? x.id : "";
+      if (nouvelGroupe !== ancienGroupe) {
+        editionElementsGroupe = "";
+        editionEntreesElement = "";
+      }
+      if (nouvelElement !== ancienElement) editionEntreesElement = "";
+      selectionGroupe = nouvelGroupe;
+      selectionElement = nouvelElement;
+      return { groupe: g, element: x };
+    }
+    function editionActive(colonne) {
+      if (!ficheModifiable()) return false;
+      if (colonne === "groupes") return editionGroupes;
+      if (colonne === "elements") return !!selectionGroupe && editionElementsGroupe === selectionGroupe && !!groupeDe(selectionGroupe);
+      if (colonne === "entrees") return !!selectionElement && editionEntreesElement === selectionElement && !!elementDe(groupeDe(selectionGroupe), selectionElement);
+      return false;
+    }
+    function actualiseEdition(pane, colonne) {
+      if (!pane) return;
+      var actif = editionActive(colonne);
+      appliqueVerrouGlobal(pane);
+      pane.classList.toggle("editing", actif);
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-field") : [], function (field) {
+        field.disabled = !actif;
+      });
+      Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-only") : [], function (control) {
+        if ("disabled" in control) control.disabled = !actif;
+      });
+      var gear = pane.querySelector ? pane.querySelector(".pc-tech-pane-gear") : null;
+      if (gear) {
+        var disponible = colonne === "groupes" || (colonne === "elements" ? !!groupeDe(selectionGroupe) : !!elementDe(groupeDe(selectionGroupe), selectionElement));
+        gear.disabled = !ficheModifiable() || !disponible;
+        gear.title = actif ? "Terminer les modifications de cette colonne" : "Modifier cette colonne";
+        gear.setAttribute("aria-label", gear.title);
+        gear.setAttribute("aria-pressed", String(actif));
+      }
+
+    }
+    function basculeEdition(pane, colonne) {
+      if (!ficheModifiable()) return;
+      if (colonne === "groupes") editionGroupes = !editionGroupes;
+      else if (colonne === "elements") {
+        if (!groupeDe(selectionGroupe)) return;
+        editionElementsGroupe = editionElementsGroupe === selectionGroupe ? "" : selectionGroupe;
+      } else if (colonne === "entrees") {
+        if (!elementDe(groupeDe(selectionGroupe), selectionElement)) return;
+        editionEntreesElement = editionEntreesElement === selectionElement ? "" : selectionElement;
+      }
+      actualiseEdition(pane, colonne);
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    }
+    function gearColonne(pane, colonne) {
+      var gear = el("button", "pc-gear pc-tech-pane-gear", "⚙");
+      gear.type = "button";
+      gear.addEventListener("click", function () { basculeEdition(pane, colonne); });
+      return gear;
+    }
+    function titreColonne(pane, titre, colonne) {
+      var head = el("div", "pc-tech-pane-title");
+      head.appendChild(el("span", null, titre));
+      head.appendChild(gearColonne(pane, colonne));
+      pane.appendChild(head);
+    }
+    function nouveauDiviseur() {
+      return { id: uid("ld"), type: "divider", nom: "Nouveau groupe", replie: false };
+    }
+    function nouveauGroupe() {
+      return { id: uid("lg"), nom: config.nouveauGroupe, elements: [] };
+    }
+    function nouvelElement() {
+      return { id: uid("le"), nom: config.nouvelElement, entrees: [] };
+    }
+    function nouvelleEntree() {
+      return { id: uid("li"), nom: "", desc: "", mode: "plain",
+        ...(config.unite ? { acquis: false } : {}) };
+    }
+    function choixGroupe(id) {
+      var ancien = selectionGroupe;
+      selectionGroupe = id;
+      var g = groupeDe(id);
+      selectionElement = premierElement(g);
+      if (ancien !== id) { editionElementsGroupe = ""; editionEntreesElement = ""; }
+      rendre();
+    }
+    function choixElement(id) {
+      if (selectionElement !== id) editionEntreesElement = "";
+      selectionElement = id;
+      rendre();
+    }
+
+    function appliquerReplis(liste) {
+      var replie = false;
+      Array.prototype.forEach.call(liste.children || [], function (node) {
+        if (node.classList && node.classList.contains("pc-tech-divider")) {
+          replie = node.dataset.collapsed === "true";
+          node.hidden = false;
+          node.classList.toggle("collapsed", replie);
+        } else node.hidden = replie;
+      });
+    }
+    function termineGlisse(changement) {
+      if (!changement) return;
+      rendre(); refresh();
+    }
+    function colonnePourType(type) {
+      if (type === "groupe" || type === "diviseur-groupe") return "groupes";
+      if (type === "element" || type === "diviseur-element") return "elements";
+      if (type === "entree") return "entrees";
+      return "";
+    }
+    function idGlisse(e, type, id) {
+      if (!editionActive(colonnePourType(type)) || !e.dataTransfer) { e.preventDefault(); return; }
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", type + "|" + id);
+    }
+    function lireGlisse(e) {
+      if (!e.dataTransfer) return null;
+      var p = String(e.dataTransfer.getData("text/plain") || "").split("|");
+      return p.length === 2 && ["groupe", "diviseur-groupe", "element", "diviseur-element", "entree"].indexOf(p[0]) >= 0
+        ? { type: p[0], id: p[1] } : null;
+    }
+    function reordonne(liste, id, avantId) {
+      var from = liste.findIndex(function (x) { return x && x.id === id; });
+      if (from < 0 || id === avantId) return false;
+      var objet = liste.splice(from, 1)[0];
+      var to = avantId ? liste.findIndex(function (x) { return x && x.id === avantId; }) : -1;
+      liste.splice(to < 0 ? liste.length : to, 0, objet);
+      return true;
+    }
+    function deplaceElement(id, groupeCibleId, avantId) {
+      var source = null, index = -1, objet = null;
+      groupes().some(function (g) {
+        if (!g || !Array.isArray(g.elements)) return false;
+        var i = g.elements.findIndex(function (x) { return x && !estDiviseur(x) && x.id === id; });
+        if (i < 0) return false;
+        source = g; index = i; objet = g.elements[i]; return true;
+      });
+      var cible = groupeDe(groupeCibleId);
+      if (!objet || !source || !cible) return false;
+      if (source === cible && avantId === id) return false;
+      source.elements.splice(index, 1);
+      var to = avantId ? cible.elements.findIndex(function (x) { return x && x.id === avantId; }) : -1;
+      cible.elements.splice(to < 0 ? cible.elements.length : to, 0, objet);
+      selectionGroupe = cible.id;
+      selectionElement = objet.id;
+      if (source.id !== cible.id) { editionElementsGroupe = ""; editionEntreesElement = ""; }
+      return true;
+    }
+    function deplaceDiviseurElement(id, groupeCibleId, avantId) {
+      var source = null, index = -1, objet = null;
+      groupes().some(function (g) {
+        if (!g || !Array.isArray(g.elements)) return false;
+        var i = g.elements.findIndex(function (x) { return estDiviseur(x) && x.id === id; });
+        if (i < 0) return false;
+        source = g; index = i; objet = g.elements[i]; return true;
+      });
+      var cible = groupeDe(groupeCibleId);
+      if (!objet || !source || !cible || source !== cible || avantId === id) return false;
+      return reordonne(cible.elements, id, avantId);
+    }
+    function zoneDepotListe(node, reception, colonne) {
+      node.addEventListener("dragover", function (e) {
+        if (!editionActive(colonne)) return;
+        e.preventDefault();
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+        node.classList.add("drop-target");
+      });
+      node.addEventListener("dragleave", function (e) {
+        if (!node.contains(e.relatedTarget)) node.classList.remove("drop-target");
+      });
+      node.addEventListener("drop", function (e) {
+        var drag = lireGlisse(e);
+        if (!drag || !editionActive(colonne)) return;
+        e.preventDefault(); e.stopPropagation(); node.classList.remove("drop-target");
+        reception(drag);
+      });
+    }
+    function cibleElement(card, groupe, element) {
+      card.addEventListener("dragover", function (e) {
+        var drag = lireGlisse(e);
+        var ok = editionActive("elements") && drag && (drag.type === "element" || (drag.type === "diviseur-element" && groupeDe(selectionGroupe) === groupe));
+        if (!ok || drag.id === element.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
+        card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      card.addEventListener("dragleave", function (e) {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+        card.classList.remove("avant", "apres");
+      });
+      card.addEventListener("drop", function (e) {
+        var drag = lireGlisse(e);
+        if (!drag || !editionActive("elements") || drag.id === element.id) return;
+        e.preventDefault(); e.stopPropagation();
+        if (drag.type === "element") termineGlisse(deplaceElement(drag.id, groupe.id, element.id));
+        else if (drag.type === "diviseur-element") termineGlisse(deplaceDiviseurElement(drag.id, groupe.id, element.id));
+      });
+    }
+    function cibleEntree(card, element, entree) {
+      card.addEventListener("dragover", function (e) {
+        if (!editionActive("entrees") || !dragEntree || dragEntree.elementId !== element.id || dragEntree.entreeId === entree.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect(), avant = e.clientY < r.top + r.height / 2;
+        card.classList.toggle("avant", avant); card.classList.toggle("apres", !avant);
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      card.addEventListener("dragleave", function (e) {
+        if (e.relatedTarget && card.contains(e.relatedTarget)) return;
+        card.classList.remove("avant", "apres");
+      });
+      card.addEventListener("drop", function (e) {
+        if (!editionActive("entrees") || !dragEntree || dragEntree.elementId !== element.id || dragEntree.entreeId === entree.id) return;
+        e.preventDefault(); e.stopPropagation();
+        var r = card.getBoundingClientRect();
+        var liste = entreesDe(element);
+        var indexCible = liste.indexOf(entree);
+        var avantId = r && e.clientY < r.top + r.height / 2
+          ? entree.id
+          : (liste[indexCible + 1] ? liste[indexCible + 1].id : null);
+        termineGlisse(reordonne(liste, dragEntree.entreeId, avantId));
+        dragEntree = null;
+      });
+    }
+    function panneauTitre(pane, titre, colonne) {
+      var head = el("div", "pc-tech-pane-title");
+      head.appendChild(el("span", null, titre));
+      head.appendChild(gearColonne(pane, colonne));
+      pane.dataset.jjkColumnEdit = "";
+      pane.appendChild(head);
+    }
+
+    function ligneGroupe(g, liste) {
+      var item = el("div", "pc-tech-item" + (g.id === selectionGroupe ? " selected" : ""));
+      item.dataset.syncEntity = g.id;
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les " + config.groupes.toLocaleLowerCase();
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "groupe", g.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      if (!config.structureFixe) item.appendChild(drag);
+      var read = el("button", "pc-tech-item-read", g.nom || config.groupeSansNom);
+      read.type = "button"; read.addEventListener("click", function () { choixGroupe(g.id); });
+      read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
+      item.appendChild(read);
+      var name = el("input", "pc-edit-field pc-tech-item-name");
+      name.type = "text"; name.value = g.nom || ""; name.placeholder = config.groupes;
+      name.setAttribute("aria-label", config.groupes);
+      name.addEventListener("input", function () { g.nom = name.value; conserveRendu(); read.textContent = name.value || config.groupeSansNom; save(); });
+      item.appendChild(name);
+      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.groupeDefini, function () {
+        if (!editionActive("groupes")) return;
+        function retire() {
+          var index = groupes().indexOf(g);
+          if (!ficheModifiable() || index < 0) return;
+          groupes().splice(index, 1);
+          if (selectionGroupe === g.id) { selectionGroupe = ""; selectionElement = ""; }
+          rendre(); refresh();
+        }
+        var nombre = g.elements.filter(function (x) { return x && !estDiviseur(x); }).length;
+        if (nombre) {
+          var libelleElements = nombre + " " + (nombre > 1 ? config.elementPluriel.toLowerCase() : config.elementSingulier.toLowerCase());
+          confirmer("Supprimer " + config.groupeIndefini, "« " + (g.nom || config.groupeSansNom) + " » contient " + libelleElements + ". Supprimer le groupe et tout son contenu ?", "Tout supprimer", retire);
+        }
+        else retire();
+      }, "danger pc-edit-only"));
+      item.addEventListener("dragover", function (e) {
+        if (config.structureFixe) return;
+        var dragData = lireGlisse(e);
+        var ok = (editionActive("groupes") && dragData && (dragData.type === "groupe" || dragData.type === "diviseur-groupe")) ||
+                 (editionActive("elements") && dragData && dragData.type === "element");
+        if (!ok || dragData.id === g.id) return;
+        e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        if (e.dataTransfer) e.dataTransfer.dropEffect = "move";
+      });
+      item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+      item.addEventListener("drop", function (e) {
+        if (config.structureFixe) return;
+        var dragData = lireGlisse(e); if (!dragData) return;
+        if (dragData.type === "element" && editionActive("elements")) {
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(deplaceElement(dragData.id, g.id, null));
+        } else if ((dragData.type === "groupe" || dragData.type === "diviseur-groupe") && editionActive("groupes")) {
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupes(), dragData.id, g.id));
+        }
+      });
+      liste.appendChild(item);
+    }
+    function ligneElement(x, g, liste) {
+      var item = el("div", "pc-tech-item pc-tech-item-tech" + (x.id === selectionElement ? " selected" : ""));
+      item.dataset.syncEntity = x.id;
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner ou déplacer vers " + config.groupeAutre;
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) { e.stopPropagation(); idGlisse(e, "element", x.id); });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      if (!config.structureFixe) item.appendChild(drag);
+      var read = el("button", "pc-tech-item-read", x.nom || config.elementSansNom);
+      read.type = "button"; read.addEventListener("click", function () { choixElement(x.id); });
+      read.setAttribute("aria-pressed", String(item.classList.contains("selected")));
+      item.appendChild(read);
+      var name = el("input", "pc-edit-field pc-tech-item-name");
+      name.type = "text"; name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition; name.placeholder = config.elements;
+      name.setAttribute("aria-label", config.elements);
+      name.addEventListener("input", function () { x.nom = name.value; conserveRendu(); listeHooks.forEach(function (fn) { fn(); }); save(); });
+      if (x.nomEdition !== null) item.appendChild(name);
+      else item.classList.add("pc-tech-item-fixed");
+      listeHooks.push(function () {
+        read.textContent = x.nom || config.elementSansNom;
+        if (document.activeElement !== name) name.value = x.nomEdition == null ? x.nom || "" : x.nomEdition;
+      });
+      if (!config.structureFixe) item.appendChild(miniBtn("×", "Supprimer " + config.elementDefini, function () {
+        if (!editionActive("elements")) return;
+        function retire() {
+          var index = g.elements.indexOf(x);
+          if (!ficheModifiable() || groupeDe(g.id) !== g || index < 0) return;
+          g.elements.splice(index, 1);
+          if (selectionElement === x.id) selectionElement = premierElement(g);
+          rendre(); refresh();
+        }
+        var nombre = entreesDe(x).length;
+        if (nombre) {
+          var libelleEntrees = nombre + (nombre > 1 ? " entrées" : " entrée");
+          confirmer("Supprimer " + config.elementIndefini, "« " + (x.nom || config.elementSansNom) + " » contient " + libelleEntrees + ". Supprimer " + config.elementDefini + " et tout son contenu ?", "Tout supprimer", retire);
+        }
+        else retire();
+      }, "danger pc-edit-only"));
+      if (!config.structureFixe) cibleElement(item, g, x);
+      liste.appendChild(item);
+    }
+    function ligneDiviseur(diviseur, liste, colonne, groupe) {
+      var item = el("div", "pc-tech-divider pc-tech-divider-" + colonne);
+      item.dataset.collapsed = String(diviseur.replie === true);
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner ce diviseur";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation(); idGlisse(e, colonne === "groupes" ? "diviseur-groupe" : "diviseur-element", diviseur.id);
+      });
+      drag.addEventListener("dragend", function (e) { e.stopPropagation(); item.classList.remove("drop-target"); });
+      item.appendChild(drag);
+      var toggle = el("button", "pc-tech-divider-toggle");
+      toggle.type = "button";
+      var arrow = el("span", "pc-tech-divider-arrow", diviseur.replie ? "▸" : "▾");
+      var label = el("span", "pc-tech-divider-label", diviseur.nom || "Diviseur sans nom");
+      toggle.appendChild(arrow); toggle.appendChild(label);
+      toggle.setAttribute("aria-expanded", String(diviseur.replie !== true));
+      toggle.addEventListener("click", function () {
+        diviseur.replie = diviseur.replie !== true;
+        item.dataset.collapsed = String(diviseur.replie);
+        item.classList.toggle("collapsed", diviseur.replie);
+        arrow.textContent = diviseur.replie ? "▸" : "▾";
+        toggle.setAttribute("aria-expanded", String(!diviseur.replie));
+        appliquerReplis(liste); save();
+      });
+      item.appendChild(toggle);
+      var name = el("input", "pc-edit-field pc-tech-divider-name");
+      name.type = "text"; name.value = diviseur.nom || ""; name.placeholder = "Nom du groupe";
+      name.setAttribute("aria-label", "Nom du diviseur");
+      name.addEventListener("input", function () { diviseur.nom = name.value; label.textContent = name.value || "Diviseur sans nom"; save(); });
+      item.appendChild(name);
+      item.appendChild(miniBtn("×", "Supprimer ce diviseur", function () {
+        var cible = colonne === "groupes" ? groupes() : (groupe && groupe.elements);
+        if (!cible || !editionActive(colonne)) return;
+        var index = cible.indexOf(diviseur); if (index >= 0) cible.splice(index, 1);
+        rendre(); refresh();
+      }, "danger pc-edit-only pc-tech-divider-del"));
+      if (colonne === "groupes") {
+        item.addEventListener("dragover", function (e) {
+          var d = lireGlisse(e); if (!editionActive("groupes") || !d || (d.type !== "groupe" && d.type !== "diviseur-groupe") || d.id === diviseur.id) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        });
+        item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+        item.addEventListener("drop", function (e) {
+          var d = lireGlisse(e); if (!editionActive("groupes") || !d || (d.type !== "groupe" && d.type !== "diviseur-groupe")) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupes(), d.id, diviseur.id));
+        });
+      } else {
+        item.addEventListener("dragover", function (e) {
+          var d = lireGlisse(e); if (!editionActive("elements") || !d || d.type !== "diviseur-element" || d.id === diviseur.id) return;
+          e.preventDefault(); e.stopPropagation(); item.classList.add("drop-target");
+        });
+        item.addEventListener("dragleave", function (e) { if (!item.contains(e.relatedTarget)) item.classList.remove("drop-target"); });
+        item.addEventListener("drop", function (e) {
+          var d = lireGlisse(e); if (!editionActive("elements") || !d || d.type !== "diviseur-element") return;
+          e.preventDefault(); e.stopPropagation(); item.classList.remove("drop-target");
+          termineGlisse(reordonne(groupe.elements, d.id, diviseur.id));
+        });
+      }
+      liste.appendChild(item);
+      return item;
+    }
+    function basculeMode(parent, entree, read) {
+      var group = el("div", "pc-notes-modes"), buttons = [];
+      group.setAttribute("role", "group"); group.setAttribute("aria-label", "Format de la description");
+      [["plain", "Brut"], ["markdown", "Markdown"]].forEach(function (pair) {
+        var button = miniBtn(pair[1], null, function () {
+          entree.mode = pair[0]; conserveRendu(); sync(); notesRendu(read, entree.desc || "", entree.mode); save();
+        });
+        buttons.push([button, pair[0]]); group.appendChild(button);
+      });
+      function sync() { buttons.forEach(function (pair) { pair[0].setAttribute("aria-pressed", String(entree.mode === pair[1])); }); }
+      function actualise() { sync(); notesRendu(read, entree.desc || "", entree.mode); }
+      actualise(); parent.appendChild(group); listeHooks.push(actualise);
+    }
+    function ajouteCout(card, footer, entree, element) {
+      card.classList.toggle("acquired", entree.acquis !== false);
+      card.classList.add("pc-entry-cost");
+      var cout = el("label", "pc-entry-price");
+      var champ = el("input", "pc-edit-field");
+      champ.type = "number"; champ.min = "0"; champ.max = "9999"; champ.step = "1";
+      champ.placeholder = String(config.cout(entree));
+      champ.value = entree.cout == null ? "" : entree.cout;
+      champ.setAttribute("aria-label", "Coût en " + config.unite);
+      cout.append(champ, el("span", null, config.unite));
+      var acquis = el("label", "pc-entry-owned");
+      var coche = el("input", "pc-edit-field");
+      coche.type = "checkbox"; coche.checked = entree.acquis !== false;
+      acquis.append(coche, el("span", null, "Acquise"));
+      var resume = el("span", "pc-entry-cost-summary");
+      function actualise() {
+        resume.textContent = config.cout(entree) + " " + config.unite + (entree.acquis === false ? " · Non acquise" : " · Acquise");
+        card.classList.toggle("acquired", entree.acquis !== false);
+      }
+      function modifie(cout, possede) {
+        if (!editionActive("entrees")) return false;
+        if (config.valideAchat && !config.valideAchat(element, entree, cout, possede)) return false;
+        entree.cout = cout;
+        entree.acquis = possede;
+        actualise();
+        conserveRendu();
+        refresh();
+        return true;
+      }
+      champ.addEventListener("change", function () {
+        var cout = champ.value === "" ? undefined : clamp(Math.floor(Number(champ.value)), 0, 9999);
+        modifie(cout, entree.acquis !== false);
+        champ.value = entree.cout == null ? "" : entree.cout;
+      });
+      coche.addEventListener("change", function () {
+        modifie(entree.cout, coche.checked);
+        coche.checked = entree.acquis !== false;
+      });
+      actualise();
+      footer.append(resume, cout, acquis);
+    }
+
+    function carteEntree(entree, element, groupeId) {
+
+      var card = el("article", "pc-tech-rank pc-catalog-entry");
+      card.dataset.syncEntity = entree.id;
+      var head = el("div", "pc-tech-rank-head pc-catalog-entry-head");
+      var dragSlot = el("span", "pc-tech-rank-drag-slot");
+      var drag = el("button", "pc-comp-drag pc-edit-only", "⠿");
+      drag.type = "button"; drag.title = "Glisser pour réordonner les entrées";
+      drag.setAttribute("aria-label", drag.title); drag.draggable = true;
+      drag.addEventListener("dragstart", function (e) {
+        e.stopPropagation();
+        if (!editionActive("entrees") || !e.dataTransfer) { e.preventDefault(); return; }
+        dragEntree = { elementId: element.id, entreeId: entree.id };
+        card.classList.add("pris");
+        e.dataTransfer.setData("text/plain", "entree|" + entree.id); e.dataTransfer.effectAllowed = "move";
+      });
+      drag.addEventListener("dragend", function (e) {
+        e.stopPropagation(); dragEntree = null;
+        Array.prototype.forEach.call(layout.querySelectorAll(".pris, .avant, .apres"), function (n) { n.classList.remove("pris", "avant", "apres"); });
+      });
+      dragSlot.appendChild(drag); head.appendChild(dragSlot);
+      var nomChamp = config.nomChamp || "nom";
+      var nameWrap = el("label", "pc-tech-rank-name");
+      nameWrap.appendChild(el("span", "pc-tech-rank-label", "Nom"));
+      var name = el("input", "pc-edit-field pc-catalog-entry-name");
+      name.type = "text"; name.value = entree[nomChamp] || ""; name.placeholder = "Nom de l’entrée";
+      name.setAttribute("aria-label", "Nom de l’entrée");
+      name.addEventListener("input", function () { entree[nomChamp] = name.value; conserveRendu();
+        if (entree.principale) listeHooks.forEach(function (fn) { fn(); });
+        save(); });
+      nameWrap.appendChild(name); head.appendChild(nameWrap);
+      var deleteSlot = el("span", "pc-tech-rank-del-slot");
+      deleteSlot.appendChild(miniBtn("×", "Supprimer cette entrée", function () {
+        if (!editionActive("entrees")) return;
+        var avant = JSON.stringify(entree);
+        confirmer("Supprimer une entrée", "Supprimer « " + (entree[nomChamp] || "cette entrée") + " » ?", "Supprimer", function () {
+          if (!ficheModifiable()) return;
+          var groupe = groupeDe(groupeId);
+          var courant = elementDe(groupe, element.id);
+          if (!courant) return;
+          var liste = entreesDe(courant);
+          var cible = entree.principale ? courant.principale : liste.find(function (e) { return e.id === entree.id; });
+          if (!cible || JSON.stringify(cible) !== avant) {
+            flash("L’entrée a changé depuis l’ouverture de la confirmation.");
+            return;
+          }
+          if (entree.principale) config.effacePrincipale(courant);
+          else liste.splice(liste.indexOf(cible), 1);
+          rendre(); refresh();
+        });
+      }, "danger pc-edit-only pc-tech-rank-del"));
+      head.appendChild(deleteSlot); card.appendChild(head);
+      var read = el("div", "pc-tech-rank-read");
+      notesRendu(read, entree.desc || "", entree.mode); card.appendChild(read);
+      var editor = el("textarea", "pc-edit-field pc-tech-rank-editor");
+      editor.rows = 4; editor.value = entree.desc || ""; editor.placeholder = "Description";
+      editor.setAttribute("aria-label", "Description de l’entrée");
+      editor.addEventListener("input", function () { entree.desc = editor.value; conserveRendu(); notesRendu(read, entree.desc, entree.mode); save(); });
+      card.appendChild(editor);
+      var footer = el("div", "pc-tech-rank-footer");
+      var formats = el("div", "pc-tech-rank-format-wrap pc-edit-only");
+      basculeMode(formats, entree, read); footer.appendChild(formats);
+      if (config.unite) ajouteCout(card, footer, entree, element);
+      if (config.envoi) footer.appendChild(chatBtn(
+        function () { return "Passif — " + (entree[nomChamp] || element.nom); },
+        function () { return [["", entree.desc]]; }
+      ));
+      card.appendChild(footer);
+      if (!entree.principale) cibleEntree(card, element, entree);
+      else dragSlot.replaceChildren();
+      listeHooks.push(function () {
+        if (document.activeElement !== name) name.value = entree[nomChamp] || "";
+        if (document.activeElement !== editor) editor.value = entree.desc || "";
+      });
+      return card;
+    }
+
+    function rendreGroupes() {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-arts"); panneaux.groupes = pane;
+      panneauTitre(pane, config.groupes, "groupes");
+      var liste = el("div", "pc-tech-list pc-tech-art-list");
+      groupes().forEach(function (g) {
+        if (estDiviseur(g)) ligneDiviseur(g, liste, "groupes", null);
+        else ligneGroupe(g, liste);
+      });
+      if (!groupes().some(function (g) { return g && !estDiviseur(g); })) liste.appendChild(el("div", "pc-empty", config.videGroupe));
+      appliquerReplis(liste);
+      zoneDepotListe(liste, function (drag) {
+        if (drag.type === "groupe" || drag.type === "diviseur-groupe") termineGlisse(reordonne(groupes(), drag.id, null));
+      }, "groupes");
+      pane.appendChild(liste);
+      if (config.structureFixe) return pane;
+      pane.appendChild(miniBtn("+ " + config.groupeSingulier, null, function () {
+        if (!editionActive("groupes")) return;
+        var g = nouveauGroupe(); groupes().push(g); selectionGroupe = g.id; selectionElement = "";
+        rendre(); refresh();
+      }, "pc-edit-only pc-tech-add"));
+      pane.appendChild(miniBtn("+ Diviseur", null, function () {
+        if (!editionActive("groupes")) return;
+        groupes().push(nouveauDiviseur()); refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      return pane;
+    }
+    function rendreElements(g) {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-list-pane"); panneaux.elements = pane;
+      panneauTitre(pane, config.elements, "elements");
+      var liste = el("div", "pc-tech-list pc-technique-list");
+      if (g) {
+        g.elements.forEach(function (x) {
+          if (estDiviseur(x)) ligneDiviseur(x, liste, "elements", g);
+          else ligneElement(x, g, liste);
+        });
+        if (!g.elements.some(function (x) { return x && !estDiviseur(x); })) liste.appendChild(el("div", "pc-empty", config.videElement));
+        appliquerReplis(liste);
+        zoneDepotListe(liste, function (drag) {
+          if (drag.type === "element") termineGlisse(deplaceElement(drag.id, g.id, null));
+          else if (drag.type === "diviseur-element") termineGlisse(deplaceDiviseurElement(drag.id, g.id, null));
+        }, "elements");
+      } else liste.appendChild(el("div", "pc-empty", config.videElement));
+      pane.appendChild(liste);
+      if (g && !config.structureFixe) {
+        pane.appendChild(miniBtn("+ " + config.elementSingulier, null, function () {
+          if (!editionActive("elements")) return;
+          var x = nouvelElement(); g.elements.push(x); selectionElement = x.id;
+          editionEntreesElement = ""; refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+        pane.appendChild(miniBtn("+ Diviseur", null, function () {
+          if (!editionActive("elements")) return;
+          g.elements.push(nouveauDiviseur()); refresh(); rendre();
+        }, "pc-edit-only pc-tech-add"));
+      }
+      return pane;
+    }
+    function rendreEntrees(g, x) {
+      var pane = el("section", "pc-tech-pane pc-editable pc-tech-ranks-pane pc-catalog-entries-pane"); panneaux.entrees = pane;
+      panneauTitre(pane, config.entrees, "entrees");
+      if (!x) {
+        pane.appendChild(el("div", "pc-empty", config.videEntree));
+        actualiseEdition(pane, "entrees"); return pane;
+      }
+      var liste = el("div", "pc-tech-ranks-list pc-catalog-entries-list");
+      if (x.principale) liste.appendChild(carteEntree(x.principale, x, g.id));
+      entreesDe(x).forEach(function (entree) { liste.appendChild(carteEntree(entree, x, g.id)); });
+      if (!x.principale && !entreesDe(x).length) liste.appendChild(el("div", "pc-empty", config.videEntree));
+      zoneDepotListe(liste, function (drag) {
+        if (drag.type === "entree") {
+          var source = entreesDe(x).findIndex(function (e) { return e.id === drag.id; });
+          if (source >= 0) termineGlisse(reordonne(entreesDe(x), drag.id, null));
+        }
+      }, "entrees");
+      pane.appendChild(liste);
+      if (!config.peutAjouter || config.peutAjouter(x)) pane.appendChild(miniBtn("+ Entrée", null, function () {
+        if (!editionActive("entrees")) return;
+        entreesDe(x).push(config.nouvelleEntree ? config.nouvelleEntree() : nouvelleEntree()); save(); refresh(); rendre();
+      }, "pc-edit-only pc-tech-add"));
+      return pane;
+    }
+    function rendre() {
+      groupesRendus = groupes();
+      conserveRendu();
+      var defilements = Array.from(layout.querySelectorAll(".pc-tech-list, .pc-tech-ranks-list"))
+        .map(function (liste) { return liste.scrollTop; });
+      listeHooks = []; panneaux = {}; layout.innerHTML = "";
+      var selection = selectionValide();
+      layout.appendChild(rendreGroupes());
+      layout.appendChild(rendreElements(selection.groupe));
+      layout.appendChild(rendreEntrees(selection.groupe, selection.element));
+      Array.from(layout.querySelectorAll(".pc-tech-list, .pc-tech-ranks-list")).forEach(function (liste, i) {
+        liste.scrollTop = defilements[i] || 0;
+      });
+      actualiseEdition(panneaux.groupes, "groupes");
+      actualiseEdition(panneaux.elements, "elements");
+      actualiseEdition(panneaux.entrees, "entrees");
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+    }
+
+    function ajusteHauteur() {
+      if (!layout.isConnected || !layout.offsetParent) return;
+      var fixe = document.querySelector(".md-header");
+      var haut = Math.max(layout.getBoundingClientRect().top, fixe ? fixe.offsetHeight : 0);
+      var h = Math.max(260, Math.floor(window.innerHeight - haut - 16));
+      layout.style.setProperty("--tech-h", h + "px");
+    }
+    window.addEventListener("resize", ajusteHauteur);
+    remontageNettoyage.push(function () { window.removeEventListener("resize", ajusteHauteur); });
+    if (window.IntersectionObserver) {
+      var observateur = new IntersectionObserver(function (e) { if (e[0] && e[0].isIntersecting) ajusteHauteur(); });
+      observateur.observe(layout);
+      remontageNettoyage.push(function () { observateur.disconnect(); });
+    }
+    function actualiseColonnes() {
+      var signature = JSON.stringify(groupes());
+      if (signature !== empreinteRendu || (!config.groupesDe && groupes() !== groupesRendus)) rendre();
+      actualiseEdition(panneaux.groupes, "groupes");
+      actualiseEdition(panneaux.elements, "elements");
+      actualiseEdition(panneaux.entrees, "entrees");
+      listeHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
+      ajusteHauteur();
+    }
+    hooks.push(actualiseColonnes);
+    window.addEventListener("jjk-column-mode", actualiseColonnes);
+    remontageNettoyage.push(function () { window.removeEventListener("jjk-column-mode", actualiseColonnes); });
+    rendre();
+    return b;
+  }
+
+  function buildNotesOrganisees() {
+    return buildListeOrganisee({
+      cle: "notesOrganisees", titre: "Notes", groupes: "Dossiers", elements: "Notes", entrees: "Entrées",
+      groupeSingulier: "Dossier", elementSingulier: "Note", elementPluriel: "Notes",
+      groupeDefini: "ce dossier", groupeIndefini: "un dossier", groupeAutre: "un autre dossier",
+      elementDefini: "cette note", elementIndefini: "une note",
+      videGroupe: "Aucun dossier.", videElement: "Aucune note.", videEntree: "Aucune entrée.",
+      groupeSansNom: "Dossier sans nom", elementSansNom: "Note sans nom",
+      nouveauGroupe: "Nouveau dossier", nouvelElement: "Nouvelle note"
+    });
+  }
   // ---------- onglet Fiche : caractéristiques + combat | compétences ----------
   function buildCaracs() {
     // jeu : le total et son jet ; édition : les steppers Création / Achats xp
@@ -4225,7 +5001,8 @@
   // changent, pas à chaque frappe.
   // porteArt : la compétence a un art non vide (même si le stade est redescendu)
   function porteArt(c) {
-    return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim()));
+    return !!(c && c.art && (String(c.art.name || "").trim() || String(c.art.desc || "").trim() ||
+      c.art.cout !== undefined || c.art.acquis === false));
   }
   function artComps() {
     // même ordre que la Fiche : Body, puis Mind, puis Prestance, puis alphabétique
@@ -4243,310 +5020,104 @@
         || a.name.localeCompare(b.name, "fr", { sensitivity: "base" });
     });
   }
-  function artStadeNom() {
-    // premier stade qui ouvre quelque chose (techniques ou art)
-    for (var i = 0; i < DATA.stades.length; i++)
-      if (DATA.stades[i].techniques || DATA.stades[i].art) return DATA.stades[i].nom;
-    return null;
-  }
-  function buildArt() {
-    // jeu : lire les arts et passifs, les envoyer au tchat ; édition :
-    // rédiger, ajouter, retirer
-    var b = block("Arts et passifs", null, "arts");
-    var box = el("div", "pc-arts");
-    b.appendChild(box);
-
-    function artCard(it) {
-      var c = state.comps[it.key];
-      var card = el("div", "pc-av pc-art");
-
-      var top = el("div", "pc-art-top");
-      var chip = el("span", "pc-abbr", ABBR[it.carac] || it.carac);
-      chip.title = it.carac;
-      top.appendChild(chip);
-      top.appendChild(el("span", "pc-art-comp", it.name));
-      top.appendChild(el("span", "pc-art-stade", stadeInfo(c.stade).nom));
-      card.appendChild(top);
-
-      // l'art, au stade qui l'ouvre — et un art DÉJÀ rédigé reste visible et
-      // éditable même si le stade ne l'ouvre plus (même échappatoire que les
-      // passifs : les données du joueur ne disparaissent jamais en silence).
-      // Il n'entre dans l'état qu'à la première frappe : un art resté vierge
-      // ne doit pas générer d'écriture (Attributes Roll20) à la simple
-      // ouverture de la fiche.
-      if (stadeInfo(c.stade).art || porteArt(c)) {
-        var a = c.art || { name: "", desc: "" };
-        var keep = function () { c.art = a; };
-        var head = el("div", "pc-av-head");
-        var nm = el("input", "nm pc-edit-field");
-        nm.type = "text"; nm.placeholder = "Nom du passif"; nm.value = a.name || "";
-        nm.addEventListener("input", function () { a.name = nm.value; keep(); save(); });
-        head.appendChild(nm);
-
-        // coût de l'art, à droite de son nom : rien par défaut (il vient avec
-        // son stade), une valeur le force
-        var aCout = el("span", "pc-tech-cout pc-edit-only");
-        var aIn = el("input");
-        aIn.type = "number"; aIn.min = "0"; aIn.step = "5";
-        aIn.placeholder = "0";
-        aIn.value = (a.cout === null || a.cout === undefined) ? "" : a.cout;
-        aIn.addEventListener("input", function () {
-          var v = parseFloat(aIn.value);
-          if (isFinite(v)) a.cout = clamp(Math.floor(v), 0, 9999);
-          else delete a.cout;
-          keep();
-          refresh();
-        });
-        aCout.title = "Coût de l'art — vide = 0 xp (il vient avec son stade) ; une valeur le force.";
-        aCout.appendChild(aIn);
-        aCout.appendChild(el("span", "u", "xp"));
-        head.appendChild(aCout);
-        // la compétence tient dans le titre : la carte n'a plus de colonne de
-        // libellé, sa description occupe toute la largeur
-        head.appendChild(chatBtn(
-          function () { return "Passif — " + (a.name || it.name) + " (" + it.name + ")"; },
-          function () { return [["", a.desc]]; }));
-        head.appendChild(miniBtn("✕", "Effacer cet art", function () {
-          // un texte rédigé ne part pas sur un simple clic (le ✕ jouxte Chat)
-          if ((String(a.name || "").trim() || String(a.desc || "").trim()) &&
-              !confirm("Effacer l'art « " + (a.name || it.name) + " » et sa description ?")) return;
-          delete c.art;
-          refresh();
-          render();
-        }, "danger pc-edit-only"));
-        card.appendChild(head);
-
-        var d = el("textarea", "pc-notes pc-edit-field");
-        d.rows = 5;
-        d.placeholder = "Effet";
-        d.value = a.desc || "";
-        d.addEventListener("input", function () { a.desc = d.value; keep(); save(); });
-        card.appendChild(d);
-      }
-
-      // les passifs, dès le stade qui les ouvre
-      var techBox = el("div", "pc-techniques");
-      card.appendChild(techBox);
-      function renderTechs() {
-        var cc = state.comps[it.key];
-        techBox.innerHTML = "";
-        // même échappatoire que compXp et artComps : des passifs EXISTANTS
-        // restent lisibles, éditables et supprimables même si le stade courant
-        // ne les ouvre plus (fiche migrée : leur stade d'ouverture a bougé)
-        if (!cc || (!stadeInfo(cc.stade).techniques && !(cc.techniques && cc.techniques.length))) return;
-        cc.techniques.forEach(function (t, i) {
-          var tCard = el("div", "pc-av pc-technique");
-          var tHead = el("div", "pc-av-head");
-          var tNm = el("input", "nm pc-edit-field");
-          tNm.type = "text"; tNm.placeholder = "Nom du passif"; tNm.value = t.name || "";
-          tNm.addEventListener("input", function () { t.name = tNm.value; state.comps[it.key] = cc; save(); });
-          tHead.appendChild(tNm);
-
-          // coût du passif, à droite du nom : vide = tarif de base, une valeur
-          // le force (décision du MJ, passif hors barème)
-          var tCout = el("span", "pc-tech-cout pc-edit-only");
-          var cIn = el("input");
-          cIn.type = "number"; cIn.min = "0"; cIn.step = "5";
-          cIn.value = (t.cout === null || t.cout === undefined) ? "" : t.cout;
-          cIn.addEventListener("input", function () {
-            var v = parseFloat(cIn.value);
-            if (isFinite(v)) t.cout = clamp(Math.floor(v), 0, 9999);
-            else delete t.cout;
-            state.comps[it.key] = cc;
-            refresh();
-          });
-          tCout.appendChild(cIn);
-          tCout.appendChild(el("span", "u", "xp"));
-          // état posé ICI (renderTechs se rejoue à chaque ajout, retrait ou
-          // changement de stade) : un hook global fuirait, cette fonction
-          // n'étant pas vidée par mount()
-          cIn.placeholder = String(DATA.xpParStade);
-          tCout.title = "Coût de ce passif — vide = " + DATA.xpParStade +
-                        " xp (tarif de base) ; une valeur le force.";
-          tHead.appendChild(tCout);
-          tHead.appendChild(chatBtn(
-            function () { return "Passif — " + (t.name || it.name) + " (" + it.name + ")"; },
-            function () { return [["", t.desc]]; }));
-          tHead.appendChild(miniBtn("✕", "Retirer ce passif", function () {
-            if ((String(t.name || "").trim() || String(t.desc || "").trim()) &&
-                !confirm("Retirer le passif « " + (t.name || "sans nom") + " » ?")) return;
-            cc.techniques.splice(i, 1); state.comps[it.key] = cc; refresh(); renderTechs();
-          }, "danger pc-edit-only"));
-          tCard.appendChild(tHead);
-          var tD = el("textarea", "pc-notes pc-edit-field");
-          tD.rows = 3;
-          tD.placeholder = "Effet";
-          tD.value = t.desc || "";
-          tD.addEventListener("input", function () { t.desc = tD.value; state.comps[it.key] = cc; save(); });
-          tCard.appendChild(tD);
-          techBox.appendChild(tCard);
-        });
-        // en acheter de NOUVEAUX reste réservé au stade qui les ouvre
-        if (!stadeInfo(cc.stade).techniques) { applyEdit(b, "arts"); return; }
-        // le coût annoncé est celui d'un passif neuf : le tarif de base
-        // (l'art de la compétence est repris dans la comparaison, sinon son
-        // coût forcé fausserait la différence)
-        function avecPassifNeuf() {
-          return { stade: cc.stade, art: cc.art, techniques: cc.techniques.concat([{ name: "", desc: "" }]) };
-        }
-        var prochaine = compXp(avecPassifNeuf()) - compXp(cc);
-        techBox.appendChild(miniBtn("+ passif (" + prochaine + " xp)", null, function () {
-          var test = avecPassifNeuf();
-          var delta = compXp(test) - compXp(cc);
-          if (delta > 0 && xpRestant() < delta) { flash("XP insuffisant."); return; }
-          if (delta > 0 && compXp(test) > compCap()) { flash("Pas plus d'un quart de l'xp total (" + compCap() + " xp) dans une seule compétence."); return; }
-          cc.techniques.push({ name: "", desc: "" }); state.comps[it.key] = cc; refresh(); renderTechs();
-        }, "pc-edit-only"));
-        applyEdit(b, "arts");
-      }
-      renderTechs();
-      return card;
-    }
-
-    function render() {
-      box.innerHTML = "";
-      var items = artComps();
-      if (!items.length) {
-        var nom = artStadeNom();
-        box.appendChild(el("div", "pc-empty",
-          nom ? "Aucune compétence n'a atteint le stade " + nom + "." : "Aucun stade n'ouvre de passif ou d'art."));
-        return;
-      }
-      items.forEach(function (it) { box.appendChild(artCard(it)); });
-      applyEdit(b, "arts");
-    }
-
-    // reconstruire seulement quand les compétences éligibles ou leur stade
-    // changent : les frappes (save sans refresh) ne détruisent pas le focus
-    var lastSig = null;
-    hooks.push(function () {
-      var sig = artComps().map(function (it) {
-        var c = state.comps[it.key];
-        return it.key + ":" + (c ? c.stade : 0);
-      }).join("|");
-      if (sig !== lastSig) { lastSig = sig; render(); }
-    });
-    return b;
-  }
-
-  // ---------- onglet Énergie ----------
-  // Les coûts des techniques sont indépendants de l'XP : ils alimentent le
-  // budget EO de l'en-tête, distinct du courant de la réserve EO sur la fiche.
-  function buildEnergie() {
-    var b = block("Techniques occultes", null, "energie");
-    var box = el("div", "pc-arts pc-energie");
-    b.appendChild(box);
-
-    function render() {
-      box.innerHTML = "";
-      if (!Array.isArray(state.energie)) state.energie = [];
-
-      if (!state.energie.length)
-        box.appendChild(el("div", "pc-empty", "Aucune catégorie d'énergie occulte."));
-
-      state.energie.forEach(function (categorie, ci) {
-        var card = el("div", "pc-av pc-art pc-energie-categorie");
-        var head = el("div", "pc-av-head");
-        var nom = el("input", "nm pc-edit-field");
-        nom.type = "text";
-        nom.placeholder = "Nom de la catégorie";
-        nom.value = categorie.name || "";
-        nom.addEventListener("input", function () {
-          categorie.name = nom.value;
-          save();
-        });
-        head.appendChild(nom);
-        head.appendChild(miniBtn("✕", "Supprimer cette catégorie", function () {
-          var contient = !!String(categorie.name || "").trim() ||
-            (categorie.techniques || []).some(function (t) {
-              return String(t.name || "").trim() || String(t.desc || "").trim();
+  function artGroupes() {
+    var articles = artComps();
+    return CHAMPS.map(function (champ) {
+      return {
+        id: champ,
+        get nom() { return state.artCategories[champ] || champ; },
+        set nom(nom) { state.artCategories[champ] = nom; },
+        elements: articles.filter(function (it) { return it.carac === champ; }).map(function (it) {
+          var c = state.comps[it.key];
+          var art = c.art || { name: "", desc: "", mode: "plain", acquis: true };
+          var principale = null;
+          if (stadeInfo(c.stade).art || porteArt(c)) {
+            principale = { id: "art-" + it.key, principale: true };
+            ["name", "desc", "mode", "cout", "acquis"].forEach(function (key) {
+              Object.defineProperty(principale, key, {
+                enumerable: true,
+                get: function () { return art[key]; },
+                set: function (value) {
+                  if (value === undefined) delete art[key];
+                  else art[key] = value;
+                  c.art = art;
+                }
+              });
             });
-          if (contient && !confirm("Supprimer la catégorie « " +
-              (categorie.name || "sans nom") + " » et toutes ses techniques ?")) return;
-          state.energie.splice(ci, 1);
-          save();
-          render();
-          refresh();
-        }, "danger pc-edit-only"));
-        card.appendChild(head);
-
-        var liste = el("div", "pc-techniques");
-        (categorie.techniques || []).forEach(function (technique, ti) {
-          var tCard = el("div", "pc-av pc-technique pc-energie-technique");
-          var tHead = el("div", "pc-av-head");
-          var tNom = el("input", "nm pc-edit-field");
-          tNom.type = "text";
-          tNom.placeholder = "Nom de la technique";
-          tNom.value = technique.name || "";
-          tNom.addEventListener("input", function () {
-            technique.name = tNom.value;
-            save();
-          });
-          tHead.appendChild(tNom);
-
-          var cout = el("span", "pc-tech-cout");
-          var coutIn = el("input", "pc-edit-field");
-          coutIn.type = "number";
-          coutIn.min = "0";
-          coutIn.max = "9999";
-          coutIn.step = "1";
-          coutIn.setAttribute("aria-label", "Coût en énergie occulte");
-          coutIn.title = "Coût de cette technique en énergie occulte";
-          coutIn.value = String(technique.cout == null ? 0 : technique.cout);
-          coutIn.addEventListener("input", function () {
-            var v = parseFloat(coutIn.value);
-            technique.cout = isFinite(v) ? clamp(Math.floor(v), 0, 9999) : 0;
-            save();
-            refresh();
-          });
-          cout.appendChild(coutIn);
-          cout.appendChild(el("span", "u", "EO"));
-          tHead.appendChild(cout);
-          tHead.appendChild(miniBtn("✕", "Retirer cette technique", function () {
-            if ((String(technique.name || "").trim() || String(technique.desc || "").trim()) &&
-                !confirm("Retirer la technique « " + (technique.name || "sans nom") + " » ?")) return;
-            categorie.techniques.splice(ti, 1);
-            save();
-            render();
-            refresh();
-          }, "danger pc-edit-only"));
-          tCard.appendChild(tHead);
-
-          var description = el("textarea", "pc-notes pc-edit-field");
-          description.rows = 3;
-          description.placeholder = "Description / effet";
-          description.value = technique.desc || "";
-          description.addEventListener("input", function () {
-            technique.desc = description.value;
-            save();
-          });
-          tCard.appendChild(description);
-          liste.appendChild(tCard);
-        });
-        card.appendChild(liste);
-        card.appendChild(miniBtn("+ technique", "Ajouter une technique à cette catégorie", function () {
-          if (!Array.isArray(categorie.techniques)) categorie.techniques = [];
-          categorie.techniques.push({ name: "", cout: 0, desc: "" });
-          save();
-          render();
-          refresh();
-        }, "pc-edit-only"));
-        box.appendChild(card);
-      });
-
-      box.appendChild(miniBtn("+ catégorie", "Créer une catégorie d'énergie occulte", function () {
-        state.energie.push({ name: "", techniques: [] });
-        save();
-        render();
-        refresh();
-      }, "pc-edit-only"));
-      applyEdit(b, "energie");
-    }
-
-    render();
-    return b;
+          }
+          return {
+            id: it.key, stade: c.stade,
+            get nom() { return art.name ? art.name + " · " + it.name : it.name; },
+            set nom(nom) {
+              art.name = nom;
+              c.art = art;
+            },
+            get nomEdition() { return principale ? art.name : null; },
+            entrees: c.techniques,
+            principale: principale
+          };
+        })
+      };
+    });
   }
 
+  function valideAchatArt(element, entree, cout, acquis) {
+    if (!acquis) return true;
+    var c = state.comps[element.id];
+    var futur = Object.assign({}, c);
+    var prochaine = Object.assign({}, entree, { cout: cout, acquis: acquis });
+    if (entree.principale) futur.art = prochaine;
+    else futur.techniques = c.techniques.map(function (t) { return t === entree ? prochaine : t; });
+    var xp = compXp(futur, element.id);
+    var delta = xp - compXp(c, element.id);
+    if (delta <= 0) return true;
+    if (xpRestant() < delta) { flash("XP insuffisant."); return false; }
+    if (xp > compCap()) {
+      flash("Pas plus d’un quart de l’XP total (" + compCap() + " XP) dans une seule compétence.");
+      return false;
+    }
+    return true;
+  }
+
+  function buildArt() {
+    return buildListeOrganisee({
+      titre: "Arts et passifs", groupes: "Champs", elements: "Arts", entrees: "Entrées",
+      groupeSansNom: "Champ sans nom", elementSansNom: "Art sans nom",
+      videGroupe: "Aucun champ.", videElement: "Aucune compétence n’ouvre d’art ou de passif.", videEntree: "Aucune entrée.",
+      groupesDe: artGroupes, structureFixe: true, unite: "XP", nomChamp: "name", envoi: true,
+      cout: function (entree) { return entree.principale ? Number(entree.cout) || 0 : techXp(entree); },
+      valideAchat: valideAchatArt,
+      effacePrincipale: function (element) { delete state.comps[element.id].art; },
+      peutAjouter: function (element) { return stadeInfo(element.stade).techniques; },
+      nouvelleEntree: function () { return { id: uid("passif"), name: "", desc: "", mode: "plain", acquis: false }; }
+    });
+  }
+
+  // Budget de construction. Les réserves courante et maximale sont indépendantes.
+  function eoDepense() {
+    var total = 0;
+    (state.energieOrganisee || []).forEach(function (categorie) {
+      (categorie.elements || []).forEach(function (technique) {
+        (technique.entrees || []).forEach(function (entree) {
+          if (entree.acquis) total += entree.cout || 0;
+        });
+      });
+    });
+    return total;
+  }
+
+  function buildEnergie() {
+    return buildListeOrganisee({
+      cle: "energieOrganisee", titre: "Techniques occultes", groupes: "Catégories", elements: "Techniques", entrees: "Entrées",
+      groupeSingulier: "Catégorie", elementSingulier: "Technique", elementPluriel: "Techniques",
+      groupeDefini: "cette catégorie", groupeIndefini: "une catégorie", groupeAutre: "une autre catégorie",
+      elementDefini: "cette technique", elementIndefini: "une technique",
+      videGroupe: "Aucune catégorie.", videElement: "Aucune technique.", videEntree: "Aucune entrée.",
+      groupeSansNom: "Catégorie sans nom", elementSansNom: "Technique sans nom",
+      nouveauGroupe: "Nouvelle catégorie", nouvelElement: "Nouvelle technique",
+      unite: "EO", cout: function (entree) { return entree.cout || 0; }
+    });
+  }
   // ---------- onglet Équipement ----------
   function eqField(labelTxt, obj, key, wide) {
     var i = el("input", "pc-edit-field");
@@ -5661,8 +6232,67 @@
       ids[m.id]=true;if(m.mode!=='markdown')m.mode='plain';if(!Number.isFinite(m.at)||m.at<0||m.at>8640000000000000)m.at=0;
     });if(invalid&&strict)throw Error("Message de Notes illisible.");return value;
   }
+  // Extensions Markdown communes aux Notes et aux descriptions de Techniques.
+  // Les conteneurs d'alignement sont une syntaxe Markdown dédiée : le HTML brut
+  // reste désactivé, même si le moteur produit lui-même les balises de rendu.
+  function pluginMarkdownJJK(md){
+    function ouvreAlignement(state,startLine,endLine,silent){
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      var marqueur=/^:::\s*(center|justify|left|right)\s*$/.exec(state.src.slice(pos,state.eMarks[startLine]).trim());
+      if(!marqueur)return false;
+      if(silent)return true;
+      var token=state.push('jjk_align_open','div',1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      token.attrSet('class','pc-md-align pc-md-align-'+marqueur[1]);
+      state.env.jjkAlignDepth=(state.env.jjkAlignDepth||0)+1;
+      state.line=startLine+1;
+      return true;
+    }
+    function fermeAlignement(state,startLine,endLine,silent){
+      if(!(state.env.jjkAlignDepth>0))return false;
+      var pos=state.bMarks[startLine]+state.tShift[startLine];
+      if(state.sCount[startLine]-state.blkIndent>=4)return false;
+      if(state.src.slice(pos,state.eMarks[startLine]).trim()!==':::')return false;
+      if(silent)return true;
+      var token=state.push('jjk_align_close','div',-1);
+      token.block=true;token.map=[startLine,startLine+1];token.markup=':::';
+      state.env.jjkAlignDepth--;
+      state.line=startLine+1;
+      return true;
+    }
+    md.block.ruler.before('paragraph','jjk_align_close',fermeAlignement,{alt:['paragraph','reference']});
+    md.block.ruler.before('paragraph','jjk_align_open',ouvreAlignement,{alt:['paragraph','reference']});
+    md.renderer.rules.jjk_align_open=function(tokens,index){return '<div class="'+tokens[index].attrGet('class')+'">\n';};
+    md.renderer.rules.jjk_align_close=function(){return '</div>\n';};
+
+    // Listes de tâches GFM : - [ ] et - [x]. Les cases sont décoratives,
+    // désactivées, et n'ajoutent aucune donnée aux Notes ou au personnage.
+    md.core.ruler.after('inline','jjk_task_list',function(state){
+      var pile=[];
+      state.tokens.forEach(function(token){
+        if(token.type==='list_item_open'){pile.push({token:token,traite:false});return;}
+        if(token.type==='list_item_close'){pile.pop();return;}
+        if(!pile.length||pile[pile.length-1].traite||token.type!=='inline'||!token.children)return;
+        var index=token.children.findIndex(function(child){return child.type==='text';});
+        if(index<0)return;
+        var texte=token.children[index],match=/^\[([ xX])\](?:\s+|$)/.exec(texte.content);
+        if(!match)return;
+        var coche=match[1].toLowerCase()==='x';
+        var caseCoche=Object.assign({},texte,{type:'html_inline',tag:'',nesting:0,content:'<input class="pc-md-task-checkbox" type="checkbox" disabled'+(coche?' checked':'')+'>'});
+        token.children.splice(index,0,caseCoche);
+        texte.content=texte.content.slice(match[0].length);
+        pile[pile.length-1].token.attrJoin('class','pc-md-task-item');
+        pile[pile.length-1].traite=true;
+      });
+    });
+  }
   var notesMarkdown=null;
-  function moteurNotesMarkdown(){if(!notesMarkdown&&window.markdownit)notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true});return notesMarkdown;}
+  function moteurNotesMarkdown(){
+    if(!notesMarkdown&&window.markdownit)
+      notesMarkdown=window.markdownit({html:false,breaks:true,linkify:true}).use(pluginMarkdownJJK);
+    return notesMarkdown;
+  }
   function notesTexteRecherche(message){
     var md=moteurNotesMarkdown(),words=[];
     function visit(tokens){tokens.forEach(function(t){if(t.children)visit(t.children);else if(['text','code_inline','code_block','fence'].indexOf(t.type)>=0)words.push(t.content);else if(t.type==='softbreak'||t.type==='hardbreak'||t.block&&t.nesting===-1)words.push(' ');});}
@@ -5672,7 +6302,11 @@
   function notesRendu(target,text,mode){
     target.classList.toggle('pc-notes-markdown',mode==='markdown');var md=moteurNotesMarkdown();
     if(mode!=='markdown'||!md||!window.DOMPurify){target.textContent=text;return;}
-    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{ALLOWED_TAGS:['p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td'],ALLOWED_ATTR:['href','src','alt','title','start','align']});
+    target.innerHTML=window.DOMPurify.sanitize(md.render(text),{
+      ALLOWED_TAGS:['div','p','br','hr','h1','h2','h3','h4','h5','h6','strong','em','s','ul','ol','li','blockquote','pre','code','a','img','table','thead','tbody','tr','th','td','input'],
+      ALLOWED_ATTR:['href','src','alt','title','start','align','class','type','checked','disabled'],
+      ALLOW_DATA_ATTR:false
+    });
     Array.prototype.forEach.call(target.querySelectorAll('a'),function(a){a.target='_blank';a.rel='noopener noreferrer';});
     Array.prototype.forEach.call(target.querySelectorAll('img'),function(img){img.loading='lazy';img.decoding='async';});
   }
@@ -5680,7 +6314,7 @@
   function buildNotes(){
     var vueKey=(location.hash.match(/(?:^#|&)c=([^&]+)/)||[])[1]||state.name||"local";
     var remembered=notesVues[vueKey]||null;
-    var b=block('Notes');b.classList.add('pc-notes-chat');
+    var b=block('Journal');b.classList.add('pc-notes-chat');
     var searchBar=el('div','pc-notes-search'),search=el('input');search.type='search';search.placeholder='Rechercher dans les notes…';search.setAttribute('aria-label','Rechercher dans toutes les notes');
     var clear=miniBtn('×','Effacer la recherche',function(){search.value='';recherche();search.focus();});searchBar.appendChild(search);searchBar.appendChild(clear);b.appendChild(searchBar);
     var count=el('div','pc-notes-count');count.setAttribute('role','status');b.appendChild(count);
@@ -5709,7 +6343,7 @@
     search.addEventListener('input',function(){clearTimeout(timer);timer=setTimeout(recherche,150);});
     search.addEventListener('keydown',function(e){if(e.key==='Escape'){search.value='';recherche();}});
     function redrawData(forceBottom){
-      var value=JSON.stringify(state.notesJournal !== undefined ? state.notesJournal : state.notes);if(value===lastValue&&!forceBottom)return;
+      var value=JSON.stringify(state.notesJournal);if(value===lastValue&&!forceBottom)return;
       var d=data(),key=JSON.stringify(d.messages);lastValue=value;if(key===lastKey&&!forceBottom)return;
       var nearBottom=history.scrollHeight-history.clientHeight-history.scrollTop<45,first=results[from]&&results[from].id;
       lastKey=key;rows=d.messages.slice().sort(function(a,c){return a.at-c.at||(a.id<c.id?-1:a.id>c.id?1:0);});filter();
@@ -5718,7 +6352,7 @@
       render(forceBottom||following&&nearBottom);
     }
     function commit(){state.notesJournal=data();state.notes=data().messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(false);}
-    function ajoute(text,format){clearTimeout(timer);search.value='';query='';var d=data();d.messages.push({id:'n-'+uid()+'-'+Math.random().toString(36).slice(2),at:Date.now(),text:text,mode:format});state.notesJournal=d;state.notes=d.messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(true);}
+    function ajoute(text,format){clearTimeout(timer);search.value='';query='';var d=data();d.messages.push({id:uid("n"),at:Date.now(),text:text,mode:format});state.notesJournal=d;state.notes=d.messages.map(function(m){return m.text;}).join("\n\n");save();lastValue=null;redrawData(true);}
     function envoie(){if(!ficheModifiable()||!input.value.trim())return;ajoute(input.value,mode);input.value='';previewing=false;updatePreview();input.focus();}
     input.addEventListener('input',updatePreview);
     input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing){e.preventDefault();envoie();}});
@@ -5747,7 +6381,7 @@
         var message=el('article','pc-note-message');message.dataset.id=m.id;var head=el('div','pc-note-head'),time=el('time');
         if(m.at){var date=new Date(m.at);time.dateTime=date.toISOString();time.textContent=date.toLocaleString('fr-FR',{dateStyle:'short',timeStyle:'short'});}else time.textContent='Anciennes notes';head.appendChild(time);
         var tools=el('div','pc-note-actions');tools.appendChild(miniBtn('Modifier',null,function(){commence(m);}));
-        tools.appendChild(miniBtn('Supprimer',null,function(){var before=version(m);confirmer('Supprimer cette note ?','Cette note sera retirée de l’historique.','Supprimer',function(){var current=record(m.id);if(!current)return;if(version(current)!==before){flash('La note a changé depuis l’ouverture de la confirmation. Relisez-la avant de la supprimer.');return;}var d=data();d.messages=d.messages.filter(function(n){return n.id!==m.id;});state.notesJournal=d;state.notes=d.messages.map(function(n){return n.text;}).join("\n\n");if(editing&&editing.id===m.id)editing=null;delete drafts[m.id];commit();});}));head.appendChild(tools);message.appendChild(head);
+        tools.appendChild(miniBtn('Supprimer',null,function(){var before=version(m);confirmer('Supprimer cette note ?','Cette note sera retirée de l’historique.','Supprimer',function(){var current=record(m.id);if(!current)return;if(version(current)!==before){flash('La note a changé depuis l’ouverture de la confirmation. Relisez-la avant de la supprimer.');return;}var d=data();d.messages=d.messages.filter(function(n){return n.id!==m.id;});state.notesJournal=d;if(editing&&editing.id===m.id)editing=null;delete drafts[m.id];commit();});}));head.appendChild(tools);message.appendChild(head);
         if(editing&&editing.id===m.id)edition(message,m);else{var body=el('div','pc-notes-body');notesRendu(body,m.text,m.mode);message.appendChild(body);}messages.appendChild(message);
       });
       // Préserver le brouillon même si son message est supprimé à distance.
@@ -7151,6 +7785,7 @@
     { id: "comps",      titre: "Compétences",       onglet: "fiche", colonne: "droite", build: buildComps },
     // ---- onglet Art ----
     { id: "arts",       titre: "Arts et passifs",   onglet: "art", colonne: "seule", build: buildArt },
+    { id: "notesOrganisees", titre: "Notes", onglet: "notes", colonne: "seule", build: buildNotesOrganisees },
     { id: "energie",     titre: "Techniques occultes", onglet: "energie", colonne: "seule", build: buildEnergie },
     // ---- onglet Équipement ----
     { id: "armes",      titre: "Armes",             onglet: "equipement", colonne: "gauche", build: buildArmes },
@@ -7160,7 +7795,7 @@
     { id: "perso",      titre: "Personnalité",      onglet: "bio", colonne: "gauche", build: buildPerso },
     { id: "avantages",  titre: "Avantages",         onglet: "bio", colonne: "gauche", build: buildAvantages },
     { id: "bg",         titre: "Background",        onglet: "bio", colonne: "droite", build: buildBackground },
-    { id: "notes",      titre: "Notes",             onglet: "bio", colonne: "droite", build: buildNotes },
+    { id: "notes",      titre: "Journal",             onglet: "bio", colonne: "droite", build: buildNotes },
     // ---- onglet Options ----
     // À GAUCHE, dans l'ordre de la Fiche : ce qui touche aux caractéristiques
     // d'abord (leurs modificateurs, puis où est parti l'xp), la création
@@ -7632,7 +8267,7 @@
     // Clés qui changent la liste ou la structure d'un module JJK. Les valeurs
     // simples restent dans les hooks de refresh, sans détruire les champs.
     var structural = {
-      notes: ["notes"], notesJournal: ["notes"], background: ["bg"],
+      notes: [], notesJournal: [], notesOrganisees: [], artCategories: [], background: ["bg"],
       avantages: ["avantages"],
       comps: ["comps", "optcomps", "armescomp"],
       customComps: ["comps", "optcomps"],
@@ -7645,7 +8280,7 @@
       armesComps: ["comps", "optcomps", "armescomp"],
       langues: ["langues", "comps", "optcomps"],
       armes: ["armes"], armures: ["armures"],
-      energie: ["energie"],
+      energie: [], energieOrganisee: [],
       inv: ["inv"], inventaire: ["inv"], de: ["jets"]
     };
     var scalar = [
