@@ -60,14 +60,11 @@
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
     tete.appendChild(n);
-    var consommation;
     if (editable) {
       box.classList.add("pc-editable");
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
       tete.appendChild(gear);
-      consommation = el("span", "pc-vital-consommation");
-      tete.appendChild(consommation);
     }
     var etat = el("span", "pc-vital-etat", "");
     tete.appendChild(etat);
@@ -105,7 +102,13 @@
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
       state.etat[cle] = courant(cle) + d;
     }));
+    var cout;
     if (editable) {
+      var consommation = el("div", "pc-segs pc-vital-consommation");
+      consommation.appendChild(el("span", "c pc-info", "Coût"));
+      cout = el("span", "c pc-info");
+      consommation.appendChild(cout);
+      box.appendChild(consommation);
       var reglages = el("div", "pc-vital-reglages pc-edit-only");
       reglages.appendChild(champReglageVital(cle, "Ajustement du coût (%)", function () {
         return reglageReserveVitale(cle);
@@ -116,7 +119,7 @@
     }
 
     hooks.push(function () {
-      if (consommation) consommation.textContent = "Coût " + fmtP(effetConsommation(cle)) + " %";
+      if (cout) cout.textContent = fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
