@@ -89,10 +89,21 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const hydratation=p.getByRole('button',{name:'Modifier Hydratation',exact:true});
  assert.ok(await hydratation.evaluate(g=>{
    const titre=g.parentElement.querySelector('.pc-vital-titre').getBoundingClientRect();
-   const valeur=g.parentElement.querySelector('.pc-vital-val').getBoundingClientRect();
    const rouage=g.getBoundingClientRect();
-   return rouage.top>=titre.bottom && Math.abs(rouage.right-valeur.right)<.6;
+   return rouage.top>=titre.bottom && Math.abs(rouage.left-titre.left)<.6;
  }));
+ const survie=p.locator('[data-module="survie"]');
+ const bordSurvie=()=>survie.evaluate(n=>getComputedStyle(n).borderTopColor);
+ const bordRepos=await bordSurvie();
+ await hydratation.click();
+ assert.notEqual(await bordSurvie(),bordRepos);
+ const repos=survie.getByRole('button',{name:'Modifier Repos',exact:true});
+ await repos.click();
+ await hydratation.click();
+ assert.notEqual(await bordSurvie(),bordRepos,'Le contour reste doré si un autre rouage est ouvert');
+ await repos.click();
+ assert.equal(await bordSurvie(),bordRepos);
+ assert.equal(await p.locator('[data-module="pm"] .pc-vital-sacrifice .pc-info').innerText(),'SACRIFICE');
  await p.locator('[data-module="pm"]').screenshot({path:'/tmp/owd-consommation-4.12.png'});
  const movement=p.locator('[data-module="mouvement"]');const speedSteps=Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText());
  await change("s.inv.objets[0].stats.vitesse=9");assert.equal(Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText()),speedSteps-1);

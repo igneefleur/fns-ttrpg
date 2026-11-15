@@ -96,8 +96,8 @@
 
     if (cle === "pm") {
       var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
-      sacrifice.appendChild(el("span", "c pc-info", "Sacrifice tellurique"));
-      sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
+      sacrifice.appendChild(el("span", "c pc-info", "Sacrifice"));
+      sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
       reglages.appendChild(sacrifice);
     }
