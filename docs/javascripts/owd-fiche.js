@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.3b";
+  var RELEASE = "4.37.4b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1823,8 +1823,11 @@
   // Ce que l'effondrement laisse d'un maximum, en pour cent. À appliquer sur le
   // maximum ENTIER (modificateurs compris) : l'effondrement diminue ce que le
   // corps peut porter, pas seulement ce que la caractéristique lui donnait.
-  function effReste(pct) {
-    return clamp(100 - pct * effondrement(), 0, 100) / 100;
+  function tauxMaximumEffondrement(cle) {
+    var base = 100;
+    var eft = state.effDesactive ? 0 : -clamp(num(effDef()[cle + "ParNiveau"], 0) * effondrement(), 0, 100);
+    var atr = state.effDesactive ? 0 : reglageReserveVitale("eff_" + cle);
+    return { base: base, eft: eft, total: Math.max(0, base + eft + atr) };
   }
   function pvMaxAuto() {
     return capAuto("pv");
@@ -1850,10 +1853,10 @@
     return demande ? Math.min(demande, sacrificeTelluriqueMax()) : 0;
   }
   function pvMax() {
-    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().pvParNiveau, 0))), {});
+    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * (tauxMaximumEffondrement("pv").total / 100)), {});
   }
   function peMax() {
-    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().peParNiveau, 0))), {});
+    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * (tauxMaximumEffondrement("pe").total / 100)), {});
   }
   function pmMaxAuto() { return capAuto("pm"); }
   function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto) + 2 * sacrificeTellurique(), {}); }
@@ -2912,7 +2915,7 @@
       (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),
       recupAjoutsModule(false).filter(function(r){return r.categorie==='digestive';})]);
     var causes=['pr','ps','ph','pi','charge','contenance','chaud','froid','alcool','autre'].map(function(k){return [k,effPartie(k)];});
-    add('effondrement',[caps.effondrement,causes,effSpecifiques()]);
+    add('effondrement',[caps.effondrement,causes,effSpecifiques(),tauxMaximumEffondrement('pv'),tauxMaximumEffondrement('pe')]);
     add('mouvement',[effetBonus('pas'),effetBonus('vitesse'),effSpecifiques().pas]);
     add('recuperation',recupListeModule().map(function(x){return [x,recupEtatVueModule(x)];}));
     add('desaction',caps.desAction);
@@ -5790,14 +5793,14 @@
     return champ;
   }
 
-  function titreReserve(scope, cle, nom) {
+  function titreReserve(scope, cle, nom, editable) {
     var tete = el("div", "pc-vital-tete pc-vital-tete-reglable");
     var titre = el("div", "pc-block-title pc-vital-titre");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, nom);
     titre.appendChild(n);
     tete.appendChild(titre);
-    if (reserveAvecTaux(cle)) {
+    if (editable === true || reserveAvecTaux(cle)) {
       tete.classList.add("pc-vital-tete-avec-rouage");
       scope.classList.add("pc-editable");
       var gear = gearBtn(scope, cle);
@@ -5807,54 +5810,56 @@
     return tete;
   }
 
-  function ajouteTauxReserve(scope, cle, nom) {
+  function ajouteBandeauTaux(scope, nom, reglages, supplement) {
     var taux = el("div", "pc-segs pc-vital-taux");
-    var perte = el("span", "c pc-info"), gain = el("span", "c pc-info");
-    taux.appendChild(perte);
-    taux.appendChild(gain);
-    scope.appendChild(taux);
-
-    var reglages = el("div", "pc-vital-reglages pc-edit-only");
+    var edition = el("div", "pc-vital-reglages pc-edit-only");
     var detail = el("div", "pc-vital-detail-taux");
-    var vues = [["perte", "Perte", cle], ["gain", "Gain", "gain_" + cle]].map(function (reglage) {
+    edition.appendChild(detail);
+    reglages.forEach(function (reglage) {
+      var libelle = reglage[0], cle = reglage[1], lire = reglage[2];
+      var total = el("span", "c pc-info");
+      taux.appendChild(total);
       var sources = el("div", "pc-segs pc-vital-sources");
       sources.setAttribute("role", "group");
-      sources.setAttribute("aria-label", nom + " — détail " + reglage[1]);
-      var base = el("span", "c pc-info");
-      var effets = el("span", "c pc-info");
+      sources.setAttribute("aria-label", nom + " — détail " + libelle);
+      var base = el("span", "c pc-info"), effets = el("span", "c pc-info");
+      base.title = libelle + " · Base";
+      effets.title = libelle + " · Effets";
       sources.appendChild(base);
       sources.appendChild(effets);
-      var champ = champReglageVital(reglage[2], nom + " — " + reglage[1] + " ATR (%)",
-        function () { return reglageReserveVitale(reglage[2]); }, function (v) { return v; });
+      var champ = champReglageVital(cle, nom + " — " + libelle + " ATR (%)",
+        function () { return reglageReserveVitale(cle); }, function (v) { return v; });
+      champ.placeholder = "±";
       champ.title = champ.getAttribute("aria-label");
       sources.appendChild(champ);
       detail.appendChild(sources);
-      return { sens: reglage[0], nom: reglage[1], base: base, effets: effets };
-    });
-    reglages.appendChild(detail);
 
+      hooks.push(function () {
+        var t = lire(), effet = Number(fmtP(t.eft));
+        total.textContent = libelle + " " + fmtP(t.total) + " %";
+        base.textContent = fmtP(t.base);
+        effets.textContent = effet ? sign(effet) : "0";
+      });
+    });
+    scope.appendChild(taux);
+    if (supplement) edition.appendChild(supplement);
+    scope.appendChild(edition);
+  }
+
+  function ajouteTauxReserve(scope, cle, nom) {
+    var sacrifice = null;
     if (cle === "pm") {
-      var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
+      sacrifice = el("div", "pc-segs pc-vital-sacrifice");
       sacrifice.appendChild(el("span", "c pc-info", "Sacrifice"));
       sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
-      reglages.appendChild(sacrifice);
     }
-    scope.appendChild(reglages);
-
-    hooks.push(function () {
-      var p = tauxReserve(cle, "perte"), g = tauxReserve(cle, "gain");
-      perte.textContent = "Perte " + fmtP(p.total) + " %";
-      gain.textContent = "Gain " + fmtP(g.total) + " %";
-      vues.forEach(function (vue) {
-        var taux = vue.sens === "perte" ? p : g;
-        var effet = Number(fmtP(taux.eft));
-        vue.base.textContent = fmtP(100 + taux.art + taux.eqp);
-        vue.effets.textContent = effet ? sign(effet) : "0";
-        vue.base.title = vue.nom + " · Base (100 + Arts + Équipements)";
-        vue.effets.title = vue.nom + " · Effets";
-      });
-    });
+    ajouteBandeauTaux(scope, nom, [["Perte", cle, function () { return detail("perte"); }],
+      ["Gain", "gain_" + cle, function () { return detail("gain"); }]], sacrifice);
+    function detail(sens) {
+      var t = tauxReserve(cle, sens);
+      return { base: 100 + t.art + t.eqp, eft: t.eft, total: t.total };
+    }
   }
 
   function reserveVitale(cle, provenance, nomAffiche) {
@@ -5929,20 +5934,21 @@
   }
   // L'effondrement descend le maximum de PV et de PE : l'infobulle le dit, ou
   // le chiffre paraît faux au joueur qui vérifie la formule de tête.
-  function provenanceEff(cle, champ) {
+  function provenanceEff(cle) {
     return function () {
       var t = provenanceCap(cle)();
       var e = effondrement();
-      if (e > 0) t += " · effondrement " + e + " (−" + (num(effDef()[champ], 0) * e) + " %)";
+      var variation = tauxMaximumEffondrement(cle).total - 100;
+      if (variation) t += " · effondrement " + e + " (" + sign(variation) + " %)";
       return t;
     };
   }
   function seule(r) { var c = carteVitale(); c.appendChild(r.el); return c; }
   function buildPv() {
-    return seule(reserveVitale("pv", provenanceEff("pv", "pvParNiveau")));
+    return seule(reserveVitale("pv", provenanceEff("pv")));
   }
   function buildPe() {
-    var r = reserveVitale("pe", provenanceEff("pe", "peParNiveau"));
+    var r = reserveVitale("pe", provenanceEff("pe"));
     // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
     return seule(r);
@@ -7209,21 +7215,27 @@
   }
   // ---- Effondrement : dix causes, lecture seule et modificateur direct ----
   function buildEffondrement() {
-    var b = block("Effondrement");
-    function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
-    var maxima = el("div", "pc-stat pc-eff-stat");
-    var pv = caseStat(maxima, "PV"), pe = caseStat(maxima, "PE");
-    pv.title = "PV maximums restants"; pe.title = "PE maximums restants";
-    b.appendChild(maxima);
+    var b = carteVitale();
+    var bandeau = el("div", "pc-vital-res pc-eff-global");
+    var tete = titreReserve(bandeau, "effondrement", "Effondrement", true);
+    var lecture = el("span", "pc-vital-val");
+    var valeurNiveau = el("span", "pc-vital-num pc-eff-global-valeur");
+    var maximum = el("span", "pc-vital-max");
+    lecture.appendChild(valeurNiveau);
+    lecture.appendChild(maximum);
+    tete.appendChild(lecture);
+    bandeau.appendChild(tete);
+    var jauge = el("span", "pc-vital-jauge pc-eff-global-jauge"), remplissage = el("i");
+    jauge.appendChild(remplissage);
+    bandeau.appendChild(jauge);
+    ajouteBandeauTaux(bandeau, "Effondrement",
+      [["PV", "eff_pv", function () { return tauxMaximumEffondrement("pv"); }],
+       ["PE", "eff_pe", function () { return tauxMaximumEffondrement("pe"); }]]);
+    b.appendChild(bandeau);
 
-    var cadre = el("div", "pc-stat-stack");
-    var niveau = el("div", "pc-stat pc-eff-stat");
-    var valeurNiveau = caseStat(niveau, "Effondrement");
-    cadre.appendChild(niveau);
+    var corps = el("div", "pc-eff-corps");
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués");
-    cadre.appendChild(effetsActifs);
-    b.appendChild(cadre);
 
     var commandes = el("div", "pc-segs pc-eff-commandes");
     var desactive = el("button", "c pc-toggle", "Désactiver");
@@ -7234,7 +7246,8 @@
     pause.type = "button";
     pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
     pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });
-    commandes.appendChild(desactive); commandes.appendChild(pause); b.appendChild(commandes);
+    commandes.appendChild(desactive); commandes.appendChild(pause); corps.appendChild(commandes);
+    corps.appendChild(effetsActifs);
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
@@ -7287,7 +7300,8 @@
       champs.appendChild(mod); carte.appendChild(champs); grille.appendChild(carte);
       vues.push({cle: cle, carte: carte, tete: tete, titre: titre, lecture: valeur, total: total, base: base, effets: effets, mod: mod, fill: fill});
     });
-    b.appendChild(grille);
+    corps.appendChild(grille);
+    b.appendChild(corps);
     function ajusteLibelles() {
       if (!b.isConnected) return;
       vues.forEach(function (v) {
@@ -7311,8 +7325,8 @@
     hooks.push(function () {
       var sp = effSpecifiques(), lignes = [], total = effondrement();
       function ajoute(v, label, unite) { if (v) lignes.push(sign(v) + (unite || "") + " " + label); }
-      ajoute(-Math.min(100, total * num(effDef().pvParNiveau, 0)), "PV maximums", " %");
-      ajoute(-Math.min(100, total * num(effDef().peParNiveau, 0)), "PE maximums", " %");
+      ajoute(tauxMaximumEffondrement("pv").total - 100, "PV maximums", " %");
+      ajoute(tauxMaximumEffondrement("pe").total - 100, "PE maximums", " %");
       ajoute(sp.pe, "niveau(x) de récupération naturelle des PE");
       ajoute(sp.pm, "niveau(x) de récupération naturelle des PM");
       ajoute(sp.ps, "niveau(x) de récupération naturelle des PS");
@@ -7342,11 +7356,11 @@
       desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
       pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
       ajusteLibelles();
-      pv.textContent = reste("pvParNiveau") + " %";
-      pe.textContent = reste("peParNiveau") + " %";
-      valeurNiveau.textContent = String(total);
-      [pv, pe, valeurNiveau].forEach(function (v) { v.classList.toggle("adj", total > 0); });
-      niveau.title = capForce("effondrement")
+      var plafond = effPlafond();
+      valeurNiveau.textContent = fmtP(total);
+      maximum.textContent = "/ " + fmtP(plafond);
+      remplissage.style.width = (plafond ? clamp(total / plafond, 0, 1) * 100 : 0) + "%";
+      lecture.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
     });
@@ -7413,9 +7427,23 @@
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
-    var chiffre = el("span", "pc-estomac-val");
-    var v = el("b", null, "");
-    var mx = el("small", null, "");
+    var chiffre = el("span", "pc-estomac-val pc-vital-val");
+    var v = champNombreSigne(el("input", "pc-vital-num"));
+    v.setAttribute("aria-label", "Contenance actuelle");
+    v.dataset.syncReserve = "contenance";
+    var mx = el("span", "pc-vital-max");
+    function ecritContenance(valeur) {
+      state.etat.contenance = Math.max(0, Math.round(valeur * 100) / 100);
+      if (!state.etat.contenance) reinitialiseHorlogeDigestion();
+    }
+    v.addEventListener("input", function () {
+      var valeur = v.value.trim() ? litNombreSigne(v.value) : 0;
+      if (!isFinite(valeur)) return;
+      if (window.__owdReserveSet) window.__owdReserveSet("contenance");
+      ecritContenance(valeur);
+      refresh();
+    });
+    v.addEventListener("blur", function () { v.value = fmtP(contenancePrise()); });
     chiffre.appendChild(v);
     chiffre.appendChild(mx);
     fig.appendChild(jaugeEstomac());
@@ -7424,8 +7452,7 @@
 
     var controles = el("div", "pc-contenance-controles");
     controles.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
-      state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
-      if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
+      ecritContenance(contenancePrise() + d);
     }));
     var commandes = el("div", "pc-segs pc-contenance-commandes");
     var vomir = boutonAction("Vomir"), accelerer = boutonAction("Accélérer");
@@ -7447,7 +7474,8 @@
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();
       var taux = m > 0 ? pris / m : (pris > 0 ? 1.45 : 0);
-      v.textContent = fmtP(pris);
+      if (document.activeElement !== v) v.value = fmtP(pris);
+      v.style.width = Math.max(3.4, v.value.length + 0.3) + "ch";
       mx.textContent = "/ " + fmtP(m);
       fig.style.setProperty("--owd-contenance-taux", String(clamp(taux, 0, 1.45)));
       fig.classList.toggle("over", pris > m);

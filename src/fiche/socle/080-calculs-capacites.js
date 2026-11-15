@@ -258,8 +258,11 @@
   // Ce que l'effondrement laisse d'un maximum, en pour cent. À appliquer sur le
   // maximum ENTIER (modificateurs compris) : l'effondrement diminue ce que le
   // corps peut porter, pas seulement ce que la caractéristique lui donnait.
-  function effReste(pct) {
-    return clamp(100 - pct * effondrement(), 0, 100) / 100;
+  function tauxMaximumEffondrement(cle) {
+    var base = 100;
+    var eft = state.effDesactive ? 0 : -clamp(num(effDef()[cle + "ParNiveau"], 0) * effondrement(), 0, 100);
+    var atr = state.effDesactive ? 0 : reglageReserveVitale("eff_" + cle);
+    return { base: base, eft: eft, total: Math.max(0, base + eft + atr) };
   }
   function pvMaxAuto() {
     return capAuto("pv");
@@ -285,10 +288,10 @@
     return demande ? Math.min(demande, sacrificeTelluriqueMax()) : 0;
   }
   function pvMax() {
-    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().pvParNiveau, 0))), {});
+    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * (tauxMaximumEffondrement("pv").total / 100)), {});
   }
   function peMax() {
-    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().peParNiveau, 0))), {});
+    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * (tauxMaximumEffondrement("pe").total / 100)), {});
   }
   function pmMaxAuto() { return capAuto("pm"); }
   function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto) + 2 * sacrificeTellurique(), {}); }

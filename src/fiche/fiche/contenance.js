@@ -59,9 +59,23 @@
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
-    var chiffre = el("span", "pc-estomac-val");
-    var v = el("b", null, "");
-    var mx = el("small", null, "");
+    var chiffre = el("span", "pc-estomac-val pc-vital-val");
+    var v = champNombreSigne(el("input", "pc-vital-num"));
+    v.setAttribute("aria-label", "Contenance actuelle");
+    v.dataset.syncReserve = "contenance";
+    var mx = el("span", "pc-vital-max");
+    function ecritContenance(valeur) {
+      state.etat.contenance = Math.max(0, Math.round(valeur * 100) / 100);
+      if (!state.etat.contenance) reinitialiseHorlogeDigestion();
+    }
+    v.addEventListener("input", function () {
+      var valeur = v.value.trim() ? litNombreSigne(v.value) : 0;
+      if (!isFinite(valeur)) return;
+      if (window.__owdReserveSet) window.__owdReserveSet("contenance");
+      ecritContenance(valeur);
+      refresh();
+    });
+    v.addEventListener("blur", function () { v.value = fmtP(contenancePrise()); });
     chiffre.appendChild(v);
     chiffre.appendChild(mx);
     fig.appendChild(jaugeEstomac());
@@ -70,8 +84,7 @@
 
     var controles = el("div", "pc-contenance-controles");
     controles.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
-      state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
-      if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
+      ecritContenance(contenancePrise() + d);
     }));
     var commandes = el("div", "pc-segs pc-contenance-commandes");
     var vomir = boutonAction("Vomir"), accelerer = boutonAction("Accélérer");
@@ -93,7 +106,8 @@
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();
       var taux = m > 0 ? pris / m : (pris > 0 ? 1.45 : 0);
-      v.textContent = fmtP(pris);
+      if (document.activeElement !== v) v.value = fmtP(pris);
+      v.style.width = Math.max(3.4, v.value.length + 0.3) + "ch";
       mx.textContent = "/ " + fmtP(m);
       fig.style.setProperty("--owd-contenance-taux", String(clamp(taux, 0, 1.45)));
       fig.classList.toggle("over", pris > m);

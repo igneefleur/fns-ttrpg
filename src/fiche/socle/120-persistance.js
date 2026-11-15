@@ -59,7 +59,7 @@
       (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),
       recupAjoutsModule(false).filter(function(r){return r.categorie==='digestive';})]);
     var causes=['pr','ps','ph','pi','charge','contenance','chaud','froid','alcool','autre'].map(function(k){return [k,effPartie(k)];});
-    add('effondrement',[caps.effondrement,causes,effSpecifiques()]);
+    add('effondrement',[caps.effondrement,causes,effSpecifiques(),tauxMaximumEffondrement('pv'),tauxMaximumEffondrement('pe')]);
     add('mouvement',[effetBonus('pas'),effetBonus('vitesse'),effSpecifiques().pas]);
     add('recuperation',recupListeModule().map(function(x){return [x,recupEtatVueModule(x)];}));
     add('desaction',caps.desAction);

@@ -51,14 +51,14 @@
     return champ;
   }
 
-  function titreReserve(scope, cle, nom) {
+  function titreReserve(scope, cle, nom, editable) {
     var tete = el("div", "pc-vital-tete pc-vital-tete-reglable");
     var titre = el("div", "pc-block-title pc-vital-titre");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, nom);
     titre.appendChild(n);
     tete.appendChild(titre);
-    if (reserveAvecTaux(cle)) {
+    if (editable === true || reserveAvecTaux(cle)) {
       tete.classList.add("pc-vital-tete-avec-rouage");
       scope.classList.add("pc-editable");
       var gear = gearBtn(scope, cle);
@@ -68,54 +68,56 @@
     return tete;
   }
 
-  function ajouteTauxReserve(scope, cle, nom) {
+  function ajouteBandeauTaux(scope, nom, reglages, supplement) {
     var taux = el("div", "pc-segs pc-vital-taux");
-    var perte = el("span", "c pc-info"), gain = el("span", "c pc-info");
-    taux.appendChild(perte);
-    taux.appendChild(gain);
-    scope.appendChild(taux);
-
-    var reglages = el("div", "pc-vital-reglages pc-edit-only");
+    var edition = el("div", "pc-vital-reglages pc-edit-only");
     var detail = el("div", "pc-vital-detail-taux");
-    var vues = [["perte", "Perte", cle], ["gain", "Gain", "gain_" + cle]].map(function (reglage) {
+    edition.appendChild(detail);
+    reglages.forEach(function (reglage) {
+      var libelle = reglage[0], cle = reglage[1], lire = reglage[2];
+      var total = el("span", "c pc-info");
+      taux.appendChild(total);
       var sources = el("div", "pc-segs pc-vital-sources");
       sources.setAttribute("role", "group");
-      sources.setAttribute("aria-label", nom + " — détail " + reglage[1]);
-      var base = el("span", "c pc-info");
-      var effets = el("span", "c pc-info");
+      sources.setAttribute("aria-label", nom + " — détail " + libelle);
+      var base = el("span", "c pc-info"), effets = el("span", "c pc-info");
+      base.title = libelle + " · Base";
+      effets.title = libelle + " · Effets";
       sources.appendChild(base);
       sources.appendChild(effets);
-      var champ = champReglageVital(reglage[2], nom + " — " + reglage[1] + " ATR (%)",
-        function () { return reglageReserveVitale(reglage[2]); }, function (v) { return v; });
+      var champ = champReglageVital(cle, nom + " — " + libelle + " ATR (%)",
+        function () { return reglageReserveVitale(cle); }, function (v) { return v; });
+      champ.placeholder = "±";
       champ.title = champ.getAttribute("aria-label");
       sources.appendChild(champ);
       detail.appendChild(sources);
-      return { sens: reglage[0], nom: reglage[1], base: base, effets: effets };
-    });
-    reglages.appendChild(detail);
 
+      hooks.push(function () {
+        var t = lire(), effet = Number(fmtP(t.eft));
+        total.textContent = libelle + " " + fmtP(t.total) + " %";
+        base.textContent = fmtP(t.base);
+        effets.textContent = effet ? sign(effet) : "0";
+      });
+    });
+    scope.appendChild(taux);
+    if (supplement) edition.appendChild(supplement);
+    scope.appendChild(edition);
+  }
+
+  function ajouteTauxReserve(scope, cle, nom) {
+    var sacrifice = null;
     if (cle === "pm") {
-      var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
+      sacrifice = el("div", "pc-segs pc-vital-sacrifice");
       sacrifice.appendChild(el("span", "c pc-info", "Sacrifice"));
       sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
-      reglages.appendChild(sacrifice);
     }
-    scope.appendChild(reglages);
-
-    hooks.push(function () {
-      var p = tauxReserve(cle, "perte"), g = tauxReserve(cle, "gain");
-      perte.textContent = "Perte " + fmtP(p.total) + " %";
-      gain.textContent = "Gain " + fmtP(g.total) + " %";
-      vues.forEach(function (vue) {
-        var taux = vue.sens === "perte" ? p : g;
-        var effet = Number(fmtP(taux.eft));
-        vue.base.textContent = fmtP(100 + taux.art + taux.eqp);
-        vue.effets.textContent = effet ? sign(effet) : "0";
-        vue.base.title = vue.nom + " · Base (100 + Arts + Équipements)";
-        vue.effets.title = vue.nom + " · Effets";
-      });
-    });
+    ajouteBandeauTaux(scope, nom, [["Perte", cle, function () { return detail("perte"); }],
+      ["Gain", "gain_" + cle, function () { return detail("gain"); }]], sacrifice);
+    function detail(sens) {
+      var t = tauxReserve(cle, sens);
+      return { base: 100 + t.art + t.eqp, eft: t.eft, total: t.total };
+    }
   }
 
   function reserveVitale(cle, provenance, nomAffiche) {
@@ -190,20 +192,21 @@
   }
   // L'effondrement descend le maximum de PV et de PE : l'infobulle le dit, ou
   // le chiffre paraît faux au joueur qui vérifie la formule de tête.
-  function provenanceEff(cle, champ) {
+  function provenanceEff(cle) {
     return function () {
       var t = provenanceCap(cle)();
       var e = effondrement();
-      if (e > 0) t += " · effondrement " + e + " (−" + (num(effDef()[champ], 0) * e) + " %)";
+      var variation = tauxMaximumEffondrement(cle).total - 100;
+      if (variation) t += " · effondrement " + e + " (" + sign(variation) + " %)";
       return t;
     };
   }
   function seule(r) { var c = carteVitale(); c.appendChild(r.el); return c; }
   function buildPv() {
-    return seule(reserveVitale("pv", provenanceEff("pv", "pvParNiveau")));
+    return seule(reserveVitale("pv", provenanceEff("pv")));
   }
   function buildPe() {
-    var r = reserveVitale("pe", provenanceEff("pe", "peParNiveau"));
+    var r = reserveVitale("pe", provenanceEff("pe"));
     // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
     hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
     return seule(r);

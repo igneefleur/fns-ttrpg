@@ -35,7 +35,7 @@ test('PV/PE forcés : pénalité appliquée après Forcé, annulée si effondrem
  const w=setup();w.ctx.capAuto=()=>100;w.ctx.effondrement=()=>w.state.effDesactive?0:2;
  w.state.capsLeviers={max:{force:{pv:200,pe:200,pm:200}}};assert.equal(w.ctx.pvMax(),180);assert.equal(w.ctx.peMax(),160);assert.equal(w.ctx.pmMax(),200);
  w.state.effDesactive=true;assert.equal(w.ctx.pvMax(),200);assert.equal(w.ctx.peMax(),200);
- w.ctx.effondrement=()=>10;assert.equal(w.ctx.pvMax(),100);assert.equal(w.ctx.peMax(),0);
+ w.state.effDesactive=false;w.ctx.effondrement=()=>10;assert.equal(w.ctx.pvMax(),100);assert.equal(w.ctx.peMax(),0);
 });
 test('Charge et Contenance : premier point dès le dépassement puis seuils de 5 %',()=>{
  const w=setup();assert.equal(data.effondrement.surchargeDepart,1);assert.equal(data.effondrement.surchargeTranche,5);

@@ -8,7 +8,7 @@ const ctx={state,num:(v,d=0)=>v==null||!Number.isFinite(Number(v))?d:Number(v),c
  clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),effDef:()=>({pvParNiveau:5,peParNiveau:10}),effondrement:()=>0,pub:(_,v)=>v,
  effetBonus:()=>reduction,effSpecifiques:()=>({mana:alcool})};vm.createContext(ctx);
 const cap=fs.readFileSync('src/fiche/socle/080-calculs-capacites.js','utf8');
-vm.runInContext(cap.slice(cap.indexOf('  function effReste('),cap.indexOf('  function piMaxAuto(')),ctx);
+vm.runInContext(cap.slice(cap.indexOf('  function tauxMaximumEffondrement('),cap.indexOf('  function piMaxAuto(')),ctx);
 const fx=fs.readFileSync('src/fiche/fiche/effets.js','utf8');
 vm.runInContext(fx.slice(fx.indexOf('  function reserveAvecTaux('),fx.indexOf('  function retireEffet(')),ctx);
 vm.runInContext(fs.readFileSync('src/fiche/fiche/mouvement.js','utf8'),ctx);
@@ -59,3 +59,12 @@ assert.equal(ctx.effetVariationImmediate('pi',-10),-8);
 state.modData.reservesVitales.ps=50;
 assert.equal(ctx.effetVariationImmediate('ps',-10),-15);
 console.log('OK taux de gain et de perte immédiats distincts, neutres par défaut.');
+
+state.modData.reservesVitales.eff_pv=15;
+state.modData.reservesVitales.eff_pe=-5;
+assert.deepEqual({...ctx.tauxMaximumEffondrement('pv')},{base:100,eft:-10,total:105});
+assert.equal(ctx.pvMax(),105);
+assert.equal(ctx.peMax(),60);
+state.effDesactive=true;
+assert.equal(ctx.pvMax(),100);
+assert.equal(ctx.peMax(),80);

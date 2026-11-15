@@ -1,20 +1,26 @@
   // ---- Effondrement : dix causes, lecture seule et modificateur direct ----
   function buildEffondrement() {
-    var b = block("Effondrement");
-    function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
-    var maxima = el("div", "pc-stat pc-eff-stat");
-    var pv = caseStat(maxima, "PV"), pe = caseStat(maxima, "PE");
-    pv.title = "PV maximums restants"; pe.title = "PE maximums restants";
-    b.appendChild(maxima);
+    var b = carteVitale();
+    var bandeau = el("div", "pc-vital-res pc-eff-global");
+    var tete = titreReserve(bandeau, "effondrement", "Effondrement", true);
+    var lecture = el("span", "pc-vital-val");
+    var valeurNiveau = el("span", "pc-vital-num pc-eff-global-valeur");
+    var maximum = el("span", "pc-vital-max");
+    lecture.appendChild(valeurNiveau);
+    lecture.appendChild(maximum);
+    tete.appendChild(lecture);
+    bandeau.appendChild(tete);
+    var jauge = el("span", "pc-vital-jauge pc-eff-global-jauge"), remplissage = el("i");
+    jauge.appendChild(remplissage);
+    bandeau.appendChild(jauge);
+    ajouteBandeauTaux(bandeau, "Effondrement",
+      [["PV", "eff_pv", function () { return tauxMaximumEffondrement("pv"); }],
+       ["PE", "eff_pe", function () { return tauxMaximumEffondrement("pe"); }]]);
+    b.appendChild(bandeau);
 
-    var cadre = el("div", "pc-stat-stack");
-    var niveau = el("div", "pc-stat pc-eff-stat");
-    var valeurNiveau = caseStat(niveau, "Effondrement");
-    cadre.appendChild(niveau);
+    var corps = el("div", "pc-eff-corps");
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués");
-    cadre.appendChild(effetsActifs);
-    b.appendChild(cadre);
 
     var commandes = el("div", "pc-segs pc-eff-commandes");
     var desactive = el("button", "c pc-toggle", "Désactiver");
@@ -25,7 +31,8 @@
     pause.type = "button";
     pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
     pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });
-    commandes.appendChild(desactive); commandes.appendChild(pause); b.appendChild(commandes);
+    commandes.appendChild(desactive); commandes.appendChild(pause); corps.appendChild(commandes);
+    corps.appendChild(effetsActifs);
     var grille = el("div", "pc-eff-grille"), vues = [];
     [["pr", "Repos"], ["charge", "Charge"], ["froid", "Froid"], ["chaud", "Chaud"],
      ["ps", "Satiété"], ["contenance", "Contenance"], ["ph", "Hydratation"], ["alcool", "Alcool"],
@@ -78,7 +85,8 @@
       champs.appendChild(mod); carte.appendChild(champs); grille.appendChild(carte);
       vues.push({cle: cle, carte: carte, tete: tete, titre: titre, lecture: valeur, total: total, base: base, effets: effets, mod: mod, fill: fill});
     });
-    b.appendChild(grille);
+    corps.appendChild(grille);
+    b.appendChild(corps);
     function ajusteLibelles() {
       if (!b.isConnected) return;
       vues.forEach(function (v) {
@@ -102,8 +110,8 @@
     hooks.push(function () {
       var sp = effSpecifiques(), lignes = [], total = effondrement();
       function ajoute(v, label, unite) { if (v) lignes.push(sign(v) + (unite || "") + " " + label); }
-      ajoute(-Math.min(100, total * num(effDef().pvParNiveau, 0)), "PV maximums", " %");
-      ajoute(-Math.min(100, total * num(effDef().peParNiveau, 0)), "PE maximums", " %");
+      ajoute(tauxMaximumEffondrement("pv").total - 100, "PV maximums", " %");
+      ajoute(tauxMaximumEffondrement("pe").total - 100, "PE maximums", " %");
       ajoute(sp.pe, "niveau(x) de récupération naturelle des PE");
       ajoute(sp.pm, "niveau(x) de récupération naturelle des PM");
       ajoute(sp.ps, "niveau(x) de récupération naturelle des PS");
@@ -133,11 +141,11 @@
       desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
       pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
       ajusteLibelles();
-      pv.textContent = reste("pvParNiveau") + " %";
-      pe.textContent = reste("peParNiveau") + " %";
-      valeurNiveau.textContent = String(total);
-      [pv, pe, valeurNiveau].forEach(function (v) { v.classList.toggle("adj", total > 0); });
-      niveau.title = capForce("effondrement")
+      var plafond = effPlafond();
+      valeurNiveau.textContent = fmtP(total);
+      maximum.textContent = "/ " + fmtP(plafond);
+      remplissage.style.width = (plafond ? clamp(total / plafond, 0, 1) * 100 : 0) + "%";
+      lecture.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
     });

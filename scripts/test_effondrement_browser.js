@@ -13,31 +13,35 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await change("s.effParties={pr:{mod:3},ps:{mod:2},ph:{mod:1},charge:{mod:2},contenance:{mod:1},froid:{mod:4},chaud:{mod:5}};s.effAlcool=2");
  const disposition=await eff.evaluate(n=>{
    const rect=e=>e.getBoundingClientRect();
-   const cadre=n.querySelector('.pc-stat-stack');
-   const [niveau,effets]=cadre.children;
+   const effets=n.querySelector('.pc-eff-actifs');
+   const commandes=n.querySelector('.pc-eff-commandes');
+   const jauge=n.querySelector('.pc-eff-global-jauge');
    const exposition=document.querySelector('.pc-expo-stats');
    const [ideal,thermique]=exposition.children;
    const cadreExpo=rect(exposition.parentElement), statExpo=rect(exposition);
    const retraitStandard=parseFloat(getComputedStyle(document.querySelector('[data-module="pv"] .pc-vital-cmd')).paddingLeft);
-   const cellules=[...n.querySelectorAll('.pc-eff-stat > .c'),...exposition.querySelectorAll('.pc-stat > .c'),
+   const cellules=[...exposition.querySelectorAll('.pc-stat > .c'),
      ...document.querySelectorAll('.pc-mouv-dist > .c')];
-   const [arreter,pauser]=n.querySelector('.pc-eff-commandes').children;
+   const [arreter,pauser]=commandes.children;
    return {
-     titres:[...n.querySelectorAll('.pc-eff-stat .k')].map(e=>e.textContent),
+     jauge:jauge.nextElementSibling.matches('.pc-vital-taux') && !n.querySelector('.pc-eff-global-valeur').matches('input'),
+     taux:[...jauge.nextElementSibling.children].map(e=>e.textContent),
      hauteurs:cellules.map(e=>rect(e).height),
      exposition:[ideal.children.length,thermique.children.length,rect(thermique).top-rect(ideal).bottom],
      margesExpo:[statExpo.left-cadreExpo.left,cadreExpo.right-statExpo.right,
        retraitStandard],
-     effets:[effets.children.length,rect(effets).top-rect(niveau).bottom,rect(effets).width-rect(niveau).width],
+     effets:[effets.children.length,rect(effets).top>=rect(commandes).bottom],
      commandes:[rect(arreter).width-rect(pauser).width,rect(arreter).height-rect(document.querySelector('.pc-temps-appliquer')).height]
    };
  });
- assert.deepEqual(disposition.titres,['PV','PE','Effondrement']);
+ assert.ok(disposition.jauge);
+ assert.match(disposition.taux[0],/^PV [0-9]+ %$/);
+ assert.match(disposition.taux[1],/^PE [0-9]+ %$/);
  assert.ok(disposition.hauteurs[0]>0 && disposition.hauteurs.every(h=>Math.abs(h-disposition.hauteurs[0])<.5));
  assert.deepEqual(disposition.exposition,[1,2,0]);
  const [retraitGauche,retraitDroit,retraitStandard]=disposition.margesExpo;
  assert.ok(retraitStandard>0 && [retraitGauche,retraitDroit].every(n=>Math.abs(n-retraitStandard)<.5));
- assert.ok(disposition.effets[0]>1);assert.deepEqual(disposition.effets.slice(1),[0,0]);
+ assert.ok(disposition.effets[0]>1);assert.equal(disposition.effets[1],true);
  assert.ok(disposition.commandes.every(n=>Math.abs(n)<.5));
  await eff.screenshot({path:'/tmp/owd-effondrement-4.12.png'});
  let text=await active.innerText();assert.match(text,/−3 niveau\(x\).*PE/);assert.match(text,/\+3 niveau\(x\).*PM/);assert.match(text,/−4 de protection contre le froid/);assert.match(text,/−3 pas/);assert.match(text,/−10 % au coût en mana/);assert.match(text,/\+2 à la difficulté/);
@@ -48,6 +52,19 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  // La réception d'un état sauvegardé ne répète pas l'avance et conserve la phase.
  await change('');assert.equal((await read()).horlogeAlcool.heures,2);
  await p.evaluate(()=>Owd.__calculs.avancerSecondes(21600));assert.equal((await read()).effAlcool,0);assert.deepEqual((await read()).horlogeAlcool,{jours:0,heures:0,minutes:0,secondes:0});
+ const gearEff=eff.getByRole('button',{name:'Modifier Effondrement',exact:true});
+ const atrPv=eff.getByLabel('Effondrement — PV ATR (%)',{exact:true});
+ assert.equal(await atrPv.isVisible(),false);
+ await gearEff.click();
+ assert.equal(await atrPv.getAttribute('placeholder'),'±');
+ await atrPv.fill('-10');
+ assert.equal((await read()).modData.reservesVitales.eff_pv,-10);
+ await atrPv.fill('');
+ await gearEff.click();
+ const contenance=p.getByLabel('Contenance actuelle',{exact:true});
+ await contenance.fill('2,5');
+ assert.equal((await read()).etat.contenance,2.5);
+ await contenance.fill('0');
  // Coûts visibles et Appliquer : l’entrée est le coût avant réduction.
  await change("s.effParties={};s.effAlcool=2;s.inv.objets=[{ref:'speedblade',nom:'Test',typeObjet:'arme',qte:1,ou:'mainD',stats:{vitesse:12,couts:{pv:-20,pe:25,pm:-20}}}];s.etat.pv=100;s.etat.pe=100;s.etat.pm=100;s.allure='leger'");
  for (const [k,pct,cost] of [['pv',80,10],['pe',125,16],['pm',70,9]]) {
@@ -85,12 +102,13 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   await mod.locator('.pc-vital-delta').fill('+10');await appliquer.click();
   assert.equal((await read()).etat[k],112-cost);
  }
- assert.equal(await p.locator('.pc-vital-taux').count(),8);
+ assert.equal(await p.locator('.pc-vital-taux').count(),9);
  const hydratation=p.getByRole('button',{name:'Modifier Hydratation',exact:true});
  assert.ok(await hydratation.evaluate(g=>{
-   const titre=g.parentElement.querySelector('.pc-vital-titre').getBoundingClientRect();
+   const chiffres=g.parentElement.querySelector('.pc-vital-val').getBoundingClientRect();
    const rouage=g.getBoundingClientRect();
-   return rouage.top>=titre.bottom && Math.abs(rouage.left-titre.left)<.6;
+   return rouage.top<chiffres.top && Math.abs(rouage.right-chiffres.right)<.6 &&
+     getComputedStyle(g).position==='absolute';
  }));
  const survie=p.locator('[data-module="survie"]');
  const bordSurvie=()=>survie.evaluate(n=>getComputedStyle(n).borderTopColor);
