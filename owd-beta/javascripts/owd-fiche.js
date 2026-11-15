@@ -4540,7 +4540,7 @@
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info", abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);
@@ -4685,9 +4685,9 @@
     if (c.minutes == null) return s + fmtP(c.points) + " / round";
     if (c.minutes === 1) return s + fmtP(c.points) + " / m";
     if (c.minutes === 10) return s + fmtP(c.points) + " / 10 m";
-    if (c.minutes === 60) return s + fmtP(c.points) + " / h";
-    if (c.minutes === 480) return s + fmtP(c.points) + " / 8 h";
-    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + " / " + (c.minutes / 60) + " h";
+    if (c.minutes === 60) return s + fmtP(c.points) + " / hr";
+    if (c.minutes === 480) return s + fmtP(c.points) + " / 8 hr";
+    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + " / " + (c.minutes / 60) + " hr";
     return s + fmtP(c.points) + " / " + c.minutes + " m";
   }
   // ---- coffre des récupérations ajoutées ----
@@ -4865,9 +4865,9 @@
     var m = num(String(cle).slice(2), 0);
     if (m === 1) return "m";
     if (m === 10) return "10 m";
-    if (m === 60) return "h";
-    if (m === 480) return "8 h";
-    if (m > 60 && m % 60 === 0) return (m / 60) + " h";
+    if (m === 60) return "hr";
+    if (m === 480) return "8 hr";
+    if (m > 60 && m % 60 === 0) return (m / 60) + " hr";
     return fmtP(m) + " m";
   }
   function recupTotauxModule(reserve) {
@@ -5381,7 +5381,7 @@
   function effetTemps(secondes) {
     if(secondes===null)return "—";
     secondes=Math.max(0,Math.ceil(secondes));var j=Math.floor(secondes/86400),h=Math.floor(secondes%86400/3600),m=Math.floor(secondes%3600/60),s=secondes%60;
-    return [j?j+" j":"",h?h+" h":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
+    return [j?j+" j":"",h?h+" hr":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
   }
   function selectEffet(value, change) {
     var s=el("select","pc-select pc-edit-field"),empty=el("option",null,"Aucun");empty.value="";s.appendChild(empty);
@@ -7040,18 +7040,20 @@
         var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
         var v = el("span", "v", "");
         c.appendChild(v);
-        c.appendChild(el("span", "k", d[1]));
+        var label = el("span", "k", d[1]);
+        if (d[0] === "da") label.title = "Dés d’action";
+        c.appendChild(label);
         box.appendChild(c);
         out[d[0]] = v;
       });
       b.appendChild(box);
       return { box: box, v: out };
     }
-    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / hr"]]);
     // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
-    var cout = cases("pc-mouv-cout", [["da", "dés d'action"], ["pe", "PE"]]);
+    var cout = cases("pc-mouv-cout", [["da", "DA"], ["pe", "PE"]]);
 
     hooks.push(function () {
       boutons.forEach(function (x) {
@@ -7104,11 +7106,11 @@
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
     var commandes = el("div", "pc-eff-commandes");
-    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver");
     desactive.type = "button";
     desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
     desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });
-    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser Effondrement");
+    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser");
     pause.type = "button";
     pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
     pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });

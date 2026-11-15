@@ -5,34 +5,34 @@
   "schema": 20,
   "blocage": "release",
   "amorce": [
-    "javascripts/owd-sync.js?v=297",
-    "javascripts/owd-attr-map.js?v=297",
-    "javascripts/owd-save-progress.js?v=297",
-    "javascripts/owd-roll20-boot.js?v=297"
+    "javascripts/owd-sync.js?v=298",
+    "javascripts/owd-attr-map.js?v=298",
+    "javascripts/owd-save-progress.js?v=298",
+    "javascripts/owd-roll20-boot.js?v=298"
   ],
   "camp": {
     "js": [
-      "javascripts/owd-sync.js?v=297",
-      "javascripts/owd-monde-data.js?v=297",
-      "javascripts/owd-monde.js?v=297"
+      "javascripts/owd-sync.js?v=298",
+      "javascripts/owd-monde-data.js?v=298",
+      "javascripts/owd-monde.js?v=298"
     ],
     "css": [
-      "stylesheets/owd-monde.css?v=297"
+      "stylesheets/owd-monde.css?v=298"
     ]
   },
   "_donnees": "bundle.data nomme le jeu de données que la fiche consomme : owd-creation.json, produit AU BUILD par hooks/owd_creation.py depuis docs/content/regles/. Il porte le barème des rangs, les formules des capacités, les huit caractéristiques, les armes et leurs paliers — rien de tout cela n'est écrit dans owd-fiche.js, et une règle qui change au livre change la fiche à la construction suivante. Il est nommé ICI, avec son ?v=, et non deviné par le code : une ARCHIVE de version chargée par l'amorce doit lire les règles de SON jour, sinon un rang renommé suffit à trahir la version qu'on croit rejouer. La fiche retombe sur le répertoire du site quand ce champ manque, mais c'est un repli, pas le chemin normal.",
   "bundle": {
     "js": [
-      "javascripts/owd-migrations.js?v=297",
-      "javascripts/owd-mods.js?v=297",
-      "javascripts/owd-des3d.js?v=297",
-      "javascripts/owd-inventaire-data.js?v=297",
-      "javascripts/owd-fiche.js?v=297"
+      "javascripts/owd-migrations.js?v=298",
+      "javascripts/owd-mods.js?v=298",
+      "javascripts/owd-des3d.js?v=298",
+      "javascripts/owd-inventaire-data.js?v=298",
+      "javascripts/owd-fiche.js?v=298"
     ],
     "css": [
-      "stylesheets/owd-fiche.css?v=297",
-      "stylesheets/owd-des3d.css?v=297",
-      "stylesheets/owd-roll20.css?v=297"
+      "stylesheets/owd-fiche.css?v=298",
+      "stylesheets/owd-des3d.css?v=298",
+      "stylesheets/owd-roll20.css?v=298"
     ],
     "data": "owd-creation-runtime.json?v=218"
   },
@@ -40,29 +40,29 @@
   "archives": {},
   "monde": {
     "js": [
-      "javascripts/owd-sync.js?v=297",
-      "javascripts/owd-monde-data.js?v=297",
-      "javascripts/owd-monde.js?v=297"
+      "javascripts/owd-sync.js?v=298",
+      "javascripts/owd-monde-data.js?v=298",
+      "javascripts/owd-monde.js?v=298"
     ],
     "css": [
-      "stylesheets/owd-monde.css?v=297"
+      "stylesheets/owd-monde.css?v=298"
     ]
   },
   "inventaire": {
     "js": [
-      "javascripts/owd-inventaire-data.js?v=297",
-      "javascripts/owd-inventaire.js?v=297"
+      "javascripts/owd-inventaire-data.js?v=298",
+      "javascripts/owd-inventaire.js?v=298"
     ],
     "css": [
-      "stylesheets/owd-inventaire.css?v=297"
+      "stylesheets/owd-inventaire.css?v=298"
     ]
   },
   "boutique": {
     "js": [
-      "javascripts/owd-boutique.js?v=297"
+      "javascripts/owd-boutique.js?v=298"
     ],
     "css": [
-      "stylesheets/owd-boutique.css?v=297"
+      "stylesheets/owd-boutique.css?v=298"
     ]
   }
 }

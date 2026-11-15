@@ -69,6 +69,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   --bg-side: #e9e7e2;   /* le plan de travail, gris clair autour de la feuille */
   --card:    #ffffff;   /* cartes de section : blanches comme la feuille, tenues par leur filet */
   --panel:   #f5f2ea;   /* encadrés doux, tuiles chiffrées  (= --row-a du livre) */
+  --pc-segs-info-bg: color-mix(in srgb, var(--panel) 85%, #000);
   --stripe:  #edeae2;   /* zébrage des lignes, un cran sous le panneau */
   --hair:    #e8e4d8;   /* filets fins */
   --line:    #ddd6c6;   /* bordures et soulignés            (= --trait du livre) */
@@ -274,7 +275,6 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    OFF et ACTION partagent volontairement le même aspect : tous deux sont
    des boutons disponibles. Le doré plein reste réservé à l'état ON. */
 .pc-segs {
-  --pc-segs-info-bg: color-mix(in srgb, var(--panel) 85%, #000);
   display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1; margin-top: .3rem;
@@ -367,6 +367,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 }
 .pc-stat > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-stat > .c.grand { background: var(--card); }
+:is(.pc-expo-stat, .pc-mouv-cout, .pc-mouv-dist).pc-stat > .c {
+  background: var(--pc-segs-info-bg);
+}
 .pc-stat .v { font-size: .9rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .pc-stat > .c.grand .v { color: var(--accent); }   /* même TAILLE que ses voisines : seule la couleur la distingue */
 .pc-stat .k { font-size: .5rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-3); white-space: nowrap; }
@@ -812,14 +815,16 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    Une ligne = le sigle puis DEUX cases soudées. Comme dans MIA, une seule
    entête reprend exactement le même squelette : [VALEUR | MOD] en jeu,
    [CRÉATION | XP] sous le rouage. */
-.pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
-.pc-crow:last-child { border-bottom: none; }
+.pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; }
 .pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-carac-segs { margin-top: 0; }
 .pc-carac-segs:not(.pc-carac-head) > .c {
   background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default;
   font-variant-numeric: tabular-nums; letter-spacing: 0;
+}
+.pc-carac-segs:not(.pc-carac-head) > .pc-carac-abbr {
+  background: var(--sur-bandeau); color: #1a1a1a;
 }
 .pc-block[data-module="caracs"].editing .pc-carac-segs:not(.pc-carac-head) > .c:has(> input) {
   background: var(--card); padding: 0;
@@ -876,6 +881,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-bigrow-1 { grid-template-columns: minmax(0, 1fr); margin-top: .4rem; }
 /* le niveau d'effondrement tient toute la largeur, au-dessus des deux maximums */
 .pc-big.pc-eff-niveau { margin-bottom: .4rem; }
+[data-module="effondrement"] .pc-big, .pc-eff-tete { background: var(--pc-segs-info-bg); }
 /* les causes : le nom à gauche, le niveau dans une case à droite — la case
    d'« Autre » est un champ, de même taille que les autres */
 .pc-eff-causes { margin-top: .45rem; display: flex; flex-direction: column; gap: .18rem; }
@@ -2223,7 +2229,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-champs.pc-segs > input { display: block; box-sizing: border-box; border: 0; outline: 0; border-radius: 0; background: transparent; color: var(--ink-2); font: inherit; font-size: .6rem; font-weight: 700; text-align: center; }
 .pc-eff-champs.pc-segs > input[readonly],
 .pc-eff-champs.pc-segs > input[readonly]:hover,
-.pc-eff-champs.pc-segs > input[readonly]:focus { background: transparent; color: var(--ink-2); cursor: default; transform: none; transition: none; }
+.pc-eff-champs.pc-segs > input[readonly]:focus { background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default; transform: none; transition: none; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta { background: var(--card); color: var(--ink); cursor: text; font-size: .7rem; }
 .pc-eff-delta::placeholder { color: var(--ink-3); opacity: 1; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:focus { background: var(--card); }
@@ -2421,7 +2427,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 /* Effets réellement appliqués et horloge d'alcool. */
 .pc-eff-actifs { display:grid; gap:.35rem; margin:.5rem 0; font-size:var(--fs-meta); line-height:1.4; overflow-wrap:anywhere; }
 .pc-eff-actifs[hidden] { display:none; }
-.pc-eff-actif { padding:.45rem .6rem; border:1px solid #000; border-radius:4px; background:#171717; color:#f2f2f2; }
+.pc-eff-actif { padding:.45rem .6rem; border:1px solid var(--line-2); border-radius:4px; background:var(--pc-segs-info-bg); color:var(--ink); }
 .pc-vital-consommation { margin-top:.4rem; font-size:var(--fs-meta); color:var(--ink-2); text-align:center; }
 .pc-rec-categorie { font-size:var(--fs-meta); color:var(--ink-3); max-width:100%; }
 
