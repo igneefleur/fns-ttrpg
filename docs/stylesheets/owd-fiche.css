@@ -130,6 +130,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   --ok: #7a5c10;
 
   /* échelle typographique dense — reprise telle quelle de JJK */
+  --pc-module-inset: .3rem;
   --fs-label: .54rem;
   --fs-meta:  .6rem;
   --fs-body:  .68rem;
@@ -532,7 +533,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   min-width: 0; background: var(--panel);
   border: 1px solid var(--line); border-radius: 5px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
-  padding: .5rem .7rem .55rem;
+  padding: .5rem var(--pc-module-inset) .55rem;
 }
 .pc-block-title {
   position: relative; display: flex; align-items: baseline; gap: .4rem;
@@ -557,7 +558,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    valeur passe à la ligne plutôt que de faire défiler la page en travers. */
 .pc-vital-tete {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem;
-  padding: .3rem .55rem .32rem;
+  padding: .3rem var(--pc-module-inset) .32rem;
   background: transparent;
 }
 /* Le nom est une étiquette : s'il faut céder, c'est lui qui cède, jamais la
@@ -573,15 +574,15 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    jour et blanc de nuit, comme le titre des modules. PV, PE et PM portent la
    couleur de leur barre dans Outward ; Repos, Satiété et Hydratation en ont
    une chacune, distincte des trois premières. */
-:is(.pc-vital-res, .pc-rec-reserve).t-pv { --teinte: #881112; }
-:is(.pc-vital-res, .pc-rec-reserve).t-pe { --teinte: #AA872E; }
-:is(.pc-vital-res, .pc-rec-reserve).t-pm { --teinte: #286CA4; }
-:is(.pc-vital-res, .pc-rec-reserve).t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
-html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
-:is(.pc-vital-res, .pc-rec-reserve).t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
-:is(.pc-vital-res, .pc-rec-reserve).t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
-:is(.pc-vital-res, .pc-rec-reserve).t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
-:is(.pc-vital-res, .pc-rec-reserve).t-pc { --teinte: #5B8C2A; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pv { --teinte: #881112; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pe { --teinte: #AA872E; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pm { --teinte: #286CA4; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
+html.night :is(.pc-vital-res, .pc-carac-abbr).t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
+:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pc { --teinte: #5B8C2A; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {
@@ -601,10 +602,11 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-vital-jauge { position: relative; display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
 .pc-vital-jauge > i { display: block; height: 100%; background: var(--teinte, var(--or)); transition: width .15s; }
 .pc-vital-jauge > i.over { background: var(--danger); }
-.pc-vital-cmd { padding: .34rem .4rem .38rem; }
+.pc-vital-cmd { padding: .34rem var(--pc-module-inset) .38rem; }
 .pc-variation-segs { margin: 0; }
 .pc-contenance-controles { display: grid; gap: .3rem; margin-top: .34rem; }
 .pc-contenance-controles .pc-vital-cmd { padding: 0; }
+[data-module="exposition"] .pc-vital-cmd { padding-inline: 0; }
 .pc-contenance-commandes { margin: 0; }
 .pc-variation-segs > input.c { flex: 0 0 33.333333%; width: 0; }
 .pc-variation-segs > button.c { flex: 0 0 66.666667%; }
@@ -624,7 +626,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-vital-res.over .pc-vital-nom, .pc-vital-res.over .pc-vital-num, .pc-vital-res.over .pc-vital-max { color: #fff; }
 /* Plusieurs réserves dans une carte (Survie) : chaque bandeau reprend à zéro,
    séparé du geste de la précédente par un filet. */
-.pc-vital-res + .pc-vital-res { border-top: 1px solid var(--line); }
+.pc-vital-res + .pc-vital-res { margin-top: .4rem; }
 /* Temps : les cinq efforts se partagent la largeur, et le
    geste du temps reprend celui des réserves, sans leur marge latérale. */
 /* Une RANGÉE SOUPLE et non la grille des sous-onglets : les cinq ne tiennent
@@ -635,7 +637,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 /* EFFORT / TEMPS / ÉCOULEMENT : sous-sections du même module.
    Le titre réemploie STRICTEMENT .pc-block-title, sans variante de couleur
    ni de filet : même blanc/noir et même trait fin que les autres modules. */
-.pc-effort-section + .pc-effort-section { margin-top: .38rem; }
+.pc-effort-section + .pc-effort-section { margin-top: .7rem; }
 
 /* TEMPS : chaque unité porte la même largeur, suffisante pour RND.
    Les champs prennent tout l'espace restant ; MONDE occupe la moitié du rang. */
@@ -735,7 +737,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 /* La zone idéale occupe sa ligne ; intensité et résorption se partagent
    équitablement la ligne suivante. */
-.pc-expo-stats { margin: 0 .4rem .4rem; width: auto; }
+.pc-expo-stats { margin: 0 0 .4rem; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
 /* Jauge de Contenance : le même taux animé pilote le niveau et la couleur. */
@@ -828,14 +830,19 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-carac-segs { margin-top: 0; }
-.pc-carac-segs:not(.pc-carac-head) > .c {
+.pc-carac-segs > .c {
   background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default;
   font-variant-numeric: tabular-nums; letter-spacing: 0;
 }
-.pc-carac-segs:not(.pc-carac-head) > .pc-carac-abbr {
-  background: var(--sur-bandeau); color: #1a1a1a;
+.pc-carac-segs > .pc-carac-abbr {
+  background: var(--teinte, var(--sur-bandeau)); color: var(--pc-carac-abbr-ink, #1a1a1a);
 }
-.pc-block[data-module="caracs"].editing .pc-carac-segs:not(.pc-carac-head) > .c:has(> input) {
+.pc-carac-abbr.t-force { --teinte: #755044; }
+.pc-carac-abbr.t-dex { --teinte: #754575; }
+.pc-carac-abbr.t-resistance { --teinte: #596575; }
+.pc-carac-abbr:is(.t-force, .t-dex, .t-resistance, .t-pv, .t-pi, .t-pm) { --pc-carac-abbr-ink: #fff; }
+html.night .pc-carac-abbr.t-pi { --pc-carac-abbr-ink: #1a1a1a; }
+.pc-block[data-module="caracs"].editing .pc-carac-segs > .c:has(> input) {
   background: var(--card); padding: 0;
 }
 /* Sous le rouage, la lecture disparaît réellement : une case porte soit son
@@ -852,14 +859,6 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-carac-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
 .pc-carac-input { box-shadow: inset 0 -1px 0 var(--line-2); }
 .pc-carac-input:focus { outline: 0; box-shadow: inset 0 -2px 0 var(--accent); }
-/* L'entête suit exactement les deux colonnes des lignes, à la manière de MIA,
-   mais sans cadre ni fond : il annonce, il ne constitue pas une valeur. */
-.pc-caracs-tete { padding: 0 .1rem .02rem; border-bottom: 0; }
-.pc-carac-head-spacer { display: block; }
-.pc-carac-head { border-color: transparent; background: transparent; overflow: visible; }
-.pc-carac-head > .c { box-shadow: none !important; color: var(--ink-3); font-size: .52rem; letter-spacing: .04em; text-transform: uppercase; }
-.pc-carac-head > .c:hover { background: transparent; color: var(--ink-3); }
-
 /* ---- stepper −/valeur/+ ---- */
 .pc-step { display: inline-flex; align-items: center; gap: .25rem; }
 .pc-step button {
@@ -990,11 +989,15 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
    USAGES (onglet Fiche et lignes d'outils de l'Effondrement). */
 .pc-comp-row { display: grid; grid-template-columns: minmax(0, 1fr) 6.2rem 2.4rem; gap: .12rem .3rem; align-items: center; padding: .14rem .25rem .18rem; font-size: var(--fs-body); border-radius: 4px; }
 .pc-comp-row.odd { background: var(--stripe); }
-.pc-comp-row.head {
+:is(.pc-comp-row, .pc-caracs-tete).head {
   background: var(--card); border-bottom: 1px solid var(--line); border-radius: 0; padding: .2rem .25rem .16rem;
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
-.pc-comp-row.head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
+:is(.pc-comp-row, .pc-caracs-tete).head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
+.pc-carac-legendes { display: flex; }
+.pc-carac-legendes > span { flex: 1 1 0; min-width: 0; text-align: center; }
+.pc-caracs-tete.head { align-items: center; padding-inline: .1rem; }
+.pc-comp-row.head > .pc-comp-nom-head { text-align: left; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
 /* Le renommage se fait EN PLACE : double-clic sur le libellé en édition, ce

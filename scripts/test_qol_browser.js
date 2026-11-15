@@ -78,6 +78,10 @@ const server=http.createServer((req,res)=> {
   assert.equal(jauge.trait,'non-scaling-stroke');
   assert.equal(jauge.epaisseur,'1px');
   assert.equal(jauge.titre,'0px');
+  assert.deepEqual(await sheet.locator('[data-module="caracs"] .pc-caracs-tete').innerText().then(s=>s.trim().split(/\s+/)),['NOM','VAL','MOD']);
+  assert.equal(await sheet.locator('[data-module="comps"] .pc-comp-nom-head').innerText(),'NOM');
+  assert.equal(await sheet.locator('[data-module="effondrement"]').evaluate(n=>n.previousElementSibling.dataset.module),'contenance');
+  assert.equal(await sheet.locator('[data-module="contenance"]').evaluate(n=>n.previousElementSibling.dataset.module),'pc');
   const expo=sheet.locator('[data-module="exposition"] .pc-vital-delta');
   await expo.fill('+20');await expo.press('Enter');assert.equal((await state()).etat.expo,20);
   const hour=sheet.getByLabel('Heures, en plus ou en moins');

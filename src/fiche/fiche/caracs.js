@@ -2,28 +2,29 @@
   function buildCaracs() {
     var b = block("Caractéristiques", null, "caracs");
 
-    // UNE SEULE ENTÊTE, COMME MIA : exactement le même squelette que les
-    // deux cases qu'elle annonce. En jeu on lit VALEUR | MOD ; sous le rouage
-    // les deux mêmes colonnes deviennent CRÉATION | XP.
-    var tete = el("div", "pc-crow-top pc-caracs-tete");
-    tete.appendChild(el("span", "pc-carac-head-spacer"));
-    var teteDuo = el("div", "pc-segs pc-carac-segs pc-carac-head");
+    var tete = el("div", "pc-crow-top pc-caracs-tete head");
+    tete.appendChild(el("span", null, "Nom"));
+    var libelles = el("div", "pc-carac-legendes");
     function teteCase(jeu, edit) {
-      var c = el("span", "c");
+      var c = el("span");
       c.appendChild(el("span", "pc-jeu-only", jeu));
       c.appendChild(el("span", "pc-edit-only", edit));
-      teteDuo.appendChild(c);
+      libelles.appendChild(c);
     }
     teteCase("VAL", "Création");
-    teteCase("Mod", "XP");
-    tete.appendChild(teteDuo);
+    teteCase("MOD", "XP");
+    tete.appendChild(libelles);
     b.appendChild(tete);
 
+    var teintes = {
+      Force: "force", Dexterite: "dex", Vigueur: "pv", Endurance: "pe",
+      Resistance: "resistance", Ferveur: "pi", Intelligence: "pm", Chance: "pc"
+    };
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr" + (teintes[name] ? " t-" + teintes[name] : ""), abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);

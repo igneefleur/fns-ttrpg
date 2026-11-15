@@ -289,7 +289,7 @@
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var head = el("div", "pc-comp-row head");
-    head.appendChild(el("span", null, "Compétence"));
+    head.appendChild(el("span", "pc-comp-nom-head", "Nom"));
     head.appendChild(el("span", "pc-comp-rang-head", "Rang"));
     head.appendChild(el("span", null, "Total"));
     compBox.appendChild(head);
