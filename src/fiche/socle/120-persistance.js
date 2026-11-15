@@ -50,9 +50,10 @@
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}
     add('caracs',[caracs,caps.xpDepense]);
-    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],['pv','pe','pm'].indexOf(k)>=0?[effetConsommation(k),effetGain(k)]:null]);});
-    add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
-    add('exposition',[caps.expo,caps.expoMax,confort()]);
+    function taux(k){return [effetConsommation(k),effetGain(k)];}
+    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],reserveAvecTaux(k)?taux(k):null]);});
+    add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max'],taux(k)];}));
+    add('exposition',[caps.expo,caps.expoMax,confort(),taux('expo')]);
     add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
     add('contenance',[caps.contenancePrise,state.horlogeDigestion,
       (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),

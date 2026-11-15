@@ -272,7 +272,7 @@
       var v=snum(it.restaurations&&it.restaurations[k]);
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
-      v*=q;if(k==="pi")v=effetPerteInnocence(v);
+      v*=q;
       if(ingere && (k==='ps'||k==='ph') && v){
         var digestion=effetNutrition(it,k,v/q);
         if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);

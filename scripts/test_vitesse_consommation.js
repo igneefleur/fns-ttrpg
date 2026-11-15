@@ -10,7 +10,7 @@ const ctx={state,num:(v,d=0)=>v==null||!Number.isFinite(Number(v))?d:Number(v),c
 const cap=fs.readFileSync('src/fiche/socle/080-calculs-capacites.js','utf8');
 vm.runInContext(cap.slice(cap.indexOf('  function effReste('),cap.indexOf('  function piMaxAuto(')),ctx);
 const fx=fs.readFileSync('src/fiche/fiche/effets.js','utf8');
-vm.runInContext(fx.slice(fx.indexOf('  function effetConsommation('),fx.indexOf('\n  }',fx.indexOf('  function effetVariationImmediate('))+4),ctx);
+vm.runInContext(fx.slice(fx.indexOf('  function reserveAvecTaux('),fx.indexOf('  function retireEffet(')),ctx);
 vm.runInContext(fs.readFileSync('src/fiche/fiche/mouvement.js','utf8'),ctx);
 for(const [v,bonus] of [[-29,-2],[-20,-2],[-19,-1],[-10,-1],[-9,0],[0,0],[9,0],[10,1],[19,1],[20,2],[29,2]])assert.equal(ctx.mouvementPas(6,0,v,0),6+bonus);
 assert.equal(ctx.mouvementPas(6,0,6+6,-2),5,'Cumul avant tranche et effondrement après vitesse');
@@ -46,4 +46,16 @@ assert.equal(ctx.effetVariationImmediate('pv',-10),-8);
 assert.equal(ctx.effetVariationImmediate('pe',2.5),2.5);
 assert.equal(ctx.effetVariationImmediate('pm',10),0);
 assert.equal(ctx.effetVariationImmediate('ps',-2.5),-2.5);
+ctx.pub=(nom,v,info)=>info.reserve==='expo'&&info.sens==='gain'?10:v;
+ctx.effetBonus=(type,res,cible,detail)=>{
+ if(type==='gains'&&res==='expo'){detail.eqp=5;return 8;}
+ if(type==='innocence'){detail.eqp=20;return 25;}
+ return 0;
+};
+state.modData.reservesVitales.gain_expo=7;
+assert.deepEqual({...ctx.tauxReserve('expo','gain')},{art:10,eqp:5,eft:3,atr:7,total:125});
+assert.equal(ctx.effetVariationImmediate('expo',8),10);
+assert.equal(ctx.effetVariationImmediate('pi',-10),-8);
+state.modData.reservesVitales.ps=50;
+assert.equal(ctx.effetVariationImmediate('ps',-10),-15);
 console.log('OK taux de gain et de perte immédiats distincts, neutres par défaut.');

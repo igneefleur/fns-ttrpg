@@ -4,9 +4,7 @@
     var box = el("div", "pc-block pc-vital");
     var res = el("div", "pc-vital-res pc-expo-res");
 
-    var tete = el("div", "pc-vital-tete");
-    var nom = el("span", "pc-vital-nom", "Exposition");
-    tete.appendChild(nom);
+    var tete = titreReserve(res, "expo", "Exposition");
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
     champNombreSigne(inp);
@@ -33,6 +31,7 @@
       trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
     }
     res.appendChild(jauge);
+    ajouteTauxReserve(res, "expo", "Exposition");
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
     // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
@@ -49,7 +48,7 @@
 
     res.appendChild(commandeVariation("Exposition à ajouter ou retirer", function (d) {
       var m = expoMax();
-      state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
+      state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + effetVariationImmediate("expo", d), -m, m) * 100) / 100;
     }));
     // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
     res.appendChild(stat);

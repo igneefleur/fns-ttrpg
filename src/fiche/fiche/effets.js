@@ -61,9 +61,10 @@
       if (families[key] || best !== x) return false; families[key] = true; return true;
     });
   }
-  function effetBonus(cle, type, cible) {
+  function effetBonus(cle, type, cible, detail) {
     var n = 0, soulagement = 0;
     equipementsBonus().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
+    if (detail) detail.eqp = n;
     effetsSources().forEach(function (x) {
       if (x.e.cible && x.e.cible !== cible) return;
       var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type];
@@ -72,20 +73,37 @@
         if(num(v,0)<0){soulagement=Math.min(soulagement,num(v,0));return;}
       }
       n += num(v,0);
+      if (detail && x.e.equipement) detail.eqp += num(v,0);
     });
     return n+soulagement;
   }
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetConsommation(res) { return Math.max(0, 100 + reglageReserveVitale(res) + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
-  function effetGain(res) { return Math.max(0, 100 + reglageReserveVitale("gain_" + res)); }
-  function effetVariationImmediate(res, delta) {
-    if (res !== "pv" && res !== "pe" && res !== "pm") return delta;
-    return delta < 0 ? -effetCout(res, -delta) : delta * (effetGain(res) / 100);
+  function reserveAvecTaux(res) { return /^(pv|pe|pm|pr|ps|ph|pi|expo)$/.test(res); }
+  function tauxReserve(res, sens) {
+    var perte = sens === "perte", innocence = perte && res === "pi";
+    var detail = { eqp: 0 };
+    var total = effetBonus(innocence ? "innocence" : perte ? "couts" : "gains",
+      innocence ? undefined : res, undefined, detail);
+    var signe = innocence ? -1 : 1;
+    var art = num(pub("variationReserveArt", 0, { reserve: res, sens: sens }), 0);
+    var eqp = signe * detail.eqp;
+    var eft = signe * total - eqp + (perte && res === "pm" ? effSpecifiques().mana : 0);
+    var atr = reglageReserveVitale(perte ? res : "gain_" + res);
+    return { art: art, eqp: eqp, eft: eft, atr: atr, total: Math.max(0, 100 + art + eqp + eft + atr) };
   }
-  function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
+  function effetConsommation(res) { return tauxReserve(res, "perte").total; }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
+  function effetGain(res) { return tauxReserve(res, "gain").total; }
+  function effetVariationImmediate(res, delta) {
+    if (!reserveAvecTaux(res)) return delta;
+    if (delta >= 0) return delta * (effetGain(res) / 100);
+    if (res === "pi") return effetPerteInnocence(delta);
+    if (res === "pv" || res === "pe" || res === "pm") return -effetCout(res, -delta);
+    return delta * (effetConsommation(res) / 100);
+  }
+  function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * (effetConsommation("pi") / 100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
     state.effetsActifs = state.effetsActifs.filter(function (e) {

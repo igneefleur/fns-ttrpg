@@ -49,7 +49,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const taux=mod.locator('.pc-vital-taux');
   assert.deepEqual(await taux.locator('.pc-info').allInnerTexts(),['PERTE '+pct+' %','GAIN 100 %']);
   assert.ok(await taux.evaluate(n=>{
-    const [perte,gain]=n.children, jauge=n.previousElementSibling, commande=n.nextElementSibling;
+    const [perte,gain]=n.children, jauge=n.previousElementSibling, commande=n.nextElementSibling.nextElementSibling;
     const rect=e=>e.getBoundingClientRect(), proche=(a,b)=>Math.abs(a-b)<.6;
     return jauge.matches('.pc-vital-jauge') && commande.matches('.pc-vital-cmd') &&
       proche(rect(jauge).bottom,rect(n).top) && rect(n).bottom<=rect(commande).top+.6 &&
@@ -58,13 +58,17 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const appliquer=mod.getByRole('button',{name:'Appliquer',exact:true});
   await mod.locator('.pc-vital-delta').fill('-13.4');await appliquer.click();
   assert.equal((await read()).etat[k],100-cost);
+  const sources=mod.locator('.pc-vital-sources');
+  assert.equal(await sources.isVisible(),false);
   await mod.getByRole('button',{name:'Modifier '+k.toUpperCase(),exact:true}).click();
-  await mod.getByLabel('Ajustement du gain (%)',{exact:true}).fill('20');
+  assert.equal(await sources.isVisible(),true);
+  assert.deepEqual(await sources.locator('.k').allTextContents(),['ART','EQP','EFT','ATR']);
+  await mod.getByLabel(k.toUpperCase()+' — Gain ATR (%)',{exact:true}).fill('20');
   assert.equal(await taux.locator('.pc-info').last().innerText(),'GAIN 120 %');
   await mod.locator('.pc-vital-delta').fill('+10');await appliquer.click();
   assert.equal((await read()).etat[k],112-cost);
  }
- assert.equal(await p.locator('.pc-vital-taux').count(),3);
+ assert.equal(await p.locator('.pc-vital-taux').count(),8);
  await p.locator('[data-module="pm"]').screenshot({path:'/tmp/owd-consommation-4.12.png'});
  const movement=p.locator('[data-module="mouvement"]');const speedSteps=Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText());
  await change("s.inv.objets[0].stats.vitesse=9");assert.equal(Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText()),speedSteps-1);
