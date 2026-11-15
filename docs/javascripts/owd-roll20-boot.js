@@ -65,7 +65,10 @@
   window.__owdCanEdit=function(){return edition&&!gele&&accesInventaire&&ready&&!document.getElementById('owd-ecran');};
   var storageIntent={absolute:{}};
   window.__owdRecupAccelere=function(id,effet,secondes){
-    storageIntent.recupAccelere={id:id,effet:effet,secondes:secondes};
+    (storageIntent.recupAccelerations||(storageIntent.recupAccelerations=[])).push({id:id,effet:effet,secondes:secondes});
+  };
+  window.__owdDigestionAcceleree=function(volume){
+    storageIntent.digestionAcceleree=volume;
   };
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
@@ -364,6 +367,13 @@
   var lastSavePerson=null,lastSaveCards=null,lastSaveAttrs=null,lastCapturedPerson=null,miroirsEnAttente=false;
   var saveContours=window.OwdSaveProgress?new window.OwdSaveProgress.Tracker():null;
   var savePainter=saveContours?new window.OwdSaveProgress.Painter(saveContours,document):null;
+  if(savePainter){
+    window.__owdActionRevision=function(){return saveContours.serial;};
+    window.__owdActionSuivi=function(button,revision){
+      var module=button.closest('[data-module]');
+      if(module)savePainter.linkAction(button,module.dataset.module,revision);
+    };
+  }
   window.__owdSavingModules=function(values){
     if(!saveContours)return;
     saveContours.capture(values,collaboration?collaboration.pending:{},ready&&openingDone&&!miseANiveauDemandee&&!collaborationApplique&&!gele);

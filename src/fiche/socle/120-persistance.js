@@ -54,7 +54,9 @@
     add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
     add('exposition',[caps.expo,caps.expoMax,confort()]);
     add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
-    add('contenance',caps.contenancePrise);
+    add('contenance',[caps.contenancePrise,state.horlogeDigestion,
+      (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),
+      recupAjoutsModule(false).filter(function(r){return r.categorie==='digestive';})]);
     var causes=['pr','ps','ph','pi','charge','contenance','chaud','froid','alcool','autre'].map(function(k){return [k,effPartie(k)];});
     add('effondrement',[caps.effondrement,causes,effSpecifiques()]);
     add('mouvement',[effetBonus('pas'),effetBonus('vitesse'),effSpecifiques().pas]);

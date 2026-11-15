@@ -364,27 +364,13 @@ const server=http.createServer((req,res)=> {
   const saisieFocus=await saisieRonde.evaluate(n=>getComputedStyle(n).boxShadow);
   assert.notEqual(saisieFocus,saisieRepos);
   assert.match(saisieFocus,/inset/);
-  // Une action réussie anime SEULEMENT son filet inférieur pendant 1,5 s.
-  // Le fond ne change jamais ; la classe disparaît d'elle-même à la fin.
+  // Le filet du bouton est piloté par le même accusé que le contour.
   const fondAction=await actionRonde.evaluate(n=>getComputedStyle(n).backgroundColor);
   await actionRonde.click();
-  const animation=await actionRonde.evaluate(n=>({
-    active:n.classList.contains('is-confirming'),
-    background:getComputedStyle(n).backgroundColor,
-    underline:getComputedStyle(n,'::after').backgroundColor,
-    name:getComputedStyle(n,'::after').animationName,
-    duration:getComputedStyle(n,'::after').animationDuration,
-    easing:getComputedStyle(n,'::after').animationTimingFunction
-  }));
-  assert.equal(animation.active,true);
-  assert.equal(animation.background,fondAction);
-  assert.equal(animation.underline,roles.accent==='#ffd77f'?'rgb(255, 215, 127)':'rgb(122, 92, 16)');
-  assert.equal(animation.name,'pc-action-underline-progress');
-  assert.equal(animation.duration,'1.5s');
-  assert.equal(animation.easing,'ease-out');
-  await page.waitForTimeout(1600);
-  assert.equal(await actionRonde.evaluate(n=>n.classList.contains('is-confirming')),false);
+  const ligneAction=actionRonde.locator('.pc-action-save-line');
+  await ligneAction.waitFor();
   assert.equal(await actionRonde.evaluate(n=>getComputedStyle(n).backgroundColor),fondAction);
+  await ligneAction.waitFor({state:'detached'});
   // Le champ B devient réellement verrouillé et gris lorsque MONDE est ON.
   const mondeTemp=effort.getByLabel('Température en °C');
   await effort.getByRole('button',{name:'MONDE'}).click();
@@ -405,11 +391,10 @@ const server=http.createServer((req,res)=> {
   const fondAppliquer=await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor);
   await champRound.fill('+1');
   await appliquerRound.click();
-  assert.equal(await appliquerRound.evaluate(n=>n.classList.contains('is-confirming')),true);
+  const ligneAppliquer=appliquerRound.locator('.pc-action-save-line');
+  await ligneAppliquer.waitFor();
   assert.equal(await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor),fondAppliquer);
-  await page.waitForTimeout(1600);
-  assert.equal(await appliquerRound.evaluate(n=>n.classList.contains('is-confirming')),false);
-  assert.equal(await appliquerRound.evaluate(n=>getComputedStyle(n).backgroundColor),fondAppliquer);
+  await ligneAppliquer.waitFor({state:'detached'});
   // Les trois commandes avancent la même horloge de 3 s, 60 s et 3600 s.
   const secondesHorloge=()=>state().then(s=>s.horloge.jours*86400+s.horloge.heures*3600+s.horloge.minutes*60+s.horloge.secondes);
   let avantRapide=await secondesHorloge();

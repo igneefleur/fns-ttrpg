@@ -37,8 +37,10 @@
     });
     return bt;
   }
-  function confirmeAction(bt) {
+  function marqueAction() { return window.__owdActionRevision ? window.__owdActionRevision() : 0; }
+  function confirmeAction(bt, revision) {
     if (!bt) return;
+    if (window.__owdActionSuivi) { window.__owdActionSuivi(bt, revision); return; }
     bt.classList.remove("is-confirming");
     void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
     bt.classList.add("is-confirming");
@@ -55,10 +57,11 @@
     function applique() {
       var valeur = litNombreSigne(delta.value);
       if (!isFinite(valeur) || !valeur) return;
+      var revision = marqueAction();
       modifier(valeur);
       delta.value = "";
       refresh();
-      confirmeAction(appliquer);
+      confirmeAction(appliquer, revision);
     }
     delta.addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); applique(); }

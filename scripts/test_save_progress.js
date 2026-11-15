@@ -24,3 +24,32 @@ ctx.actualiseStatutEnregistrement();assert.equal(messages.at(-1),'Enregistrement
 console.log('OK statut : aucune annonce de réussite tant que le miroir du module attend sa confirmation.');
 
 const plateau=new Tracker(()=>t);plateau.capture({source:'0',derived:'0'},{},true);plateau.capture({source:'1',derived:'1'},{old:op('old')},true);const start=plateau.records.derived.start;plateau.capture({source:'2',derived:'1'},{replacement:op('replacement')},true);assert.deepEqual(plateau.records.derived.ids,['replacement']);assert.equal(plateau.records.derived.start,start);plateau.confirm({ids:{replacement:true}});assert.equal(plateau.records.derived.phase,'finishing');console.log('OK module calculé inchangé : suit le remplacement de son opération source sans rester bloqué ni recommencer.');
+
+const tracker=new Tracker(()=>t);
+const animations=[];
+const line={
+ style:{},setAttribute(){},remove(){this.removed=true;},
+ animate(frames,options){animations.push({frames,options});return {cancel(){}};}
+};
+const painter=new (require('../docs/javascripts/owd-save-progress.js').Painter)(tracker,{
+ createElement:()=>line,querySelectorAll:()=>[]
+});
+const button={isConnected:true,appendChild(n){this.line=n;}};
+tracker.capture({effort:'0'},{},true);
+tracker.capture({effort:'1'},{click:op('click')},true);
+painter.linkAction(button,'effort',0);
+assert.equal(animations.at(-1).frames.at(-1).transform,'scaleX(0.5)');
+t+=17000;tracker.confirm({ids:{other:true}});painter.sync();
+assert.equal(animations.length,1);
+tracker.confirm({ids:{click:true}});painter.sync();
+assert.equal(animations.at(-1).frames[0].transform,'scaleX(0.5)');
+assert.equal(animations.at(-1).frames.at(-1).transform,'scaleX(1)');
+assert.equal(animations.at(-1).options.duration,400);
+t+=400;painter.sync();assert.equal(line.removed,true);
+tracker.capture({effort:'2'},{rejected:op('rejected')},true);
+painter.linkAction(button,'effort',1);
+tracker.confirm({ids:{rejected:true},conflicts:[{id:'rejected',rejected:true}]});
+painter.sync();assert.equal(painter.actions.size,0);
+assert.equal(animations.at(-1).frames.at(-1).transform,'scaleX(0.5)');
+painter.destroy();
+console.log('OK filet : mi-course en attente, fin confirmée et pas de faux succès si rejet.');

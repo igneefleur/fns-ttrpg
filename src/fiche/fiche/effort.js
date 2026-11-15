@@ -153,9 +153,10 @@
       bt.title = pas.titre;
       bt.setAttribute("aria-label", pas.titre);
       bt.addEventListener("click", function () {
+        var revision = marqueAction();
         var fait = avancerSecondes(pas.secondes);
         refresh();
-        if (fait) { confirmeAction(bt); flash(pas.message); }
+        if (fait) { confirmeAction(bt, revision); flash(pas.message); }
       });
       rapide.appendChild(bt);
     });
@@ -172,11 +173,12 @@
       function applique() {
         var n = Math.trunc(litNombreSigne(nb.value));
         if (!isFinite(n) || !n) return;
+        var revision = marqueAction();
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
         refresh();
         if (!sec) return;
-        confirmeAction(appliquer);
+        confirmeAction(appliquer, revision);
         var abs = Math.abs(sec), compte, texte, accord;
         if (abs % 3600 === 0) {
           compte = abs / 3600; texte = compte + (compte === 1 ? " heure" : " heures");

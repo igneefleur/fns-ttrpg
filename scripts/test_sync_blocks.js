@@ -88,4 +88,23 @@ test('deux accélérations de la même source ne changent la réserve qu’une f
  }
  function attrsWithoutOps(attrs){return Object.fromEntries(Object.entries(attrs).filter(([k])=>!k.startsWith(B.PREFIX)));}
 });
+test('une digestion accélérée concurrente ne vide ni ne verse deux fois les récupérations',()=>{
+ const state=fixture();
+ state.etat.pv=40;state.etat.contenance=4;
+ state.effetsActifs=[{id:'meal',actif:true,reste:60}];
+ state.modData.recuperation={ajouts:[{id:'drink',actif:true,resteSecondes:60}]};
+ const attrs=B.encode(state), a=new B.Session(attrs,state,()=>1,{id:'a'}), b=new B.Session(attrs,state,()=>1,{id:'b'});
+ const local=C.copy(state);
+ local.etat.pv+=5;local.etat.contenance=0;
+ local.effetsActifs=[];delete local.modData.recuperation;
+ for(const session of [a,b]){
+   session.capture(local,{digestionAcceleree:4,recupAccelerations:[
+     {id:'meal',effet:true,secondes:60},{id:'drink',effet:false,secondes:60}
+   ]});
+   attrs[B.PREFIX+session.id]={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};
+ }
+ const result=B.read(attrs);
+ assert.equal(result.state.etat.pv,45);assert.equal(result.state.etat.contenance,0);
+ assert.equal(result.conflicts.filter(c=>c.rejected).length,1);
+});
 console.log(count+' scénarios de stockage regroupé validés.');

@@ -22,6 +22,21 @@
     });
     nettoieRecupCoffre(); refresh(); rebuildRecuperation();
   }
+  function accelereDigestion() {
+    var volume = contenancePrise(), t = tempsDef(), cadence = digestionCadenceSecondes();
+    var parTranche = t && t.digestion ? num(t.digestion.volume, 0) : 0;
+    var fait = volume > 0 && cadence > 0 && parTranche > 0;
+    if (fait) {
+      if (window.__owdDigestionAcceleree) window.__owdDigestionAcceleree(volume);
+      var phase = secondesHorlogeProcessus("horlogeDigestion") % cadence;
+      appliqueDigestionSecondes(Math.ceil(volume / parTranche) * cadence - phase, 1);
+    }
+    recupListeModule().forEach(function (r) {
+      if (r.categorie === "digestive" && recupAccelereModule(r)) fait = true;
+    });
+    if (fait) refresh();
+    return fait;
+  }
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
@@ -43,7 +58,21 @@
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
     }));
-    b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
+    var commandes = el("div", "pc-segs pc-contenance-commandes");
+    var vomir = boutonAction("Vomir"), accelerer = boutonAction("Accélérer");
+    vomir.title = "Vider la contenance et interrompre les effets digestifs";
+    accelerer.title = "Terminer la digestion et ses récupérations sans avancer l’horloge";
+    vomir.addEventListener("click", function () {
+      var revision = marqueAction();
+      vomirContenu();
+      confirmeAction(vomir, revision);
+    });
+    accelerer.addEventListener("click", function () {
+      var revision = marqueAction();
+      if (accelereDigestion()) confirmeAction(accelerer, revision);
+    });
+    commandes.appendChild(vomir); commandes.appendChild(accelerer);
+    b.appendChild(commandes);
 
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();

@@ -155,4 +155,23 @@ test('durées simples et retour au niveau de base des récupérations naturelles
  assert.equal(ctx.recupNiveauBase(r),base);
  assert.equal(ctx.recupNiveauBase(autre),9);
 });
+test('la digestion accélérée libère la contenance et applique seulement les récupérations digestives actives',()=>{
+ const w=setup();
+ vm.runInContext(fs.readFileSync('src/fiche/fiche/contenance.js','utf8'),w.ctx);
+ w.ctx.refresh=()=>{};
+ w.state.etat.contenance=4;w.state.horlogeDigestion.minutes=1;
+ w.effect('Récupération (Eau) PE I',900);
+ w.state.effetsActifs[0].categorie='digestive';
+ const r=w.add(4,'pv',3600);r.categorie='digestive';
+ const pause=w.add(4,'pm',3600);pause.categorie='digestive';pause.actif=false;
+ const autre=w.add(4,'pm',3600);
+ assert.equal(w.ctx.accelereDigestion(),true);
+ assert.equal(w.state.etat.contenance,0);
+ assert.equal(w.ctx.secondesHorlogeProcessus('horlogeDigestion'),0);
+ near(w.value('pv'),42.5);near(w.value('pe'),55);near(w.value('pm'),40);
+ assert.equal(w.state.effetsActifs.length,0);
+ assert.equal(pause.resteSecondes,3600);assert.equal(autre.resteSecondes,3600);
+ assert.equal(w.ctx.horlogeVersSecondes(),0);
+ assert.equal(w.ctx.accelereDigestion(),false);
+});
 console.log(count+' scénarios de récupération progressive validés.');
