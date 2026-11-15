@@ -15,9 +15,24 @@ test('munition zéro : nouveau tir refusé sans coût ; réassort réutilisable 
 test('coup dessiné : dégâts de touche et passage préparés avant consommation',()=>{const a=ammo(),it=weapon(),w=attackContext([it,a]);w.ctx.envoieCoup({munition:'ammo'},it,{nom:'Coup',mult:1,types:['physique','physique']},def());assert.ok(w.chats[0].champs[0][1].includes('7 feu'));assert.ok(w.chats[0].champs[1][1].includes('3 feu'));assert.equal(a.qte,0);});
 test('options : consommation désactivée préserve la quantité ; attaque lente ne dépense pas de PE',()=>{const a=ammo(),it=weapon(),w=attackContext([it,a]);w.ctx.state.combatOptions.attaques.utiliseMunition=false;w.ctx.envoieAttaqueSimple({munition:'ammo'},it,def());assert.equal(a.qte,1);w.ctx.state.combatOptions.attaques.utiliseMunition=true;w.ctx.state.combatOptions.attaques.lente=true;w.ctx.envoieAttaqueSimple({munition:'ammo'},it,def());assert.equal(w.ctx.state.etat.pe,94);assert.equal(a.qte,0);});
 test('munition équipée épuisée : objet conservé, emplacement libéré',()=>{const a=ammo();a.ou='ceint';const it=weapon(),w=attackContext([it,a]);w.ctx.envoieAttaqueSimple({munition:'ammo'},it,def());assert.equal(a.qte,0);assert.equal(a.ou,'terre');});
-function consumption(){const state=M.blank();state.etat.pv=50;state.inv.objets=[{ref:'sac',qte:2,ou:'poches'},{ref:'potion',nom:'Potion',qte:2,dans:'sac',ou:'poches',effets:['test'],restaurations:{pv:5}}];const ctx={state,window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,num:(v,d)=>Number.isFinite(Number(v))?Number(v):d,effetDefinition:id=>({id,ops:id==='impr'?{impregnation:{}}:{}}),flash(){},defenseArme:()=>null,invEstIngerable:()=>false,maxDe:()=>100,appliqueEffet(){},bougeReserve:(k,v)=>state.etat[k]+=v,effetPerteInnocence:v=>v,contenancePrise:()=>0,fmtP:String,sayChat(){},refresh(){},invRender:null};vm.createContext(ctx);const src=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8'),a=src.indexOf('  function invConsommer('),b=src.indexOf('  function invConsommerDialogue(',a);vm.runInContext(src.slice(a,b),ctx);return ctx;}
+function consumption(){const state=M.blank();state.etat.pv=50;state.inv.objets=[{ref:'sac',qte:2,ou:'poches'},{ref:'potion',nom:'Potion',qte:2,dans:'sac',ou:'poches',effets:['test'],restaurations:{pv:5}}];const ctx={state,window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,num:(v,d)=>v!=null&&Number.isFinite(Number(v))?Number(v):d,effetDefinition:id=>({id,ops:id==='impr'?{impregnation:{}}:{}}),flash(){},defenseArme:()=>null,invEstIngerable:()=>false,maxDe:()=>100,appliqueEffet(){},bougeReserve:(k,v)=>state.etat[k]+=v,effetPerteInnocence:v=>v,contenancePrise:()=>0,fmtP:String,sayChat(){},refresh(){},invRender:null};Object.assign(ctx,{effetBonus:()=>0,effSpecifiques:()=>({mana:0})});
+ vm.createContext(ctx);
+ const caps=fs.readFileSync(root+'src/fiche/socle/080-calculs-capacites.js','utf8');
+ vm.runInContext(caps.slice(caps.indexOf('  function reglageReserveVitale('),caps.indexOf('  function sacrificeTelluriqueMax(')),ctx);
+ const effets=fs.readFileSync(root+'src/fiche/fiche/effets.js','utf8');
+ vm.runInContext(effets.slice(effets.indexOf('  function effetConsommation('),effets.indexOf('  function effetPerteInnocence(')),ctx);
+ const src=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8'),a=src.indexOf('  function invConsommer('),b=src.indexOf('  function invConsommerDialogue(',a);vm.runInContext(src.slice(a,b),ctx);return ctx;}
 test('consommation refusée : demi-dose, quantité zéro et cible absente ne changent aucun objet',()=>{for(const scenario of ['demi','zero','cible']){const c=consumption(),it=c.state.inv.objets[1];if(scenario==='cible')it.effets=['impr'];const before=I.stable(c.state);assert.equal(c.invConsommer(it,scenario==='demi'?.5:scenario==='zero'?0:1,''),false);assert.equal(I.stable(c.state),before);}});
 test('consommation valide : un seul contenant isolé, dose consommée et restauration appliquée',()=>{const c=consumption(),it=c.state.inv.objets[1];assert.equal(c.invConsommer(it,1,''),true);assert.equal(c.state.etat.pv,55);assert.equal(c.state.inv.objets.filter(o=>o.nom==='Potion').reduce((n,o)=>n+I.totalQuantity(c.state.inv.objets,o),0),3);});
+test('consommable : gain et perte immédiats suivent leurs taux respectifs',()=>{
+ const c=consumption(),it=c.state.inv.objets[1];
+ c.state.modData.reservesVitales={gain_pv:20,pv:-20};
+ assert.equal(c.invConsommer(it,1,''),true);
+ assert.equal(c.state.etat.pv,56);
+ it.restaurations.pv=-5;
+ assert.equal(c.invConsommer(it,1,''),true);
+ assert.equal(c.state.etat.pv,52);
+});
 function techniques(initial){
  function el(tag,cls,text){
   const classes=new Set(String(cls||'').split(/\s+/).filter(Boolean));
