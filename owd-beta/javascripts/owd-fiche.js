@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.2b";
+  var RELEASE = "4.37.3b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5835,8 +5835,8 @@
 
     if (cle === "pm") {
       var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
-      sacrifice.appendChild(el("span", "c pc-info", "Sacrifice tellurique"));
-      sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
+      sacrifice.appendChild(el("span", "c pc-info", "Sacrifice"));
+      sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
       reglages.appendChild(sacrifice);
     }

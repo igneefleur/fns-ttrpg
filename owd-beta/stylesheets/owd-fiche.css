@@ -571,9 +571,10 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   display: grid; grid-template-columns: minmax(0, 1fr) auto;
   gap: .15rem .4rem;
 }
-.pc-vital-tete-avec-rouage > .pc-vital-val { grid-column: 2; grid-row: 1; }
+.pc-vital-tete-avec-rouage > .pc-vital-titre { grid-column: 1; grid-row: 1; }
+.pc-vital-tete-avec-rouage > .pc-vital-val { grid-column: 2; grid-row: 1 / 3; }
 .pc-vital-tete-avec-rouage > .pc-gear {
-  grid-column: 2; grid-row: 2; justify-self: end; margin: 0;
+  grid-column: 1; grid-row: 2; justify-self: start; margin: 0;
 }
 .pc-vital-tete-avec-rouage > .pc-vital-etat-ligne { grid-column: 1 / -1; }
 .pc-vital-tete-reglable > .pc-vital-val { align-self: center; }
@@ -804,7 +805,8 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-block-title small ~ .pc-gear { margin-left: .4rem; }
 .pc-gear:hover, .pc-item-gear:hover { color: var(--ink); }
 .pc-editable.editing .pc-gear { color: var(--accent); transform: rotate(90deg); }
-.pc-editable.editing { border-color: var(--accent); }
+.pc-editable.editing,
+.pc-block.pc-vital:has(> .pc-vital-res.pc-editable.editing) { border-color: var(--accent); }
 .pc-editable:not(.editing) .pc-edit-only { display: none !important; }
 /* un champ verrouillé prend l'air d'un simple TEXTE : il ne grise pas, il ne
    se barre pas, il perd seulement son cadre. C'est ce qui permet à un module
