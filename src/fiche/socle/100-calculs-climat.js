@@ -381,7 +381,7 @@
     function stop(n){if(n>1e-8 && n<pas)pas=n;}
     // Expirations : même un effet sans récupération peut modifier les plafonds.
     (state.effetsActifs||[]).forEach(function(e){if(e.actif && e.reste!==null)stop(e.reste);});
-    recupListeTemps().forEach(function(r){var e=recupEtatTemps(r);if(r.perso && e.actif)stop(r.resteSecondes);});
+    recupListeTemps().forEach(function(r){var e=recupEtatTemps(r);if(r.perso && r.permanente !== true && e.actif)stop(r.resteSecondes);});
     Object.keys(debits).forEach(function(k){
       var d=debits[k],v=courant(k),m=maxDe(k);
       if(!d)return;

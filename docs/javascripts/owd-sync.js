@@ -10,6 +10,7 @@
 (function (root) {
   "use strict";
   // La fiche et Monde partagent le MÊME moteur, avec des espaces séparés.
+  function indexedPath(k) { return /,\["index",\d+\]\]$/.test(k); }
   function create(options) {
   options = options || {};
   var BASE = options.base || "owd_sync_base", PREFIX = options.prefix || "owd_sync_p_", FORMAT = 1;
@@ -103,13 +104,29 @@
   function difference(before, after) {
     var out = Object.create(null);
     Object.keys(after).forEach(function (k) {
-      if (!own(before, k) || JSON.stringify(before[k]) !== JSON.stringify(after[k])) out[k] = after[k];
+      if (own(before, k) && JSON.stringify(before[k]) === JSON.stringify(after[k])) return;
+      var node = after[k];
+      if (indexedPath(k)) {
+        var parent = key(JSON.parse(k).slice(0, -1));
+        var previous = before[k];
+        // Le remplissage de cases vides ne doit pas effacer le MOD qu'une
+        // autre fiche vient d'y écrire depuis la même version courte.
+        if (before[parent] && node[0] === "v" && node[1] === "" &&
+            (!previous || previous[0] === "v" && previous[1] === null)) return;
+        // Le journal doit transmettre la longueur, même si la fiche l'a
+        // déjà complétée localement lors d'une relecture.
+        if (after[parent] && after[parent][0] === "i") out[parent] = after[parent];
+      }
+      out[k] = node;
     });
     Object.keys(before).forEach(function (k) {
       if (own(after, k)) return;
       var p = JSON.parse(k), n = before[k];
       // Un marqueur déjà supprimé n'est pas une nouvelle suppression.
       if (n[0] === "d") return;
+      // La suppression du dernier ajout efface ses champs, pas la liste des
+      // autres joueurs qui ont pu y ajouter une récupération entre-temps.
+      if (n[0] === "l" && k === '[["k","modData"],["k","recuperation"],["k","ajouts"]]') return;
       // Une table éparse devenue vide ne supprime pas ses parents : un autre
       // joueur peut avoir ajouté une AUTRE clé sous le même parent.
       if (n[0] === "o" && (!p.length || p[p.length - 1][0] !== "e")) return;
@@ -245,6 +262,23 @@
           if(incomplete){delete ids[op.id];return;}op.changes=op.changes.concat(extra);
         }
         if(incomplete){delete ids[op.id];return;}
+        if(op.recupAccelere){
+          var guard=op.recupAccelere;
+          var path=guard.effet?[["k","effetsActifs"]]:[["k","modData"],["k","recuperation"],["k","ajouts"]];
+          path.push(["e",guard.id]);
+          var entry=f[JSON.stringify(path)];
+          var duration=f[JSON.stringify(path.concat([["k","resteSecondes"]]))];
+          var enabled=f[JSON.stringify(path.concat([["k","actif"]]))];
+          var permanent=f[JSON.stringify(path.concat([["k","permanente"]]))];
+          var valid=guard.effet
+            ? entry&&entry[0]==="v"&&entry[1].reste===guard.secondes&&entry[1].actif!==false
+            : entry&&entry[0]==="o"&&(!duration||duration[1]===guard.secondes)&&
+              (!enabled||enabled[1]!==false)&&(!permanent||permanent[1]!==true);
+          if(!valid){
+            conflicts.push({id:op.id,reason:"La récupération a changé ou est déjà terminée."});
+            return;
+          }
+        }
 
         op.changes.forEach(function(c){var p=JSON.parse(c.k);if(p.some(function(x){return ['__proto__','constructor','prototype'].indexOf(x[1])>=0;}))throw Error('Chemin réservé.');
           if(invPath(p)&&p.length>2){var entity=legacy.key?legacy.key(p.slice(0,3)):JSON.stringify(p.slice(0,3));var created=op.changes.some(function(x){return x.k===entity&&x.n[0]!=='d';});if((!f[entity]||f[entity][0]==='d')&&!created)blocked=true;}
@@ -253,7 +287,14 @@
         });
         if(blocked||invalid){conflicts.push({id:op.id,reason:blocked?'Objet modifié ou quantité insuffisante.':'Réserve sans référence numérique.'});return;}
         op.changes.forEach(function(c){var prior=f[c.k];if(c.clockDelta!==undefined){var h=legacy.copy(prior&&prior[1]||c.before[1]),sec=Math.max(0,Number(h.jours)*86400+Number(h.heures)*3600+Number(h.minutes)*60+Number(h.secondes)+c.clockDelta);h.jours=Math.floor(sec/86400);h.heures=Math.floor(sec%86400/3600);h.minutes=Math.floor(sec%3600/60);h.secondes=sec%60;f[c.k]=['v',h];}else if(c.delta!==undefined){var v=prior&&prior[0]==='v'?prior[1]:null;if(v==null)v=c.anchor;f[c.k]=['v',Math.round((v+c.delta)*1000000)/1000000];}
-          else {if(c.before!==undefined&&stable(prior)!==stable(c.before)&&stable(prior)!==stable(c.n)&&c.n[0]==='v'&&(!heads[c.k]||heads[c.k].slice(0,heads[c.k].lastIndexOf(':'))!==op.id.slice(0,op.id.lastIndexOf(':'))))conflicts.push({id:op.id,reason:'Même champ modifié simultanément.',path:c.k});f[c.k]=legacy.copy(c.n);}heads[c.k]=op.id;});
+          else {
+            // Une case absente avant normalisation équivaut à un MOD vide.
+            var emptyMod = c.before && c.before[0]==='v' && c.before[1]==='' &&
+              (prior===undefined || prior[0]==='v' && prior[1]===null) && indexedPath(c.k);
+            if(!emptyMod&&c.before!==undefined&&stable(prior)!==stable(c.before)&&stable(prior)!==stable(c.n)&&c.n[0]==='v'&&(!heads[c.k]||heads[c.k].slice(0,heads[c.k].lastIndexOf(':'))!==op.id.slice(0,op.id.lastIndexOf(':'))))conflicts.push({id:op.id,reason:'Même champ modifié simultanément.',path:c.k});
+            f[c.k]=legacy.copy(c.n);
+          }
+          heads[c.k]=op.id;});
       });
       if(reader){var payloads={};ops.forEach(function(o){[o.creates,o.modules].forEach(function(map){Object.keys(map||{}).forEach(function(k){var name=map[k].attribute;payloads[name]=val(attrs[name]);});});});reader.previous={records:records,base:base,flat:f,heads:heads,ops:ops.slice(),payloads:Object.keys(payloads).map(function(k){return [k,payloads[k]];}),conflicts:legacy.copy(conflicts),incomplete:incomplete};Object.keys(reader.boxes).forEach(function(k){if(!attrs[k])delete reader.boxes[k];});}
       var orderedHistory=history.concat(ops).sort(function(a,b){return a.clock-b.clock||(a.id<b.id?-1:a.id>b.id?1:0);});var publicOps=reader?legacy.copy(orderedHistory):orderedHistory,publicIds=Object.assign({},absorbed);publicOps.forEach(function(op){if(ids[op.id])publicIds[op.id]=op;});
@@ -296,6 +337,7 @@
         var lastId=Object.keys(this.pending).slice(-1)[0],last=lastId&&this.pending[lastId];
         if(last&&stable(last.actor||null)===stable(this.actor||null)&&!this.published[lastId]&&!last.creates&&!last.modules&&last.changes.length===changes.length&&changes.every(function(c,i){var old=last.changes[i];return old.k===c.k&&old.n[0]==='v'&&c.n[0]==='v'&&old.delta===undefined&&c.delta===undefined&&old.clockDelta===undefined&&c.clockDelta===undefined&&!invPath(JSON.parse(c.k));})){changes.forEach(function(c,i){if(last.changes[i].before!==undefined)c.before=last.changes[i].before;else delete c.before;});delete this.pending[lastId];}
         var op={id:this.id+':'+(++this.counter),clock:++this.clock,at:this.now(),changes:changes};if(this.actor)op.actor=legacy.copy(this.actor);
+        if(intent&&intent.recupAccelere)op.recupAccelere=legacy.copy(intent.recupAccelere);
         var labels={};changes.forEach(function(c){var p=JSON.parse(c.k);p.forEach(function(seg,i){if(seg[0]!=="e")return;var prefix=p.slice(0,i+1),key=JSON.stringify(prefix.concat([["k","nom"]])),v=next[key]||self.local[key];if(!v){key=JSON.stringify(prefix.concat([["k","name"]]));v=next[key]||self.local[key];}if(v&&v[0]==="v"&&typeof v[1]==="string")labels[seg[1]]=v[1];});});if(Object.keys(labels).length)op.labels=labels;if(Object.keys(creates).length)op.creates=creates;if(Object.keys(modules).length)op.modules=modules;this.pending[op.id]=op;this.pendingAt[op.id]=this.now();}
 this.local=next;};
     Session.prototype.outgoing=function(){if(!this.hasBase)return this.migration;var out={},self=this;Object.keys(this.pending).forEach(function(id){out[id]=self.pending[id];self.published[id]=true;});return out;};

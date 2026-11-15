@@ -34,4 +34,58 @@ test('supprimer deux fois une même pile depuis deux joueurs reste un conflit, s
  const w=world();w.change(w.a,s=>{s.inv.objets=[];});w.change(w.b,s=>{s.inv.objets=[];s.name='Ne doit pas remplacer';});const actual=w.read();
  assert.equal(actual.state.inv.objets.length,0);assert.notEqual(actual.state.name,'Ne doit pas remplacer');assert.ok(actual.conflicts.length>0);
 });
+test('MOD complétés localement : deux armes et des éditions concurrentes',()=>{
+ const catalogue=require('../docs/data/owd-boutique.json').equipements;
+ const dagger=C.copy(catalogue.find(o=>o.nom==='Astral Dagger'));
+ dagger.ref='dagger';
+ const state=fixture();
+ state.inv.objets.push({ref:'new',nom:'Arme créée',arme:{modsDegats:[],modsParade:[]}},dagger);
+ const attrs=B.encode(state),sessions=['a','b'].map(id=>new B.Session(attrs,state,()=>1,{id}));
+ for(const [i,session] of sessions.entries()){
+   const local=session.receive(attrs).state;
+   for(const o of local.inv.objets.filter(o=>o.arme)){
+     for(const field of ['modsDegats','modsParade']){
+       o.arme[field]=Array.from({length:3},(_,j)=>o.arme[field]?.[j]||'');
+     }
+   }
+   // Le pont reprend la forme normalisée comme état local après réception.
+   if(i===0)session.local=B.flatten(local);
+   local.inv.objets[2].arme.modsDegats[i]=i?'Chance':'Force';
+   if(i===0){
+     local.inv.objets[2].arme.modsParade[0]='Endurance';
+     local.inv.objets[3].arme.modsDegats[2]='Force';
+   }
+   session.capture(local);
+ }
+ for(const session of sessions){
+   attrs[B.PREFIX+session.id]={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};
+ }
+ const saved=B.read(attrs);
+ assert.deepEqual(saved.state.inv.objets[2].arme.modsDegats,['Force','Chance',null]);
+ assert.equal(saved.state.inv.objets[2].arme.modsParade[0],'Endurance');
+ assert.deepEqual(saved.state.inv.objets[3].arme.modsDegats,['Dexterite','Dexterite','Force']);
+ assert.equal(saved.conflicts.length,0);
+});
+test('deux accélérations de la même source ne changent la réserve qu’une fois',()=>{
+ for(const effet of [false,true]){
+   const state=fixture(), id='r1';
+   state.etat.pv=40;
+   if(effet)state.effetsActifs=[{id,actif:true,reste:60}];
+   else state.modData.recuperation={ajouts:[{id,actif:true,resteSecondes:60}]};
+   const attrs=B.encode(state);
+   for(const client of ['a','b']){
+     const session=new B.Session(attrsWithoutOps(attrs),state,()=>1,{id:client});
+     const local=C.copy(state);
+     if(effet)local.effetsActifs=[];
+     else delete local.modData.recuperation;
+     local.etat.pv+=5;
+     session.capture(local,{recupAccelere:{id,effet,secondes:60}});
+     attrs[B.PREFIX+client]={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};
+   }
+   const result=B.read(attrs);
+   assert.equal(result.state.etat.pv,45);
+   assert.equal(result.conflicts.length,1);
+ }
+ function attrsWithoutOps(attrs){return Object.fromEntries(Object.entries(attrs).filter(([k])=>!k.startsWith(B.PREFIX)));}
+});
 console.log(count+' scénarios de stockage regroupé validés.');

@@ -79,7 +79,7 @@ const server=http.createServer((req,res)=> {
       const frame=page.frames().find(f=>f.url().includes('/roll20-fiche.html#c=shared'));
       await frame.waitForFunction(()=>window.Owd&&Owd.__pret);
       assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-group').count(),7);
-      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-label').filter({hasText:/^Naturelle · /}).count(),35);
+      assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-badge[title="Naturelle"]').count(),35);
       assert.equal(await sheet.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),35);
       await frame.evaluate(()=>{const s=JSON.parse(__owdLocalStorage.getItem('owd-perso'));s.etat.expo=80;s.temperature=48;s.effort='repos';s.capsLeviers.max=s.capsLeviers.max||{};s.capsLeviers.max.force=s.capsLeviers.max.force||{};s.capsLeviers.max.force.expo=100;s.horlogeExposition={jours:0,heures:0,minutes:0,secondes:0,regime:''};Owd.__recoitEtat(s);Owd.__calculs.avancerSecondes(2100);});
       assert.equal(await sheet.getByLabel('Exposition',{exact:true}).inputValue(),'80');

@@ -16,11 +16,11 @@ function setup(native=false){
  const ctx={capFirst:s=>s,state,D:()=>({...catalogue,temps}),aClef:(o,k)=>Object.hasOwn(o,k),num:(x,d=0)=>x==null||!Number.isFinite(Number(x))?d:Number(x),snum:x=>Number(x)||0,pnum:x=>Math.max(0,Number(x)||0),clamp:(n,a,b)=>Math.max(a,Math.min(b,n)),pub:(k,n)=>n,uid:()=>String(++id),effDef:()=>rules.effondrement,capDef:k=>({signe:k==='expo'}),equipementsPortes:()=>[],casePermise:()=>false,casesDe:()=>[],invType:()=>'',window:{},hooks:[],effondrementActif:null};
  vm.createContext(ctx);
  for(const f of ['socle/080-calculs-capacites.js','socle/100-calculs-climat.js','fiche/effets.js'])vm.runInContext(fs.readFileSync('src/fiche/'+f,'utf8'),ctx);
- let recup=fs.readFileSync('src/fiche/fiche/recuperation.js','utf8');vm.runInContext(recup.slice(0,recup.indexOf('  // ---- résumé par réserve')),ctx);
+ let recup=fs.readFileSync('src/fiche/fiche/recuperation.js','utf8');vm.runInContext(recup,ctx);
  const refresh=fs.readFileSync('src/fiche/socle/150-refresh.js','utf8');vm.runInContext(refresh.slice(refresh.indexOf('  var effVu ='),refresh.indexOf('  var refreshEmpreintes')),ctx);
  Object.assign(ctx,{maxDe:k=>k==='pv'||k==='pe'?Math.floor(maxima[k]*(1-(k==='pv'?0.05:0.1)*ctx.effondrement())):maxima[k],expoMax:()=>100,confort:()=>({bas:28,haut:32}),poidsPorte:()=>0,charge:()=>100,contenancePrise:()=>state.etat.contenance,contenance:()=>40,lireCap:()=>({}),chaine:(l,v)=>v,effetBonusOriginal:ctx.effetBonus});
  const orig=ctx.prochainStopTemps;ctx.prochainStopTemps=(...a)=>{segments++;assert.ok(segments<100000,'Boucle du solveur');return orig(...a);};
- function add(level,reserve='pv',duration=1e9){const r={id:'custom'+(++id),nom:'Test',reserve,niveau:level,actif:true,type:'2h',temps:duration/7200,resteSecondes:duration};ctx.recupCoffre(true).ajouts=(ctx.recupCoffre(false).ajouts||[]).concat(r);return r;}
+ function add(level,reserve='pv',duration=1e9){const r={id:'custom'+(++id),nom:'Test',perso:true,reserve,niveau:level,actif:true,type:'2h',temps:duration/7200,resteSecondes:duration};ctx.recupCoffre(true).ajouts=(ctx.recupCoffre(false).ajouts||[]).concat(r);return r;}
  function effect(name,duration){return ctx.appliqueEffet(catalogue.effets.find(d=>d.nom===name).id,'Test','',duration);}
  return {ctx,state,maxima,add,effect,segments:()=>segments,advance:s=>ctx.avancerSecondes(s),value:k=>ctx.courant(k)};
 }
@@ -64,5 +64,64 @@ test('recul exact restaure fractions, effets et horloges',()=>{const w=setup(tru
 test('migration des anciens compteurs sans perte ni double gain',()=>{
  const w=setup();const r=w.add(1);const e=w.ctx.recupEtatTemps(r);w.ctx.recupCoffre(true).suivi={[r.id]:{secondes:3600,signature:w.ctx.recupSignatureTemps(r,e)}};w.ctx.recupSynchroniseSuivi();assert.equal(w.value('pv'),40.625);w.ctx.recupSynchroniseSuivi();assert.equal(w.value('pv'),40.625);
  w.effect('Récupération (Eau) PE I');w.state.effetsActifs[0].suivi=30;w.ctx.recupSynchroniseSuivi();assert.equal(w.value('pe'),40.5);w.ctx.recupSynchroniseSuivi();assert.equal(w.value('pe'),40.5);
+});
+test('accélérer un gain manuel applique sa fraction et expire uniquement sa source',()=>{
+ const w=setup(), cible=w.add(4,'pv',3600), autre=w.add(4,'pv',7200);
+ const effet=w.effect('Récupération (Eau) PE I',900);
+ const etatAvant=JSON.stringify(w.state.horloge);
+ assert.equal(w.ctx.recupAccelereModule(cible),true);
+ near(w.value('pv'),42.5);
+ assert.equal(autre.resteSecondes,7200);
+ assert.equal(w.state.effetsActifs[0].reste,900);
+ assert.ok(effet);
+ assert.equal(JSON.stringify(w.state.horloge),etatAvant);
+ assert.equal(w.ctx.recupAccelereModule(cible),false);
+});
+test('accélérer une perte s’arrête à zéro, sans déplacer l’horloge',()=>{
+ const w=setup();w.state.etat.pv=1;
+ assert.equal(w.ctx.recupAccelereModule(w.add(-5,'pv',7200)),true);
+ assert.equal(w.value('pv'),0);
+ assert.equal(w.ctx.horlogeVersSecondes(),0);
+});
+test('accélérer un effet digestif utilise son débit réel et laisse les autres durées',()=>{
+ const w=setup(), autre=w.add(4,'pe',7200);
+ w.effect('Récupération (Eau) PE I',1801);
+ w.state.effetsActifs[0].categorie='digestive';
+ w.state.effetsActifs[0].facteur=.5;
+ const cible=w.ctx.recupListeModule().find(r=>r.effetActif);
+ assert.equal(cible.categorie,'digestive');
+ assert.equal(w.ctx.recupAccelereModule(cible),true);
+ near(w.value('pe'),40+1801/120);
+ assert.equal(w.state.effetsActifs.length,0);
+ assert.equal(autre.resteSecondes,7200);
+ assert.equal(w.ctx.horlogeVersSecondes(),0);
+});
+test('une récupération suspendue garde sa durée et une permanente ne s’épuise pas',()=>{
+ const w=setup(), pause=w.add(4,'pv',3600), permanente=w.add(4,'pe',3600);
+ pause.actif=false;permanente.permanente=true;
+ assert.equal(w.ctx.recupAccelereModule(pause),false);
+ assert.equal(w.ctx.recupAccelereModule(permanente),false);
+ w.advance(7200);
+ assert.equal(pause.resteSecondes,3600);
+ assert.equal(w.value('pv'),40);
+ assert.equal(w.value('pe'),45);
+ assert.ok(w.ctx.recupAjoutsModule(false).includes(permanente));
+ pause.actif=true;
+ assert.equal(w.ctx.recupAccelereModule(pause),true);
+ near(w.value('pv'),42.5);
+});
+test('l’ordre d’une réserve inclut les sources masquées et survit à la sauvegarde',()=>{
+ const w=setup(true);
+ const [naturelle]=w.ctx.recupListeModule().filter(r=>r.reserve==='pv');
+ const a=w.add(4,'pv',3600), b=w.add(5,'pv',7200);
+ assert.equal(w.ctx.recupDeplaceModule(b,naturelle,true),true);
+ assert.equal(w.ctx.recupDeplaceModule(a,{id:'autre',reserve:'pe'},true),false);
+ const restored=C.read(C.encode(w.state)).state;
+ const z=setup(true);
+ Object.assign(z.state,restored);
+ const groupe=z.ctx.recupListeModule().filter(r=>r.reserve==='pv');
+ const ordre=z.ctx.recupOrdreGroupeModule('pv',groupe);
+ assert.equal(ordre[0].id,b.id);
+ assert.equal(ordre[1].id,naturelle.id);
 });
 console.log(count+' scénarios de récupération progressive validés.');

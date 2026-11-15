@@ -64,6 +64,9 @@
   var openingStartedAt=window.__owdOpeningAt||Date.now();
   window.__owdCanEdit=function(){return edition&&!gele&&accesInventaire&&ready&&!document.getElementById('owd-ecran');};
   var storageIntent={absolute:{}};
+  window.__owdRecupAccelere=function(id,effet,secondes){
+    storageIntent.recupAccelere={id:id,effet:effet,secondes:secondes};
+  };
   window.__owdReserveSet=function(k){storageIntent.absolute[JSON.stringify([['k','etat'],['k',k]])]=true;};
   window.__owdInventorySet=function(ref){storageIntent.absolute[JSON.stringify([['k','inv'],['k','objets'],['e',ref],['k','qte']])]=true;};
 
