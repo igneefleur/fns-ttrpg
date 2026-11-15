@@ -83,8 +83,8 @@
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
-    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation Endurance"));
-    var mana = el("button", "c pc-info", "Consommation Mana");
+    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation PE"));
+    var mana = el("button", "c pc-info", "Consommation PM");
     mana.type = "button";
     mana.disabled = true;
     mana.title = "Aucun coût en mana n’est défini pour ces actions.";

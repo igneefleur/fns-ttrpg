@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.7b";
+  var RELEASE = "4.37.8b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6155,8 +6155,8 @@
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
-    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation Endurance"));
-    var mana = el("button", "c pc-info", "Consommation Mana");
+    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation PE"));
+    var mana = el("button", "c pc-info", "Consommation PM");
     mana.type = "button";
     mana.disabled = true;
     mana.title = "Aucun coût en mana n’est défini pour ces actions.";
@@ -7650,7 +7650,9 @@
       marqueUtilises();
     }
 
-    var envoi = miniBtn("Envoyer", "Lancer les dés sélectionnés", function () {
+    var envoi = boutonAction("Envoyer", "c pc-action pc-desaction-envoi");
+    envoi.title = "Lancer les dés sélectionnés";
+    envoi.addEventListener("click", function () {
       var tailles = [];
       cases.forEach(function (c, i) { if (choisis[i] && !utilise(i)) tailles.push(desTaille(i)); });
       if (!tailles.length) return;
@@ -7668,17 +7670,19 @@
       });
       choisis = [];
       refresh();
-    }, "pc-desaction-envoi");
-    var recup = miniBtn("Récupérer", "Rendre les dés utilisés", function () {
+    });
+    var recup = boutonAction("Récupérer");
+    recup.title = "Rendre les dés utilisés";
+    recup.addEventListener("click", function () {
       state.desUtilises = {};
       refresh();
-    }, "pc-desaction-envoi");
+    });
     // ENVOYER ne part qu'avec un dé choisi, RÉCUPÉRER qu'avec un dé utilisé
     function majBoutons() {
       envoi.disabled = !choisis.some(function (x, i) { return x && i < cases.length && !utilise(i); });
       recup.disabled = !cases.some(function (c, i) { return utilise(i); });
     }
-    var gestes = el("div", "pc-desaction-gestes");
+    var gestes = el("div", "pc-segs pc-desaction-gestes");
     gestes.appendChild(envoi);
     gestes.appendChild(recup);
     b.appendChild(gestes);
