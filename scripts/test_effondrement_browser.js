@@ -35,6 +35,19 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
    };
  });
  assert.ok(disposition.jauge);
+ assert.deepEqual(await eff.locator('.pc-eff-global-jauge .pc-vital-palier').evaluateAll(ns=>ns.map(n=>n.style.left)),
+   ['10%','20%','30%','40%','50%','60%','70%','80%','90%']);
+ assert.equal(await p.locator(':is([data-module="pv"],[data-module="pe"],[data-module="pm"],[data-module="pc"]) .pc-vital-palier').count(),0);
+ const ecarts=await p.evaluate(()=>{
+   const effort=[...document.querySelectorAll('[data-module="effort"] .pc-effort-section')];
+   const survie=[...document.querySelectorAll('[data-module="survie"] .pc-vital-res')];
+   function retraits(groupes,selecteur) {
+     return groupes.slice(1).map((g,i)=>g.querySelector(selecteur).getBoundingClientRect().top-
+       groupes[i].getBoundingClientRect().bottom);
+   }
+   return [...retraits(effort,'.pc-block-title'),...retraits(survie,'.pc-block-title')];
+ });
+ assert.ok(ecarts.length===4 && ecarts.every(x=>Math.abs(x-ecarts[0])<.6));
  assert.equal(await eff.locator('.pc-eff-global-jauge > i').evaluate(n=>getComputedStyle(n).backgroundColor),'rgb(0, 0, 0)');
  assert.match(disposition.taux[0],/^PV [0-9]+ %$/);
  assert.match(disposition.taux[1],/^PE [0-9]+ %$/);
@@ -147,6 +160,18 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await change("s.effAlcool=0;s.effetsActifs=[{id:'pausedAlcohol',effet:'Effondrement d’alcool +1',actif:false,duree:7200,reste:6000}]");assert.equal((await read()).effAlcool,0);assert.equal((await read()).effetsActifs[0].actif,false);
  await change("s.effAlcool=0;s.effetsActifs=[{id:'food',effet:'Récupération Nourriture PV V',categorie:'digestive',source:'Repas',actif:true,reste:7200},{id:'spell',effet:'Réduction du coût en mana',categorie:'speciale',source:'Sort',actif:true,reste:60}];s.etat.contenance=10;s.etat.pv=20");
  await p.locator('[data-module="contenance"]').getByRole('button',{name:'Vomir',exact:true}).click();let s=await read();assert.equal(s.etat.contenance,0);assert.equal(s.etat.pv,20);assert.deepEqual(s.effetsActifs.map(e=>e.id),['spell']);
+ const positions=await p.evaluate(()=>{
+   const normal=document.querySelector('[data-module="comps"] > .pc-block-title > .pc-gear');
+   const barre=document.querySelector('[data-module="pv"] .pc-vital-tete > .pc-gear');
+   return [normal,barre].map(g=>{
+     const module=g.closest('.pc-block').getBoundingClientRect(), r=g.getBoundingClientRect();
+     return [r.top-module.top,module.right-r.right];
+   });
+ });
+ assert.ok(positions[0].every((v,i)=>Math.abs(v-positions[1][i])<.6));
+ await change("s.capsLeviers={max:{force:{pe:0}}}");
+ assert.ok(await p.getByText("Points d'endurance au maximum de zéro : le personnage est inconscient.",{exact:true}).isVisible());
+ assert.doesNotMatch(await p.locator('[data-module="pe"]').innerText(),/inconscient/i);
  await p.setViewportSize({width:390,height:850});assert.equal(await eff.evaluate(n=>n.scrollWidth>n.clientWidth+1),false);assert.deepEqual(errors,[]);
  console.log('OK navigateur : 35 conditions naturelles, effets actifs et sommeil, désactivation, alcool et reprise ancienne, vomissement ciblé, petit écran sans débordement.');
 }finally{await browser.close();server.close();}})().catch(e=>{console.error(e);process.exitCode=1;server.close();});

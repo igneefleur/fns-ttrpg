@@ -533,6 +533,8 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-block {
   --pc-module-top-inset: .5rem;
   --pc-title-top-inset: .04rem;
+  --pc-gear-top: .28rem;
+  --pc-sous-section-gap: .4rem;
   min-width: 0; background: var(--panel);
   border: 1px solid var(--line); border-radius: 5px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, .08);
@@ -575,10 +577,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-tete-avec-rouage > .pc-vital-titre { grid-column: 1; grid-row: 1; }
 .pc-vital-tete-avec-rouage > .pc-vital-val { grid-column: 2; grid-row: 1 / 3; }
 .pc-vital-tete-avec-rouage > .pc-gear {
-  position: absolute; inset-block-start: .28rem; inset-inline-end: var(--pc-module-inset);
+  position: absolute; inset-block-start: var(--pc-gear-top); inset-inline-end: var(--pc-module-inset);
   z-index: 1; margin: 0;
 }
-.pc-vital-tete-avec-rouage > .pc-vital-etat-ligne { grid-column: 1 / -1; }
 .pc-vital-tete-reglable > .pc-vital-val { align-self: center; }
 .pc-segs.pc-vital-taux { margin: 0; border-width: 0 0 1px; border-radius: 0; }
 .pc-vital-taux > .c { font-variant-numeric: tabular-nums; white-space: normal; }
@@ -633,22 +634,13 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-variation-segs > button.c { flex: 0 0 66.666667%; }
 .pc-variation-segs > .c { letter-spacing: 0; }
 .pc-vital-delta::placeholder { color: var(--ink-3); opacity: 1; }
-.pc-vital-etat-ligne:has(.pc-vital-etat:empty) { display: none; }
-.pc-vital-etat-ligne { flex: 0 0 100%; }
-.pc-vital-etat {
-  display: inline-block;
-  font-size: var(--fs-label); font-weight: 800; letter-spacing: .06em;
-  text-transform: uppercase; color: var(--danger);
-  border: 1px solid var(--danger); border-radius: 999px; padding: .06rem .4rem;
-  background: var(--card);
-}
 /* Sous zéro, le bandeau entier passe au rouge. Un rouge FIXE et sombre, comme
    le bandeau reste sombre dans les deux modes : le texte blanc s'y lit toujours. */
 .pc-vital-res.over .pc-vital-tete { background: #6e2415; border-bottom-color: var(--danger); }
 .pc-vital-res.over .pc-vital-nom, .pc-vital-res.over .pc-vital-num, .pc-vital-res.over .pc-vital-max { color: #fff; }
 /* Plusieurs réserves dans une carte (Survie) : chaque bandeau reprend à zéro,
    séparé du geste de la précédente par un filet. */
-.pc-vital-res + .pc-vital-res { margin-top: .4rem; }
+.pc-vital-res + .pc-vital-res { margin-top: var(--pc-sous-section-gap); }
 /* Temps : les cinq efforts se partagent la largeur, et le
    geste du temps reprend celui des réserves, sans leur marge latérale. */
 /* Une RANGÉE SOUPLE et non la grille des sous-onglets : les cinq ne tiennent
@@ -659,7 +651,9 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 /* EFFORT / TEMPS / ÉCOULEMENT : sous-sections du même module.
    Le titre réemploie STRICTEMENT .pc-block-title, sans variante de couleur
    ni de filet : même blanc/noir et même trait fin que les autres modules. */
-.pc-effort-section + .pc-effort-section { margin-top: .7rem; }
+.pc-effort-section + .pc-effort-section {
+  margin-top: calc(var(--pc-sous-section-gap) + var(--pc-module-top-inset));
+}
 
 /* TEMPS : chaque unité porte la même largeur, suffisante pour RND.
    Les champs prennent tout l'espace restant ; MONDE occupe la moitié du rang. */
@@ -810,7 +804,11 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   color: var(--ink-3); font: inherit; font-size: .84rem; line-height: 1;
   cursor: pointer; padding: 0 .02rem; transition: color .12s, transform .15s;
 }
-.pc-block-title small ~ .pc-gear { margin-left: .4rem; }
+.pc-block > .pc-block-title:has(> .pc-gear:not(.pc-tech-pane-gear)) { padding-inline-end: 1.24rem; }
+.pc-block > .pc-block-title > .pc-gear:not(.pc-tech-pane-gear) {
+  position: absolute; inset-block-start: calc(var(--pc-gear-top) - var(--pc-module-top-inset));
+  inset-inline-end: 0; z-index: 1; margin: 0;
+}
 .pc-gear:hover, .pc-item-gear:hover { color: var(--ink); }
 .pc-editable.editing .pc-gear { color: var(--accent); transform: rotate(90deg); }
 .pc-editable.editing,

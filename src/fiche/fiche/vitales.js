@@ -24,8 +24,7 @@
   // d'union du clavier passe pour une césure.
   function reserveFmt(n) { n=Math.floor(n); return n < 0 ? "−" + fmtP(-n) : fmtP(n); }
 
-  // Rend { el, etat } : UNE réserve (bandeau, barre, geste), et la pastille
-  // d'état que l'appelant remplit lui-même. La CARTE qui la porte est à part
+  // Une réserve contient son bandeau, sa barre et ses commandes. La CARTE est à part
   // (carteVitale) : PV, PE et PM en ont une chacun, PR, PS et PH en partagent
   // une.
   function carteVitale() { return el("div", "pc-block pc-vital"); }
@@ -120,13 +119,28 @@
     }
   }
 
+  function gradueJauge(jauge) {
+    var traits = [];
+    for (var palier = 1; palier < 10; palier++) {
+      var trait = el("span", "pc-vital-palier");
+      trait.style.left = (palier * 10) + "%";
+      trait.setAttribute("aria-hidden", "true");
+      jauge.appendChild(trait);
+      traits.push(trait);
+    }
+    return function (pourcent) {
+      traits.forEach(function (trait, i) {
+        trait.classList.toggle("plein", (i + 1) * 10 <= pourcent);
+      });
+    };
+  }
+
   function reserveVitale(cle, provenance, nomAffiche) {
     var nom = nomAffiche || abbrCap(cle, cle.toUpperCase());
     var box = el("div", "pc-vital-res t-" + cle);
 
     var editable = reserveAvecTaux(cle);
     var tete = titreReserve(box, cle, nom);
-    var etat = el("span", "pc-vital-etat", "");
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
     inp.dataset.syncReserve=cle;
@@ -143,20 +157,12 @@
     var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
     tete.appendChild(val);
-    var etatLigne = el("div", "pc-vital-etat-ligne");
-    etatLigne.appendChild(etat);
-    tete.appendChild(etatLigne);
     box.appendChild(tete);
 
     var jauge = el("span", "pc-vital-jauge");
     var fill = el("i");
     jauge.appendChild(fill);
-    for (var palier = 1; ["pr", "ps", "ph", "pi"].indexOf(cle) >= 0 && palier < 10; palier++) {
-      var trait = el("span", "pc-vital-palier");
-      trait.style.left = (palier * 10) + "%";
-      trait.setAttribute("aria-hidden", "true");
-      jauge.appendChild(trait);
-    }
+    var majPaliers = /^(pr|ps|ph|pi)$/.test(cle) ? gradueJauge(jauge) : null;
     box.appendChild(jauge);
     if (editable) ajouteTauxReserve(box, cle, nom);
     box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
@@ -183,12 +189,10 @@
       fill.style.marginLeft = neg ? "auto" : "0";
       var pourcent = clamp(neg ? 100 : (m > 0 ? v / m * 100 : 0), 0, 100);
       fill.style.width = pourcent + "%";
-      jauge.querySelectorAll(".pc-vital-palier").forEach(function (trait) {
-        trait.classList.toggle("plein", parseFloat(trait.style.left) <= pourcent);
-      });
+      if (majPaliers) majPaliers(pourcent);
       jauge.title = nom + " " + reserveFmt(v) + " / " + fmtP(m);
     });
-    return { el: box, etat: etat };
+    return box;
   }
   // L'effondrement descend le maximum de PV et de PE : l'infobulle le dit, ou
   // le chiffre paraît faux au joueur qui vérifie la formule de tête.
@@ -201,15 +205,12 @@
       return t;
     };
   }
-  function seule(r) { var c = carteVitale(); c.appendChild(r.el); return c; }
+  function seule(r) { var c = carteVitale(); c.appendChild(r); return c; }
   function buildPv() {
     return seule(reserveVitale("pv", provenanceEff("pv")));
   }
   function buildPe() {
-    var r = reserveVitale("pe", provenanceEff("pe"));
-    // un ÉTAT du personnage, le même que dit l'avertissement de l'en-tête
-    hooks.push(function () { r.etat.textContent = peMax() <= 0 ? "Inconscient" : ""; });
-    return seule(r);
+    return seule(reserveVitale("pe", provenanceEff("pe")));
   }
   // LES POINTS D'INNOCENCE, même module que les PV. Ils ne remontent pas au
   // repos, mais cela ne change rien au geste : on y tape ce qui se perd ou se

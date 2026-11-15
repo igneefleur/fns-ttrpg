@@ -12,6 +12,7 @@
     bandeau.appendChild(tete);
     var jauge = el("span", "pc-vital-jauge pc-eff-global-jauge"), remplissage = el("i");
     jauge.appendChild(remplissage);
+    var majPaliers = gradueJauge(jauge);
     bandeau.appendChild(jauge);
     ajouteBandeauTaux(bandeau, "Effondrement",
       [["PV", "eff_pv", function () { return tauxMaximumEffondrement("pv"); }],
@@ -144,7 +145,9 @@
       var plafond = effPlafond();
       valeurNiveau.textContent = fmtP(total);
       maximum.textContent = "/ " + fmtP(plafond);
-      remplissage.style.width = (plafond ? clamp(total / plafond, 0, 1) * 100 : 0) + "%";
+      var pourcent = plafond ? clamp(total * 100 / plafond, 0, 100) : 0;
+      remplissage.style.width = pourcent + "%";
+      majPaliers(pourcent);
       lecture.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
