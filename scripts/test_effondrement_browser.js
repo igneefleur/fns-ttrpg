@@ -49,11 +49,12 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const cout=mod.locator('.pc-vital-consommation');
   assert.equal(await cout.innerText(),'Coût '+pct+' %');
   assert.ok(await cout.evaluate(n=>{
-    const titre=n.previousElementSibling, valeur=n.nextElementSibling;
-    if (!n.parentElement.matches('.pc-vital-tete') ||
+    const identite=n.parentElement, titre=n.previousElementSibling, valeur=identite.nextElementSibling;
+    if (!identite.parentElement.matches('.pc-vital-tete') ||
         !titre.matches('.pc-vital-titre') || !valeur.matches('.pc-vital-val')) return false;
     const a=titre.getBoundingClientRect(), b=n.getBoundingClientRect(), c=valeur.getBoundingClientRect();
-    return a.right<=b.left && b.right<=c.left && b.top<c.bottom && c.top<b.bottom;
+    return a.bottom<=b.top && Math.abs(a.left-b.left)<.5 &&
+      identite.getBoundingClientRect().right<=c.left && a.top<c.bottom && c.top<b.bottom;
   }));
   await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
   assert.equal((await read()).etat[k],100-cost);

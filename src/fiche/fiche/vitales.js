@@ -67,9 +67,11 @@
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
       titre.appendChild(gear);
-      tete.appendChild(titre);
+      var identite = el("div", "pc-vital-identite");
       cout = el("span", "pc-vital-consommation");
-      tete.appendChild(cout);
+      identite.appendChild(titre);
+      identite.appendChild(cout);
+      tete.appendChild(identite);
     } else {
       tete.appendChild(n);
     }
