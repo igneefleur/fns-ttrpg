@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.13b";
+  var RELEASE = "4.36.14b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5774,15 +5774,21 @@
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
-    tete.appendChild(n);
+    var cout;
     if (editable) {
+      var titre = el("span", "pc-vital-titre");
+      titre.appendChild(n);
       box.classList.add("pc-editable");
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
-      tete.appendChild(gear);
+      titre.appendChild(gear);
+      tete.appendChild(titre);
+      cout = el("span", "pc-vital-consommation");
+      tete.appendChild(cout);
+    } else {
+      tete.appendChild(n);
     }
     var etat = el("span", "pc-vital-etat", "");
-    tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
     inp.dataset.syncReserve=cle;
@@ -5799,6 +5805,9 @@
     var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
     tete.appendChild(val);
+    var etatLigne = el("div", "pc-vital-etat-ligne");
+    etatLigne.appendChild(etat);
+    tete.appendChild(etatLigne);
     box.appendChild(tete);
 
     var jauge = el("span", "pc-vital-jauge");
@@ -5817,13 +5826,7 @@
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
       state.etat[cle] = courant(cle) + d;
     }));
-    var cout;
     if (editable) {
-      var consommation = el("div", "pc-segs pc-vital-consommation");
-      consommation.appendChild(el("span", "c pc-info", "Coût"));
-      cout = el("span", "c pc-info");
-      consommation.appendChild(cout);
-      box.appendChild(consommation);
       var reglages = el("div", "pc-vital-reglages pc-edit-only");
       reglages.appendChild(champReglageVital(cle, "Ajustement du coût (%)", function () {
         return reglageReserveVitale(cle);
@@ -5834,7 +5837,7 @@
     }
 
     hooks.push(function () {
-      if (cout) cout.textContent = fmtP(effetConsommation(cle)) + " %";
+      if (cout) cout.textContent = "Coût " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de

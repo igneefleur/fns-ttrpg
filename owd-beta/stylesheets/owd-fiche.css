@@ -554,12 +554,22 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    Le gréement des réserves de la fiche MIA. Trois bandes pleine largeur : la
    carte perd sa marge intérieure et chaque bande porte la sienne. */
 .pc-block.pc-vital { padding: 0; overflow: hidden; }
-/* flex-wrap est la ceinture : si la valeur et la pastille ne tiennent plus, la
-   valeur passe à la ligne plutôt que de faire défiler la page en travers. */
+/* Les éléments du bandeau peuvent passer à la ligne si la colonne se resserre. */
 .pc-vital-tete {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem;
   padding: .3rem var(--pc-module-inset) .32rem;
   background: transparent;
+}
+.pc-vital-titre {
+  display: inline-flex; align-items: center; gap: .25rem;
+  flex: 0 0 auto; align-self: center;
+}
+.pc-vital-titre > .pc-gear { margin-left: 0; }
+.pc-vital-consommation {
+  flex: 0 0 auto; align-self: center; margin-inline-start: auto;
+  padding: .12rem .24rem; border-radius: 3px;
+  background: var(--pc-segs-info-bg); color: var(--ink-2);
+  font-size: var(--fs-meta); font-variant-numeric: tabular-nums; white-space: nowrap;
 }
 /* Le nom est une étiquette : s'il faut céder, c'est lui qui cède, jamais la
    valeur — un nombre coupé se lit faux. */
@@ -612,9 +622,10 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-variation-segs > button.c { flex: 0 0 66.666667%; }
 .pc-variation-segs > .c { letter-spacing: 0; }
 .pc-vital-delta::placeholder { color: var(--ink-3); opacity: 1; }
-.pc-vital-etat:empty { display: none; }
+.pc-vital-etat-ligne:has(.pc-vital-etat:empty) { display: none; }
+.pc-vital-etat-ligne { flex: 0 0 100%; }
 .pc-vital-etat {
-  flex: 0 0 auto; align-self: center;
+  display: inline-block;
   font-size: var(--fs-label); font-weight: 800; letter-spacing: .06em;
   text-transform: uppercase; color: var(--danger);
   border: 1px solid var(--danger); border-radius: 999px; padding: .06rem .4rem;
@@ -2421,9 +2432,6 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-actifs[hidden] { display:none; }
 .pc-eff-actif { padding: .3rem .45rem; text-align: center; background: var(--pc-segs-info-bg); color: var(--ink); }
 .pc-eff-actif + .pc-eff-actif { border-top: 1px solid var(--line-2); }
-.pc-vital-tete > .pc-gear { margin-left: 0; align-self: center; }
-.pc-vital-consommation { width: auto; margin: 0 var(--pc-module-inset) .38rem; }
-.pc-vital-consommation > .c:first-child { flex: 0 0 33.333333%; }
 .pc-vital-reglages {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
   gap: .3rem; padding: 0 var(--pc-module-inset) .38rem;
