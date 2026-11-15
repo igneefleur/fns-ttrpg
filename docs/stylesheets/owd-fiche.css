@@ -2432,14 +2432,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-actifs[hidden] { display:none; }
 .pc-eff-actif { padding: .3rem .45rem; text-align: center; background: var(--pc-segs-info-bg); color: var(--ink); }
 .pc-eff-actif + .pc-eff-actif { border-top: 1px solid var(--line-2); }
-.pc-vital-reglages { padding: .3rem var(--pc-module-inset) 0; }
-.pc-vital-sources.pc-stat { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; }
-.pc-vital-sources > .c { padding: .16rem 0 0; }
-.pc-vital-sources > .pc-info { background: var(--pc-segs-info-bg); }
-.pc-vital-paire { display: flex; width: 100%; min-width: 0; }
-.pc-vital-paire > .v { flex: 1; min-width: 0; font-size: .6rem; overflow-wrap: anywhere; }
-.pc-segs.pc-vital-paire { margin: 0; border-width: 1px 0 0; border-radius: 0; }
-.pc-vital-paire > input.c { width: 0; padding: 0; }
+.pc-vital-detail-taux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.pc-segs.pc-vital-sources {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin: 0; border-width: 0 0 1px; border-radius: 0;
+}
+.pc-vital-sources + .pc-vital-sources > .c:first-child { box-shadow: inset 1px 0 0 var(--line-2); }
+.pc-segs.pc-vital-sources > .c { width: 100%; min-width: 0; padding: 0; font-size: .58rem; }
+.pc-segs.pc-vital-sources > .pc-vital-source-titre { height: 1rem; }
+.pc-segs.pc-vital-sources > .pc-vital-source-valeur {
+  border-top: 1px solid var(--line-2); font-variant-numeric: tabular-nums;
+}
+.pc-vital-sources:first-child > .c:nth-child(5) { box-shadow: none; }
+.pc-vital-sacrifice.pc-segs { width: auto; margin-inline: var(--pc-module-inset); }
 .pc-vital-sacrifice > .pc-info { flex: 2 1 0; }
 .pc-vital-sacrifice > input.c { width: 0; }
 .pc-rec-categorie { font-size:var(--fs-meta); color:var(--ink-3); max-width:100%; }

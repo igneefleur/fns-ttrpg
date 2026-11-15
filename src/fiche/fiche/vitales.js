@@ -75,31 +75,31 @@
     scope.appendChild(taux);
 
     var reglages = el("div", "pc-vital-reglages pc-edit-only");
-    var sources = el("div", "pc-stat pc-vital-sources");
-    var vues = [["art", "ART", "Arts"], ["eqp", "EQP", "Équipements"], ["eft", "EFT", "Effets"]].map(function (source) {
-      var cellule = el("div", "c pc-info pc-vital-source");
-      cellule.appendChild(el("span", "k", source[1]));
-      var valeurs = el("span", "pc-vital-paire");
-      var p = el("span", "v"), g = el("span", "v");
-      valeurs.appendChild(p);
-      valeurs.appendChild(g);
-      cellule.appendChild(valeurs);
-      sources.appendChild(cellule);
-      return { cle: source[0], nom: source[2], cellule: cellule, perte: p, gain: g };
-    });
-
-    var autre = el("div", "c pc-vital-source");
-    autre.appendChild(el("span", "k", "ATR"));
-    var champs = el("div", "pc-segs pc-vital-paire");
-    [[cle, "Perte"], ["gain_" + cle, "Gain"]].forEach(function (reglage) {
-      var champ = champReglageVital(reglage[0], nom + " — " + reglage[1] + " ATR (%)",
-        function () { return reglageReserveVitale(reglage[0]); }, function (v) { return v; });
+    var detail = el("div", "pc-vital-detail-taux");
+    var vues = [["perte", "Perte", cle], ["gain", "Gain", "gain_" + cle]].map(function (reglage) {
+      var sources = el("div", "pc-segs pc-vital-sources");
+      sources.setAttribute("role", "group");
+      sources.setAttribute("aria-label", nom + " — détail " + reglage[1]);
+      var colonnes = [["art", "ART", "Arts"], ["eqp", "EQP", "Équipements"], ["eft", "EFT", "Effets"], ["atr", "ATR", "Autre"]];
+      colonnes.forEach(function (source) {
+        var entete = el("span", "c pc-info pc-vital-source-titre", source[1]);
+        entete.title = source[2];
+        sources.appendChild(entete);
+      });
+      var lectures = colonnes.slice(0, 3).map(function (source) {
+        var valeur = el("span", "c pc-info pc-vital-source-valeur");
+        sources.appendChild(valeur);
+        return { cle: source[0], nom: source[2], valeur: valeur };
+      });
+      var champ = champReglageVital(reglage[2], nom + " — " + reglage[1] + " ATR (%)",
+        function () { return reglageReserveVitale(reglage[2]); }, function (v) { return v; });
+      champ.classList.add("pc-vital-source-valeur");
       champ.title = champ.getAttribute("aria-label");
-      champs.appendChild(champ);
+      sources.appendChild(champ);
+      detail.appendChild(sources);
+      return { sens: reglage[0], nom: reglage[1], lectures: lectures };
     });
-    autre.appendChild(champs);
-    sources.appendChild(autre);
-    reglages.appendChild(sources);
+    reglages.appendChild(detail);
 
     if (cle === "pm") {
       var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
@@ -115,9 +115,12 @@
       perte.textContent = "Perte " + fmtP(p.total) + " %";
       gain.textContent = "Gain " + fmtP(g.total) + " %";
       vues.forEach(function (vue) {
-        vue.perte.textContent = sign(p[vue.cle]);
-        vue.gain.textContent = sign(g[vue.cle]);
-        vue.cellule.title = vue.nom + " · Perte " + vue.perte.textContent + " % · Gain " + vue.gain.textContent + " %";
+        var taux = vue.sens === "perte" ? p : g;
+        vue.lectures.forEach(function (lecture) {
+          var texte = sign(Number(fmtP(taux[lecture.cle])));
+          lecture.valeur.textContent = texte;
+          lecture.valeur.title = vue.nom + " · " + lecture.nom + " : " + texte + " %";
+        });
       });
     });
   }

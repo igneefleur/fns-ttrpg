@@ -58,11 +58,24 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const appliquer=mod.getByRole('button',{name:'Appliquer',exact:true});
   await mod.locator('.pc-vital-delta').fill('-13.4');await appliquer.click();
   assert.equal((await read()).etat[k],100-cost);
-  const sources=mod.locator('.pc-vital-sources');
+  const sources=mod.locator('.pc-vital-detail-taux');
   assert.equal(await sources.isVisible(),false);
   await mod.getByRole('button',{name:'Modifier '+k.toUpperCase(),exact:true}).click();
   assert.equal(await sources.isVisible(),true);
-  assert.deepEqual(await sources.locator('.k').allTextContents(),['ART','EQP','EFT','ATR']);
+  assert.deepEqual(await sources.locator('.pc-vital-source-titre').allTextContents(),
+    ['ART','EQP','EFT','ATR','ART','EQP','EFT','ATR']);
+  assert.ok(await sources.evaluate(n=>{
+    const [perte,gain]=n.children, [totalPerte,totalGain]=n.parentElement.previousElementSibling.children;
+    const proche=(a,b)=>Math.abs(a-b)<.6;
+    return [[perte,totalPerte],[gain,totalGain]].every(([g,t])=>{
+      const cellules=[...g.children];
+      return proche(g.getBoundingClientRect().left,t.getBoundingClientRect().left) &&
+        proche(g.getBoundingClientRect().width,t.getBoundingClientRect().width) &&
+        cellules.length===8 && cellules.slice(4).every((cellule,i)=>
+          proche(cellule.getBoundingClientRect().top,cellules[i].getBoundingClientRect().bottom) &&
+          getComputedStyle(cellule).borderTopWidth==='1px');
+    });
+  }));
   await mod.getByLabel(k.toUpperCase()+' — Gain ATR (%)',{exact:true}).fill('20');
   assert.equal(await taux.locator('.pc-info').last().innerText(),'GAIN 120 %');
   await mod.locator('.pc-vital-delta').fill('+10');await appliquer.click();
