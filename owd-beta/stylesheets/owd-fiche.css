@@ -567,7 +567,15 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   padding-top: var(--pc-module-top-inset);
 }
 .pc-block-title.pc-vital-titre { margin: 0; padding-bottom: 0; }
-.pc-vital-titre > .pc-gear { align-self: center; margin-inline-start: 0; }
+.pc-vital-tete-avec-rouage {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: .15rem .4rem;
+}
+.pc-vital-tete-avec-rouage > .pc-vital-val { grid-column: 2; grid-row: 1; }
+.pc-vital-tete-avec-rouage > .pc-gear {
+  grid-column: 2; grid-row: 2; justify-self: end; margin: 0;
+}
+.pc-vital-tete-avec-rouage > .pc-vital-etat-ligne { grid-column: 1 / -1; }
 .pc-vital-tete-reglable > .pc-vital-val { align-self: center; }
 .pc-segs.pc-vital-taux { margin: 0; border-width: 0 0 1px; border-radius: 0; }
 .pc-vital-taux > .c { font-variant-numeric: tabular-nums; white-space: normal; }
@@ -744,7 +752,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 /* La zone idéale occupe sa ligne ; intensité et résorption se partagent
    équitablement la ligne suivante. */
-.pc-expo-stats { margin: 0 0 .4rem; }
+.pc-expo-stats { width: auto; margin: 0 var(--pc-module-inset) .4rem; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
 /* Jauge de Contenance : le même taux animé pilote le niveau et la couleur. */
@@ -2433,17 +2441,11 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-actif { padding: .3rem .45rem; text-align: center; background: var(--pc-segs-info-bg); color: var(--ink); }
 .pc-eff-actif + .pc-eff-actif { border-top: 1px solid var(--line-2); }
 .pc-vital-detail-taux { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.pc-segs.pc-vital-sources {
-  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin: 0; border-width: 0 0 1px; border-radius: 0;
-}
+.pc-segs.pc-vital-sources { margin: 0; border-width: 0 0 1px; border-radius: 0; }
 .pc-vital-sources + .pc-vital-sources > .c:first-child { box-shadow: inset 1px 0 0 var(--line-2); }
-.pc-segs.pc-vital-sources > .c { width: 100%; min-width: 0; padding: 0; font-size: .58rem; }
-.pc-segs.pc-vital-sources > .pc-vital-source-titre { height: 1rem; }
-.pc-segs.pc-vital-sources > .pc-vital-source-valeur {
-  border-top: 1px solid var(--line-2); font-variant-numeric: tabular-nums;
+.pc-segs.pc-vital-sources > .c {
+  width: 0; padding: 0; font-size: .6rem; font-variant-numeric: tabular-nums;
 }
-.pc-vital-sources:first-child > .c:nth-child(5) { box-shadow: none; }
 .pc-vital-sacrifice.pc-segs { width: auto; margin-inline: var(--pc-module-inset); }
 .pc-vital-sacrifice > .pc-info { flex: 2 1 0; }
 .pc-vital-sacrifice > input.c { width: 0; }

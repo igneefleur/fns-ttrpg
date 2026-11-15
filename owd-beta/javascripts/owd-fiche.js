@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.1b";
+  var RELEASE = "4.37.2b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5796,13 +5796,14 @@
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, nom);
     titre.appendChild(n);
+    tete.appendChild(titre);
     if (reserveAvecTaux(cle)) {
+      tete.classList.add("pc-vital-tete-avec-rouage");
       scope.classList.add("pc-editable");
       var gear = gearBtn(scope, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
-      titre.appendChild(gear);
+      tete.appendChild(gear);
     }
-    tete.appendChild(titre);
     return tete;
   }
 
@@ -5819,24 +5820,16 @@
       var sources = el("div", "pc-segs pc-vital-sources");
       sources.setAttribute("role", "group");
       sources.setAttribute("aria-label", nom + " — détail " + reglage[1]);
-      var colonnes = [["art", "ART", "Arts"], ["eqp", "EQP", "Équipements"], ["eft", "EFT", "Effets"], ["atr", "ATR", "Autre"]];
-      colonnes.forEach(function (source) {
-        var entete = el("span", "c pc-info pc-vital-source-titre", source[1]);
-        entete.title = source[2];
-        sources.appendChild(entete);
-      });
-      var lectures = colonnes.slice(0, 3).map(function (source) {
-        var valeur = el("span", "c pc-info pc-vital-source-valeur");
-        sources.appendChild(valeur);
-        return { cle: source[0], nom: source[2], valeur: valeur };
-      });
+      var base = el("span", "c pc-info");
+      var effets = el("span", "c pc-info");
+      sources.appendChild(base);
+      sources.appendChild(effets);
       var champ = champReglageVital(reglage[2], nom + " — " + reglage[1] + " ATR (%)",
         function () { return reglageReserveVitale(reglage[2]); }, function (v) { return v; });
-      champ.classList.add("pc-vital-source-valeur");
       champ.title = champ.getAttribute("aria-label");
       sources.appendChild(champ);
       detail.appendChild(sources);
-      return { sens: reglage[0], nom: reglage[1], lectures: lectures };
+      return { sens: reglage[0], nom: reglage[1], base: base, effets: effets };
     });
     reglages.appendChild(detail);
 
@@ -5855,11 +5848,11 @@
       gain.textContent = "Gain " + fmtP(g.total) + " %";
       vues.forEach(function (vue) {
         var taux = vue.sens === "perte" ? p : g;
-        vue.lectures.forEach(function (lecture) {
-          var texte = sign(Number(fmtP(taux[lecture.cle])));
-          lecture.valeur.textContent = texte;
-          lecture.valeur.title = vue.nom + " · " + lecture.nom + " : " + texte + " %";
-        });
+        var effet = Number(fmtP(taux.eft));
+        vue.base.textContent = fmtP(100 + taux.art + taux.eqp);
+        vue.effets.textContent = effet ? sign(effet) : "0";
+        vue.base.title = vue.nom + " · Base (100 + Arts + Équipements)";
+        vue.effets.title = vue.nom + " · Effets";
       });
     });
   }
