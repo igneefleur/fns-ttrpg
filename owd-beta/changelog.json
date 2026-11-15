@@ -59,19 +59,5 @@
 "url": "content/regles/base/capacites-physiques/"
 }
 ]
-},
-{
-"short": "897cc90",
-"author": "Théo Cavaillès",
-"date": "2026-10-21T18:22:04+02:00",
-"message": "patch 4.12.0b",
-"url": "https://github.com/igneefleur/fns-ttrpg/commit/897cc9000656c62c9e9bde8bb4b540802bd81ab8",
-"files": [
-{
-"status": "modified",
-"filename": "content/regles/base/capacites-physiques.md",
-"url": "content/regles/base/capacites-physiques/"
-}
-]
 }
 ]
