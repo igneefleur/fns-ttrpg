@@ -49,12 +49,15 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const cout=mod.locator('.pc-vital-consommation');
   assert.equal(await cout.innerText(),'Coût '+pct+' %');
   assert.ok(await cout.evaluate(n=>{
-    const identite=n.parentElement, titre=n.previousElementSibling, valeur=identite.nextElementSibling;
-    if (!identite.parentElement.matches('.pc-vital-tete') ||
-        !titre.matches('.pc-vital-titre') || !valeur.matches('.pc-vital-val')) return false;
-    const a=titre.getBoundingClientRect(), b=n.getBoundingClientRect(), c=valeur.getBoundingClientRect();
-    return a.bottom<=b.top && Math.abs(a.left-b.left)<.5 &&
-      identite.getBoundingClientRect().right<=c.left && a.top<c.bottom && c.top<b.bottom;
+    const identite=n.parentElement, valeurs=identite.nextElementSibling, tete=identite.parentElement;
+    const rect=e=>e.getBoundingClientRect(), proche=(a,b)=>Math.abs(a-b)<.6;
+    const cadre=rect(tete), gauche=rect(identite), droite=rect(valeurs), cout=rect(n);
+    const rouage=rect(valeurs.querySelector('.pc-gear')), valeur=rect(valeurs.querySelector('.pc-vital-val'));
+    return proche(gauche.width,cadre.width*.4) && proche(droite.left,gauche.right) &&
+      proche(droite.top,cadre.top) && proche(droite.bottom,rect(tete.nextElementSibling).top) &&
+      getComputedStyle(valeurs).borderInlineStartWidth==='1px' &&
+      proche(cout.height,gauche.height*.4) && proche(cout.bottom,droite.bottom) &&
+      droite.left<rouage.left && rouage.right<=valeur.left && rouage.top<cout.top;
   }));
   await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
   assert.equal((await read()).etat[k],100-cost);
