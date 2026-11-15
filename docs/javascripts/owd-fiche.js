@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.7b";
+  var RELEASE = "4.36.8b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7234,12 +7234,6 @@
   // de jeu des réserves : on tape ce qu'on avale ou ce qui se libère, et
   // « Appliquer » l'ajoute.
   //
-  // L'IMAGE est l'estomac « plasticine » d'Icons8, découpé en DEUX MASQUES
-  // (docs/assets/fiche/) : le contour, peint à l'encre de la fiche, et
-  // l'intérieur, peint d'un ton neutre puis rempli. Des masques et non l'image
-  // telle quelle : c'est ce qui laisse la fiche choisir les couleurs, de jour
-  // comme de nuit.
-  //
   // Aucun rouage : le maximum se règle dans les Options (Réglages des
   // capacités, ligne Contenance).
   function vomirContenu() {
@@ -7266,24 +7260,45 @@
     if (fait) refresh();
     return fait;
   }
+  function jaugeEstomac() {
+    var ns = "http://www.w3.org/2000/svg";
+    function element(tag, attributs) {
+      var n = document.createElementNS(ns, tag);
+      Object.keys(attributs).forEach(function (cle) { n.setAttribute(cle, attributs[cle]); });
+      return n;
+    }
+    var courbe = "M101 17 H124 V52 C124 59 125 66 127 71 C142 50 164 42 183 48 " +
+      "C207 55 223 77 221 107 C219 143 203 185 179 207 C152 231 110 224 90 208 " +
+      "C81 201 78 187 67 185 C55 181 43 194 42 211 C30 220 18 207 18 200 " +
+      "C22 181 36 158 55 158 C71 158 82 169 94 169 C109 169 119 157 119 142 " +
+      "L119 100 C108 85 101 69 101 55 Z";
+    var id = uid("clip-estomac");
+    var svg = element("svg", { viewBox: "0 0 240 240", "aria-hidden": "true", focusable: "false" });
+    var defs = element("defs", {}), clip = element("clipPath", { id: id });
+    clip.appendChild(element("path", { d: courbe }));
+    defs.appendChild(clip);
+    svg.appendChild(defs);
+    svg.appendChild(element("path", { d: courbe, "class": "pc-estomac-fond" }));
+    var liquide = element("g", { "clip-path": "url(#" + id + ")" });
+    liquide.appendChild(element("rect", { x: "0", y: "17", width: "240", height: "207", "class": "pc-estomac-plein" }));
+    svg.appendChild(liquide);
+    svg.appendChild(element("path", { d: courbe, fill: "none", "class": "pc-estomac-trait", "vector-effect": "non-scaling-stroke" }));
+    return svg;
+  }
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
-    var fond = el("span", "pc-estomac-fond");
-    var plein = el("span", "pc-estomac-plein");
-    var trait = el("span", "pc-estomac-trait");
     var chiffre = el("span", "pc-estomac-val");
     var v = el("b", null, "");
     var mx = el("small", null, "");
     chiffre.appendChild(v);
     chiffre.appendChild(mx);
-    fig.appendChild(fond);
-    fig.appendChild(plein);
-    fig.appendChild(trait);
+    fig.appendChild(jaugeEstomac());
     fig.appendChild(chiffre);
     b.appendChild(fig);
 
-    b.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
+    var controles = el("div", "pc-contenance-controles");
+    controles.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
     }));
@@ -7301,16 +7316,15 @@
       if (accelereDigestion()) confirmeAction(accelerer, revision);
     });
     commandes.appendChild(vomir); commandes.appendChild(accelerer);
-    b.appendChild(commandes);
+    controles.appendChild(commandes);
+    b.appendChild(controles);
 
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();
-      var p = m > 0 ? clamp(pris / m, 0, 1) : (pris > 0 ? 1 : 0);
+      var taux = m > 0 ? pris / m : (pris > 0 ? 1.45 : 0);
       v.textContent = fmtP(pris);
       mx.textContent = "/ " + fmtP(m);
-      // la hauteur remplie, et la teinte : vert au ventre vide, rouge au plein
-      fig.style.setProperty("--niveau", (p * 100).toFixed(1) + "%");
-      fig.style.setProperty("--teinte", "hsl(" + Math.round(120 - 120 * p) + ", 60%, 42%)");
+      fig.style.setProperty("--owd-contenance-taux", String(clamp(taux, 0, 1.45)));
       fig.classList.toggle("over", pris > m);
       fig.title = "Contenance " + fmtP(pris) + " sur " + fmtP(m);
     });

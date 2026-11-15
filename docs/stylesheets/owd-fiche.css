@@ -537,12 +537,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-block-title {
   position: relative; display: flex; align-items: baseline; gap: .4rem;
   margin: 0 0 .28rem; padding: .04rem 0 .22rem;
-  border-bottom: 1px solid var(--trait-or);
   font-family: 'Proxima Nova Condensed', 'Proxima Nova', proxima-nova, 'Nunito Sans', Helvetica, Arial, sans-serif; font-weight: 800;
   font-size: var(--fs-label); letter-spacing: .09em; color: var(--ink); line-height: 1.1; text-transform: uppercase;
 }
-/* le tiret d'accent : la signature visuelle du bloc. Un FILET, pas du texte —
-   il porte donc l'or sans contrainte de lisibilité. */
 .pc-block-title small { text-transform: none; font-family: 'Proxima Nova', proxima-nova, 'Nunito Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: var(--fs-label); letter-spacing: 0; color: var(--ink-3); margin-left: auto; text-align: right; white-space: nowrap; flex: 0 0 auto; }
 .pc-block-note { font-size: var(--fs-meta); color: var(--ink-3); margin: .12rem 0 .3rem; line-height: 1.3; }
 
@@ -606,7 +603,9 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-vital-jauge > i.over { background: var(--danger); }
 .pc-vital-cmd { padding: .34rem .4rem .38rem; }
 .pc-variation-segs { margin: 0; }
-.pc-contenance-commandes { width: auto; margin: 0 .4rem .38rem; }
+.pc-contenance-controles { display: grid; gap: .3rem; margin-top: .34rem; }
+.pc-contenance-controles .pc-vital-cmd { padding: 0; }
+.pc-contenance-commandes { margin: 0; }
 .pc-variation-segs > input.c { flex: 0 0 33.333333%; width: 0; }
 .pc-variation-segs > button.c { flex: 0 0 66.666667%; }
 .pc-variation-segs > .c { letter-spacing: 0; }
@@ -739,26 +738,30 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-expo-stats { margin: 0 .4rem .4rem; width: auto; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
-/* ---- Contenance : l'estomac ----
-   Trois couches sous le même cadre : l'intérieur d'un ton neutre, le même
-   intérieur rempli par le bas jusqu'à --niveau dans la --teinte du moment, et
-   le contour à l'encre. Les deux masques viennent de l'image d'Icons8. */
-.pc-estomac { position: relative; width: 60%; max-width: 9rem; margin: .1rem auto .2rem; aspect-ratio: 320 / 324; }
-.pc-estomac > span { position: absolute; inset: 0; }
-.pc-estomac > span.pc-estomac-val { inset: auto; left: 70%; top: 60%; }
-.pc-estomac-fond, .pc-estomac-plein {
-  -webkit-mask: url("../assets/fiche/estomac-interieur.png") center / contain no-repeat;
-          mask: url("../assets/fiche/estomac-interieur.png") center / contain no-repeat;
+/* Jauge de Contenance : le même taux animé pilote le niveau et la couleur. */
+@property --owd-contenance-taux {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 0;
 }
-.pc-estomac-fond { background: var(--line-2); }
+.pc-estomac {
+  position: relative; width: 60%; max-width: 9rem; margin: .1rem auto .2rem; aspect-ratio: 1;
+  transition: --owd-contenance-taux .55s ease-in-out;
+}
+.pc-estomac > svg { display: block; width: 100%; height: 100%; }
+.pc-estomac > .pc-estomac-val { position: absolute; left: 70%; top: 60%; }
+.pc-estomac-fond { fill: var(--line-2); }
 .pc-estomac-plein {
-  background: linear-gradient(to top, var(--teinte, #3a9a3a) var(--niveau, 0%), transparent var(--niveau, 0%));
-  transition: background .2s;
+  --niveau: clamp(0, var(--owd-contenance-taux), 1);
+  --surcharge: clamp(0%, calc((var(--owd-contenance-taux) - 1) * 100% / .45), 100%);
+  fill: color-mix(in srgb, hsl(calc(120 * (1 - var(--niveau))) 60% 42%), #000 var(--surcharge));
+  transform: scaleY(var(--niveau));
+  transform-box: fill-box;
+  transform-origin: center bottom;
 }
-.pc-estomac-trait {
-  background: var(--ink);
-  -webkit-mask: url("../assets/fiche/estomac-contour.png") center / contain no-repeat;
-          mask: url("../assets/fiche/estomac-contour.png") center / contain no-repeat;
+.pc-estomac-trait { stroke: var(--ink); stroke-width: 1px; stroke-linejoin: round; }
+@media (prefers-reduced-motion: reduce) {
+  .pc-estomac { transition: none; }
 }
 /* la valeur, posée dans le corps de l'estomac (à droite et en bas de l'image) */
 .pc-estomac-val {

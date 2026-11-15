@@ -61,6 +61,23 @@ const server=http.createServer((req,res)=> {
   await pv.fill('+garbage');await pv.press('Enter');assert.equal((await state()).etat.pv,100);
   const belly=sheet.locator('[data-module="contenance"] .pc-vital-delta');
   await belly.fill('+2,5');await belly.press('Enter');assert.equal((await state()).etat.contenance,2.5);
+  const contenanceModule=sheet.locator('[data-module="contenance"]');
+  const jauge=await contenanceModule.evaluate(n=>{
+    const rect=selector=>n.querySelector(selector).getBoundingClientRect();
+    const variation=rect('.pc-variation-segs'), actions=rect('.pc-contenance-commandes');
+    const style=getComputedStyle(n), bord=n.getBoundingClientRect();
+    return {
+      retrait:variation.left-bord.left-parseFloat(style.borderLeftWidth)-parseFloat(style.paddingLeft),
+      alignement:Math.abs(actions.left-variation.left)+Math.abs(actions.right-variation.right),
+      trait:n.querySelector('.pc-estomac-trait').getAttribute('vector-effect'),
+      epaisseur:getComputedStyle(n.querySelector('.pc-estomac-trait')).strokeWidth,
+      titre:getComputedStyle(n.querySelector('.pc-block-title')).borderBottomWidth
+    };
+  });
+  assert.ok(Math.abs(jauge.retrait)<.5 && jauge.alignement<.5);
+  assert.equal(jauge.trait,'non-scaling-stroke');
+  assert.equal(jauge.epaisseur,'1px');
+  assert.equal(jauge.titre,'0px');
   const expo=sheet.locator('[data-module="exposition"] .pc-vital-delta');
   await expo.fill('+20');await expo.press('Enter');assert.equal((await state()).etat.expo,20);
   const hour=sheet.getByLabel('Heures, en plus ou en moins');
