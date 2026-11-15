@@ -18,7 +18,7 @@
   //     l'état), qui la fait alors suivre le maximum quand il bouge ;
   //   — sous zéro, le bandeau entier passe au rouge.
   //
-  // Le rouage de PV, PE et PM règle leur coût et, pour PM, le sacrifice.
+  // Le rouage de PV, PE et PM règle les taux de gain et de perte et, pour PM, le sacrifice.
 
   // Le signe moins TYPOGRAPHIQUE, comme dans sign() : à cette taille le trait
   // d'union du clavier passe pour une césure.
@@ -59,23 +59,15 @@
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
-    var cout;
-    var valeurs = tete;
     if (editable) {
-      tete.classList.add("pc-vital-tete-cout");
+      tete.classList.add("pc-vital-tete-reglable");
       box.classList.add("pc-editable");
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
-      var identite = el("div", "pc-vital-identite");
-      cout = el("span", "pc-vital-consommation");
       var titre = el("div", "pc-block-title pc-vital-titre");
       titre.appendChild(n);
       titre.appendChild(gear);
-      identite.appendChild(titre);
-      identite.appendChild(cout);
-      tete.appendChild(identite);
-      valeurs = el("div", "pc-vital-valeurs");
-      tete.appendChild(valeurs);
+      tete.appendChild(titre);
     } else {
       tete.appendChild(n);
     }
@@ -95,10 +87,10 @@
     val.appendChild(inp);
     var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
-    valeurs.appendChild(val);
+    tete.appendChild(val);
     var etatLigne = el("div", "pc-vital-etat-ligne");
     etatLigne.appendChild(etat);
-    valeurs.appendChild(etatLigne);
+    tete.appendChild(etatLigne);
     box.appendChild(tete);
 
     var jauge = el("span", "pc-vital-jauge");
@@ -111,24 +103,38 @@
       jauge.appendChild(trait);
     }
     box.appendChild(jauge);
+    var perte, gain;
+    if (editable) {
+      var taux = el("div", "pc-segs pc-vital-taux");
+      perte = el("span", "c pc-info");
+      gain = el("span", "c pc-info");
+      taux.appendChild(perte);
+      taux.appendChild(gain);
+      box.appendChild(taux);
+    }
 
     box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
       if (cle === "pi") d = effetPerteInnocence(d);
-      if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
+      if (editable) d = effetVariationImmediate(cle, d);
       state.etat[cle] = courant(cle) + d;
     }));
     if (editable) {
       var reglages = el("div", "pc-vital-reglages pc-edit-only");
-      reglages.appendChild(champReglageVital(cle, "Ajustement du coût (%)", function () {
-        return reglageReserveVitale(cle);
-      }, function (v) { return v; }));
+      [[cle, "Ajustement de la perte (%)"], ["gain_" + cle, "Ajustement du gain (%)"]].forEach(function (reglage) {
+        reglages.appendChild(champReglageVital(reglage[0], reglage[1], function () {
+          return reglageReserveVitale(reglage[0]);
+        }, function (v) { return v; }));
+      });
       if (cle === "pm") reglages.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
       box.appendChild(reglages);
     }
 
     hooks.push(function () {
-      if (cout) cout.textContent = "Coût " + fmtP(effetConsommation(cle)) + " %";
+      if (editable) {
+        perte.textContent = "Perte " + fmtP(effetConsommation(cle)) + " %";
+        gain.textContent = "Gain " + fmtP(effetGain(cle)) + " %";
+      }
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de

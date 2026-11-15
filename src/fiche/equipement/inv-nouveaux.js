@@ -74,16 +74,20 @@
     n.catalogueId=modele ? modele.id : o.catalogueId || "";
     n.catalogueVersion=o.catalogueVersion || (modele ? D().catalogueVersion : null);
     n.commerce=o.commerce || (modele && modele.commerce) || "vendu";
-    if(modele){n.desc=modele.desc;n.descriptionSource=modele.descriptionSource || "";n.descriptionStatut=modele.descriptionStatut;n.descriptionEmpreinte=modele.descriptionEmpreinte || "";}
+    if(modele){
+      n.desc=String(o.desc==null ? (modele.desc || "") : o.desc);
+      n.descriptionSource=modele.descriptionSource || "";
+      n.descriptionStatut=modele.descriptionStatut;
+      n.descriptionEmpreinte=modele.descriptionEmpreinte || "";
+    }
     n.donneesACompleter=modele ? (modele.donneesACompleter||[]).slice() : (o.donneesACompleter||[]).slice();
     n.definitionStatut=modele ? (modele.definitionStatut||"") : (o.definitionStatut||"");
     n.effetsStatut=modele ? (modele.effetsStatut||"") : (o.effetsStatut||"");
     n.typeRangement=o.typeRangement || (modele && modele.typeRangement) || "";
-    if(modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
+    if(!o.versionObjet && modele && (modele.aliases||[]).indexOf(o.nom)>=0)n.nom=modele.nom;
     n.reglesManuelles=(Array.isArray(o.reglesManuelles)?o.reglesManuelles:modele&&modele.reglesManuelles||[]).map(String);
     n.doses=pnum(o.doses===undefined?modele&&modele.doses:o.doses);
     n.prixStatut=o.prixStatut || (modele && modele.prixStatut) || "";
-    if(modele && modele.prixStatut==="non-renseigne")n.achat=n.vente=null;
     n.versionObjet=1;
     n.typeObjet=invType(o);if(!INV_TYPES_OBJETS[n.typeObjet])n.typeObjet="autre";
     n.sousType=n.typeObjet==="consommable"?invSousTypeConsommable(o):
@@ -272,7 +276,7 @@
       if(ingere && (k==='ps'||k==='ph') && v){
         var digestion=effetNutrition(it,k,v/q);
         if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);
-      }else if(v)bougeReserve(k,v);
+      }else if(v)bougeReserve(k,effetVariationImmediate(k,v));
     });
     if(ingere)state.etat.contenance=Math.round((contenancePrise()+q*pnum(it.places))*1000)/1000;
     it.qte=Math.round((it.qte-q)*100)/100;

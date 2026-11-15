@@ -46,30 +46,25 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await change("s.effParties={};s.effAlcool=2;s.inv.objets=[{ref:'speedblade',nom:'Test',typeObjet:'arme',qte:1,ou:'mainD',stats:{vitesse:12,couts:{pv:-20,pe:25,pm:-20}}}];s.etat.pv=100;s.etat.pe=100;s.etat.pm=100;s.allure='leger'");
  for (const [k,pct,cost] of [['pv',80,10],['pe',125,16],['pm',70,9]]) {
   const mod=p.locator('[data-module="'+k+'"]');
-  const cout=mod.locator('.pc-vital-consommation');
-  assert.equal(await cout.innerText(),'Coût '+pct+' %');
-  assert.ok(await cout.evaluate(n=>{
-    const identite=n.parentElement, valeurs=identite.nextElementSibling, tete=identite.parentElement;
+  const taux=mod.locator('.pc-vital-taux');
+  assert.deepEqual(await taux.locator('.pc-info').allInnerTexts(),['PERTE '+pct+' %','GAIN 100 %']);
+  assert.ok(await taux.evaluate(n=>{
+    const [perte,gain]=n.children, jauge=n.previousElementSibling, commande=n.nextElementSibling;
     const rect=e=>e.getBoundingClientRect(), proche=(a,b)=>Math.abs(a-b)<.6;
-    const cadre=rect(tete), gauche=rect(identite), droite=rect(valeurs), cout=rect(n);
-    const vitalTitre=identite.querySelector('.pc-block-title');
-    const rouage=rect(vitalTitre.querySelector('.pc-gear')), sigle=rect(vitalTitre.querySelector('.pc-vital-nom'));
-    const titre=document.querySelector('[data-module="effondrement"] .pc-block-title');
-    const bloc=titre.closest('.pc-block');
-    const retrait=parseFloat(getComputedStyle(bloc).paddingTop);
-    return proche(gauche.width,cadre.width*.4) && proche(droite.left,gauche.right) &&
-      proche(droite.top,cadre.top) && proche(droite.bottom,rect(tete.nextElementSibling).top) &&
-      getComputedStyle(valeurs).borderInlineStartWidth==='1px' &&
-      proche(cout.height,gauche.height*.4) && proche(cout.bottom,droite.bottom) &&
-      proche(cout.left,gauche.left) && proche(cout.right,gauche.right) &&
-      sigle.right<=rouage.left && rouage.right<gauche.right &&
-      proche(rect(vitalTitre).top-cadre.top,retrait) &&
-      getComputedStyle(vitalTitre).alignItems===getComputedStyle(titre).alignItems && rouage.bottom<=cout.top;
+    return jauge.matches('.pc-vital-jauge') && commande.matches('.pc-vital-cmd') &&
+      proche(rect(jauge).bottom,rect(n).top) && rect(n).bottom<=rect(commande).top+.6 &&
+      proche(rect(perte).width,rect(gain).width);
   }));
-  await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
+  const appliquer=mod.getByRole('button',{name:'Appliquer',exact:true});
+  await mod.locator('.pc-vital-delta').fill('-13.4');await appliquer.click();
   assert.equal((await read()).etat[k],100-cost);
+  await mod.getByRole('button',{name:'Modifier '+k.toUpperCase(),exact:true}).click();
+  await mod.getByLabel('Ajustement du gain (%)',{exact:true}).fill('20');
+  assert.equal(await taux.locator('.pc-info').last().innerText(),'GAIN 120 %');
+  await mod.locator('.pc-vital-delta').fill('+10');await appliquer.click();
+  assert.equal((await read()).etat[k],112-cost);
  }
- assert.equal(await p.locator('.pc-vital-consommation').count(),3);
+ assert.equal(await p.locator('.pc-vital-taux').count(),3);
  await p.locator('[data-module="pm"]').screenshot({path:'/tmp/owd-consommation-4.12.png'});
  const movement=p.locator('[data-module="mouvement"]');const speedSteps=Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText());
  await change("s.inv.objets[0].stats.vitesse=9");assert.equal(Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText()),speedSteps-1);

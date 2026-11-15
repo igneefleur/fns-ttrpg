@@ -10,7 +10,7 @@ const ctx={state,num:(v,d=0)=>v==null||!Number.isFinite(Number(v))?d:Number(v),c
 const cap=fs.readFileSync('src/fiche/socle/080-calculs-capacites.js','utf8');
 vm.runInContext(cap.slice(cap.indexOf('  function effReste('),cap.indexOf('  function piMaxAuto(')),ctx);
 const fx=fs.readFileSync('src/fiche/fiche/effets.js','utf8');
-vm.runInContext(fx.slice(fx.indexOf('  function effetConsommation('),fx.indexOf('\n',fx.indexOf('  function effetCout('))),ctx);
+vm.runInContext(fx.slice(fx.indexOf('  function effetConsommation('),fx.indexOf('\n  }',fx.indexOf('  function effetVariationImmediate('))+4),ctx);
 vm.runInContext(fs.readFileSync('src/fiche/fiche/mouvement.js','utf8'),ctx);
 for(const [v,bonus] of [[-29,-2],[-20,-2],[-19,-1],[-10,-1],[-9,0],[0,0],[9,0],[10,1],[19,1],[20,2],[29,2]])assert.equal(ctx.mouvementPas(6,0,v,0),6+bonus);
 assert.equal(ctx.mouvementPas(6,0,6+6,-2),5,'Cumul avant tranche et effondrement après vitesse');
@@ -38,3 +38,12 @@ assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[85,60,30]);
 delete state.modData.reservesVitales;
 assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[90,64,20]);
 console.log('OK ajustements additifs et sacrifice tellurique réversible, borné et appliqué avant effondrement.');
+
+state.modData.reservesVitales={pv:-20,gain_pv:20,gain_pm:-120};
+reduction=0;
+assert.equal(ctx.effetVariationImmediate('pv',10),12);
+assert.equal(ctx.effetVariationImmediate('pv',-10),-8);
+assert.equal(ctx.effetVariationImmediate('pe',2.5),2.5);
+assert.equal(ctx.effetVariationImmediate('pm',10),0);
+assert.equal(ctx.effetVariationImmediate('ps',-2.5),-2.5);
+console.log('OK taux de gain et de perte immédiats distincts, neutres par défaut.');

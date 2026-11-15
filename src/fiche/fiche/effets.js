@@ -80,6 +80,11 @@
   }
   function effetConsommation(res) { return Math.max(0, 100 + reglageReserveVitale(res) + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
   function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
+  function effetGain(res) { return Math.max(0, 100 + reglageReserveVitale("gain_" + res)); }
+  function effetVariationImmediate(res, delta) {
+    if (res !== "pv" && res !== "pe" && res !== "pm") return delta;
+    return delta < 0 ? -effetCout(res, -delta) : delta * (effetGain(res) / 100);
+  }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {

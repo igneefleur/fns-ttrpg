@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.17b";
+  var RELEASE = "4.36.18b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2903,7 +2903,7 @@
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}
     add('caracs',[caracs,caps.xpDepense]);
-    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],['pv','pe','pm'].indexOf(k)>=0?effetConsommation(k):null]);});
+    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],['pv','pe','pm'].indexOf(k)>=0?[effetConsommation(k),effetGain(k)]:null]);});
     add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
     add('exposition',[caps.expo,caps.expoMax,confort()]);
     add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
@@ -5353,6 +5353,11 @@
   }
   function effetConsommation(res) { return Math.max(0, 100 + reglageReserveVitale(res) + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
   function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
+  function effetGain(res) { return Math.max(0, 100 + reglageReserveVitale("gain_" + res)); }
+  function effetVariationImmediate(res, delta) {
+    if (res !== "pv" && res !== "pe" && res !== "pm") return delta;
+    return delta < 0 ? -effetCout(res, -delta) : delta * (effetGain(res) / 100);
+  }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
@@ -5733,7 +5738,7 @@
   //     l'état), qui la fait alors suivre le maximum quand il bouge ;
   //   — sous zéro, le bandeau entier passe au rouge.
   //
-  // Le rouage de PV, PE et PM règle leur coût et, pour PM, le sacrifice.
+  // Le rouage de PV, PE et PM règle les taux de gain et de perte et, pour PM, le sacrifice.
 
   // Le signe moins TYPOGRAPHIQUE, comme dans sign() : à cette taille le trait
   // d'union du clavier passe pour une césure.
@@ -5774,23 +5779,15 @@
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
-    var cout;
-    var valeurs = tete;
     if (editable) {
-      tete.classList.add("pc-vital-tete-cout");
+      tete.classList.add("pc-vital-tete-reglable");
       box.classList.add("pc-editable");
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
-      var identite = el("div", "pc-vital-identite");
-      cout = el("span", "pc-vital-consommation");
       var titre = el("div", "pc-block-title pc-vital-titre");
       titre.appendChild(n);
       titre.appendChild(gear);
-      identite.appendChild(titre);
-      identite.appendChild(cout);
-      tete.appendChild(identite);
-      valeurs = el("div", "pc-vital-valeurs");
-      tete.appendChild(valeurs);
+      tete.appendChild(titre);
     } else {
       tete.appendChild(n);
     }
@@ -5810,10 +5807,10 @@
     val.appendChild(inp);
     var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
-    valeurs.appendChild(val);
+    tete.appendChild(val);
     var etatLigne = el("div", "pc-vital-etat-ligne");
     etatLigne.appendChild(etat);
-    valeurs.appendChild(etatLigne);
+    tete.appendChild(etatLigne);
     box.appendChild(tete);
 
     var jauge = el("span", "pc-vital-jauge");
@@ -5826,24 +5823,38 @@
       jauge.appendChild(trait);
     }
     box.appendChild(jauge);
+    var perte, gain;
+    if (editable) {
+      var taux = el("div", "pc-segs pc-vital-taux");
+      perte = el("span", "c pc-info");
+      gain = el("span", "c pc-info");
+      taux.appendChild(perte);
+      taux.appendChild(gain);
+      box.appendChild(taux);
+    }
 
     box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
       if (cle === "pi") d = effetPerteInnocence(d);
-      if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
+      if (editable) d = effetVariationImmediate(cle, d);
       state.etat[cle] = courant(cle) + d;
     }));
     if (editable) {
       var reglages = el("div", "pc-vital-reglages pc-edit-only");
-      reglages.appendChild(champReglageVital(cle, "Ajustement du coût (%)", function () {
-        return reglageReserveVitale(cle);
-      }, function (v) { return v; }));
+      [[cle, "Ajustement de la perte (%)"], ["gain_" + cle, "Ajustement du gain (%)"]].forEach(function (reglage) {
+        reglages.appendChild(champReglageVital(reglage[0], reglage[1], function () {
+          return reglageReserveVitale(reglage[0]);
+        }, function (v) { return v; }));
+      });
       if (cle === "pm") reglages.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
         function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
       box.appendChild(reglages);
     }
 
     hooks.push(function () {
-      if (cout) cout.textContent = "Coût " + fmtP(effetConsommation(cle)) + " %";
+      if (editable) {
+        perte.textContent = "Perte " + fmtP(effetConsommation(cle)) + " %";
+        gain.textContent = "Gain " + fmtP(effetGain(cle)) + " %";
+      }
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
@@ -10445,7 +10456,7 @@
       if(ingere && (k==='ps'||k==='ph') && v){
         var digestion=effetNutrition(it,k,v/q);
         if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);
-      }else if(v)bougeReserve(k,v);
+      }else if(v)bougeReserve(k,effetVariationImmediate(k,v));
     });
     if(ingere)state.etat.contenance=Math.round((contenancePrise()+q*pnum(it.places))*1000)/1000;
     it.qte=Math.round((it.qte-q)*100)/100;

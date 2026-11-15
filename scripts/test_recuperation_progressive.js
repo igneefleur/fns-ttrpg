@@ -27,6 +27,12 @@ function setup(native=false){
 test('5 / 8 h : round, heure et 9 621 rounds, six décimales',()=>{
  for(const [s,gain] of [[3,0.000521],[3600,0.625],[28863,5.010938]]){const w=setup();w.add(1);w.advance(s);near(w.value('pv'),40+gain);assert.equal(w.segments(),1,'Pas de simulation par round');}
 });
+test('les taux immédiats ne modifient pas les récupérations',()=>{
+ const a=setup(true),b=setup(true);
+ b.state.modData.reservesVitales={pv:-100,pe:-100,pm:-100,gain_pv:100,gain_pe:100,gain_pm:100};
+ for(const w of [a,b]){w.add(-5,'pv');w.effect('Récupération (Eau) PE I',1800);w.advance(3600);}
+ for(const k of ['pv','pe','pm'])near(a.value(k),b.value(k));
+});
 test('20 / 8 h : 5 en deux heures sans changer le niveau 4',()=>{const w=setup();w.add(4,'pv',7200);w.advance(14400);assert.equal(w.value('pv'),45);assert.equal(w.ctx.recupAjoutsModule(false).length,0);});
 test('fin d’effet à la seconde 1 801 : segment fractionnaire acquis puis arrêt',()=>{const w=setup();w.effect('Récupération (Eau) PE I',1801);w.advance(3600);near(w.value('pe'),40+1801/60);assert.equal(w.state.effetsActifs.length,0);assert.equal(w.segments(),2);});
 test('gains et pertes simultanés au maximum : bilan appliqué avant plafonnement',()=>{const w=setup();w.state.etat.pv=null;w.add(5);w.add(-6);w.advance(3600);assert.equal(w.value('pv'),95);});

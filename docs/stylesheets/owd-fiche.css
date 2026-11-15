@@ -562,32 +562,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   padding: .3rem var(--pc-module-inset) .32rem;
   background: transparent;
 }
-.pc-vital-tete-cout {
-  display: grid; grid-template-columns: 40% 60%;
-  align-items: stretch; gap: 0; padding: 0;
-  min-height: 2.8rem;
+.pc-vital-tete-reglable {
+  align-items: center;
+  padding-top: var(--pc-module-top-inset);
 }
-.pc-vital-identite {
-  display: grid; grid-template-rows: 3fr 2fr; min-width: 0;
-}
-.pc-block-title.pc-vital-titre {
-  align-self: start;
-  margin: var(--pc-module-top-inset) var(--pc-module-inset) 0;
-  padding-bottom: 0;
-}
-.pc-vital-valeurs {
-  display: grid; grid-template-rows: minmax(0, 1fr) auto;
-  align-items: center; min-width: 0;
-  border-inline-start: 1px solid var(--line-2);
-  padding: 0 var(--pc-module-inset);
-}
-.pc-vital-valeurs > .pc-vital-etat-ligne { padding-bottom: .2rem; }
-.pc-vital-consommation {
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 .24rem;
-  background: var(--pc-segs-info-bg); color: var(--ink-2);
-  font-size: var(--fs-meta); font-variant-numeric: tabular-nums; white-space: nowrap;
-}
+.pc-block-title.pc-vital-titre { margin: 0; padding-bottom: 0; }
+.pc-vital-titre > .pc-gear { margin-inline-start: 0; }
+.pc-segs.pc-vital-taux { margin: 0; border-width: 0 0 1px; border-radius: 0; }
+.pc-vital-taux > .c { font-variant-numeric: tabular-nums; white-space: normal; }
 /* Le nom est une étiquette : s'il faut céder, c'est lui qui cède, jamais la
    valeur — un nombre coupé se lit faux. */
 .pc-vital-nom {
