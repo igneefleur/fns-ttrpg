@@ -669,11 +669,10 @@
       if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
       if (!Array.isArray(state.attaques)) state.attaques = [];
-      var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
-      ressources.appendChild(combatRessource(state.combatOptions.attaques, "lente", "Attaque Lente"));
-      ressources.appendChild(combatEndurance(state.combatOptions.attaques));
-      ressources.appendChild(combatRessource(state.combatOptions.attaques, "utiliseMunition", "Consommer Munition"));
-      box.appendChild(ressources);
+      var options = state.combatOptions.attaques;
+      box.appendChild(combatOptionsPaires(options,
+        combatRessource(options, "lente", "Attaque Lente"),
+        combatRessource(options, "utiliseMunition", "Consommation Munition")));
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
       box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {

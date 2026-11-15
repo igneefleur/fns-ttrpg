@@ -25,7 +25,7 @@
     s.addEventListener("change", function () { data.comp = s.value; refresh(); }); return s;
   }
   function combatRessource(data, cle, texte) {
-    var on = !!data[cle], b = el("button", "pc-chip pc-combat-toggle" + (on ? " on" : ""), texte);
+    var on = !!data[cle], b = el("button", "c pc-toggle" + (on ? " on" : ""), texte);
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
@@ -78,7 +78,21 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatEndurance(data) { return combatRessource(data, "utiliseEndurance", "Consommer Endurance"); }
+  function combatOptionsPaires(data, premiere, seconde) {
+    var options = el("div", "pc-combat-ressources");
+    var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
+    haut.appendChild(premiere);
+    haut.appendChild(seconde);
+    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation Endurance"));
+    var mana = el("button", "c pc-info", "Consommation Mana");
+    mana.type = "button";
+    mana.disabled = true;
+    mana.title = "Aucun coût en mana n’est défini pour ces actions.";
+    bas.appendChild(mana);
+    options.appendChild(haut);
+    options.appendChild(bas);
+    return options;
+  }
   // Protection d'abord, pourcentage ensuite ; arrondi une seule fois, à la fin.
   // Borner chaque étape empêche deux valeurs négatives de produire des dégâts.
   function combatDegats(d, p, r) {
@@ -284,12 +298,11 @@
     }
     function rendre() {
       box.innerHTML = "";
-      var ressources = el("div", "pc-attaque-ressources pc-combat-ressources");
-      ressources.appendChild(combatRessource(state.combatOptions.defenses, "lente", "Défense Lente"));
-      ressources.appendChild(combatEndurance(state.combatOptions.defenses));
-      var degatsAuto = combatRessource(state.combatOptions.defenses, "degatsAuto", "Dégâts Automatique");
+      var options = state.combatOptions.defenses;
+      var lente = combatRessource(options, "lente", "Défense Lente");
+      var degatsAuto = combatRessource(options, "degatsAuto", "Dégâts Automatiques");
       degatsAuto.title = "Déduire automatiquement les dégâts finaux des PV après validation d’une défense";
-      ressources.appendChild(degatsAuto); box.appendChild(ressources);
+      box.appendChild(combatOptionsPaires(options, lente, degatsAuto));
       var sans = el("div", "pc-attaque-card"); sans.dataset.defenseId = "sans";
       if (isEdit("defense") || state.combatAffichage.defenseSans !== false) { details(sans, "Sans Défense", "sans", null, "sans"); box.appendChild(sans); }
       var es = el("div", "pc-attaque-card"), esquive = state.defenses.esquive;
