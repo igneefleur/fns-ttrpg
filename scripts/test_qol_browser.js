@@ -68,6 +68,33 @@ const server=http.createServer((req,res)=> {
   const before=(await state()).horloge.minutes;
   await minute.fill('+1');await minute.press('Enter');assert.equal((await state()).horloge.minutes,before+1);
   const colors=await frame.evaluate(()=>{const a=document.querySelector('.pc-temps-val'),b=document.querySelector('.pc-vital-delta');return [getComputedStyle(a).backgroundColor,getComputedStyle(b).backgroundColor];});assert.equal(colors[0],colors[1]);
+  const segmented=await frame.evaluate(()=>{
+    const style=n=>getComputedStyle(n);
+    const effortAction=document.querySelector('.pc-temps-appliquer');
+    const info=[...document.querySelectorAll('.pc-effort-temperature-unit,.pc-temps-unite')];
+    const carac=document.querySelector('[data-module="caracs"] .pc-crow');
+    const carte=[...carac.querySelectorAll('.pc-segs')];
+    const mesures=[...document.querySelectorAll('.pc-variation-segs')].map(row=>{
+      const [input,button]=row.children;
+      return [row.getBoundingClientRect().width,input.getBoundingClientRect().width,button.getBoundingClientRect().width,
+        style(button).backgroundColor,style(button).height,style(row).borderRadius];
+    });
+    return {mesures, height:style(effortAction).height, background:style(effortAction).backgroundColor,
+      contour:style(effortAction.parentNode).borderRadius, info:info.map(n=>[style(n).backgroundColor,style(n).cursor]),
+      caracs:carte.flatMap(n=>[...n.children].map(c=>[style(n).borderRadius,style(c).height,style(c).backgroundColor]))};
+  });
+  assert.ok(segmented.mesures.length>=7);
+  for(const [row,input,button,bg,h,radius] of segmented.mesures){
+    assert.ok(row>0 && Math.abs(button-2*input)<1);
+    assert.equal(bg,segmented.background);assert.equal(h,segmented.height);assert.equal(radius,segmented.contour);
+  }
+  assert.equal(segmented.info.length,4);
+  for(const [bg,cursor] of segmented.info){
+    assert.equal(bg,segmented.info[0][0]);assert.notEqual(bg,segmented.background);assert.equal(cursor,'default');
+  }
+  for(const [radius,h,bg] of segmented.caracs){
+    assert.equal(radius,segmented.contour);assert.equal(h,segmented.height);assert.equal(bg,segmented.info[0][0]);
+  }
   // Exposition : chaque sens utilise la largeur entière et zéro est vide.
   const exFill=sheet.locator('.pc-expo-jauge > i');
   for(const [factor,left,width,filled] of [[.3,'0%','30%',3],[-.3,'70%','30%',3],[0,'0%','0%',0]]){

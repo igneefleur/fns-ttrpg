@@ -22,9 +22,11 @@
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr pc-carac-abbr", abbrCarac(name));
+      var sigle = el("div", "pc-segs pc-carac-segs");
+      var chip = el("span", "c pc-info", abbrCarac(name));
       chip.title = libCarac(name);
-      top.appendChild(chip);
+      sigle.appendChild(chip);
+      top.appendChild(sigle);
 
       var duo = el("div", "pc-segs pc-carac-segs");
 

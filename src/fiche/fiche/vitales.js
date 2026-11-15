@@ -73,27 +73,11 @@
     }
     box.appendChild(jauge);
 
-    var cmd = el("div", "pc-vital-cmd");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", libCap(cle, nom) + " à ajouter ou retirer");
-    function appliqueDelta() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
       if (cle === "pi") d = effetPerteInnocence(d);
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
-      state.etat[cle] = (courant(cle) + d);
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); appliqueDelta(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
-    box.appendChild(cmd);
+      state.etat[cle] = courant(cle) + d;
+    }));
     var consommation = /^(pv|pe|pm)$/.test(cle) ? el("div", "pc-vital-consommation") : null;
     if (consommation) box.appendChild(consommation);
 

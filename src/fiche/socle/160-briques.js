@@ -26,6 +26,49 @@
     b.addEventListener("click", fn);
     return b;
   }
+  // Une action réussie remplit uniquement son filet inférieur. L'animation
+  // se relance à chaque clic et retire sa classe à la fin du mouvement.
+  function boutonAction(libelle, classe) {
+    var bt = el("button", classe || "c pc-action", libelle);
+    bt.type = "button";
+    bt.addEventListener("animationend", function (ev) {
+      if (ev.animationName === "pc-action-underline-progress")
+        bt.classList.remove("is-confirming");
+    });
+    return bt;
+  }
+  function confirmeAction(bt) {
+    if (!bt) return;
+    bt.classList.remove("is-confirming");
+    void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
+    bt.classList.add("is-confirming");
+  }
+  function commandeVariation(etiquette, modifier) {
+    var cmd = el("div", "pc-vital-cmd");
+    var segments = el("div", "pc-segs pc-variation-segs");
+    var delta = el("input", "c pc-field pc-vital-delta");
+    champNombreSigne(delta);
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", etiquette);
+    var appliquer = boutonAction("Appliquer");
+    appliquer.title = "Ajouter cette variation";
+    function applique() {
+      var valeur = litNombreSigne(delta.value);
+      if (!isFinite(valeur) || !valeur) return;
+      modifier(valeur);
+      delta.value = "";
+      refresh();
+      confirmeAction(appliquer);
+    }
+    delta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); applique(); }
+    });
+    appliquer.addEventListener("click", applique);
+    segments.appendChild(delta);
+    segments.appendChild(appliquer);
+    cmd.appendChild(segments);
+    return cmd;
+  }
   function stepBtn(txt, title, fn) {
     var b = el("button", null, txt);
     b.type = "button";

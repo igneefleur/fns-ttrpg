@@ -274,6 +274,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    OFF et ACTION partagent volontairement le même aspect : tous deux sont
    des boutons disponibles. Le doré plein reste réservé à l'état ON. */
 .pc-segs {
+  --pc-segs-info-bg: color-mix(in srgb, var(--panel) 85%, #000);
   display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1; margin-top: .3rem;
@@ -343,9 +344,9 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   box-shadow: inset 1px 0 0 var(--line-2);
 }
 .pc-segs > .pc-info {
-  background: var(--stripe); color: var(--ink-2); cursor: default; font-weight: 700;
+  background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default; font-weight: 700;
 }
-.pc-segs > .pc-info:hover { background: var(--stripe); color: var(--ink-2); }
+.pc-segs > .pc-info:hover { background: var(--pc-segs-info-bg); color: var(--ink-2); }
 @media (prefers-reduced-motion: reduce) {
   .pc-segs > button.pc-action.is-confirming::after { animation-duration: .01ms; }
 }
@@ -593,22 +594,12 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-vital-jauge { position: relative; display: flex; width: 100%; height: .5rem; background: var(--line-2); overflow: hidden; }
 .pc-vital-jauge > i { display: block; height: 100%; background: var(--teinte, var(--or)); transition: width .15s; }
 .pc-vital-jauge > i.over { background: var(--danger); }
-/* Un tiers pour le champ, deux tiers pour le bouton ; le bouton garde sa
-   largeur de contenu, c'est le champ qui cède. */
-.pc-vital-cmd { display: flex; flex-wrap: wrap; align-items: center; gap: .18rem; padding: .34rem .4rem .38rem; }
-.pc-vital-cmd > .pc-mini { flex: 2 2 0; padding-inline: .4rem; }
-.pc-vital-delta {
-  flex: 1 1 0; min-width: 1.8rem; padding: .2rem .3rem;
-  border: 1px solid var(--line-2); border-radius: 5px;
-  background: var(--card); color: var(--ink);
-  font: inherit; font-size: .7rem; font-weight: 700; line-height: 1.15;
-  text-align: center; font-variant-numeric: tabular-nums;
-  -moz-appearance: textfield; appearance: textfield;
-  transition: border-color .12s, box-shadow .12s;
-}
-.pc-vital-delta::-webkit-inner-spin-button, .pc-vital-delta::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-vital-delta::placeholder { color: var(--ink-3); font-weight: 600; }
-.pc-vital-delta:focus { outline: none; border-color: var(--or); box-shadow: 0 0 0 2px var(--wash); }
+.pc-vital-cmd { padding: .34rem .4rem .38rem; }
+.pc-variation-segs { margin: 0; }
+.pc-variation-segs > input.c { flex: 0 0 33.333333%; width: 0; }
+.pc-variation-segs > button.c { flex: 0 0 66.666667%; }
+.pc-variation-segs > .c { letter-spacing: 0; }
+.pc-vital-delta::placeholder { color: var(--ink-3); opacity: 1; }
 .pc-vital-etat:empty { display: none; }
 .pc-vital-etat {
   flex: 0 0 auto; align-self: center;
@@ -657,8 +648,6 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   color: var(--ink-2); cursor: default; font-size: .66rem;
   letter-spacing: 0; text-transform: uppercase; white-space: nowrap;
 }
-.pc-effort-temperature > .pc-effort-temperature-unit:hover,
-.pc-temps-segs > .pc-temps-unite:hover { background: var(--stripe); color: var(--ink-2); }
 .pc-temps-rapide { margin-top: .3rem; }
 .pc-temps-rapide > .c { flex: 1 1 0; font-size: .66rem; }
 .pc-temps-segs { margin-top: .3rem; }
@@ -683,10 +672,6 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-effort-temperature > input.c.pc-field:read-only:focus {
   background: var(--stripe); color: var(--ink-3); cursor: default; box-shadow: none;
 }
-.pc-effort-temperature > .pc-info,
-.pc-temps-segs > .pc-info { background: var(--stripe); color: var(--ink-2); }
-.pc-effort-temperature > .pc-info:hover,
-.pc-temps-segs > .pc-info:hover { background: var(--stripe); color: var(--ink-2); }
 .pc-temps-segs > .pc-temps-appliquer { flex: 0 0 50%; cursor: pointer; }
 /* ---- Actions : les dés d'action ----
    Une colonne par dé, à parts égales : le dé en volume, puis sa taille entre
@@ -831,21 +816,14 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
-.pc-crow .pc-carac-abbr {
-  display: flex; align-items: center; justify-content: center; min-width: 0;
-  height: calc(1.25rem + 2px); padding: 0 .3rem; border: 1px solid var(--trait-or); border-radius: 5px;
-  background: var(--sur-bandeau); color: #1a1a1a;
-  font-size: .66rem; line-height: 1; text-transform: uppercase;
-}
-/* Même taille que les crans numériques de la fiche : aucune réduction locale. */
 .pc-carac-segs { margin-top: 0; }
-.pc-carac-segs > .c {
-  cursor: default; font-size: .66rem; letter-spacing: 0; text-transform: none;
-  font-variant-numeric: tabular-nums; color: var(--ink); padding-inline: .16rem;
+.pc-carac-segs:not(.pc-carac-head) > .c {
+  background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default;
+  font-variant-numeric: tabular-nums; letter-spacing: 0;
 }
-.pc-carac-segs > .c:hover { background: transparent; color: var(--ink); }
-.pc-carac-segs > .pc-carac-mod { color: var(--ink); }
-.pc-carac-segs > .pc-carac-val.adj { color: var(--ink); }
+.pc-block[data-module="caracs"].editing .pc-carac-segs:not(.pc-carac-head) > .c:has(> input) {
+  background: var(--card); padding: 0;
+}
 /* Sous le rouage, la lecture disparaît réellement : une case porte soit son
    résultat, soit son champ, jamais les deux. */
 .pc-block[data-module="caracs"].editing .pc-jeu-only { display: none !important; }
@@ -858,7 +836,8 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 }
 .pc-carac-input::-webkit-inner-spin-button,
 .pc-carac-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-.pc-carac-input:focus { outline: none; background: var(--stripe); }
+.pc-carac-input { box-shadow: inset 0 -1px 0 var(--line-2); }
+.pc-carac-input:focus { outline: 0; box-shadow: inset 0 -2px 0 var(--accent); }
 /* L'entête suit exactement les deux colonnes des lignes, à la manière de MIA,
    mais sans cadre ni fond : il annonce, il ne constitue pas une valeur. */
 .pc-caracs-tete { padding: 0 .1rem .02rem; border-bottom: 0; }
@@ -1926,7 +1905,6 @@ html.night .pc-block-title { color: var(--ink); }
 /* la pastille du sigle garde un FOND sombre : --accent-deep, clair de nuit,
    n'en ferait plus un pavé mais un aplat lumineux dans une colonne dense */
 html.night .pc-abbr { background: #6b5a2e; color: #dfe7d2; }
-html.night .pc-crow .pc-carac-abbr { background: #ffd77f; color: #1a1a1a; border-color: #6b5a2e; }
 /* dégradé des six rangs, tons nuit : la barre monte du papier vers l'or
    pâle, en gardant les mêmes six paliers qu'au jour */
 html.night .pc-stadebar .seg.on.s1 { background: #2a2415; color: #e6e6e6; border-color: #3a3220; }

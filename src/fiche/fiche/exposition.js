@@ -54,26 +54,10 @@
     vRes.setAttribute("aria-label", "Prochaine résorption naturelle");
     vRes.title = "Points de résorption naturelle à la prochaine tranche favorable complète";
 
-    var cmd = el("div", "pc-vital-cmd");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", "Exposition à ajouter ou retirer");
-    function applique() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    res.appendChild(commandeVariation("Exposition à ajouter ou retirer", function (d) {
       var m = expoMax();
       state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); applique(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
-    res.appendChild(cmd);
+    }));
     // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
     res.appendChild(stat);
     box.appendChild(res);

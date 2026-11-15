@@ -46,23 +46,6 @@
     }
   }
   function buildEffort() {
-    // Une action réussie remplit uniquement son filet inférieur. L'animation
-    // se relance à chaque clic et retire sa classe à la fin du mouvement.
-    function boutonAction(libelle, classe) {
-      var bt = el("button", classe || "c pc-action", libelle);
-      bt.type = "button";
-      bt.addEventListener("animationend", function (ev) {
-        if (ev.animationName === "pc-action-underline-progress")
-          bt.classList.remove("is-confirming");
-      });
-      return bt;
-    }
-    function confirmeAction(bt) {
-      if (!bt) return;
-      bt.classList.remove("is-confirming");
-      void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
-      bt.classList.add("is-confirming");
-    }
     // Le module n'a plus de titre général : ses trois sous-sections portent
     // chacune le bandeau normal d'un module de la fiche.
     var b = el("div", "pc-block");

@@ -39,26 +39,10 @@
     fig.appendChild(chiffre);
     b.appendChild(fig);
 
-    var cmd = el("div", "pc-vital-cmd pc-temps");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
-    function applique() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    b.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); applique(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
-    b.appendChild(cmd);
+    }));
     b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
 
     hooks.push(function () {

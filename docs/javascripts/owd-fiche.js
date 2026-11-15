@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.3b";
+  var RELEASE = "4.36.4b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3295,6 +3295,49 @@
     b.addEventListener("click", fn);
     return b;
   }
+  // Une action réussie remplit uniquement son filet inférieur. L'animation
+  // se relance à chaque clic et retire sa classe à la fin du mouvement.
+  function boutonAction(libelle, classe) {
+    var bt = el("button", classe || "c pc-action", libelle);
+    bt.type = "button";
+    bt.addEventListener("animationend", function (ev) {
+      if (ev.animationName === "pc-action-underline-progress")
+        bt.classList.remove("is-confirming");
+    });
+    return bt;
+  }
+  function confirmeAction(bt) {
+    if (!bt) return;
+    bt.classList.remove("is-confirming");
+    void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
+    bt.classList.add("is-confirming");
+  }
+  function commandeVariation(etiquette, modifier) {
+    var cmd = el("div", "pc-vital-cmd");
+    var segments = el("div", "pc-segs pc-variation-segs");
+    var delta = el("input", "c pc-field pc-vital-delta");
+    champNombreSigne(delta);
+    delta.placeholder = "±";
+    delta.setAttribute("aria-label", etiquette);
+    var appliquer = boutonAction("Appliquer");
+    appliquer.title = "Ajouter cette variation";
+    function applique() {
+      var valeur = litNombreSigne(delta.value);
+      if (!isFinite(valeur) || !valeur) return;
+      modifier(valeur);
+      delta.value = "";
+      refresh();
+      confirmeAction(appliquer);
+    }
+    delta.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); applique(); }
+    });
+    appliquer.addEventListener("click", applique);
+    segments.appendChild(delta);
+    segments.appendChild(appliquer);
+    cmd.appendChild(segments);
+    return cmd;
+  }
   function stepBtn(txt, title, fn) {
     var b = el("button", null, txt);
     b.type = "button";
@@ -4496,9 +4539,11 @@
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
-      var chip = el("span", "pc-abbr pc-carac-abbr", abbrCarac(name));
+      var sigle = el("div", "pc-segs pc-carac-segs");
+      var chip = el("span", "c pc-info", abbrCarac(name));
       chip.title = libCarac(name);
-      top.appendChild(chip);
+      sigle.appendChild(chip);
+      top.appendChild(sigle);
 
       var duo = el("div", "pc-segs pc-carac-segs");
 
@@ -5432,23 +5477,6 @@
     }
   }
   function buildEffort() {
-    // Une action réussie remplit uniquement son filet inférieur. L'animation
-    // se relance à chaque clic et retire sa classe à la fin du mouvement.
-    function boutonAction(libelle, classe) {
-      var bt = el("button", classe || "c pc-action", libelle);
-      bt.type = "button";
-      bt.addEventListener("animationend", function (ev) {
-        if (ev.animationName === "pc-action-underline-progress")
-          bt.classList.remove("is-confirming");
-      });
-      return bt;
-    }
-    function confirmeAction(bt) {
-      if (!bt) return;
-      bt.classList.remove("is-confirming");
-      void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
-      bt.classList.add("is-confirming");
-    }
     // Le module n'a plus de titre général : ses trois sous-sections portent
     // chacune le bandeau normal d'un module de la fiche.
     var b = el("div", "pc-block");
@@ -5724,27 +5752,11 @@
     }
     box.appendChild(jauge);
 
-    var cmd = el("div", "pc-vital-cmd");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", libCap(cle, nom) + " à ajouter ou retirer");
-    function appliqueDelta() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
       if (cle === "pi") d = effetPerteInnocence(d);
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
-      state.etat[cle] = (courant(cle) + d);
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); appliqueDelta(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", appliqueDelta));
-    box.appendChild(cmd);
+      state.etat[cle] = courant(cle) + d;
+    }));
     var consommation = /^(pv|pe|pm)$/.test(cle) ? el("div", "pc-vital-consommation") : null;
     if (consommation) box.appendChild(consommation);
 
@@ -5893,26 +5905,10 @@
     vRes.setAttribute("aria-label", "Prochaine résorption naturelle");
     vRes.title = "Points de résorption naturelle à la prochaine tranche favorable complète";
 
-    var cmd = el("div", "pc-vital-cmd");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", "Exposition à ajouter ou retirer");
-    function applique() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    res.appendChild(commandeVariation("Exposition à ajouter ou retirer", function (d) {
       var m = expoMax();
       state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); applique(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
-    res.appendChild(cmd);
+    }));
     // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
     res.appendChild(stat);
     box.appendChild(res);
@@ -7273,26 +7269,10 @@
     fig.appendChild(chiffre);
     b.appendChild(fig);
 
-    var cmd = el("div", "pc-vital-cmd pc-temps");
-    var delta = el("input", "pc-vital-delta");
-    champNombreSigne(delta);
-    delta.step = "1";
-    delta.placeholder = "±";
-    delta.setAttribute("aria-label", "Contenance à ajouter ou retirer");
-    function applique() {
-      var d = litNombreSigne(delta.value);
-      if (!isFinite(d) || !d) return;
+    b.appendChild(commandeVariation("Contenance à ajouter ou retirer", function (d) {
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
-      delta.value = "";
-      refresh();
-    }
-    delta.addEventListener("keydown", function (e) {
-      if (e.key === "Enter") { e.preventDefault(); applique(); }
-    });
-    cmd.appendChild(delta);
-    cmd.appendChild(miniBtn("Appliquer", "Ajouter cette variation", applique));
-    b.appendChild(cmd);
+    }));
     b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
 
     hooks.push(function () {
