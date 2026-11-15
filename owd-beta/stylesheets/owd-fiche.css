@@ -763,7 +763,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   transition: --owd-contenance-taux .55s ease-in-out;
 }
 .pc-estomac > svg { display: block; width: 100%; height: 100%; }
-.pc-estomac > .pc-estomac-val { position: absolute; left: 70%; top: 60%; }
+.pc-estomac > .pc-estomac-val { position: absolute; left: 70%; top: 55%; }
 .pc-estomac-fond { fill: var(--line-2); }
 .pc-estomac-plein {
   --niveau: clamp(0, var(--owd-contenance-taux), 1);
@@ -856,6 +856,10 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-carac-segs { margin-top: 0; }
 .pc-carac-segs > .c {
   font-variant-numeric: tabular-nums; letter-spacing: 0;
+}
+.pc-carac-val, .pc-carac-mod { color: #fff; }
+html:not(.night) [data-module="caracs"]:not(.editing) .pc-carac-segs > .c:has(> .pc-jeu-only) {
+  background: color-mix(in srgb, var(--pc-segs-info-bg) 48%, #000);
 }
 .pc-carac-segs > .pc-carac-abbr,
 .pc-carac-segs > .pc-carac-abbr:hover {
@@ -1013,9 +1017,17 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   font-size: var(--fs-label); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3);
 }
 :is(.pc-comp-row, .pc-caracs-tete).head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
-.pc-carac-legendes { display: flex; }
+.pc-caracs-tete.head {
+  grid-template-columns: calc(2.6rem + .275rem + var(--pc-module-inset)) minmax(0, 1fr);
+  align-items: stretch; gap: 0; padding: 0;
+  margin-inline: calc(-1 * var(--pc-module-inset));
+  margin-bottom: var(--pc-carac-espacement);
+  background: var(--pc-segs-info-bg);
+}
+.pc-carac-legendes { display: flex; border-inline-start: 1px solid var(--line-2); }
 .pc-carac-legendes > span { flex: 1 1 0; min-width: 0; text-align: center; }
-.pc-caracs-tete.head { align-items: center; padding-inline: .1rem; margin-bottom: var(--pc-carac-espacement); }
+.pc-caracs-tete.head > span, .pc-carac-legendes > span { padding-block: .2rem .16rem; }
+.pc-carac-legendes > span + span { border-inline-start: 1px solid var(--line-2); }
 .pc-comp-row.head > .pc-comp-nom-head { text-align: left; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
@@ -1967,7 +1979,6 @@ html.night .pc-stadebar .seg.on.s5 { background: #6b5a2e; color: #eef2e6; border
 
 .pc-attaque-detail { border-top: 1px solid var(--hair); padding: .4rem .48rem .5rem; background: var(--panel); }
 
-.pc-attaque-ressources { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .35rem; margin: 0 0 .4rem; }
 .pc-mini.pc-attaque-toggle { width: 100%; min-height: 1.8rem; }
 .pc-mini.pc-attaque-toggle:only-child { grid-column: 1 / -1; }
 .pc-mini.pc-attaque-toggle.on { background: var(--accent-deep); border-color: var(--accent-deep); color: var(--paper); }
@@ -2151,7 +2162,11 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-editor svg polygon[role="button"] { cursor:pointer; }
 .perso-fiche .pc-attaque-editor svg polygon[role="button"]:focus { outline:none; stroke:var(--accent); stroke-width:1.8px; }
 .perso-fiche .pc-attaque-editor .hx-rang, .perso-fiche .pc-attaque-editor .hx-soi, .perso-fiche .pc-attaque-editor .hx-visee { pointer-events:none; }
-.perso-fiche .pc-combat-ressources { margin:0 0 8px; }
+.pc-combat-ressources { display: grid; gap: .3rem; margin-bottom: .5rem; }
+.pc-combat-ressources > .pc-segs { margin: 0; }
+.pc-combat-ressources > .pc-segs > .c {
+  height: auto; min-height: 1.25rem; padding: .14rem .25rem; white-space: normal;
+}
 @media (max-width:480px) { .perso-fiche .pc-attaque-custom-layout { grid-template-columns:minmax(0,1fr); } }
 
 /* Choix de l’attaque et outils du dessin. */
@@ -2164,9 +2179,6 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-custom-info { min-width:0; }
 .perso-fiche .pc-attaque-custom-info .pc-arme-1 { grid-template-columns:minmax(0,1fr); }
 
-/* Options de combat : même puce que le filtre Investies. */
-.perso-fiche .pc-combat-ressources { grid-template-columns:repeat(3,minmax(0,1fr)); }
-.perso-fiche .pc-combat-toggle { width:100%; min-width:0; box-sizing:border-box; font-family:inherit; white-space:normal; }
 .perso-fiche .pc-defense-valeurs { width:100%; border-collapse:collapse; font-size:var(--fs-meta); margin-bottom:8px; }
 .perso-fiche .pc-defense-valeurs th { text-align:left; color:var(--ink-3); }
 .perso-fiche .pc-defense-valeurs td,.perso-fiche .pc-defense-valeurs th { padding:4px; border-bottom:1px solid var(--hair); }
