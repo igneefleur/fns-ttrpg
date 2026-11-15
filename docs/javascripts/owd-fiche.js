@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.5b";
+  var RELEASE = "4.36.6b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5841,20 +5841,6 @@
     [["pr", "Repos"], ["ps", "Satiété"], ["ph", "Hydratation"]].forEach(function (x) {
       b.appendChild(reserveVitale(x[0], provenanceCap(x[0]), x[1]).el);
     });
-    var pied = el("div", "pc-comp-tools pc-vital-pied");
-    var ligne = el("div", "row");
-    ligne.appendChild(chatBtn(
-      function () { return "Survie — " + (state.name || "sans nom"); },
-      function () {
-        return [
-          [abbrCap("pr", "PR"), fmtP(Math.floor(courant("pr"))) + " / " + fmtP(prMax())],
-          [abbrCap("ps", "PS"), fmtP(Math.floor(courant("ps"))) + " / " + fmtP(psMax())],
-          [abbrCap("ph", "PH"), fmtP(Math.floor(courant("ph"))) + " / " + fmtP(phMax())],
-          ["Effondrement", String(effondrement())]
-        ];
-      }));
-    pied.appendChild(ligne);
-    b.appendChild(pied);
     return b;
   }
   // ---- 6. Exposition ----
