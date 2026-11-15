@@ -574,15 +574,15 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    jour et blanc de nuit, comme le titre des modules. PV, PE et PM portent la
    couleur de leur barre dans Outward ; Repos, Satiété et Hydratation en ont
    une chacune, distincte des trois premières. */
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pv { --teinte: #881112; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pe { --teinte: #AA872E; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pm { --teinte: #286CA4; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
-html.night :is(.pc-vital-res, .pc-carac-abbr).t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
-:is(.pc-vital-res, .pc-rec-reserve, .pc-carac-abbr).t-pc { --teinte: #5B8C2A; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pv { --teinte: #881112; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pe { --teinte: #AA872E; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pm { --teinte: #286CA4; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
+html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
+:is(.pc-vital-res, .pc-rec-reserve).t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
+:is(.pc-vital-res, .pc-rec-reserve).t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
+:is(.pc-vital-res, .pc-rec-reserve).t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pc { --teinte: #5B8C2A; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {
@@ -826,7 +826,8 @@ html.night :is(.pc-vital-res, .pc-carac-abbr).t-pi, html.night .pc-eff-partie.t-
    Une ligne = le sigle puis DEUX cases soudées. Comme dans MIA, une seule
    entête reprend exactement le même squelette : [VALEUR | MOD] en jeu,
    [CRÉATION | XP] sous le rouage. */
-.pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; }
+[data-module="caracs"] { --pc-carac-espacement: .24rem; }
+.pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem var(--pc-carac-espacement); }
 .pc-crow-top { display: grid; grid-template-columns: 2.6rem minmax(0, 1fr); align-items: stretch; gap: .35rem; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #fff; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-carac-segs { margin-top: 0; }
@@ -834,14 +835,10 @@ html.night :is(.pc-vital-res, .pc-carac-abbr).t-pi, html.night .pc-eff-partie.t-
   background: var(--pc-segs-info-bg); color: var(--ink-2); cursor: default;
   font-variant-numeric: tabular-nums; letter-spacing: 0;
 }
-.pc-carac-segs > .pc-carac-abbr {
-  background: var(--teinte, var(--sur-bandeau)); color: var(--pc-carac-abbr-ink, #1a1a1a);
+.pc-carac-segs > .pc-carac-abbr,
+.pc-carac-segs > .pc-carac-abbr:hover {
+  background: var(--sur-bandeau); color: #1a1a1a;
 }
-.pc-carac-abbr.t-force { --teinte: #755044; }
-.pc-carac-abbr.t-dex { --teinte: #754575; }
-.pc-carac-abbr.t-resistance { --teinte: #596575; }
-.pc-carac-abbr:is(.t-force, .t-dex, .t-resistance, .t-pv, .t-pi, .t-pm) { --pc-carac-abbr-ink: #fff; }
-html.night .pc-carac-abbr.t-pi { --pc-carac-abbr-ink: #1a1a1a; }
 .pc-block[data-module="caracs"].editing .pc-carac-segs > .c:has(> input) {
   background: var(--card); padding: 0;
 }
@@ -996,7 +993,7 @@ html.night .pc-carac-abbr.t-pi { --pc-carac-abbr-ink: #1a1a1a; }
 :is(.pc-comp-row, .pc-caracs-tete).head > span { white-space: nowrap; overflow: hidden; min-width: 0; text-align: center; }
 .pc-carac-legendes { display: flex; }
 .pc-carac-legendes > span { flex: 1 1 0; min-width: 0; text-align: center; }
-.pc-caracs-tete.head { align-items: center; padding-inline: .1rem; }
+.pc-caracs-tete.head { align-items: center; padding-inline: .1rem; margin-bottom: var(--pc-carac-espacement); }
 .pc-comp-row.head > .pc-comp-nom-head { text-align: left; }
 .pc-comp-name { display: flex; align-items: baseline; min-width: 0; gap: .3rem; }
 .pc-comp-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }

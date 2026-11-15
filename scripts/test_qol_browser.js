@@ -82,6 +82,18 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.locator('[data-module="comps"] .pc-comp-nom-head').innerText(),'NOM');
   assert.equal(await sheet.locator('[data-module="effondrement"]').evaluate(n=>n.previousElementSibling.dataset.module),'contenance');
   assert.equal(await sheet.locator('[data-module="contenance"]').evaluate(n=>n.previousElementSibling.dataset.module),'pc');
+  const caracs=sheet.locator('[data-module="caracs"]');
+  const ecarts=await caracs.evaluate(n=>{
+    const [a,b]=n.querySelectorAll('.pc-crow-top:not(.head)');
+    const titre=n.querySelector('.pc-caracs-tete').getBoundingClientRect();
+    return [a.getBoundingClientRect().top-titre.bottom,b.getBoundingClientRect().top-a.getBoundingClientRect().bottom];
+  });
+  assert.ok(Math.abs(ecarts[0]-ecarts[1])<.5);
+  const sigles=caracs.locator('.pc-carac-abbr');
+  const fonds=await sigles.evaluateAll(ns=>ns.map(n=>getComputedStyle(n).backgroundColor));
+  assert.equal(new Set(fonds).size,1);
+  await sigles.first().hover();
+  assert.equal(await sigles.first().evaluate(n=>getComputedStyle(n).backgroundColor),fonds[0]);
   const expo=sheet.locator('[data-module="exposition"] .pc-vital-delta');
   await expo.fill('+20');await expo.press('Enter');assert.equal((await state()).etat.expo,20);
   const hour=sheet.getByLabel('Heures, en plus ou en moins');

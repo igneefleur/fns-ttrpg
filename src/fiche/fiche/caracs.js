@@ -16,15 +16,11 @@
     tete.appendChild(libelles);
     b.appendChild(tete);
 
-    var teintes = {
-      Force: "force", Dexterite: "dex", Vigueur: "pv", Endurance: "pe",
-      Resistance: "resistance", Ferveur: "pi", Intelligence: "pm", Chance: "pc"
-    };
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info pc-carac-abbr" + (teintes[name] ? " t-" + teintes[name] : ""), abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);

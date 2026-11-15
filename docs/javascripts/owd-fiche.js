@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.9b";
+  var RELEASE = "4.36.10b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4546,15 +4546,11 @@
     tete.appendChild(libelles);
     b.appendChild(tete);
 
-    var teintes = {
-      Force: "force", Dexterite: "dex", Vigueur: "pv", Endurance: "pe",
-      Resistance: "resistance", Ferveur: "pi", Intelligence: "pm", Chance: "pc"
-    };
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info pc-carac-abbr" + (teintes[name] ? " t-" + teintes[name] : ""), abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);
