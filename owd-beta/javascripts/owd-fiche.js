@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.8b";
+  var RELEASE = "4.36.9b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4532,28 +4532,29 @@
   function buildCaracs() {
     var b = block("Caractéristiques", null, "caracs");
 
-    // UNE SEULE ENTÊTE, COMME MIA : exactement le même squelette que les
-    // deux cases qu'elle annonce. En jeu on lit VALEUR | MOD ; sous le rouage
-    // les deux mêmes colonnes deviennent CRÉATION | XP.
-    var tete = el("div", "pc-crow-top pc-caracs-tete");
-    tete.appendChild(el("span", "pc-carac-head-spacer"));
-    var teteDuo = el("div", "pc-segs pc-carac-segs pc-carac-head");
+    var tete = el("div", "pc-crow-top pc-caracs-tete head");
+    tete.appendChild(el("span", null, "Nom"));
+    var libelles = el("div", "pc-carac-legendes");
     function teteCase(jeu, edit) {
-      var c = el("span", "c");
+      var c = el("span");
       c.appendChild(el("span", "pc-jeu-only", jeu));
       c.appendChild(el("span", "pc-edit-only", edit));
-      teteDuo.appendChild(c);
+      libelles.appendChild(c);
     }
     teteCase("VAL", "Création");
-    teteCase("Mod", "XP");
-    tete.appendChild(teteDuo);
+    teteCase("MOD", "XP");
+    tete.appendChild(libelles);
     b.appendChild(tete);
 
+    var teintes = {
+      Force: "force", Dexterite: "dex", Vigueur: "pv", Endurance: "pe",
+      Resistance: "resistance", Ferveur: "pi", Intelligence: "pm", Chance: "pc"
+    };
     caracsOrdre().forEach(function (name) {
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr" + (teintes[name] ? " t-" + teintes[name] : ""), abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);
@@ -7842,7 +7843,7 @@
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var head = el("div", "pc-comp-row head");
-    head.appendChild(el("span", null, "Compétence"));
+    head.appendChild(el("span", "pc-comp-nom-head", "Nom"));
     head.appendChild(el("span", "pc-comp-rang-head", "Rang"));
     head.appendChild(el("span", null, "Total"));
     compBox.appendChild(head);
@@ -13154,9 +13155,9 @@
     { id: "pe",           titre: "PE",               onglet: "fiche", colonne: "milieu", build: buildPe },
     { id: "pm",           titre: "PM",               onglet: "fiche", colonne: "milieu", build: buildPm },
     { id: "mouvement",    titre: "MOUVEMENT",        onglet: "fiche", colonne: "milieu", build: buildMouvement },
-    { id: "effondrement", titre: "EFFONDREMENT",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "pc",           titre: "PC",               onglet: "fiche", colonne: "milieu", build: buildPc },
     { id: "contenance",   titre: "CONTENANCE",       onglet: "fiche", colonne: "milieu", build: buildContenance },
+    { id: "effondrement", titre: "EFFONDREMENT",     onglet: "fiche", colonne: "milieu", build: buildEffondrement },
     { id: "desaction",    titre: "ACTIONS",          onglet: "fiche", colonne: "droite", build: buildDesAction },
     { id: "attaque",      titre: "ATTAQUES",          onglet: "fiche", colonne: "droite", build: buildAttaque },
     { id: "defense",      titre: "DÉFENSES",         onglet: "fiche", colonne: "droite", build: buildDefense },
