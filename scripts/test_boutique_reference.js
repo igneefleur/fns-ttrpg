@@ -37,17 +37,31 @@ const legacy=ctx.normalize({nom:'Gourde en cuir'}, {nom:'Gourde en cuir',typeObj
 console.log('OK normalisation persistante des '+registry.equipements.length+' objets et alias de migration.');
 
 const water=registry.equipements.find(o=>o.nom==='Clean Water');
-const migrated=ctx.normalize({nom:water.nom,achat:.1,vente:.03},{...water,achat:.1,vente:.03});
-assert.equal(migrated.achat,null);assert.equal(migrated.vente,null);
+const instance=ctx.normalize({nom:water.nom,achat:.1,vente:.03},{...water,achat:.1,vente:.03});
+assert.equal(instance.achat,.1,'Le prix d’achat saisi dans la fiche est conservé');
+assert.equal(instance.vente,.03,'Le prix de vente saisi dans la fiche est conservé');
+const customPrices=ctx.normalize({nom:water.nom,achat:0,vente:null},{...water,achat:0,vente:null});
+assert.equal(customPrices.achat,0);assert.equal(customPrices.vente,null);
 for(const nom of ['Clean Water','River Water','Rancid Water','Salt Water']){
- const it=list.find(x=>x.nom===nom),p=payload(it);assert.equal(p.a,null);assert.equal(p.v,null);
- assert.ok(p.s.some(f=>f[0]==='Achat'&&f[1]==='Prix non renseigné'));
+ const it=list.find(x=>x.nom===nom),p=payload(it);
+ for(const [key,champ,libelle] of [['a','achat','Achat'],['v','vente','Vente']]){
+  assert.equal(p[key],null,nom+' : '+champ);
+  assert.equal(p.item[champ],null,nom+' : '+champ+' dans la fiche transférée');
+  assert.ok(p.s.some(([label,valeur])=>label===libelle&&valeur==='Prix non renseigné'),nom+' : '+libelle);
+ }
 }
-console.log('OK prix absents conservés, anciens tarifs inventés retirés à la normalisation.');
-// Les descriptions d’instance issues d’anciens catalogues suivent la source Boutique.
+console.log('OK prix absents du catalogue et prix saisis dans la fiche conservés.');
+// Une description enregistrée dans la fiche prime, même si elle est vide.
 const oldDescription=registry.equipements.find(o=>o.nom==='Primitive Belt');
-const refreshed=ctx.normalize({nom:oldDescription.nom,desc:'Invented description'}, {...oldDescription,desc:'Invented description'});
-assert.equal(refreshed.desc,'');
+const refreshed=ctx.normalize({nom:oldDescription.nom,desc:'Description du joueur'}, {...oldDescription,desc:'Description du joueur'});
+assert.equal(refreshed.desc,'Description du joueur');
+const described=registry.equipements.find(o=>o.desc);
+assert.ok(described);
+assert.equal(ctx.normalize({nom:described.nom,desc:''},{...described,desc:''}).desc,'');
+const {desc,...withoutDesc}=described;
+assert.equal(ctx.normalize({nom:described.nom,desc:''},withoutDesc).desc,desc);
+const renamed=ctx.normalize({nom:'Gourde en cuir'},{nom:'Gourde en cuir',versionObjet:1});
+assert.equal(renamed.nom,'Gourde en cuir');
 for(const nom of ['Bandages','Crystal Powder','Tripwire Trap','Pressure Plate Trap','Frost Bomb','Spikes – Wood','Spikes – Iron','Spikes – Palladium','Charge – Incendiary','Charge – Toxic','Charge – Nerve Gas','Arcane Dampener']){
  const o=registry.equipements.find(o=>o.nom===nom);assert.ok(o,nom);assert.equal(o.volume,null);assert.equal(o.taille,'');
  assert.deepEqual(o.effets,[]);assert.deepEqual(o.stats,{});assert.equal(o.effetsStatut,'non-definis');
