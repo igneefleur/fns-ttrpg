@@ -560,13 +560,14 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   padding: .3rem var(--pc-module-inset) .32rem;
   background: transparent;
 }
-.pc-vital-titre {
-  display: inline-flex; align-items: center; gap: .25rem;
+.pc-vital-identite {
+  display: flex; flex-direction: column; align-items: flex-start; gap: .16rem;
   flex: 0 0 auto; align-self: center;
 }
+.pc-vital-identite + .pc-vital-val { align-self: center; }
+.pc-vital-titre { display: inline-flex; align-items: baseline; gap: .4rem; }
 .pc-vital-titre > .pc-gear { margin-left: 0; }
 .pc-vital-consommation {
-  flex: 0 0 auto; align-self: center; margin-inline-start: auto;
   padding: .12rem .24rem; border-radius: 3px;
   background: var(--pc-segs-info-bg); color: var(--ink-2);
   font-size: var(--fs-meta); font-variant-numeric: tabular-nums; white-space: nowrap;
