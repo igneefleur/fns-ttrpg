@@ -11,11 +11,11 @@
     var effetsActifs = el("div", "pc-eff-actifs");
     effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
     var commandes = el("div", "pc-eff-commandes");
-    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver Effondrement");
+    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver");
     desactive.type = "button";
     desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
     desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });
-    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser Effondrement");
+    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser");
     pause.type = "button";
     pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
     pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });

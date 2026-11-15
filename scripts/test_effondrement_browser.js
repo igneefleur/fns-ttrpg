@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await eff.screenshot({path:'/tmp/owd-effondrement-4.12.png'});
  let text=await active.innerText();assert.match(text,/−3 niveau\(x\).*PE/);assert.match(text,/\+3 niveau\(x\).*PM/);assert.match(text,/−4 de protection contre le froid/);assert.match(text,/−3 pas/);assert.match(text,/−10 % au coût en mana/);assert.match(text,/\+2 à la difficulté/);
  await change("s.effort='sommeil'");text=await active.innerText();assert.doesNotMatch(text,/niveau\(x\).*P[EM]/);assert.match(text,/−2 niveau\(x\).*PH/);
- await eff.getByRole('button',{name:'Désactiver Effondrement',exact:true}).click();assert.equal(await active.isVisible(),false);await eff.getByRole('button',{name:'Désactiver Effondrement',exact:true}).click();
+ await eff.getByRole('button',{name:'Désactiver',exact:true}).click();assert.equal(await active.isVisible(),false);await eff.getByRole('button',{name:'Désactiver',exact:true}).click();
  await change("s.effParties={};s.effAlcool=3;s.horlogeAlcool={jours:0,heures:1,minutes:30,secondes:0};s.effort='repos'");
  await p.evaluate(()=>{Owd.effets.ajoute('Effondrement d’alcool +1','Bière','');Owd.__calculs.avancerSecondes(1800);});assert.equal((await read()).effAlcool,3);assert.equal((await read()).horlogeAlcool.heures,2);assert.equal(await eff.getByLabel('Horloge d’alcool').count(),0);
  // La réception d'un état sauvegardé ne répète pas l'avance et conserve la phase.

@@ -81,7 +81,7 @@ const server=http.createServer((req,res)=> {
     });
     return {mesures, height:style(effortAction).height, background:style(effortAction).backgroundColor,
       contour:style(effortAction.parentNode).borderRadius, info:info.map(n=>[style(n).backgroundColor,style(n).cursor]),
-      caracs:carte.flatMap(n=>[...n.children].map(c=>[style(n).borderRadius,style(c).height,style(c).backgroundColor]))};
+      caracs:carte.flatMap(n=>[...n.children].map(c=>[style(n).borderRadius,style(c).height,style(c).backgroundColor,c.classList.contains("pc-carac-abbr")]))};
   });
   assert.ok(segmented.mesures.length>=7);
   for(const [row,input,button,bg,h,radius] of segmented.mesures){
@@ -92,8 +92,9 @@ const server=http.createServer((req,res)=> {
   for(const [bg,cursor] of segmented.info){
     assert.equal(bg,segmented.info[0][0]);assert.notEqual(bg,segmented.background);assert.equal(cursor,'default');
   }
-  for(const [radius,h,bg] of segmented.caracs){
-    assert.equal(radius,segmented.contour);assert.equal(h,segmented.height);assert.equal(bg,segmented.info[0][0]);
+  for(const [radius,h,bg,sigle] of segmented.caracs){
+    assert.equal(radius,segmented.contour);assert.equal(h,segmented.height);
+    if(sigle)assert.notEqual(bg,segmented.info[0][0]);else assert.equal(bg,segmented.info[0][0]);
   }
   // Exposition : chaque sens utilise la largeur entière et zéro est vide.
   const exFill=sheet.locator('.pc-expo-jauge > i');
@@ -187,8 +188,8 @@ const server=http.createServer((req,res)=> {
   assert.equal(await sheet.getByLabel('Innocence — Base',{exact:true}).inputValue(),'2');
   assert.equal(await frame.evaluate(()=>Owd.__calculs.effondrement()),6);
   // Désactiver retire les pénalités ; Pauser conserve les niveaux et leur détail.
-  const off=collapse.getByRole('button',{name:'Désactiver Effondrement',exact:true});
-  const paused=collapse.getByRole('button',{name:'Pauser Effondrement',exact:true});
+  const off=collapse.getByRole('button',{name:'Désactiver',exact:true});
+  const paused=collapse.getByRole('button',{name:'Pauser',exact:true});
   const basePE=await frame.evaluate(()=>Owd.__calculs.peMax());
   await off.click();
   assert.equal((await state()).effDesactive,true);
@@ -418,7 +419,7 @@ const server=http.createServer((req,res)=> {
     avantRapide+=pas;
   }
   // KM/H reste la notation conventionnelle de la vitesse dans Mouvement.
-  assert.equal(await sheet.locator('[data-module="mouvement"] .pc-mouv-dist .k').nth(2).textContent(),'km / h');
+  assert.equal(await sheet.locator('[data-module="mouvement"] .pc-mouv-dist .k').nth(2).textContent(),'km / hr');
   // Preview representative values, check bounds in both themes and compact width.
   await replace(s=>{s.etat.contenance=60;s.etat.pi=50;s.etat.pr=max.pr*.8;s.etat.ps=max.ps*.8;s.etat.ph=max.ph*.9;s.etat.expo=max.expo*.1;s.effAlcool=1;s.horlogeAlcool={jours:0,heures:0,minutes:0,secondes:0};s.effParties={pr:{effet:-1,mod:0},ps:{effet:-1,mod:0}};s.effAutre=0;s.desUtilises=[true,false,true];});
   async function capture(locator,file){

@@ -142,7 +142,7 @@
   function effetTemps(secondes) {
     if(secondes===null)return "—";
     secondes=Math.max(0,Math.ceil(secondes));var j=Math.floor(secondes/86400),h=Math.floor(secondes%86400/3600),m=Math.floor(secondes%3600/60),s=secondes%60;
-    return [j?j+" j":"",h?h+" h":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
+    return [j?j+" j":"",h?h+" hr":"",m?m+" min":"",s?s+" s":""].filter(Boolean).join(" ") || "0 s";
   }
   function selectEffet(value, change) {
     var s=el("select","pc-select pc-edit-field"),empty=el("option",null,"Aucun");empty.value="";s.appendChild(empty);

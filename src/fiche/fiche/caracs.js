@@ -23,7 +23,7 @@
       var row = el("div", "pc-crow");
       var top = el("div", "pc-crow-top");
       var sigle = el("div", "pc-segs pc-carac-segs");
-      var chip = el("span", "c pc-info", abbrCarac(name));
+      var chip = el("span", "c pc-info pc-carac-abbr", abbrCarac(name));
       chip.title = libCarac(name);
       sigle.appendChild(chip);
       top.appendChild(sigle);

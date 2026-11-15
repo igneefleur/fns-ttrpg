@@ -61,18 +61,20 @@
         var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
         var v = el("span", "v", "");
         c.appendChild(v);
-        c.appendChild(el("span", "k", d[1]));
+        var label = el("span", "k", d[1]);
+        if (d[0] === "da") label.title = "Dés d’action";
+        c.appendChild(label);
         box.appendChild(c);
         out[d[0]] = v;
       });
       b.appendChild(box);
       return { box: box, v: out };
     }
-    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / h"]]);
+    var dist = cases("pc-mouv-dist", [["pas", "pas / rnd", "grand"], ["min", "m / min"], ["h", "km / hr"]]);
     // les crans : foncer, chacun marqué des pas qu'il ajoute à l'allure d'avant
     var crans = el("div", "pc-segs pc-crans");
     b.appendChild(crans);
-    var cout = cases("pc-mouv-cout", [["da", "dés d'action"], ["pe", "PE"]]);
+    var cout = cases("pc-mouv-cout", [["da", "DA"], ["pe", "PE"]]);
 
     hooks.push(function () {
       boutons.forEach(function (x) {

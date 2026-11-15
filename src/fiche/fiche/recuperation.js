@@ -43,9 +43,9 @@
     if (c.minutes == null) return s + fmtP(c.points) + " / round";
     if (c.minutes === 1) return s + fmtP(c.points) + " / m";
     if (c.minutes === 10) return s + fmtP(c.points) + " / 10 m";
-    if (c.minutes === 60) return s + fmtP(c.points) + " / h";
-    if (c.minutes === 480) return s + fmtP(c.points) + " / 8 h";
-    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + " / " + (c.minutes / 60) + " h";
+    if (c.minutes === 60) return s + fmtP(c.points) + " / hr";
+    if (c.minutes === 480) return s + fmtP(c.points) + " / 8 hr";
+    if (c.minutes > 60 && c.minutes % 60 === 0) return s + fmtP(c.points) + " / " + (c.minutes / 60) + " hr";
     return s + fmtP(c.points) + " / " + c.minutes + " m";
   }
   // ---- coffre des récupérations ajoutées ----
@@ -223,9 +223,9 @@
     var m = num(String(cle).slice(2), 0);
     if (m === 1) return "m";
     if (m === 10) return "10 m";
-    if (m === 60) return "h";
-    if (m === 480) return "8 h";
-    if (m > 60 && m % 60 === 0) return (m / 60) + " h";
+    if (m === 60) return "hr";
+    if (m === 480) return "8 hr";
+    if (m > 60 && m % 60 === 0) return (m / 60) + " hr";
     return fmtP(m) + " m";
   }
   function recupTotauxModule(reserve) {
