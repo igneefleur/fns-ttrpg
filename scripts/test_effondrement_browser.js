@@ -17,6 +17,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
    const [niveau,effets]=cadre.children;
    const exposition=document.querySelector('.pc-expo-stats');
    const [ideal,thermique]=exposition.children;
+   const cadreExpo=rect(exposition.parentElement), statExpo=rect(exposition);
+   const retraitStandard=parseFloat(getComputedStyle(document.querySelector('[data-module="pv"] .pc-vital-cmd')).paddingLeft);
    const cellules=[...n.querySelectorAll('.pc-eff-stat > .c'),...exposition.querySelectorAll('.pc-stat > .c'),
      ...document.querySelectorAll('.pc-mouv-dist > .c')];
    const [arreter,pauser]=n.querySelector('.pc-eff-commandes').children;
@@ -24,6 +26,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
      titres:[...n.querySelectorAll('.pc-eff-stat .k')].map(e=>e.textContent),
      hauteurs:cellules.map(e=>rect(e).height),
      exposition:[ideal.children.length,thermique.children.length,rect(thermique).top-rect(ideal).bottom],
+     margesExpo:[statExpo.left-cadreExpo.left,cadreExpo.right-statExpo.right,
+       retraitStandard],
      effets:[effets.children.length,rect(effets).top-rect(niveau).bottom,rect(effets).width-rect(niveau).width],
      commandes:[rect(arreter).width-rect(pauser).width,rect(arreter).height-rect(document.querySelector('.pc-temps-appliquer')).height]
    };
@@ -31,6 +35,8 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  assert.deepEqual(disposition.titres,['PV','PE','Effondrement']);
  assert.ok(disposition.hauteurs[0]>0 && disposition.hauteurs.every(h=>Math.abs(h-disposition.hauteurs[0])<.5));
  assert.deepEqual(disposition.exposition,[1,2,0]);
+ const [retraitGauche,retraitDroit,retraitStandard]=disposition.margesExpo;
+ assert.ok(retraitStandard>0 && [retraitGauche,retraitDroit].every(n=>Math.abs(n-retraitStandard)<.5));
  assert.ok(disposition.effets[0]>1);assert.deepEqual(disposition.effets.slice(1),[0,0]);
  assert.ok(disposition.commandes.every(n=>Math.abs(n)<.5));
  await eff.screenshot({path:'/tmp/owd-effondrement-4.12.png'});
@@ -62,8 +68,6 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   assert.equal(await sources.isVisible(),false);
   await mod.getByRole('button',{name:'Modifier '+k.toUpperCase(),exact:true}).click();
   assert.equal(await sources.isVisible(),true);
-  assert.deepEqual(await sources.locator('.pc-vital-source-titre').allTextContents(),
-    ['ART','EQP','EFT','ATR','ART','EQP','EFT','ATR']);
   assert.ok(await sources.evaluate(n=>{
     const [perte,gain]=n.children, [totalPerte,totalGain]=n.parentElement.previousElementSibling.children;
     const proche=(a,b)=>Math.abs(a-b)<.6;
@@ -71,9 +75,9 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
       const cellules=[...g.children];
       return proche(g.getBoundingClientRect().left,t.getBoundingClientRect().left) &&
         proche(g.getBoundingClientRect().width,t.getBoundingClientRect().width) &&
-        cellules.length===8 && cellules.slice(4).every((cellule,i)=>
-          proche(cellule.getBoundingClientRect().top,cellules[i].getBoundingClientRect().bottom) &&
-          getComputedStyle(cellule).borderTopWidth==='1px');
+        cellules.length===3 && cellules[2].matches('input') &&
+        cellules.slice(0,2).every(cellule=>/^[+−]?[0-9.]+$/.test(cellule.textContent) &&
+          cellule.textContent!=='+0');
     });
   }));
   await mod.getByLabel(k.toUpperCase()+' — Gain ATR (%)',{exact:true}).fill('20');
@@ -82,6 +86,13 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   assert.equal((await read()).etat[k],112-cost);
  }
  assert.equal(await p.locator('.pc-vital-taux').count(),8);
+ const hydratation=p.getByRole('button',{name:'Modifier Hydratation',exact:true});
+ assert.ok(await hydratation.evaluate(g=>{
+   const titre=g.parentElement.querySelector('.pc-vital-titre').getBoundingClientRect();
+   const valeur=g.parentElement.querySelector('.pc-vital-val').getBoundingClientRect();
+   const rouage=g.getBoundingClientRect();
+   return rouage.top>=titre.bottom && Math.abs(rouage.right-valeur.right)<.6;
+ }));
  await p.locator('[data-module="pm"]').screenshot({path:'/tmp/owd-consommation-4.12.png'});
  const movement=p.locator('[data-module="mouvement"]');const speedSteps=Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText());
  await change("s.inv.objets[0].stats.vitesse=9");assert.equal(Number(await movement.locator('.pc-mouv-dist .c').first().locator('.v').innerText()),speedSteps-1);
