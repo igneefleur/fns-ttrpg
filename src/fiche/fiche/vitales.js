@@ -68,11 +68,13 @@
       gear.setAttribute("aria-label", "Modifier " + nom);
       var identite = el("div", "pc-vital-identite");
       cout = el("span", "pc-vital-consommation");
-      identite.appendChild(n);
+      var titre = el("div", "pc-block-title pc-vital-titre");
+      titre.appendChild(n);
+      titre.appendChild(gear);
+      identite.appendChild(titre);
       identite.appendChild(cout);
       tete.appendChild(identite);
       valeurs = el("div", "pc-vital-valeurs");
-      valeurs.appendChild(gear);
       tete.appendChild(valeurs);
     } else {
       tete.appendChild(n);

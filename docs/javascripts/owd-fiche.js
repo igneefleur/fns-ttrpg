@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.16b";
+  var RELEASE = "4.36.17b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5783,11 +5783,13 @@
       gear.setAttribute("aria-label", "Modifier " + nom);
       var identite = el("div", "pc-vital-identite");
       cout = el("span", "pc-vital-consommation");
-      identite.appendChild(n);
+      var titre = el("div", "pc-block-title pc-vital-titre");
+      titre.appendChild(n);
+      titre.appendChild(gear);
+      identite.appendChild(titre);
       identite.appendChild(cout);
       tete.appendChild(identite);
       valeurs = el("div", "pc-vital-valeurs");
-      valeurs.appendChild(gear);
       tete.appendChild(valeurs);
     } else {
       tete.appendChild(n);

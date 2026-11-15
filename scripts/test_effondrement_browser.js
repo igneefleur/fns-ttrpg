@@ -52,12 +52,19 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
     const identite=n.parentElement, valeurs=identite.nextElementSibling, tete=identite.parentElement;
     const rect=e=>e.getBoundingClientRect(), proche=(a,b)=>Math.abs(a-b)<.6;
     const cadre=rect(tete), gauche=rect(identite), droite=rect(valeurs), cout=rect(n);
-    const rouage=rect(valeurs.querySelector('.pc-gear')), valeur=rect(valeurs.querySelector('.pc-vital-val'));
+    const vitalTitre=identite.querySelector('.pc-block-title');
+    const rouage=rect(vitalTitre.querySelector('.pc-gear')), sigle=rect(vitalTitre.querySelector('.pc-vital-nom'));
+    const titre=document.querySelector('[data-module="effondrement"] .pc-block-title');
+    const bloc=titre.closest('.pc-block');
+    const retrait=parseFloat(getComputedStyle(bloc).paddingTop);
     return proche(gauche.width,cadre.width*.4) && proche(droite.left,gauche.right) &&
       proche(droite.top,cadre.top) && proche(droite.bottom,rect(tete.nextElementSibling).top) &&
       getComputedStyle(valeurs).borderInlineStartWidth==='1px' &&
       proche(cout.height,gauche.height*.4) && proche(cout.bottom,droite.bottom) &&
-      droite.left<rouage.left && rouage.right<=valeur.left && rouage.top<cout.top;
+      proche(cout.left,gauche.left) && proche(cout.right,gauche.right) &&
+      sigle.right<=rouage.left && rouage.right<gauche.right &&
+      proche(rect(vitalTitre).top-cadre.top,retrait) &&
+      getComputedStyle(vitalTitre).alignItems===getComputedStyle(titre).alignItems && rouage.bottom<=cout.top;
   }));
   await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
   assert.equal((await read()).etat[k],100-cost);
