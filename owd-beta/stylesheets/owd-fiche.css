@@ -738,10 +738,10 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   background: var(--panel); color: var(--ink-2); font: inherit; font-size: .62rem; line-height: 1; cursor: pointer;
 }
 .pc-desaction-pas:disabled { opacity: .35; cursor: default; }
-/* Envoyer | Récupérer : deux moitiés égales */
-.pc-desaction-gestes { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem; }
-.pc-mini.pc-desaction-envoi { display: block; width: 100%; }
-.pc-mini.pc-desaction-envoi:disabled { opacity: .4; cursor: default; }
+.pc-desaction-gestes > button.pc-action:disabled,
+.pc-desaction-gestes > button.pc-action:disabled:hover {
+  background: var(--pc-segs-info-bg); color: var(--ink-3); cursor: default;
+}
 /* Exposition : chaud depuis la gauche, froid depuis la droite. */
 .pc-expo-jauge { position: relative; }
 .pc-expo-jauge > i { position: absolute; top: 0; bottom: 0; width: 0; }
