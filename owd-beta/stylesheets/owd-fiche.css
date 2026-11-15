@@ -565,15 +565,15 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
    jour et blanc de nuit, comme le titre des modules. PV, PE et PM portent la
    couleur de leur barre dans Outward ; Repos, Satiété et Hydratation en ont
    une chacune, distincte des trois premières. */
-.pc-vital-res.t-pv { --teinte: #881112; }
-.pc-vital-res.t-pe { --teinte: #AA872E; }
-.pc-vital-res.t-pm { --teinte: #286CA4; }
-.pc-vital-res.t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
+:is(.pc-vital-res, .pc-rec-reserve).t-pv { --teinte: #881112; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pe { --teinte: #AA872E; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pm { --teinte: #286CA4; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pi, .pc-eff-partie.t-pi { --teinte: #C2185B; }   /* rose le jour… */
 html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #ffffff; }   /* …blanc la nuit, où le blanc se voit */
-.pc-vital-res.t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
-.pc-vital-res.t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
-.pc-vital-res.t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
-.pc-vital-res.t-pc { --teinte: #5B8C2A; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pr, .pc-eff-partie.t-pr { --teinte: #6A4C93; }
+:is(.pc-vital-res, .pc-rec-reserve).t-ps, .pc-eff-partie.t-ps { --teinte: #B5652B; }
+:is(.pc-vital-res, .pc-rec-reserve).t-ph, .pc-eff-partie.t-ph { --teinte: #2A9D8F; }
+:is(.pc-vital-res, .pc-rec-reserve).t-pc { --teinte: #5B8C2A; }
 .pc-vital-val { flex: 0 0 auto; margin-left: auto; display: inline-flex; align-items: baseline; gap: .2rem; }
 /* La largeur n'est qu'un plancher : reserveVitale() l'ajuste au nombre de signes. */
 .pc-vital-num {
@@ -2053,7 +2053,7 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 }
 
 /* Récupération : une section par réserve, des lignes qui se replient selon leur largeur. */
-.pc-rec-tools { display: flex; flex-wrap: wrap; gap: .36rem; margin: 0 0 .55rem; }
+.pc-rec-tools { margin-bottom: .28rem; }
 .pc-rec-list { display: grid; gap: .5rem; }
 .pc-rec-group {
   min-width: 0; overflow: hidden; border: 1px solid var(--hair);
@@ -2063,10 +2063,12 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
   display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .55rem;
   padding: .35rem .48rem; background: var(--panel);
 }
-.pc-rec-groupname {
-  display: flex; align-items: center; gap: .32rem; color: var(--ink-2);
+.pc-rec-reserve {
+  min-width: 2.6rem; padding: .14rem .3rem; border-radius: 4px;
+  background: var(--teinte, var(--accent-deep)); color: #fff; text-align: center;
   font-size: var(--fs-label); font-weight: 700;
 }
+.pc-rec-reserve:is(.t-pe, .t-ph, .t-pc), html.night .pc-rec-reserve.t-pi { color: #17140f; }
 .pc-rec-totaux {
   display: flex; flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end;
   gap: .15rem .3rem; color: var(--accent-deep);
@@ -2100,19 +2102,21 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .pc-rec-actions .pc-mini, .pc-rec-grouphead .pc-mini { margin: 0; }
 .pc-rec-switch { min-width: 2.05rem; }
 .pc-rec-actions [hidden] { display: none; }
-.pc-rec-options { flex: 1 0 100%; display: flex; flex-wrap: wrap; align-items: center; gap: .28rem; }
-.pc-rec-level { display: flex; align-items: center; gap: .24rem; color: var(--ink-2); font-size: .65rem; }
-.pc-rec-field, .pc-rec-name-edit {
-  min-width: 0; max-width: 100%; box-sizing: border-box; padding: .16rem .3rem;
-  border: 1px solid var(--line-2); border-radius: 4px; background: var(--card);
-  color: var(--ink); font: inherit; font-size: .68rem; font-variant-numeric: tabular-nums;
+.pc-rec-options, .pc-rec-time-fields {
+  display: flex; flex-wrap: wrap; align-items: flex-end; gap: .35rem .6rem;
 }
-.pc-rec-name-edit { flex: 1 1 auto; width: 100%; }
-.pc-rec-field:focus-visible, .pc-rec-name-edit:focus-visible {
-  outline: 1px solid var(--accent); outline-offset: 1px;
+.pc-rec-options { flex: 1 0 100%; padding: .15rem 0 .08rem; }
+.pc-rec-options .pc-f:has(select) { min-width: 4.5rem; }
+.pc-rec-duration.infinite { font-size: .95rem; line-height: 1; }
+.pc-rec-name > .pc-rec-name-edit {
+  flex: 1 1 auto; width: 100%; min-width: 0; padding: .03rem .1rem .08rem;
+  border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
+  background: transparent; color: var(--ink); font: inherit;
 }
-.pc-rec-number { width: 3.2rem; text-align: center; appearance: textfield; }
-.pc-rec-number::-webkit-inner-spin-button, .pc-rec-number::-webkit-outer-spin-button { appearance: none; margin: 0; }
+.pc-rec-name > .pc-rec-name-edit:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-rec-meta .pc-f > .pc-rec-number, .pc-rec-time-fields .pc-f > .pc-rec-number {
+  width: 4.4rem; font-variant-numeric: tabular-nums;
+}
 
 /* Clic droit de l'inventaire : palette et typographie de la fiche. */
 .perso-fiche .pc-inv-context{position:fixed;z-index:10000;min-width:min(225px,calc(100vw - 16px));max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;padding:5px;border:1px solid var(--line-2);border-top:2px solid var(--trait-or);border-radius:5px;background:var(--card);color:var(--ink);box-shadow:0 6px 22px #0004;font:inherit;text-align:left}

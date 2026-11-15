@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.1b";
+  var RELEASE = "4.36.2b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4604,13 +4604,20 @@
   var recupVueSig = "";
 
   var RECUP_DUREES = [
-    { cle: "round", nom: "Round", court: "round", secondes: 3 },
-    { cle: "minute", nom: "Minute", court: "m", secondes: 60 },
-    { cle: "10m", nom: "10 minutes", court: "10 m", secondes: 600 },
-    { cle: "1h", nom: "1 heure", court: "1 h", secondes: 3600 },
-    { cle: "2h", nom: "2 heures", court: "2 h", secondes: 7200 },
-    { cle: "8h", nom: "8 heures", court: "8 h", secondes: 28800 }
+    { cle: "round", nom: "Round", secondes: 3 },
+    { cle: "minute", nom: "Minute", secondes: 60 },
+    { cle: "heure", nom: "Heure", secondes: 3600 },
+    { cle: "jour", nom: "Jour", secondes: 86400 },
+    { cle: "semaine", nom: "Semaine", secondes: 7 * 86400 },
+    { cle: "mois", nom: "Mois", secondes: 28 * 86400 },
+    { cle: "annee", nom: "Année", secondes: 336 * 86400 }
   ];
+  var RECUP_DUREES_ANCIENNES = {
+    "10m": { cle: "minute", facteur: 10 },
+    "1h": { cle: "heure", facteur: 1 },
+    "2h": { cle: "heure", facteur: 2 },
+    "8h": { cle: "heure", facteur: 8 }
+  };
 
   function recupLibelle(r) {
     return libCap(r.reserve, String(r.reserve || "").toUpperCase());
@@ -4625,9 +4632,7 @@
     return String(r && r.contexte || "Sans contexte");
   }
   function recupDureeDef(cle) {
-    var out = RECUP_DUREES[2], i;
-    for (i = 0; i < RECUP_DUREES.length; i++) if (RECUP_DUREES[i].cle === cle) out = RECUP_DUREES[i];
-    return out;
+    return RECUP_DUREES.find(function (d) { return d.cle === cle; }) || RECUP_DUREES[1];
   }
   function recupCadenceCourt(c) {
     if (!c || !c.points) return "0";
@@ -4665,12 +4670,6 @@
     }
     return Math.max(1, Math.round(max));
   }
-  function recupBonusModule(r) {
-    return recupNiveauBase(r) - recupNiveauRegle(r);
-  }
-  function ecritRecupBonusModule(r, v) {
-    ecritRecupNiveau(r, recupNiveauRegle(r) + Math.round(num(v, 0)));
-  }
   function recupNormaliseAjoutModule(r) {
     var max = recupNiveauMaxModule(), d;
     if (!r || typeof r !== "object") return null;
@@ -4680,9 +4679,10 @@
     r.reserve = String(r.reserve || "pv");
     r.niveau = clamp(Math.round(num(r.niveau, 0)), -max, max);
     r.actif = !!r.actif;
-    d = recupDureeDef(r.type);
+    var ancien = Object.prototype.hasOwnProperty.call(RECUP_DUREES_ANCIENNES, r.type) && RECUP_DUREES_ANCIENNES[r.type];
+    d = recupDureeDef(ancien ? ancien.cle : r.type);
     r.type = d.cle;
-    r.temps = Math.max(0, Number(r.temps) || 0);
+    r.temps = Math.max(0, num(r.temps, 0)) * (ancien ? ancien.facteur : 1);
     if (r.resteSecondes == null || !isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
     r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0));
     return r;
@@ -4847,7 +4847,7 @@
   }
 
   function recupChampNombreModule(lire, ecrire, aide) {
-    var i = el("input", "pc-rec-field pc-rec-number");
+    var i = el("input", "pc-edit-field pc-rec-number");
     champNombreSigne(i); i.step = "1"; i.title = aide; i.setAttribute("aria-label", aide);
     i.addEventListener("input", function () {
       var v = litNombreSigne(i.value);
@@ -4857,17 +4857,11 @@
     return i;
   }
   function recupSelectDureeModule(r) {
-    var s = el("select", "pc-rec-field pc-rec-select"), i, d, o;
-    for (i = 0; i < RECUP_DUREES.length; i++) {
-      d = RECUP_DUREES[i];
-      o = el("option", null, d.court); o.value = d.cle; o.title = d.nom; s.appendChild(o);
-    }
-    s.value = r.type; s.setAttribute("aria-label", "Unité de durée");
-    s.addEventListener("change", function () {
+    var s = recupChoixModule("Unité", RECUP_DUREES.map(function (d) { return [d.cle, d.nom]; }), r.type, function (type) {
       r.temps = recupTempsRestantModule(r);
-      r.type = s.value;
+      r.type = type;
       recupResetDureeModule(r);
-      refresh(); rebuildRecuperation();
+      refresh();
     });
     recupHooks.push(function () { if (document.activeElement !== s) s.value = r.type; });
     return s;
@@ -4949,7 +4943,7 @@
   }
 
   function recupChoixModule(label, valeurs, valeur, change) {
-    var select = el("select", "pc-rec-field pc-rec-select");
+    var select = el("select", "pc-select pc-edit-field");
     select.setAttribute("aria-label", label);
     valeurs.forEach(function (v) {
       var option = el("option", null, v[1]); option.value = v[0]; select.appendChild(option);
@@ -4968,8 +4962,9 @@
     if (edit) nom.appendChild(recupPoigneeModule(r, row));
     nom.appendChild(badge);
     if (persoEdit) {
-      var ed = el("input", "pc-rec-name-edit");
-      ed.value = recupNom(r); ed.setAttribute("aria-label", "Nom de la récupération");
+      var ed = textInput(function () { return r.nom; }, function (v) { r.nom = v; }, "Nom de la récupération", recupHooks);
+      ed.classList.add("pc-edit-field", "pc-rec-name-edit");
+      ed.setAttribute("aria-label", "Nom de la récupération");
       ed.addEventListener("change", function () {
         r.nom = capFirst(ed.value.trim()) || "Récupération";
         ed.value = r.nom; refresh();
@@ -4986,29 +4981,26 @@
     var ajustable = edit && !r.effetActif && !r.equipement;
     var valeur = el("span", "pc-rec-value");
     if (ajustable) {
-      var label = r.perso ? "Niveau" : "Bonus de niveau";
-      var champ = el("label", "pc-rec-level");
-      champ.appendChild(el("span", null, label));
-      champ.appendChild(recupChampNombreModule(
-        function () { return r.perso ? r.niveau : recupBonusModule(r); },
+      var niveau = recupChampNombreModule(
+        function () { return r.perso ? r.niveau : recupNiveauBase(r); },
         function (v) {
-          if (r.perso) {
-            var max = recupNiveauMaxModule();
-            r.niveau = clamp(Math.round(v), -max, max);
-            recupOublieSuivi(r.id);
-          } else ecritRecupBonusModule(r, v);
-        }, label));
-      meta.appendChild(champ);
+          if (!r.perso) { ecritRecupNiveau(r, v); return; }
+          var max = recupNiveauMaxModule();
+          r.niveau = clamp(Math.round(v), -max, max);
+          recupOublieSuivi(r.id);
+        }, "Niveau");
+      meta.appendChild(fld("Niveau", niveau));
     } else meta.appendChild(valeur);
 
     var secondes = recupSecondesRestantesModule(r);
     var duree = el("span", "pc-rec-duration");
-    if (secondes !== null) duree.title = "Temps restant";
+    duree.title = secondes === null ? "Durée permanente" : "Temps restant";
+    duree.classList.toggle("infinite", secondes === null);
     if (!persoEdit) meta.appendChild(duree);
     row.appendChild(meta);
 
     var actions = el("div", "pc-rec-actions"), on = null, accelere = null;
-    if (r.perso) {
+    if (!edit && r.perso) {
       on = miniBtn("", "Activer ou suspendre " + recupNom(r), function () {
         if (!ficheModifiable()) return;
         r.actif = !r.actif;
@@ -5024,6 +5016,15 @@
       }, "pc-rec-accelerate");
       actions.appendChild(accelere);
     }
+    if (ajustable && !r.perso) {
+      var defaut = miniBtn("Par défaut", "Rétablir le niveau de base (" + sign(recupNiveauRegle(r)) + ")", function () {
+        if (!isEdit("recuperation") || recupNiveauBase(r) === recupNiveauRegle(r)) return;
+        ecritRecupNiveau(r, recupNiveauRegle(r));
+        refresh();
+      });
+      recupHooks.push(function () { defaut.disabled = !isEdit("recuperation") || recupNiveauBase(r) === recupNiveauRegle(r); });
+      actions.appendChild(defaut);
+    }
     if (persoEdit) {
       var del = el("button", "pc-comp-del", "✕");
       del.type = "button"; del.title = "Supprimer cette récupération";
@@ -5035,24 +5036,26 @@
 
     if (persoEdit) {
       var options = el("div", "pc-rec-options");
-      options.appendChild(recupChoixModule("Type de récupération", [["speciale", "Spéciale"], ["digestive", "Digestive"]], r.categorie, function (v) {
+      options.appendChild(fld("Type", recupChoixModule("Type de récupération", [["speciale", "Spéciale"], ["digestive", "Digestive"]], r.categorie, function (v) {
         r.categorie = v; refresh();
-      }));
-      options.appendChild(recupChoixModule("Durée de récupération", [["limitee", "À durée limitée"], ["permanente", "Permanente"]], secondes === null ? "permanente" : "limitee", function (v) {
+      })));
+      options.appendChild(fld("Durée", recupChoixModule("Durée de récupération", [["limitee", "Limitée"], ["permanente", "∞"]], secondes === null ? "permanente" : "limitee", function (v) {
         if (v === "permanente") r.permanente = true;
         else {
           delete r.permanente;
           if (!(r.resteSecondes > 0)) recupResetDureeModule(r);
         }
         refresh();
-      }));
+      })));
       if (secondes !== null) {
-        options.appendChild(recupChampNombreModule(function () { return fmtP(recupTempsRestantModule(r)); }, function (v) {
+        var temps = recupChampNombreModule(function () { return fmtP(recupTempsRestantModule(r)); }, function (v) {
           r.temps = Math.max(0, v);
-          r.resteSecondes = Math.round(r.temps * recupDureeDef(r.type).secondes);
-          recupOublieSuivi(r.id);
-        }, "Temps restant"));
-        options.appendChild(recupSelectDureeModule(r));
+          recupResetDureeModule(r);
+        }, "Temps restant");
+        var tempsEtUnite = el("div", "pc-rec-time-fields");
+        tempsEtUnite.appendChild(fld("Temps restant", temps));
+        tempsEtUnite.appendChild(fld("Unité", recupSelectDureeModule(r)));
+        options.appendChild(tempsEtUnite);
       }
       row.appendChild(options);
     }
@@ -5062,7 +5065,7 @@
       var cadence = etat.cadence;
       if (cadence && !r.effetActif) cadence = Object.assign({}, cadence, { points: Math.abs(recupDeltaTickTemps(r, etat)) });
       valeur.textContent = edit ? "Niv. " + sign(etat.niveau) : recupCadenceCourt(cadence);
-      duree.textContent = reste === null ? "Permanente" : effetTemps(reste);
+      duree.textContent = reste === null ? "∞" : effetTemps(reste);
       if (on) {
         on.textContent = r.actif ? "On" : "Off";
         on.classList.toggle("on", r.actif);
@@ -5093,10 +5096,10 @@
     return "Récupération " + n;
   }
   function ajouteRecupModule(reserve) {
-    var d = recupDureeDef("10m"), a = recupAjoutsModule(true);
+    var d = recupDureeDef("minute"), a = recupAjoutsModule(true);
     a.push({
       id: uid("r"), perso: true, nom: recupNomNouveauModule(reserve), reserve: reserve,
-      niveau: 0, actif: false, temps: 1, type: d.cle, resteSecondes: d.secondes
+      niveau: 0, actif: false, temps: 10, type: d.cle, resteSecondes: 10 * d.secondes
     });
     recupOnly = false;
     refresh(); rebuildRecuperation();
@@ -5104,9 +5107,8 @@
 
   function recupEnteteReserveModule(cle) {
     var ref = { reserve: cle }, h = el("div", "pc-rec-grouphead");
-    var nom = el("span", "pc-rec-groupname");
-    nom.appendChild(el("span", "pc-abbr", recupAbbr(ref)));
-    nom.appendChild(el("span", "pc-rec-reserve-label", recupLibelle(ref)));
+    var nom = el("span", "pc-rec-reserve t-" + cle, recupAbbr(ref));
+    nom.title = recupLibelle(ref);
     h.appendChild(nom);
     var totals = el("span", "pc-rec-totaux");
     h.appendChild(totals);
@@ -5152,7 +5154,9 @@
 
   function buildRecuperation() {
     var b = block("Récupération", null, "recuperation", rebuildRecuperation);
-    var tools = el("div", "pc-rec-tools");
+    var tools = el("div", "pc-comp-tools pc-rec-tools");
+    var ligne = el("div", "row");
+    tools.appendChild(ligne);
     recupFiltres = [];
     function filtre(nom, aide, lire, bascule) {
       var button = el("button", "pc-chip", nom);
@@ -5163,7 +5167,7 @@
         button.classList.toggle("on", lire());
         button.setAttribute("aria-pressed", String(lire()));
       });
-      tools.appendChild(button);
+      ligne.appendChild(button);
     }
     filtre("Actives", "Afficher uniquement les récupérations actives", function () { return recupOnly; }, function () { recupOnly = !recupOnly; });
     filtre("Naturelles", "Afficher les récupérations naturelles", function () { return recupNatives; }, function () { recupNatives = !recupNatives; });
