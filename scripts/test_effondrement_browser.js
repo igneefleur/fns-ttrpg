@@ -35,6 +35,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
    };
  });
  assert.ok(disposition.jauge);
+ assert.equal(await eff.locator('.pc-eff-global-jauge > i').evaluate(n=>getComputedStyle(n).backgroundColor),'rgb(0, 0, 0)');
  assert.match(disposition.taux[0],/^PV [0-9]+ %$/);
  assert.match(disposition.taux[1],/^PE [0-9]+ %$/);
  assert.ok(disposition.hauteurs[0]>0 && disposition.hauteurs.every(h=>Math.abs(h-disposition.hauteurs[0])<.5));
@@ -63,6 +64,11 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await gearEff.click();
  const contenance=p.getByLabel('Contenance actuelle',{exact:true});
  await contenance.fill('2,5');
+ assert.ok(await contenance.evaluate(n=>{
+   const s=getComputedStyle(n), max=n.nextElementSibling.getBoundingClientRect(), valeur=n.getBoundingClientRect();
+   return s.outlineStyle==='none' && s.boxShadow==='none' && s.borderTopWidth==='0px' &&
+     max.top>=valeur.bottom && Math.abs((max.left+max.right)-(valeur.left+valeur.right))<1;
+ }));
  assert.equal((await read()).etat.contenance,2.5);
  await contenance.fill('0');
  // Coûts visibles et Appliquer : l’entrée est le coût avant réduction.
