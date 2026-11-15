@@ -2422,11 +2422,8 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-actif { padding: .3rem .45rem; text-align: center; background: var(--pc-segs-info-bg); color: var(--ink); }
 .pc-eff-actif + .pc-eff-actif { border-top: 1px solid var(--line-2); }
 .pc-vital-tete > .pc-gear { margin-left: 0; align-self: center; }
-.pc-vital-consommation {
-  align-self: center; padding: .12rem .24rem; border-radius: 3px;
-  background: var(--pc-segs-info-bg); color: var(--ink-2);
-  font-size: var(--fs-meta); font-variant-numeric: tabular-nums; white-space: nowrap;
-}
+.pc-vital-consommation { width: auto; margin: 0 var(--pc-module-inset) .38rem; }
+.pc-vital-consommation > .c:first-child { flex: 0 0 33.333333%; }
 .pc-vital-reglages {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 6.5rem), 1fr));
   gap: .3rem; padding: 0 var(--pc-module-inset) .38rem;
