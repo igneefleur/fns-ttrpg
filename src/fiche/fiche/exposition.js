@@ -36,16 +36,9 @@
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
     // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
-    var stat = el("div", "pc-expo-stats");
+    var stat = el("div", "pc-stat-stack pc-expo-stats");
     var statZone = el("div", "pc-stat pc-expo-stat");
     var statThermique = el("div", "pc-stat pc-expo-stat");
-    function caseStat(ligne, k) {
-      var c = el("div", "c"), v = el("span", "v", "");
-      c.appendChild(v);
-      c.appendChild(el("span", "k", k));
-      ligne.appendChild(c);
-      return v;
-    }
     var vZone = caseStat(statZone, "idéal °C");
     var vInt = caseStat(statThermique, "intensité");
     var vRes = caseStat(statThermique, "résorption");

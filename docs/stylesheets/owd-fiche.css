@@ -356,18 +356,24 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 /* MOUVEMENT : un tableau de bord en cases soudées (le trio de MIA) — la
    valeur en grand, l'étiquette en petites capitales dessous. La case des pas
    est la plus large et la plus forte : c'est elle qu'on lit en combat. */
-.pc-stat {
+.pc-stat, .pc-stat-stack {
   display: flex; align-items: stretch; box-sizing: border-box; width: 100%;
   background: var(--panel); border: 1px solid var(--line-2); border-radius: 5px;
   overflow: hidden; line-height: 1.1; margin-top: .3rem;
 }
+.pc-stat-stack { flex-direction: column; }
+.pc-stat-stack > .pc-stat {
+  margin: 0; border: 0; border-radius: 0;
+}
+.pc-stat-stack > .pc-stat + .pc-stat,
+.pc-stat-stack > .pc-eff-actifs { border-top: 1px solid var(--line-2); }
 .pc-stat > .c {
   flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: .12rem; padding: .35rem .2rem .3rem; text-align: center;
 }
 .pc-stat > .c + .c { box-shadow: inset 1px 0 0 var(--line-2); }
 .pc-stat > .c.grand { background: var(--card); }
-:is(.pc-expo-stat, .pc-mouv-cout, .pc-mouv-dist).pc-stat > .c {
+:is(.pc-expo-stat, .pc-mouv-cout, .pc-mouv-dist, .pc-eff-stat).pc-stat > .c {
   background: var(--pc-segs-info-bg);
 }
 .pc-stat .v { font-size: .9rem; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
@@ -728,8 +734,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-expo-jauge > i.chaud { background: var(--chaud); }
 /* La zone idéale occupe sa ligne ; intensité et résorption se partagent
    équitablement la ligne suivante. */
-.pc-expo-stats { display: flex; flex-direction: column; gap: .25rem; margin-bottom: .4rem; }
-.pc-expo-stat { margin: 0 .4rem; width: auto; }
+.pc-expo-stats { margin: 0 .4rem .4rem; width: auto; }
 .pc-expo-stat .v.froid { color: var(--froid); }
 .pc-expo-stat .v.chaud { color: var(--chaud); }
 /* ---- Contenance : l'estomac ----
@@ -879,9 +884,8 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-bigrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; }
 .pc-bigrow-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .pc-bigrow-1 { grid-template-columns: minmax(0, 1fr); margin-top: .4rem; }
-/* le niveau d'effondrement tient toute la largeur, au-dessus des deux maximums */
-.pc-big.pc-eff-niveau { margin-bottom: .4rem; }
-[data-module="effondrement"] .pc-big, .pc-eff-tete { background: var(--pc-segs-info-bg); }
+.pc-eff-tete { background: var(--pc-segs-info-bg); }
+.pc-eff-stat .v.adj { color: var(--accent-deep); }
 /* les causes : le nom à gauche, le niveau dans une case à droite — la case
    d'« Autre » est un champ, de même taille que les autres */
 .pc-eff-causes { margin-top: .45rem; display: flex; flex-direction: column; gap: .18rem; }
@@ -2235,7 +2239,6 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:focus { background: var(--card); }
 .pc-eff-partie.t-froid { --teinte: var(--froid); }
 .pc-eff-partie.t-chaud { --teinte: var(--chaud); }
-.pc-eff-niveau { margin-top: .35rem; }
 
 /* Seuls les libellés s’adaptent ; VALEUR / 10 garde les tailles des réserves. */
 .pc-eff-nom-compact { display: none; }
@@ -2243,8 +2246,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-tete > .k.compact .pc-eff-nom-compact { display: inline; }
 .pc-eff-partie.t-charge, .pc-eff-partie.t-contenance { --teinte: var(--or); }
 
-.pc-eff-commandes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .3rem; margin: .35rem 0; }
-.pc-eff-commandes > .pc-chip { padding: .25rem .15rem; line-height: 1.15; overflow-wrap: anywhere; }
+.pc-eff-commandes { margin: .35rem 0; }
 .pc-eff-champs.pc-segs > input.pc-eff-delta:disabled { cursor: default; opacity: .6; }
 
 .pc-eff-tete { flex-wrap: wrap; }
@@ -2425,9 +2427,10 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-journal-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
 
 /* Effets réellement appliqués et horloge d'alcool. */
-.pc-eff-actifs { display:grid; gap:.35rem; margin:.5rem 0; font-size:var(--fs-meta); line-height:1.4; overflow-wrap:anywhere; }
+.pc-eff-actifs { font-size: var(--fs-meta); line-height: 1.4; overflow-wrap: anywhere; }
 .pc-eff-actifs[hidden] { display:none; }
-.pc-eff-actif { padding:.45rem .6rem; border:1px solid var(--line-2); border-radius:4px; background:var(--pc-segs-info-bg); color:var(--ink); }
+.pc-eff-actif { padding: .3rem .45rem; background: var(--pc-segs-info-bg); color: var(--ink); }
+.pc-eff-actif + .pc-eff-actif { border-top: 1px solid var(--line-2); }
 .pc-vital-consommation { margin-top:.4rem; font-size:var(--fs-meta); color:var(--ink-2); text-align:center; }
 .pc-rec-categorie { font-size:var(--fs-meta); color:var(--ink-3); max-width:100%; }
 

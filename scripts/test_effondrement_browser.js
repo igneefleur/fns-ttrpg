@@ -11,6 +11,28 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  const eff=p.locator('[data-module="effondrement"]'),active=eff.getByLabel('Effets d’effondrement appliqués');
  assert.equal(await p.locator('[data-module="recuperation"] .pc-rec-row:not(.head)').count(),35);assert.equal(await active.isVisible(),false);
  await change("s.effParties={pr:{mod:3},ps:{mod:2},ph:{mod:1},charge:{mod:2},contenance:{mod:1},froid:{mod:4},chaud:{mod:5}};s.effAlcool=2");
+ const disposition=await eff.evaluate(n=>{
+   const rect=e=>e.getBoundingClientRect();
+   const cadre=n.querySelector('.pc-stat-stack');
+   const [niveau,effets]=cadre.children;
+   const exposition=document.querySelector('.pc-expo-stats');
+   const [ideal,thermique]=exposition.children;
+   const cellules=[...n.querySelectorAll('.pc-eff-stat > .c'),...exposition.querySelectorAll('.pc-stat > .c'),
+     ...document.querySelectorAll('.pc-mouv-dist > .c')];
+   const [arreter,pauser]=n.querySelector('.pc-eff-commandes').children;
+   return {
+     titres:[...n.querySelectorAll('.pc-eff-stat .k')].map(e=>e.textContent),
+     hauteurs:cellules.map(e=>rect(e).height),
+     exposition:[ideal.children.length,thermique.children.length,rect(thermique).top-rect(ideal).bottom],
+     effets:[effets.children.length,rect(effets).top-rect(niveau).bottom,rect(effets).width-rect(niveau).width],
+     commandes:[rect(arreter).width-rect(pauser).width,rect(arreter).height-rect(document.querySelector('.pc-temps-appliquer')).height]
+   };
+ });
+ assert.deepEqual(disposition.titres,['PV','PE','Effondrement']);
+ assert.ok(disposition.hauteurs[0]>0 && disposition.hauteurs.every(h=>Math.abs(h-disposition.hauteurs[0])<.5));
+ assert.deepEqual(disposition.exposition,[1,2,0]);
+ assert.ok(disposition.effets[0]>1);assert.deepEqual(disposition.effets.slice(1),[0,0]);
+ assert.ok(disposition.commandes.every(n=>Math.abs(n)<.5));
  await eff.screenshot({path:'/tmp/owd-effondrement-4.12.png'});
  let text=await active.innerText();assert.match(text,/−3 niveau\(x\).*PE/);assert.match(text,/\+3 niveau\(x\).*PM/);assert.match(text,/−4 de protection contre le froid/);assert.match(text,/−3 pas/);assert.match(text,/−10 % au coût en mana/);assert.match(text,/\+2 à la difficulté/);
  await change("s.effort='sommeil'");text=await active.innerText();assert.doesNotMatch(text,/niveau\(x\).*P[EM]/);assert.match(text,/−2 niveau\(x\).*PH/);

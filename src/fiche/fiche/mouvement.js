@@ -58,14 +58,9 @@
     function cases(cls, defs) {
       var box = el("div", "pc-stat " + cls), out = {};
       defs.forEach(function (d) {
-        var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
-        var v = el("span", "v", "");
-        c.appendChild(v);
-        var label = el("span", "k", d[1]);
-        if (d[0] === "da") label.title = "Dés d’action";
-        c.appendChild(label);
-        box.appendChild(c);
-        out[d[0]] = v;
+        var valeur = caseStat(box, d[1], d[2]);
+        if (d[0] === "da") valeur.nextElementSibling.title = "Dés d’action";
+        out[d[0]] = valeur;
       });
       b.appendChild(box);
       return { box: box, v: out };

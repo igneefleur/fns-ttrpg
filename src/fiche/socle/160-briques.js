@@ -69,6 +69,14 @@
     cmd.appendChild(segments);
     return cmd;
   }
+  function caseStat(ligne, libelle, classe) {
+    var c = el("div", "c" + (classe ? " " + classe : ""));
+    var valeur = el("span", "v", "");
+    c.appendChild(valeur);
+    c.appendChild(el("span", "k", libelle));
+    ligne.appendChild(c);
+    return valeur;
+  }
   function stepBtn(txt, title, fn) {
     var b = el("button", null, txt);
     b.type = "button";

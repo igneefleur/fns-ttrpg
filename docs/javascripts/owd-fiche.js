@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.4b";
+  var RELEASE = "4.36.5b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -3338,6 +3338,14 @@
     cmd.appendChild(segments);
     return cmd;
   }
+  function caseStat(ligne, libelle, classe) {
+    var c = el("div", "c" + (classe ? " " + classe : ""));
+    var valeur = el("span", "v", "");
+    c.appendChild(valeur);
+    c.appendChild(el("span", "k", libelle));
+    ligne.appendChild(c);
+    return valeur;
+  }
   function stepBtn(txt, title, fn) {
     var b = el("button", null, txt);
     b.type = "button";
@@ -5887,16 +5895,9 @@
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
     // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
-    var stat = el("div", "pc-expo-stats");
+    var stat = el("div", "pc-stat-stack pc-expo-stats");
     var statZone = el("div", "pc-stat pc-expo-stat");
     var statThermique = el("div", "pc-stat pc-expo-stat");
-    function caseStat(ligne, k) {
-      var c = el("div", "c"), v = el("span", "v", "");
-      c.appendChild(v);
-      c.appendChild(el("span", "k", k));
-      ligne.appendChild(c);
-      return v;
-    }
     var vZone = caseStat(statZone, "idéal °C");
     var vInt = caseStat(statThermique, "intensité");
     var vRes = caseStat(statThermique, "résorption");
@@ -7037,14 +7038,9 @@
     function cases(cls, defs) {
       var box = el("div", "pc-stat " + cls), out = {};
       defs.forEach(function (d) {
-        var c = el("div", "c" + (d[2] ? " " + d[2] : ""));
-        var v = el("span", "v", "");
-        c.appendChild(v);
-        var label = el("span", "k", d[1]);
-        if (d[0] === "da") label.title = "Dés d’action";
-        c.appendChild(label);
-        box.appendChild(c);
-        out[d[0]] = v;
+        var valeur = caseStat(box, d[1], d[2]);
+        if (d[0] === "da") valeur.nextElementSibling.title = "Dés d’action";
+        out[d[0]] = valeur;
       });
       b.appendChild(box);
       return { box: box, v: out };
@@ -7097,20 +7093,26 @@
   function buildEffondrement() {
     var b = block("Effondrement");
     function reste(champ) { return 100 - clamp(num(effDef()[champ], 0) * effondrement(), 0, 100); }
-    var r = el("div", "pc-bigrow pc-bigrow-2");
-    var tV = bigTile("MAX PV", function () { return reste("pvParNiveau") + " %"; });
-    var tE = bigTile("MAX PE", function () { return reste("peParNiveau") + " %"; });
-    r.appendChild(tV); r.appendChild(tE); b.appendChild(r);
-    var tN = bigTile("EFFONDREMENT", function () { return String(effondrement()); });
-    tN.classList.add("pc-eff-niveau"); b.appendChild(tN);
+    var maxima = el("div", "pc-stat pc-eff-stat");
+    var pv = caseStat(maxima, "PV"), pe = caseStat(maxima, "PE");
+    pv.title = "PV maximums restants"; pe.title = "PE maximums restants";
+    b.appendChild(maxima);
+
+    var cadre = el("div", "pc-stat-stack");
+    var niveau = el("div", "pc-stat pc-eff-stat");
+    var valeurNiveau = caseStat(niveau, "Effondrement");
+    cadre.appendChild(niveau);
     var effetsActifs = el("div", "pc-eff-actifs");
-    effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués"); b.appendChild(effetsActifs);
-    var commandes = el("div", "pc-eff-commandes");
-    var desactive = el("button", "pc-chip pc-combat-toggle", "Désactiver");
+    effetsActifs.setAttribute("aria-label", "Effets d’effondrement appliqués");
+    cadre.appendChild(effetsActifs);
+    b.appendChild(cadre);
+
+    var commandes = el("div", "pc-segs pc-eff-commandes");
+    var desactive = el("button", "c pc-toggle", "Désactiver");
     desactive.type = "button";
     desactive.title = "Annule l’effondrement appliqué et ses pénalités ; les causes continuent de suivre le personnage.";
     desactive.addEventListener("click", function () { state.effDesactive = !state.effDesactive; refresh(); });
-    var pause = el("button", "pc-chip pc-combat-toggle", "Pauser");
+    var pause = el("button", "c pc-toggle", "Pauser");
     pause.type = "button";
     pause.title = "Fige les niveaux actuels. À la reprise, ils suivent de nouveau les réserves actuelles.";
     pause.addEventListener("click", function () { state.effPause = state.effPause ? null : figeEffondrement(); refresh(); });
@@ -7222,9 +7224,11 @@
       desactive.classList.toggle("on", !!state.effDesactive); desactive.setAttribute("aria-pressed", String(!!state.effDesactive));
       pause.classList.toggle("on", !!state.effPause); pause.setAttribute("aria-pressed", String(!!state.effPause));
       ajusteLibelles();
-      var e = effondrement();
-      [tN, tV, tE].forEach(function (t) { t.classList.toggle("adj", e > 0); });
-      tN.title = capForce("effondrement")
+      pv.textContent = reste("pvParNiveau") + " %";
+      pe.textContent = reste("peParNiveau") + " %";
+      valeurNiveau.textContent = String(total);
+      [pv, pe, valeurNiveau].forEach(function (v) { v.classList.toggle("adj", total > 0); });
+      niveau.title = capForce("effondrement")
         ? chaineTexteDe(lireCap("max", "effondrement"), "calculé", effondrementAuto())
         : "Somme après effets et ajustements : " + effPartie("total") + " ; plafond " + effPlafond();
     });
