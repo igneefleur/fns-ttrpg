@@ -25,11 +25,11 @@
     if(!remote||remote.incomplete)return;
     this.confirmed=remote.ids;
     var self=this;Object.keys(this.records).forEach(function(k){var r=self.records[k];
-      if(r.phase==='pending'&&r.ids.every(function(id){return !!remote.ids[id];})&&(!canFinish||canFinish(k))){r.phase='finishing';r.finish=self.now();}
+      if(r.phase==='pending'&&r.ids.every(function(id){return !!remote.ids[id];})&&(!canFinish||canFinish(k))){r.phase=(remote.conflicts||[]).some(function(c){return c.rejected&&r.ids.indexOf(c.id)>=0;})?'rejected':'finishing';r.finish=self.now();}
     });
   };
   function progress(ms){if(ms<=12000)return .75*Math.max(0,ms)/12000;if(ms<=60000)return .75+.20*(ms-12000)/48000;return Math.min(.98,.95+.03*(ms-60000)/60000);}
-  function Painter(tracker,doc){this.tracker=tracker;this.doc=doc;this.nodes={};this.timer=null;this.observer=typeof ResizeObserver==='function'?new ResizeObserver(this.resize.bind(this)):null;}
+  function Painter(tracker,doc){this.tracker=tracker;this.doc=doc;this.nodes={};this.actions=new Map();this.timer=null;this.observer=typeof ResizeObserver==='function'?new ResizeObserver(this.resize.bind(this)):null;}
   Painter.prototype.resize=function(entries){var self=this;entries.forEach(function(e){Object.keys(self.nodes).forEach(function(k){var n=self.nodes[k];if(n.el===e.target)self.geometry(n);});});};
   Painter.prototype.geometry=function(n){
     var w=n.el.clientWidth,h=n.el.clientHeight;if(!w||!h)return;
@@ -38,11 +38,54 @@
     n.path.setAttribute('d','M '+mid+' '+y+' H '+(right-rad)+' Q '+right+' '+y+' '+right+' '+(y+rad)+' V '+(bottom-rad)+' Q '+right+' '+bottom+' '+(right-rad)+' '+bottom+' H '+(x+rad)+' Q '+x+' '+bottom+' '+x+' '+(bottom-rad)+' V '+(y+rad)+' Q '+x+' '+y+' '+(x+rad)+' '+y+' H '+mid);
   };
   Painter.prototype.remove=function(k){var n=this.nodes[k];if(!n)return;if(n.animation)n.animation.cancel();if(this.observer)this.observer.unobserve(n.el);n.svg.remove();n.el.classList.remove('owd-module-saving');delete n.el.dataset.owdSavePhase;delete this.nodes[k];};
+  Painter.prototype.linkAction=function(button,module,revision){
+    var record=this.tracker.records[module];
+    if(!record||record.revision<=revision)return;
+    this.removeAction(button);
+    var line=this.doc.createElement('span');
+    line.className='pc-action-save-line';
+    line.setAttribute('aria-hidden','true');
+    button.appendChild(line);
+    this.actions.set(button,{line:line,module:module});
+    this.sync();
+  };
+  Painter.prototype.removeAction=function(button){
+    var action=this.actions.get(button);
+    if(!action)return;
+    if(action.animation)action.animation.cancel();
+    action.line.remove();
+    this.actions.delete(button);
+  };
+  Painter.prototype.paintActions=function(now){
+    var self=this;
+    var reduced=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.actions.forEach(function(action,button){
+      var r=self.tracker.records[action.module],line=action.line;
+      if(!button.isConnected||!r||r.phase==='rejected'){self.removeAction(button);return;}
+      if(action.revision===r.revision&&action.phase===r.phase)return;
+      if(action.animation)action.animation.cancel();
+      action.revision=r.revision;action.phase=r.phase;
+      function scale(value){return {transform:'scaleX('+value+')'};}
+      if(r.phase==='pending'){
+        var elapsed=Math.min(12000,Math.max(0,now-r.start));
+        line.style.transform=scale(reduced?.5:elapsed/24000).transform;
+        if(line.animate&&!reduced){
+          action.animation=line.animate([scale(0),scale(.5)],{duration:12000,fill:'forwards'});
+          action.animation.currentTime=elapsed;
+        }
+      }else{
+        var start=Math.min(.5,Math.max(0,(r.finish-r.start)/24000));
+        line.style.transform=scale(1).transform;
+        if(line.animate&&!reduced)action.animation=line.animate([scale(start),scale(1)],
+          {duration:Math.max(0,400-(now-r.finish)),easing:'ease-out',fill:'forwards'});
+      }
+    });
+  };
   Painter.prototype.sync=function(){
     var self=this,now=this.tracker.now();if(this.timer){clearTimeout(this.timer);this.timer=null;}
     Object.keys(this.nodes).forEach(function(k){if(!self.tracker.records[k]||!self.nodes[k].el.isConnected)self.remove(k);});
     Object.keys(this.tracker.records).forEach(function(k){
-      var r=self.tracker.records[k];if(r.phase==='finishing'&&now-r.finish>=400){delete self.tracker.records[k];self.remove(k);return;}
+      var r=self.tracker.records[k];if(r.phase==='rejected'||r.phase==='finishing'&&now-r.finish>=400){delete self.tracker.records[k];self.remove(k);return;}
       var n=self.nodes[k],el=Array.prototype.find.call(self.doc.querySelectorAll('#perso-fiche [data-module]'),function(e){return e.dataset.module===k&&!e.classList.contains('pc-module-differe');});
       if(!el)return;if(n&&n.el!==el){self.remove(k);n=null;}
       if(!n){
@@ -64,9 +107,10 @@
         if(n.path.animate&&!reduced)n.animation=n.path.animate([{strokeDashoffset:offset},{strokeDashoffset:'0'}],{duration:left,fill:'forwards',easing:'ease-out'});
       }
     });
+    this.paintActions(now);
     var ends=Object.keys(this.tracker.records).map(function(k){var r=self.tracker.records[k];return r.phase==='finishing'?Math.max(1,400-(now-r.finish)):null;}).filter(function(n){return n!==null;});
     if(ends.length)this.timer=setTimeout(function(){self.timer=null;self.sync();},Math.min.apply(null,ends));
   };
-  Painter.prototype.destroy=function(){var self=this;Object.keys(this.nodes).forEach(function(k){self.remove(k);});if(this.observer)this.observer.disconnect();if(this.timer)clearTimeout(this.timer);};
+  Painter.prototype.destroy=function(){var self=this;Object.keys(this.nodes).forEach(function(k){self.remove(k);});this.actions.forEach(function(_,button){self.removeAction(button);});if(this.observer)this.observer.disconnect();if(this.timer)clearTimeout(this.timer);};
   var api={Tracker:Tracker,Painter:Painter,progress:progress};if(typeof module==='object'&&module.exports)module.exports=api;else root.OwdSaveProgress=api;
 })(typeof window==='object'?window:this);

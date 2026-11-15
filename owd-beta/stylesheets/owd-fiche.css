@@ -314,7 +314,8 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
 }
-.pc-segs > button.pc-action::after {
+.pc-segs > button.pc-action::after,
+.pc-action-save-line {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
   background: var(--accent); transform: scaleX(0); transform-origin: left center;
   pointer-events: none;
@@ -605,6 +606,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 .pc-vital-jauge > i.over { background: var(--danger); }
 .pc-vital-cmd { padding: .34rem .4rem .38rem; }
 .pc-variation-segs { margin: 0; }
+.pc-contenance-commandes { width: auto; margin: 0 .4rem .38rem; }
 .pc-variation-segs > input.c { flex: 0 0 33.333333%; width: 0; }
 .pc-variation-segs > button.c { flex: 0 0 66.666667%; }
 .pc-variation-segs > .c { letter-spacing: 0; }

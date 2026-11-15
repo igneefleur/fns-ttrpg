@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.6b";
+  var RELEASE = "4.36.7b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -2883,7 +2883,9 @@
     add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
     add('exposition',[caps.expo,caps.expoMax,confort()]);
     add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
-    add('contenance',caps.contenancePrise);
+    add('contenance',[caps.contenancePrise,state.horlogeDigestion,
+      (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),
+      recupAjoutsModule(false).filter(function(r){return r.categorie==='digestive';})]);
     var causes=['pr','ps','ph','pi','charge','contenance','chaud','froid','alcool','autre'].map(function(k){return [k,effPartie(k)];});
     add('effondrement',[caps.effondrement,causes,effSpecifiques()]);
     add('mouvement',[effetBonus('pas'),effetBonus('vitesse'),effSpecifiques().pas]);
@@ -3306,8 +3308,10 @@
     });
     return bt;
   }
-  function confirmeAction(bt) {
+  function marqueAction() { return window.__owdActionRevision ? window.__owdActionRevision() : 0; }
+  function confirmeAction(bt, revision) {
     if (!bt) return;
+    if (window.__owdActionSuivi) { window.__owdActionSuivi(bt, revision); return; }
     bt.classList.remove("is-confirming");
     void bt.offsetWidth; // relance aussi l'animation si le joueur reclique vite
     bt.classList.add("is-confirming");
@@ -3324,10 +3328,11 @@
     function applique() {
       var valeur = litNombreSigne(delta.value);
       if (!isFinite(valeur) || !valeur) return;
+      var revision = marqueAction();
       modifier(valeur);
       delta.value = "";
       refresh();
-      confirmeAction(appliquer);
+      confirmeAction(appliquer, revision);
     }
     delta.addEventListener("keydown", function (e) {
       if (e.key === "Enter") { e.preventDefault(); applique(); }
@@ -5592,9 +5597,10 @@
       bt.title = pas.titre;
       bt.setAttribute("aria-label", pas.titre);
       bt.addEventListener("click", function () {
+        var revision = marqueAction();
         var fait = avancerSecondes(pas.secondes);
         refresh();
-        if (fait) { confirmeAction(bt); flash(pas.message); }
+        if (fait) { confirmeAction(bt, revision); flash(pas.message); }
       });
       rapide.appendChild(bt);
     });
@@ -5611,11 +5617,12 @@
       function applique() {
         var n = Math.trunc(litNombreSigne(nb.value));
         if (!isFinite(n) || !n) return;
+        var revision = marqueAction();
         var sec = avancerSecondes(n * secondesParUnite);
         nb.value = "";
         refresh();
         if (!sec) return;
-        confirmeAction(appliquer);
+        confirmeAction(appliquer, revision);
         var abs = Math.abs(sec), compte, texte, accord;
         if (abs % 3600 === 0) {
           compte = abs / 3600; texte = compte + (compte === 1 ? " heure" : " heures");
@@ -7244,6 +7251,21 @@
     });
     nettoieRecupCoffre(); refresh(); rebuildRecuperation();
   }
+  function accelereDigestion() {
+    var volume = contenancePrise(), t = tempsDef(), cadence = digestionCadenceSecondes();
+    var parTranche = t && t.digestion ? num(t.digestion.volume, 0) : 0;
+    var fait = volume > 0 && cadence > 0 && parTranche > 0;
+    if (fait) {
+      if (window.__owdDigestionAcceleree) window.__owdDigestionAcceleree(volume);
+      var phase = secondesHorlogeProcessus("horlogeDigestion") % cadence;
+      appliqueDigestionSecondes(Math.ceil(volume / parTranche) * cadence - phase, 1);
+    }
+    recupListeModule().forEach(function (r) {
+      if (r.categorie === "digestive" && recupAccelereModule(r)) fait = true;
+    });
+    if (fait) refresh();
+    return fait;
+  }
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
@@ -7265,7 +7287,21 @@
       state.etat.contenance = Math.max(0, Math.round((contenancePrise() + d) * 100) / 100);
       if (!(state.etat.contenance > 0)) reinitialiseHorlogeDigestion();
     }));
-    b.appendChild(miniBtn("Vomir", "Vider la contenance et interrompre les effets digestifs en cours", vomirContenu));
+    var commandes = el("div", "pc-segs pc-contenance-commandes");
+    var vomir = boutonAction("Vomir"), accelerer = boutonAction("Accélérer");
+    vomir.title = "Vider la contenance et interrompre les effets digestifs";
+    accelerer.title = "Terminer la digestion et ses récupérations sans avancer l’horloge";
+    vomir.addEventListener("click", function () {
+      var revision = marqueAction();
+      vomirContenu();
+      confirmeAction(vomir, revision);
+    });
+    accelerer.addEventListener("click", function () {
+      var revision = marqueAction();
+      if (accelereDigestion()) confirmeAction(accelerer, revision);
+    });
+    commandes.appendChild(vomir); commandes.appendChild(accelerer);
+    b.appendChild(commandes);
 
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();

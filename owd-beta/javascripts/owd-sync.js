@@ -262,22 +262,23 @@
           if(incomplete){delete ids[op.id];return;}op.changes=op.changes.concat(extra);
         }
         if(incomplete){delete ids[op.id];return;}
-        if(op.recupAccelere){
-          var guard=op.recupAccelere;
+        var accelerations=op.recupAccelerations||(op.recupAccelere?[op.recupAccelere]:[]);
+        var digestion=f['[["k","etat"],["k","contenance"]]'];
+        if(op.digestionAcceleree!==undefined&&(!digestion||digestion[1]!==op.digestionAcceleree)||
+            !accelerations.every(function(guard){
           var path=guard.effet?[["k","effetsActifs"]]:[["k","modData"],["k","recuperation"],["k","ajouts"]];
           path.push(["e",guard.id]);
           var entry=f[JSON.stringify(path)];
           var duration=f[JSON.stringify(path.concat([["k","resteSecondes"]]))];
           var enabled=f[JSON.stringify(path.concat([["k","actif"]]))];
           var permanent=f[JSON.stringify(path.concat([["k","permanente"]]))];
-          var valid=guard.effet
+          return guard.effet
             ? entry&&entry[0]==="v"&&entry[1].reste===guard.secondes&&entry[1].actif!==false
             : entry&&entry[0]==="o"&&(!duration||duration[1]===guard.secondes)&&
               (!enabled||enabled[1]!==false)&&(!permanent||permanent[1]!==true);
-          if(!valid){
-            conflicts.push({id:op.id,reason:"La récupération a changé ou est déjà terminée."});
-            return;
-          }
+        })){
+          conflicts.push({id:op.id,reason:"La digestion ou la récupération a changé ou est déjà terminée.",rejected:true});
+          return;
         }
 
         op.changes.forEach(function(c){var p=JSON.parse(c.k);if(p.some(function(x){return ['__proto__','constructor','prototype'].indexOf(x[1])>=0;}))throw Error('Chemin réservé.');
@@ -338,6 +339,11 @@
         if(last&&stable(last.actor||null)===stable(this.actor||null)&&!this.published[lastId]&&!last.creates&&!last.modules&&last.changes.length===changes.length&&changes.every(function(c,i){var old=last.changes[i];return old.k===c.k&&old.n[0]==='v'&&c.n[0]==='v'&&old.delta===undefined&&c.delta===undefined&&old.clockDelta===undefined&&c.clockDelta===undefined&&!invPath(JSON.parse(c.k));})){changes.forEach(function(c,i){if(last.changes[i].before!==undefined)c.before=last.changes[i].before;else delete c.before;});delete this.pending[lastId];}
         var op={id:this.id+':'+(++this.counter),clock:++this.clock,at:this.now(),changes:changes};if(this.actor)op.actor=legacy.copy(this.actor);
         if(intent&&intent.recupAccelere)op.recupAccelere=legacy.copy(intent.recupAccelere);
+        if(intent&&intent.recupAccelerations){
+          op.recupAccelere=legacy.copy(intent.recupAccelerations[0]);
+          if(intent.recupAccelerations.length>1)op.recupAccelerations=legacy.copy(intent.recupAccelerations);
+        }
+        if(intent&&intent.digestionAcceleree!==undefined)op.digestionAcceleree=intent.digestionAcceleree;
         var labels={};changes.forEach(function(c){var p=JSON.parse(c.k);p.forEach(function(seg,i){if(seg[0]!=="e")return;var prefix=p.slice(0,i+1),key=JSON.stringify(prefix.concat([["k","nom"]])),v=next[key]||self.local[key];if(!v){key=JSON.stringify(prefix.concat([["k","name"]]));v=next[key]||self.local[key];}if(v&&v[0]==="v"&&typeof v[1]==="string")labels[seg[1]]=v[1];});});if(Object.keys(labels).length)op.labels=labels;if(Object.keys(creates).length)op.creates=creates;if(Object.keys(modules).length)op.modules=modules;this.pending[op.id]=op;this.pendingAt[op.id]=this.now();}
 this.local=next;};
     Session.prototype.outgoing=function(){if(!this.hasBase)return this.migration;var out={},self=this;Object.keys(this.pending).forEach(function(id){out[id]=self.pending[id];self.published[id]=true;});return out;};
