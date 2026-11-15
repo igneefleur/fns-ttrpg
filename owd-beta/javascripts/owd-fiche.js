@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.4b";
+  var RELEASE = "4.37.5b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -7427,7 +7427,7 @@
   function buildContenance() {
     var b = block("Contenance");
     var fig = el("div", "pc-estomac");
-    var chiffre = el("span", "pc-estomac-val pc-vital-val");
+    var chiffre = el("span", "pc-estomac-val");
     var v = champNombreSigne(el("input", "pc-vital-num"));
     v.setAttribute("aria-label", "Contenance actuelle");
     v.dataset.syncReserve = "contenance";
@@ -7443,7 +7443,14 @@
       ecritContenance(valeur);
       refresh();
     });
-    v.addEventListener("blur", function () { v.value = fmtP(contenancePrise()); });
+    function ajusteValeur() {
+      v.value = fmtP(contenancePrise());
+      ajusteLargeur();
+    }
+    function ajusteLargeur() {
+      v.style.width = Math.max(1.5, v.value.length + 0.3) + "ch";
+    }
+    v.addEventListener("blur", ajusteValeur);
     chiffre.appendChild(v);
     chiffre.appendChild(mx);
     fig.appendChild(jaugeEstomac());
@@ -7474,8 +7481,8 @@
     hooks.push(function () {
       var pris = contenancePrise(), m = contenance();
       var taux = m > 0 ? pris / m : (pris > 0 ? 1.45 : 0);
-      if (document.activeElement !== v) v.value = fmtP(pris);
-      v.style.width = Math.max(3.4, v.value.length + 0.3) + "ch";
+      if (document.activeElement !== v) ajusteValeur();
+      else ajusteLargeur();
       mx.textContent = "/ " + fmtP(m);
       fig.style.setProperty("--owd-contenance-taux", String(clamp(taux, 0, 1.45)));
       fig.classList.toggle("over", pris > m);

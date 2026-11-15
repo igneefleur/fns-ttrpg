@@ -575,7 +575,7 @@ body:has(#perso-fiche) .md-sidebar--primary { display: none !important; }
 .pc-vital-tete-avec-rouage > .pc-vital-titre { grid-column: 1; grid-row: 1; }
 .pc-vital-tete-avec-rouage > .pc-vital-val { grid-column: 2; grid-row: 1 / 3; }
 .pc-vital-tete-avec-rouage > .pc-gear {
-  position: absolute; inset-block-start: .1rem; inset-inline-end: var(--pc-module-inset);
+  position: absolute; inset-block-start: .28rem; inset-inline-end: var(--pc-module-inset);
   z-index: 1; margin: 0;
 }
 .pc-vital-tete-avec-rouage > .pc-vital-etat-ligne { grid-column: 1 / -1; }
@@ -765,7 +765,7 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
   initial-value: 0;
 }
 .pc-estomac {
-  position: relative; width: 78%; max-width: 12rem; margin: .1rem auto .2rem; aspect-ratio: 1;
+  position: relative; width: 60%; max-width: 9rem; margin: .1rem auto .2rem; aspect-ratio: 1;
   transition: --owd-contenance-taux .55s ease-in-out;
 }
 .pc-estomac > svg { display: block; width: 100%; height: 100%; }
@@ -786,11 +786,17 @@ html.night .pc-vital-res.t-pi, html.night .pc-eff-partie.t-pi { --teinte: #fffff
 /* la valeur, posée dans le corps de l'estomac (à droite et en bas de l'image) */
 .pc-estomac-val {
   transform: translate(-50%, -50%);
-  display: flex; align-items: baseline; line-height: 1; margin: 0;
+  display: flex; flex-direction: column; align-items: center; gap: .08rem; line-height: 1;
   color: var(--ink); text-shadow: 0 0 3px var(--panel), 0 0 6px var(--panel);
 }
-.pc-estomac-val .pc-vital-num { text-shadow: inherit; }
-.pc-estomac-val .pc-vital-num:focus-visible { outline: 1px solid var(--accent); outline-offset: 2px; }
+.pc-estomac-val .pc-vital-num {
+  appearance: none; text-align: center; text-shadow: inherit;
+  font-size: var(--fs-hero); max-width: 5rem; border-radius: 0;
+}
+.pc-estomac-val .pc-vital-num:focus {
+  background: transparent; border: 0; outline: 0; box-shadow: none;
+}
+.pc-estomac-val .pc-vital-max { color: var(--ink-2); }
 .pc-estomac.over .pc-vital-num { color: var(--danger); }
 /* Le pied d'une carte de réserves retrouve la marge que la carte a perdue. */
 
@@ -2260,7 +2266,7 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-eff-partie.t-charge, .pc-eff-partie.t-contenance { --teinte: var(--or); }
 
 .pc-eff-commandes { margin: .35rem 0; }
-.pc-eff-global-jauge { --teinte: var(--accent); }
+.pc-eff-global-jauge { --teinte: #000; }
 .pc-eff-global-valeur { width: auto; }
 .pc-eff-corps { padding: 0 var(--pc-module-inset) .55rem; }
 .pc-eff-corps > .pc-eff-actifs { border: 1px solid var(--line-2); border-radius: 5px; overflow: hidden; }
