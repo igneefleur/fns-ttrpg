@@ -124,4 +124,35 @@ test('l’ordre d’une réserve inclut les sources masquées et survit à la sa
  assert.equal(ordre[0].id,b.id);
  assert.equal(ordre[1].id,naturelle.id);
 });
+test('anciens sélecteurs de durée convertis sans déplacer leur échéance',()=>{
+ const {ctx}=setup();
+ for(const [old,type,multiplier,scale] of [['10m','minute',10,60],['1h','heure',1,3600],['2h','heure',2,3600],['8h','heure',8,3600]]){
+   const legacy=ctx.recupNormaliseAjoutModule({type:old,temps:2});
+   assert.equal(legacy.type,type);
+   assert.equal(legacy.temps,2*multiplier);
+   assert.equal(legacy.resteSecondes,2*multiplier*scale);
+   const ongoing=ctx.recupNormaliseAjoutModule({type:old,temps:2,resteSecondes:127});
+   ctx.recupNormaliseAjoutModule(ongoing);
+   assert.equal(ongoing.temps,2*multiplier);
+   assert.equal(ongoing.resteSecondes,127);
+ }
+});
+test('durées simples et retour au niveau de base des récupérations naturelles',()=>{
+ const {ctx}=setup(true);
+ const units=ctx.RECUP_DUREES.map(d=>d.cle).join(',');
+ assert.equal(units,'round,minute,heure,jour,semaine,mois,annee');
+ for(const [type,temps,seconds] of [['minute',30,1800],['semaine',1,7*86400],['mois',1,28*86400],['annee',1,336*86400]]){
+   const r={type,temps};
+   ctx.recupResetDureeModule(r);
+   assert.equal(r.resteSecondes,seconds);
+ }
+ const r=ctx.recupsListe()[0], base=ctx.recupNiveauRegle(r);
+ const autre=ctx.recupsListe()[1];
+ ctx.ecritRecupNiveau(autre,9);
+ ctx.ecritRecupNiveau(r,base===5?6:5);
+ assert.notEqual(ctx.recupNiveauBase(r),base);
+ ctx.ecritRecupNiveau(r,base);
+ assert.equal(ctx.recupNiveauBase(r),base);
+ assert.equal(ctx.recupNiveauBase(autre),9);
+});
 console.log(count+' scénarios de récupération progressive validés.');
