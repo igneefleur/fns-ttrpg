@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.15b";
+  var RELEASE = "4.36.16b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5775,18 +5775,20 @@
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
     var cout;
+    var valeurs = tete;
     if (editable) {
-      var titre = el("span", "pc-vital-titre");
-      titre.appendChild(n);
+      tete.classList.add("pc-vital-tete-cout");
       box.classList.add("pc-editable");
       var gear = gearBtn(box, cle);
       gear.setAttribute("aria-label", "Modifier " + nom);
-      titre.appendChild(gear);
       var identite = el("div", "pc-vital-identite");
       cout = el("span", "pc-vital-consommation");
-      identite.appendChild(titre);
+      identite.appendChild(n);
       identite.appendChild(cout);
       tete.appendChild(identite);
+      valeurs = el("div", "pc-vital-valeurs");
+      valeurs.appendChild(gear);
+      tete.appendChild(valeurs);
     } else {
       tete.appendChild(n);
     }
@@ -5806,10 +5808,10 @@
     val.appendChild(inp);
     var mx = el("span", "pc-vital-max", "");
     val.appendChild(mx);
-    tete.appendChild(val);
+    valeurs.appendChild(val);
     var etatLigne = el("div", "pc-vital-etat-ligne");
     etatLigne.appendChild(etat);
-    tete.appendChild(etatLigne);
+    valeurs.appendChild(etatLigne);
     box.appendChild(tete);
 
     var jauge = el("span", "pc-vital-jauge");
