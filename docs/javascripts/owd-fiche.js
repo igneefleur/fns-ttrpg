@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.10b";
+  var RELEASE = "4.36.11b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1829,10 +1829,25 @@
   // public (après filtres). C'est ce qui permet au champ « Forcé » de montrer
   // la valeur calculée en filigrane, et à un mod de changer le résultat sans
   // toucher au forçage du MJ.
-  function pvMax() { return pub("pvMax", Math.floor(capMax("pv", pvMaxAuto) * effReste(num(effDef().pvParNiveau, 0))), {}); }
-  function peMax() { return pub("peMax", Math.floor(capMax("pe", peMaxAuto) * effReste(num(effDef().peParNiveau, 0))), {}); }
+  function reglageReserveVitale(cle) {
+    var reglages = state.modData && state.modData.reservesVitales;
+    return num(reglages && reglages[cle], 0);
+  }
+  function sacrificeTelluriqueMax() {
+    return Math.max(0, Math.floor(Math.min(capMax("pv", pvMaxAuto), capMax("pe", peMaxAuto))));
+  }
+  function sacrificeTellurique() {
+    var demande = Math.max(0, Math.floor(reglageReserveVitale("sacrifice")));
+    return demande ? Math.min(demande, sacrificeTelluriqueMax()) : 0;
+  }
+  function pvMax() {
+    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().pvParNiveau, 0))), {});
+  }
+  function peMax() {
+    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().peParNiveau, 0))), {});
+  }
   function pmMaxAuto() { return capAuto("pm"); }
-  function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto), {}); }
+  function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto) + 2 * sacrificeTellurique(), {}); }
   function piMaxAuto() { return capAuto("pi"); }
   function piMax() { return pub("piMax", capMax("pi", piMaxAuto), {}); }
   function prMaxAuto() { return capAuto("pr"); }
@@ -5327,7 +5342,7 @@
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetConsommation(res) { return Math.max(0, 100 + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
+  function effetConsommation(res) { return Math.max(0, 100 + reglageReserveVitale(res) + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
   function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
   function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
@@ -5709,9 +5724,7 @@
   //     l'état), qui la fait alors suivre le maximum quand il bouge ;
   //   — sous zéro, le bandeau entier passe au rouge.
   //
-  // AUCUN ROUAGE : tout ce que le module porte se JOUE. Le maximum se construit
-  // dans l'onglet Options (Réglages des capacités), avec la chaîne de leviers
-  // de toute la fiche.
+  // Le rouage de PV, PE et PM règle leur coût et, pour PM, le sacrifice.
 
   // Le signe moins TYPOGRAPHIQUE, comme dans sign() : à cette taille le trait
   // d'union du clavier passe pour une césure.
@@ -5725,14 +5738,43 @@
   // `nom` remplace le sigle des règles dans le bandeau, quand la fiche en
   // veut un autre (Repos plutôt que PR) ; la clé, elle, pose la TEINTE de la
   // réserve (classe t-<clé>, couleurs dans la feuille de style).
+  function champReglageVital(cle, libelle, lire, valeurValide) {
+    var champ = champNombreSigne(el("input", "pc-edit-field"));
+    champ.placeholder = "0";
+    champ.setAttribute("aria-label", libelle);
+    champ.addEventListener("input", function () {
+      var valeur = champ.value.trim() ? litNombreSigne(champ.value) : 0;
+      if (!isFinite(valeur)) return;
+      var data = state.modData.reservesVitales;
+      if (!data || Array.isArray(data)) data = state.modData.reservesVitales = {};
+      data[cle] = valeurValide(valeur);
+      refresh();
+    });
+    champ.addEventListener("blur", function () { champ.value = lire() || ""; });
+    hooks.push(function () {
+      if (document.activeElement !== champ) champ.value = lire() || "";
+    });
+    return fld(libelle, champ);
+  }
+
   function reserveVitale(cle, provenance, nomAffiche) {
     var nom = nomAffiche || abbrCap(cle, cle.toUpperCase());
     var box = el("div", "pc-vital-res t-" + cle);
 
+    var editable = /^(pv|pe|pm)$/.test(cle);
     var tete = el("div", "pc-vital-tete");
     var n = el("span", "pc-vital-nom", nom);
     n.title = libCap(cle, cle);
     tete.appendChild(n);
+    var consommation;
+    if (editable) {
+      box.classList.add("pc-editable");
+      var gear = gearBtn(box, cle);
+      gear.setAttribute("aria-label", "Modifier " + nom);
+      tete.appendChild(gear);
+      consommation = el("span", "pc-vital-consommation");
+      tete.appendChild(consommation);
+    }
     var etat = el("span", "pc-vital-etat", "");
     tete.appendChild(etat);
     var val = el("span", "pc-vital-val");
@@ -5769,11 +5811,18 @@
       if (d < 0 && /^(pv|pe|pm)$/.test(cle)) d = -effetCout(cle, -d);
       state.etat[cle] = courant(cle) + d;
     }));
-    var consommation = /^(pv|pe|pm)$/.test(cle) ? el("div", "pc-vital-consommation") : null;
-    if (consommation) box.appendChild(consommation);
+    if (editable) {
+      var reglages = el("div", "pc-vital-reglages pc-edit-only");
+      reglages.appendChild(champReglageVital(cle, "Ajustement du coût (%)", function () {
+        return reglageReserveVitale(cle);
+      }, function (v) { return v; }));
+      if (cle === "pm") reglages.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
+        function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
+      box.appendChild(reglages);
+    }
 
     hooks.push(function () {
-      if (consommation) consommation.textContent = "Consommation " + cle.toUpperCase() + " : " + fmtP(effetConsommation(cle)) + " %";
+      if (consommation) consommation.textContent = "Coût " + fmtP(effetConsommation(cle)) + " %";
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
@@ -5784,6 +5833,8 @@
       var forcee = capForce(cle), depasse = v > m;
       mx.classList.toggle("adj", forcee || depasse);
       mx.title = forcee ? chaineTexteDe(lireCap("max", cle), "calculé", autoDe(cle)) : provenance();
+      var sacrifice = editable ? sacrificeTellurique() : 0;
+      if (sacrifice) mx.title += " · Sacrifice tellurique : " + sign(cle === "pm" ? 2 * sacrifice : -sacrifice);
       // SOUS ZÉRO, la barre part de la droite et le bandeau passe au rouge
       var neg = v < 0;
       box.classList.toggle("over", neg);
@@ -13403,7 +13454,7 @@
     var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
     var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','temperatureMonde','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
     var oldData=state.modData||{},newData=s.modData||{};
-    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=['recuperation'];
+    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||k==='reservesVitales'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=JSON.stringify(oldData.recuperation)===JSON.stringify(newData.recuperation)?[]:['recuperation'];
     var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
     if(partial)changes.forEach(function(k){(structural[k]||[]).forEach(function(id){if(targets.indexOf(id)<0)targets.push(id);});});
     var actif = document.activeElement, focus = null, positions = [];

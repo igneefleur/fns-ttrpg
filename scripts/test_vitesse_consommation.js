@@ -2,7 +2,13 @@
 'use strict';
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 let reduction=0,alcool=0;
-const ctx={effetBonus:()=>reduction,effSpecifiques:()=>({mana:alcool})};vm.createContext(ctx);
+const state={modData:{}};
+const maxima={pv:100,pe:80,pm:20};
+const ctx={state,num:(v,d=0)=>v==null||!Number.isFinite(Number(v))?d:Number(v),capMax:(k,auto)=>auto(),capAuto:k=>maxima[k],
+ clamp:(v,min,max)=>Math.max(min,Math.min(max,v)),effDef:()=>({pvParNiveau:5,peParNiveau:10}),effondrement:()=>0,pub:(_,v)=>v,
+ effetBonus:()=>reduction,effSpecifiques:()=>({mana:alcool})};vm.createContext(ctx);
+const cap=fs.readFileSync('src/fiche/socle/080-calculs-capacites.js','utf8');
+vm.runInContext(cap.slice(cap.indexOf('  function effReste('),cap.indexOf('  function piMaxAuto(')),ctx);
 const fx=fs.readFileSync('src/fiche/fiche/effets.js','utf8');
 vm.runInContext(fx.slice(fx.indexOf('  function effetConsommation('),fx.indexOf('\n',fx.indexOf('  function effetCout('))),ctx);
 vm.runInContext(fs.readFileSync('src/fiche/fiche/mouvement.js','utf8'),ctx);
@@ -15,3 +21,20 @@ alcool=-10;assert.equal(ctx.effetConsommation('pm'),70);assert.equal(ctx.effetCo
 reduction=25;alcool=0;assert.equal(ctx.effetCout('pv',13.4),16);
 reduction=-150;assert.equal(ctx.effetConsommation('pm'),0);assert.equal(ctx.effetCout('pm',99),0);
 console.log('OK Vitesse : seuils signés, cumul, sommeil, effondrement ; coûts PV/PE/PM décimaux, bonus, malus, alcool et borne zéro.');
+
+reduction=-20;
+state.modData.reservesVitales={pe:-10,pm:5,sacrifice:5};
+assert.equal(ctx.effetConsommation('pe'),70);
+assert.equal(ctx.effetConsommation('pm'),85);
+assert.equal(ctx.effetCout('pe',10),7);
+assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[95,75,30]);
+state.modData.reservesVitales.sacrifice=3;
+assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[97,77,26]);
+state.modData.reservesVitales.sacrifice=200;
+assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[20,0,180]);
+ctx.effondrement=()=>2;
+state.modData.reservesVitales.sacrifice=5;
+assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[85,60,30]);
+delete state.modData.reservesVitales;
+assert.deepEqual([ctx.pvMax(),ctx.peMax(),ctx.pmMax()],[90,64,20]);
+console.log('OK ajustements additifs et sacrifice tellurique réversible, borné et appliqué avant effondrement.');

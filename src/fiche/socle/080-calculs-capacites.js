@@ -273,10 +273,25 @@
   // public (après filtres). C'est ce qui permet au champ « Forcé » de montrer
   // la valeur calculée en filigrane, et à un mod de changer le résultat sans
   // toucher au forçage du MJ.
-  function pvMax() { return pub("pvMax", Math.floor(capMax("pv", pvMaxAuto) * effReste(num(effDef().pvParNiveau, 0))), {}); }
-  function peMax() { return pub("peMax", Math.floor(capMax("pe", peMaxAuto) * effReste(num(effDef().peParNiveau, 0))), {}); }
+  function reglageReserveVitale(cle) {
+    var reglages = state.modData && state.modData.reservesVitales;
+    return num(reglages && reglages[cle], 0);
+  }
+  function sacrificeTelluriqueMax() {
+    return Math.max(0, Math.floor(Math.min(capMax("pv", pvMaxAuto), capMax("pe", peMaxAuto))));
+  }
+  function sacrificeTellurique() {
+    var demande = Math.max(0, Math.floor(reglageReserveVitale("sacrifice")));
+    return demande ? Math.min(demande, sacrificeTelluriqueMax()) : 0;
+  }
+  function pvMax() {
+    return pub("pvMax", Math.floor((capMax("pv", pvMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().pvParNiveau, 0))), {});
+  }
+  function peMax() {
+    return pub("peMax", Math.floor((capMax("pe", peMaxAuto) - sacrificeTellurique()) * effReste(num(effDef().peParNiveau, 0))), {});
+  }
   function pmMaxAuto() { return capAuto("pm"); }
-  function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto), {}); }
+  function pmMax() { return pub("pmMax", capMax("pm", pmMaxAuto) + 2 * sacrificeTellurique(), {}); }
   function piMaxAuto() { return capAuto("pi"); }
   function piMax() { return pub("piMax", capMax("pi", piMaxAuto), {}); }
   function prMaxAuto() { return capAuto("pr"); }

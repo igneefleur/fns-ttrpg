@@ -46,7 +46,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  await change("s.effParties={};s.effAlcool=2;s.inv.objets=[{ref:'speedblade',nom:'Test',typeObjet:'arme',qte:1,ou:'mainD',stats:{vitesse:12,couts:{pv:-20,pe:25,pm:-20}}}];s.etat.pv=100;s.etat.pe=100;s.etat.pm=100;s.allure='leger'");
  for (const [k,pct,cost] of [['pv',80,10],['pe',125,16],['pm',70,9]]) {
   const mod=p.locator('[data-module="'+k+'"]');
-  assert.match(await mod.locator('.pc-vital-consommation').innerText(),new RegExp('Consommation '+k.toUpperCase()+' : '+pct+' %'));
+  assert.match(await mod.locator('.pc-vital-consommation').innerText(),new RegExp('Coût '+pct+' %'));
   await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
   assert.equal((await read()).etat[k],100-cost);
  }
