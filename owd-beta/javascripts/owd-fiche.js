@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.18b";
+  var RELEASE = "4.37.0b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -1424,7 +1424,7 @@
     caracTotal: 1, compBonus: 1, compDes: 1, compXp: 1,
     pvMax: 1, peMax: 1, pmMax: 1, piMax: 1, prMax: 1, psMax: 1, phMax: 1, pcMax: 1,
     charge: 1, accesRapides: 1, contenance: 1, expoMax: 1, effondrement: 1, effondrementPartie: 1,
-    poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1
+    poidsPorte: 1, desAction: 1, ruptureMax: 1, xpDepense: 1, variationReserveArt: 1
   };
   function ajouteFiltre(nom, fn, prop) {
     nom = String(nom == null ? "" : nom);
@@ -2903,9 +2903,10 @@
     Object.keys(state.modData||{}).forEach(function(id){set(id,[out[id],state.modData[id]]);});
     function add(id,value){set(id,[out[id],value]);}
     add('caracs',[caracs,caps.xpDepense]);
-    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],['pv','pe','pm'].indexOf(k)>=0?[effetConsommation(k),effetGain(k)]:null]);});
-    add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max']];}));
-    add('exposition',[caps.expo,caps.expoMax,confort()]);
+    function taux(k){return [effetConsommation(k),effetGain(k)];}
+    ['pv','pe','pm','pi','pc','contenance','rupture'].forEach(function(k){add(k,[caps[k],caps[k+'Max'],reserveAvecTaux(k)?taux(k):null]);});
+    add('survie',['pr','ps','ph'].map(function(k){return [caps[k],caps[k+'Max'],taux(k)];}));
+    add('exposition',[caps.expo,caps.expoMax,confort(),taux('expo')]);
     add('pc',[caps.charge,caps.chargePorte,caps.acces,caps.accesPris]);
     add('contenance',[caps.contenancePrise,state.horlogeDigestion,
       (state.effetsActifs||[]).filter(function(e){return e.categorie==='digestive';}),
@@ -5334,9 +5335,10 @@
       if (families[key] || best !== x) return false; families[key] = true; return true;
     });
   }
-  function effetBonus(cle, type, cible) {
+  function effetBonus(cle, type, cible, detail) {
     var n = 0, soulagement = 0;
     equipementsBonus().forEach(function(o){var v=o.stats&&o.stats[cle];if(type!==undefined)v=v&&v[type];n+=num(v,0);});
+    if (detail) detail.eqp = n;
     effetsSources().forEach(function (x) {
       if (x.e.cible && x.e.cible !== cible) return;
       var v = x.d.ops[cle]; if (type !== undefined) v = v && v[type];
@@ -5345,20 +5347,37 @@
         if(num(v,0)<0){soulagement=Math.min(soulagement,num(v,0));return;}
       }
       n += num(v,0);
+      if (detail && x.e.equipement) detail.eqp += num(v,0);
     });
     return n+soulagement;
   }
   function effetAlerte() {
     return (state.effetsActifs || []).reduce(function (n,e) { var d=effetDefinition(e.effet); return d && d.ops.alerte && e.actif && (e.reste===null || e.reste>0) ? Math.max(n,e.niveau) : n; },0);
   }
-  function effetConsommation(res) { return Math.max(0, 100 + reglageReserveVitale(res) + effetBonus("couts",res) + (res === "pm" ? effSpecifiques().mana : 0)); }
-  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
-  function effetGain(res) { return Math.max(0, 100 + reglageReserveVitale("gain_" + res)); }
-  function effetVariationImmediate(res, delta) {
-    if (res !== "pv" && res !== "pe" && res !== "pm") return delta;
-    return delta < 0 ? -effetCout(res, -delta) : delta * (effetGain(res) / 100);
+  function reserveAvecTaux(res) { return /^(pv|pe|pm|pr|ps|ph|pi|expo)$/.test(res); }
+  function tauxReserve(res, sens) {
+    var perte = sens === "perte", innocence = perte && res === "pi";
+    var detail = { eqp: 0 };
+    var total = effetBonus(innocence ? "innocence" : perte ? "couts" : "gains",
+      innocence ? undefined : res, undefined, detail);
+    var signe = innocence ? -1 : 1;
+    var art = num(pub("variationReserveArt", 0, { reserve: res, sens: sens }), 0);
+    var eqp = signe * detail.eqp;
+    var eft = signe * total - eqp + (perte && res === "pm" ? effSpecifiques().mana : 0);
+    var atr = reglageReserveVitale(perte ? res : "gain_" + res);
+    return { art: art, eqp: eqp, eft: eft, atr: atr, total: Math.max(0, 100 + art + eqp + eft + atr) };
   }
-  function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * Math.max(0,1 - effetBonus("innocence")/100) - 1e-9) : delta; }
+  function effetConsommation(res) { return tauxReserve(res, "perte").total; }
+  function effetCout(res, valeur) { return Math.max(0, Math.floor(Math.max(0, Number(valeur) || 0) * effetConsommation(res) / 100 + 1e-9)); }
+  function effetGain(res) { return tauxReserve(res, "gain").total; }
+  function effetVariationImmediate(res, delta) {
+    if (!reserveAvecTaux(res)) return delta;
+    if (delta >= 0) return delta * (effetGain(res) / 100);
+    if (res === "pi") return effetPerteInnocence(delta);
+    if (res === "pv" || res === "pe" || res === "pm") return -effetCout(res, -delta);
+    return delta * (effetConsommation(res) / 100);
+  }
+  function effetPerteInnocence(delta) { return delta < 0 ? -Math.ceil(-delta * (effetConsommation("pi") / 100) - 1e-9) : delta; }
   function retireEffet(id) { state.effetsActifs = state.effetsActifs.filter(function (e) { return e.id !== id; }); }
   function effetCoupRecu() {
     state.effetsActifs = state.effetsActifs.filter(function (e) {
@@ -5753,14 +5772,14 @@
   // veut un autre (Repos plutôt que PR) ; la clé, elle, pose la TEINTE de la
   // réserve (classe t-<clé>, couleurs dans la feuille de style).
   function champReglageVital(cle, libelle, lire, valeurValide) {
-    var champ = champNombreSigne(el("input", "pc-edit-field"));
+    var champ = champNombreSigne(el("input", "c pc-field pc-edit-field"));
     champ.placeholder = "0";
     champ.setAttribute("aria-label", libelle);
     champ.addEventListener("input", function () {
       var valeur = champ.value.trim() ? litNombreSigne(champ.value) : 0;
       if (!isFinite(valeur)) return;
       var data = state.modData.reservesVitales;
-      if (!data || Array.isArray(data)) data = state.modData.reservesVitales = {};
+      if (!data || typeof data !== "object" || Array.isArray(data)) data = state.modData.reservesVitales = {};
       data[cle] = valeurValide(valeur);
       refresh();
     });
@@ -5768,29 +5787,86 @@
     hooks.push(function () {
       if (document.activeElement !== champ) champ.value = lire() || "";
     });
-    return fld(libelle, champ);
+    return champ;
+  }
+
+  function titreReserve(scope, cle, nom) {
+    var tete = el("div", "pc-vital-tete pc-vital-tete-reglable");
+    var titre = el("div", "pc-block-title pc-vital-titre");
+    var n = el("span", "pc-vital-nom", nom);
+    n.title = libCap(cle, nom);
+    titre.appendChild(n);
+    if (reserveAvecTaux(cle)) {
+      scope.classList.add("pc-editable");
+      var gear = gearBtn(scope, cle);
+      gear.setAttribute("aria-label", "Modifier " + nom);
+      titre.appendChild(gear);
+    }
+    tete.appendChild(titre);
+    return tete;
+  }
+
+  function ajouteTauxReserve(scope, cle, nom) {
+    var taux = el("div", "pc-segs pc-vital-taux");
+    var perte = el("span", "c pc-info"), gain = el("span", "c pc-info");
+    taux.appendChild(perte);
+    taux.appendChild(gain);
+    scope.appendChild(taux);
+
+    var reglages = el("div", "pc-vital-reglages pc-edit-only");
+    var sources = el("div", "pc-stat pc-vital-sources");
+    var vues = [["art", "ART", "Arts"], ["eqp", "EQP", "Équipements"], ["eft", "EFT", "Effets"]].map(function (source) {
+      var cellule = el("div", "c pc-info pc-vital-source");
+      cellule.appendChild(el("span", "k", source[1]));
+      var valeurs = el("span", "pc-vital-paire");
+      var p = el("span", "v"), g = el("span", "v");
+      valeurs.appendChild(p);
+      valeurs.appendChild(g);
+      cellule.appendChild(valeurs);
+      sources.appendChild(cellule);
+      return { cle: source[0], nom: source[2], cellule: cellule, perte: p, gain: g };
+    });
+
+    var autre = el("div", "c pc-vital-source");
+    autre.appendChild(el("span", "k", "ATR"));
+    var champs = el("div", "pc-segs pc-vital-paire");
+    [[cle, "Perte"], ["gain_" + cle, "Gain"]].forEach(function (reglage) {
+      var champ = champReglageVital(reglage[0], nom + " — " + reglage[1] + " ATR (%)",
+        function () { return reglageReserveVitale(reglage[0]); }, function (v) { return v; });
+      champ.title = champ.getAttribute("aria-label");
+      champs.appendChild(champ);
+    });
+    autre.appendChild(champs);
+    sources.appendChild(autre);
+    reglages.appendChild(sources);
+
+    if (cle === "pm") {
+      var sacrifice = el("div", "pc-segs pc-vital-sacrifice");
+      sacrifice.appendChild(el("span", "c pc-info", "Sacrifice tellurique"));
+      sacrifice.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
+        function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
+      reglages.appendChild(sacrifice);
+    }
+    scope.appendChild(reglages);
+
+    hooks.push(function () {
+      var p = tauxReserve(cle, "perte"), g = tauxReserve(cle, "gain");
+      perte.textContent = "Perte " + fmtP(p.total) + " %";
+      gain.textContent = "Gain " + fmtP(g.total) + " %";
+      vues.forEach(function (vue) {
+        vue.perte.textContent = sign(p[vue.cle]);
+        vue.gain.textContent = sign(g[vue.cle]);
+        vue.cellule.title = vue.nom + " · Perte " + vue.perte.textContent + " % · Gain " + vue.gain.textContent + " %";
+      });
+    });
   }
 
   function reserveVitale(cle, provenance, nomAffiche) {
     var nom = nomAffiche || abbrCap(cle, cle.toUpperCase());
     var box = el("div", "pc-vital-res t-" + cle);
 
-    var editable = /^(pv|pe|pm)$/.test(cle);
-    var tete = el("div", "pc-vital-tete");
-    var n = el("span", "pc-vital-nom", nom);
-    n.title = libCap(cle, cle);
-    if (editable) {
-      tete.classList.add("pc-vital-tete-reglable");
-      box.classList.add("pc-editable");
-      var gear = gearBtn(box, cle);
-      gear.setAttribute("aria-label", "Modifier " + nom);
-      var titre = el("div", "pc-block-title pc-vital-titre");
-      titre.appendChild(n);
-      titre.appendChild(gear);
-      tete.appendChild(titre);
-    } else {
-      tete.appendChild(n);
-    }
+    var editable = reserveAvecTaux(cle);
+    var tete = titreReserve(box, cle, nom);
     var etat = el("span", "pc-vital-etat", "");
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
@@ -5823,38 +5899,12 @@
       jauge.appendChild(trait);
     }
     box.appendChild(jauge);
-    var perte, gain;
-    if (editable) {
-      var taux = el("div", "pc-segs pc-vital-taux");
-      perte = el("span", "c pc-info");
-      gain = el("span", "c pc-info");
-      taux.appendChild(perte);
-      taux.appendChild(gain);
-      box.appendChild(taux);
-    }
-
+    if (editable) ajouteTauxReserve(box, cle, nom);
     box.appendChild(commandeVariation(libCap(cle, nom) + " à ajouter ou retirer", function (d) {
-      if (cle === "pi") d = effetPerteInnocence(d);
-      if (editable) d = effetVariationImmediate(cle, d);
-      state.etat[cle] = courant(cle) + d;
+      state.etat[cle] = courant(cle) + effetVariationImmediate(cle, d);
     }));
-    if (editable) {
-      var reglages = el("div", "pc-vital-reglages pc-edit-only");
-      [[cle, "Ajustement de la perte (%)"], ["gain_" + cle, "Ajustement du gain (%)"]].forEach(function (reglage) {
-        reglages.appendChild(champReglageVital(reglage[0], reglage[1], function () {
-          return reglageReserveVitale(reglage[0]);
-        }, function (v) { return v; }));
-      });
-      if (cle === "pm") reglages.appendChild(champReglageVital("sacrifice", "Sacrifice tellurique", sacrificeTellurique,
-        function (v) { return clamp(Math.floor(v), 0, sacrificeTelluriqueMax()); }));
-      box.appendChild(reglages);
-    }
 
     hooks.push(function () {
-      if (editable) {
-        perte.textContent = "Perte " + fmtP(effetConsommation(cle)) + " %";
-        gain.textContent = "Gain " + fmtP(effetGain(cle)) + " %";
-      }
       var v = courant(cle), m = maxDe(cle);
       if (document.activeElement !== inp) inp.value = Math.floor(v);
       // un <input> ROGNE au lieu de déborder : sa largeur suit le nombre de
@@ -5865,7 +5915,7 @@
       var forcee = capForce(cle), depasse = v > m;
       mx.classList.toggle("adj", forcee || depasse);
       mx.title = forcee ? chaineTexteDe(lireCap("max", cle), "calculé", autoDe(cle)) : provenance();
-      var sacrifice = editable ? sacrificeTellurique() : 0;
+      var sacrifice = /^(pv|pe|pm)$/.test(cle) ? sacrificeTellurique() : 0;
       if (sacrifice) mx.title += " · Sacrifice tellurique : " + sign(cle === "pm" ? 2 * sacrifice : -sacrifice);
       // SOUS ZÉRO, la barre part de la droite et le bandeau passe au rouge
       var neg = v < 0;
@@ -5936,9 +5986,7 @@
     var box = el("div", "pc-block pc-vital");
     var res = el("div", "pc-vital-res pc-expo-res");
 
-    var tete = el("div", "pc-vital-tete");
-    var nom = el("span", "pc-vital-nom", "Exposition");
-    tete.appendChild(nom);
+    var tete = titreReserve(res, "expo", "Exposition");
     var val = el("span", "pc-vital-val");
     var inp = el("input", "pc-vital-num");
     champNombreSigne(inp);
@@ -5965,6 +6013,7 @@
       trait.setAttribute("aria-hidden", "true"); jauge.appendChild(trait);
     }
     res.appendChild(jauge);
+    ajouteTauxReserve(res, "expo", "Exposition");
 
     // LA ZONE IDÉALE (en température de l'air, selon l'effort du module
     // Effort et Temps) et l'INTENSITÉ de froid ou de chaud qu'il subit
@@ -5981,7 +6030,7 @@
 
     res.appendChild(commandeVariation("Exposition à ajouter ou retirer", function (d) {
       var m = expoMax();
-      state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + d, -m, m) * 100) / 100;
+      state.etat.expo = Math.round(clamp(num(state.etat.expo, 0) + effetVariationImmediate("expo", d), -m, m) * 100) / 100;
     }));
     // sous le geste : la barre, puis [± Appliquer], puis la zone et l'intensité
     res.appendChild(stat);
@@ -10452,7 +10501,7 @@
       var v=snum(it.restaurations&&it.restaurations[k]);
       if(it.unitesRestauration&&it.unitesRestauration[k]==="% max")v=avant[k]*v/100;
       if(ingere && (k==="ps"||k==="ph"))v+=num(it[k],0);
-      v*=q;if(k==="pi")v=effetPerteInnocence(v);
+      v*=q;
       if(ingere && (k==='ps'||k==='ph') && v){
         var digestion=effetNutrition(it,k,v/q);
         if(digestion)appliqueEffet(digestion.id,it.nom,'',undefined,'digestive',q);
