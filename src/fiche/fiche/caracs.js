@@ -28,7 +28,7 @@
       var duo = el("div", "pc-segs pc-carac-segs");
 
       // CASE 1 : VALEUR en jeu, CRÉATION sous le rouage.
-      var cVal = el("span", "c");
+      var cVal = el("span", "c pc-info");
       var val = el("span", "pc-jeu-only pc-carac-val", "");
       val.title = "Valeur";
       var creationInput = el("input", "pc-edit-only pc-edit-field pc-carac-input");
@@ -57,7 +57,7 @@
       duo.appendChild(cVal);
 
       // CASE 2 : MOD en jeu, XP sous le rouage.
-      var cMod = el("span", "c");
+      var cMod = el("span", "c pc-info");
       var mod = el("span", "pc-jeu-only pc-carac-mod", "");
       mod.title = "Modificateur";
       var xpInput = el("input", "pc-edit-only pc-edit-field pc-carac-input");

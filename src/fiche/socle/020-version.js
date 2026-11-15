@@ -13,7 +13,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.11b";
+  var RELEASE = "4.36.12b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -25,6 +25,14 @@
   // ajout : ×1000 sur un maximum de points de repos dépasserait le million, et
   // un nombre qu'on ne peut plus lire n'est plus un réglage.
   var MULT_BORNE = 999;
+
+  var TAILLES_PERSONNAGE = [
+    ["microscopique", "Microscopique"], ["infime", "Infime"],
+    ["minuscule", "Minuscule"], ["tres-petite", "Très petite"],
+    ["petite", "Petite"], ["moyenne", "Moyenne"],
+    ["grande", "Grande"], ["tres-grande", "Très grande"],
+    ["gigantesque", "Gigantesque"], ["colossale", "Colossale"], ["titanesque", "Titanesque"]
+  ];
 
   // LES HUIT CARACTÉRISTIQUES. Les CLÉS sont SANS ACCENT : elles voyagent en
   // nom d'attribut Roll20 et en fragment de macro (@{Perso|owd_resistance}),

@@ -214,7 +214,8 @@
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
-    if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
+    if (s.taille === "enorme") s.taille = "tres-grande";
+    if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };

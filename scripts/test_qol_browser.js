@@ -94,6 +94,17 @@ const server=http.createServer((req,res)=> {
   assert.equal(new Set(fonds).size,1);
   await sigles.first().hover();
   assert.equal(await sigles.first().evaluate(n=>getComputedStyle(n).backgroundColor),fonds[0]);
+  const casesLecture=caracs.locator('.pc-crow-top .pc-carac-segs:last-child > .pc-info');
+  for(const index of [0,1]){
+    const cellule=casesLecture.nth(index);
+    const style=()=>cellule.evaluate(n=>{
+      const s=getComputedStyle(n);return [s.backgroundColor,s.color,s.boxShadow];
+    });
+    await sigles.first().hover();
+    const avant=await style();
+    await cellule.hover();
+    assert.deepEqual(await style(),avant);
+  }
   const expo=sheet.locator('[data-module="exposition"] .pc-vital-delta');
   await expo.fill('+20');await expo.press('Enter');assert.equal((await state()).etat.expo,20);
   const hour=sheet.getByLabel('Heures, en plus ou en moins');
@@ -412,7 +423,7 @@ const server=http.createServer((req,res)=> {
     color:getComputedStyle(n).backgroundColor,
     shadow:getComputedStyle(n).boxShadow
   }));
-  assert.notEqual(readonlyStyle.color,sizes.editable);
+  assert.equal(readonlyStyle.color,roles.info.background);
   assert.doesNotMatch(readonlyStyle.shadow,/-[12]px/);
   assert.equal(await effort.locator('.pc-effort-temperature > button').getAttribute('aria-pressed'),'true');
   await effort.getByRole('button',{name:'MONDE'}).click();

@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.11b";
+  var RELEASE = "4.36.12b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -94,6 +94,14 @@
   // ajout : ×1000 sur un maximum de points de repos dépasserait le million, et
   // un nombre qu'on ne peut plus lire n'est plus un réglage.
   var MULT_BORNE = 999;
+
+  var TAILLES_PERSONNAGE = [
+    ["microscopique", "Microscopique"], ["infime", "Infime"],
+    ["minuscule", "Minuscule"], ["tres-petite", "Très petite"],
+    ["petite", "Petite"], ["moyenne", "Moyenne"],
+    ["grande", "Grande"], ["tres-grande", "Très grande"],
+    ["gigantesque", "Gigantesque"], ["colossale", "Colossale"], ["titanesque", "Titanesque"]
+  ];
 
   // LES HUIT CARACTÉRISTIQUES. Les CLÉS sont SANS ACCENT : elles voyagent en
   // nom d'attribut Roll20 et en fragment de macro (@{Perso|owd_resistance}),
@@ -808,7 +816,8 @@
     // (compétence supprimée par une version qui l'ignorait) voyagerait pour rien.
     s.compsLeviers = tableLeviers(s.compsLeviers, COMP_LEVIERS, vusComps);
 
-    if (["minuscule", "petite", "moyenne", "grande", "enorme", "gigantesque"].indexOf(s.taille) < 0) s.taille = "moyenne";
+    if (s.taille === "enorme") s.taille = "tres-grande";
+    if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
     s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
@@ -3926,7 +3935,7 @@
     idBox.appendChild(fld("Espèce", textInput(function () { return state.espece; },
       function (v) { state.espece = v; }), "c2"));
     var taille = el("select", "pc-select pc-taille"); taille.setAttribute("aria-label", "Taille du personnage");
-    [["minuscule", "Minuscule"], ["petite", "Petite"], ["moyenne", "Moyenne"], ["grande", "Grande"], ["enorme", "Énorme"], ["gigantesque", "Gigantesque"]].forEach(function (v) {
+    TAILLES_PERSONNAGE.forEach(function (v) {
       var op = el("option", null, v[1]); op.value = v[0]; op.selected = state.taille === v[0]; taille.appendChild(op);
     });
     taille.addEventListener("change", function () { state.taille = taille.value; refresh(); });
@@ -4573,7 +4582,7 @@
       var duo = el("div", "pc-segs pc-carac-segs");
 
       // CASE 1 : VALEUR en jeu, CRÉATION sous le rouage.
-      var cVal = el("span", "c");
+      var cVal = el("span", "c pc-info");
       var val = el("span", "pc-jeu-only pc-carac-val", "");
       val.title = "Valeur";
       var creationInput = el("input", "pc-edit-only pc-edit-field pc-carac-input");
@@ -4602,7 +4611,7 @@
       duo.appendChild(cVal);
 
       // CASE 2 : MOD en jeu, XP sous le rouage.
-      var cMod = el("span", "c");
+      var cMod = el("span", "c pc-info");
       var mod = el("span", "pc-jeu-only pc-carac-mod", "");
       mod.title = "Modificateur";
       var xpInput = el("input", "pc-edit-only pc-edit-field pc-carac-input");

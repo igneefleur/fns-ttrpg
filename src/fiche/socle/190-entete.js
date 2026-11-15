@@ -202,7 +202,7 @@
     idBox.appendChild(fld("Espèce", textInput(function () { return state.espece; },
       function (v) { state.espece = v; }), "c2"));
     var taille = el("select", "pc-select pc-taille"); taille.setAttribute("aria-label", "Taille du personnage");
-    [["minuscule", "Minuscule"], ["petite", "Petite"], ["moyenne", "Moyenne"], ["grande", "Grande"], ["enorme", "Énorme"], ["gigantesque", "Gigantesque"]].forEach(function (v) {
+    TAILLES_PERSONNAGE.forEach(function (v) {
       var op = el("option", null, v[1]); op.value = v[0]; op.selected = state.taille === v[0]; taille.appendChild(op);
     });
     taille.addEventListener("change", function () { state.taille = taille.value; refresh(); });
