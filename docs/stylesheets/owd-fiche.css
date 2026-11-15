@@ -2052,71 +2052,73 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
   .pc-attaque-controles { margin-left: 0; }
 }
 
-/* Récupération : une section par réserve, des lignes qui se replient selon leur largeur. */
-.pc-rec-tools { margin-bottom: .28rem; }
-.pc-rec-list { display: grid; gap: .5rem; }
-.pc-rec-group {
-  min-width: 0; overflow: hidden; border: 1px solid var(--hair);
-  border-radius: 6px; background: var(--card);
-}
+/* Récupération : les mêmes lignes et en-têtes que Compétences. */
+.pc-rec-tools .pc-chip { font-size: var(--fs-meta); font-weight: 400; }
+.pc-rec-list { display: grid; gap: .42rem; }
+.pc-rec-group { min-width: 0; }
 .pc-rec-grouphead {
-  display: flex; align-items: center; flex-wrap: wrap; gap: .35rem .55rem;
-  padding: .35rem .48rem; background: var(--panel);
+  display: flex; align-items: center; gap: .3rem; padding: .12rem .25rem;
+  border-bottom: 1px solid var(--hair);
 }
 .pc-rec-reserve {
-  min-width: 2.6rem; padding: .14rem .3rem; border-radius: 4px;
+  min-width: 2.6rem; padding: .12rem .25rem; border-radius: 4px;
   background: var(--teinte, var(--accent-deep)); color: #fff; text-align: center;
   font-size: var(--fs-label); font-weight: 700;
 }
 .pc-rec-reserve:is(.t-pe, .t-ph, .t-pc), html.night .pc-rec-reserve.t-pi { color: #17140f; }
 .pc-rec-totaux {
   display: flex; flex: 1 1 auto; flex-wrap: wrap; justify-content: flex-end;
-  gap: .15rem .3rem; color: var(--accent-deep);
-  font-size: .67rem; font-weight: 700; font-variant-numeric: tabular-nums;
+  gap: .1rem .38rem; color: var(--accent-deep);
+  font-size: var(--fs-meta); font-weight: 700; font-variant-numeric: tabular-nums;
 }
-.pc-rec-total { white-space: nowrap; padding: .08rem .3rem; border-radius: 4px; background: var(--card); }
+.pc-rec-total { white-space: nowrap; }
 .pc-rec-total.negative { color: var(--danger); }
 .pc-rec-total.zero { color: var(--ink-3); }
-.pc-rec-row {
-  display: flex; flex-wrap: wrap; align-items: center; gap: .28rem .5rem;
-  border-top: 1px solid var(--hair); padding: .3rem .48rem;
-  font-size: var(--fs-body);
+
+[data-module="recuperation"] .pc-rec-group .pc-comp-row.pc-rec-row {
+  grid-template-columns: minmax(0, 1fr) 4.6rem 3.6rem 5.7rem;
 }
-.pc-rec-row.odd { background: var(--stripe); }
-.pc-rec-row.pris { opacity: .45; }
-.pc-rec-row.avant { box-shadow: inset 0 2px var(--accent); }
-.pc-rec-row.apres { box-shadow: inset 0 -2px var(--accent); }
-.pc-rec-name { display: flex; flex: 1 1 8rem; min-width: 0; align-items: center; gap: .32rem; }
-.pc-rec-label { overflow-wrap: anywhere; color: var(--ink); }
+.pc-rec-row.head > span:first-child { text-align: left; }
 .pc-rec-row.inactive .pc-rec-label { color: var(--ink-3); }
 .pc-rec-badge {
-  display: inline-grid; flex: 0 0 auto; place-items: center; width: 1.22rem; height: 1.22rem;
-  border: 1px solid var(--line-2); border-radius: 50%; color: var(--ink-2);
-  background: var(--card); font-size: .64rem; font-weight: 750; line-height: 1;
+  display: inline-grid; flex: 0 0 auto; place-items: center;
+  box-sizing: border-box; width: .98rem; height: .98rem; border-radius: 50%;
+  border: 1px solid var(--line-2); background: var(--panel); color: var(--ink-2);
+  font-size: var(--fs-label); font-weight: 700; line-height: 1;
 }
 .pc-rec-badge.pc-rec-d { background: var(--wash); color: var(--accent-deep); }
 .pc-rec-badge.pc-rec-s { border-color: var(--accent); color: var(--accent-deep); }
-.pc-rec-meta, .pc-rec-actions { display: flex; flex-wrap: wrap; align-items: center; gap: .26rem .45rem; }
-.pc-rec-value { color: var(--ink); font-weight: 700; font-variant-numeric: tabular-nums; }
-.pc-rec-duration { color: var(--ink-3); font-size: .66rem; font-variant-numeric: tabular-nums; }
-.pc-rec-actions .pc-mini, .pc-rec-grouphead .pc-mini { margin: 0; }
-.pc-rec-switch { min-width: 2.05rem; }
+.pc-rec-level, .pc-rec-duration {
+  min-width: 0; text-align: center; font-size: var(--fs-meta);
+  font-variant-numeric: tabular-nums;
+}
+.pc-rec-value { color: var(--ink); font-weight: 700; }
+.pc-rec-duration { color: var(--ink-3); line-height: 1.15; }
+.pc-rec-duration.infinite { font-size: var(--fs-value); }
+.pc-rec-actions {
+  display: grid; grid-template-columns: minmax(0, 1fr) 3.55rem; gap: .2rem;
+  justify-items: center; align-items: center;
+}
+.pc-rec-actions .pc-rec-switch, .pc-rec-actions .pc-comp-del { grid-column: 1; grid-row: 1; }
+.pc-rec-actions .pc-rec-action { grid-column: 2; grid-row: 1; }
+.pc-rec-actions .pc-mini, .pc-rec-grouphead .pc-mini {
+  box-sizing: border-box; height: var(--comp-hauteur, .98rem); min-height: 0;
+  margin: 0; padding: 0 .14rem; font-size: var(--fs-label); line-height: 1; white-space: nowrap;
+}
+.pc-rec-actions .pc-mini:disabled { opacity: .5; cursor: default; }
 .pc-rec-actions [hidden] { display: none; }
-.pc-rec-options, .pc-rec-time-fields {
-  display: flex; flex-wrap: wrap; align-items: flex-end; gap: .35rem .6rem;
+.pc-rec-options {
+  grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .3rem; align-items: end; padding: .1rem 0 .08rem;
 }
-.pc-rec-options { flex: 1 0 100%; padding: .15rem 0 .08rem; }
-.pc-rec-options .pc-f:has(select) { min-width: 4.5rem; }
-.pc-rec-duration.infinite { font-size: .95rem; line-height: 1; }
-.pc-rec-name > .pc-rec-name-edit {
-  flex: 1 1 auto; width: 100%; min-width: 0; padding: .03rem .1rem .08rem;
+.pc-rec-level > .pc-rec-number {
+  box-sizing: border-box; width: 2.35rem; max-width: 100%; height: var(--comp-hauteur);
   border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
-  background: transparent; color: var(--ink); font: inherit;
+  background: transparent; color: var(--ink); font: inherit; text-align: center;
 }
-.pc-rec-name > .pc-rec-name-edit:focus { outline: none; border-bottom: 2px solid var(--accent); }
-.pc-rec-meta .pc-f > .pc-rec-number, .pc-rec-time-fields .pc-f > .pc-rec-number {
-  width: 4.4rem; font-variant-numeric: tabular-nums;
-}
+.pc-rec-level > .pc-rec-number:focus { outline: none; border-bottom: 2px solid var(--accent); }
+.pc-rec-options .pc-f > label { white-space: normal; }
+.pc-rec-options .pc-f > :is(input, select) { font-size: var(--fs-meta); box-sizing: border-box; }
 
 /* Clic droit de l'inventaire : palette et typographie de la fiche. */
 .perso-fiche .pc-inv-context{position:fixed;z-index:10000;min-width:min(225px,calc(100vw - 16px));max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow-y:auto;padding:5px;border:1px solid var(--line-2);border-top:2px solid var(--trait-or);border-radius:5px;background:var(--card);color:var(--ink);box-shadow:0 6px 22px #0004;font:inherit;text-align:left}

@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.36.2b";
+  var RELEASE = "4.36.3b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -4954,16 +4954,16 @@
   }
 
   function recupRangeeModule(r, odd) {
-    var row = el("div", "pc-rec-row" + (odd ? " odd" : ""));
+    var row = el("div", "pc-comp-row pc-rec-row" + (odd ? " odd" : ""));
     var edit = isEdit("recuperation"), persoEdit = edit && r.perso;
-    var nom = el("div", "pc-rec-name"), cat = RECUP_CATEGORIES[r.categorie] || RECUP_CATEGORIES.speciale;
+    var nom = el("div", "pc-comp-name pc-rec-name"), cat = RECUP_CATEGORIES[r.categorie] || RECUP_CATEGORIES.speciale;
     var badge = el("span", "pc-rec-badge pc-rec-" + cat[0].toLowerCase(), cat[0]);
     badge.title = cat[1]; badge.setAttribute("aria-label", cat[1]);
     if (edit) nom.appendChild(recupPoigneeModule(r, row));
     nom.appendChild(badge);
     if (persoEdit) {
       var ed = textInput(function () { return r.nom; }, function (v) { r.nom = v; }, "Nom de la récupération", recupHooks);
-      ed.classList.add("pc-edit-field", "pc-rec-name-edit");
+      ed.classList.add("pc-edit-field", "nmedit");
       ed.setAttribute("aria-label", "Nom de la récupération");
       ed.addEventListener("change", function () {
         r.nom = capFirst(ed.value.trim()) || "Récupération";
@@ -4971,13 +4971,13 @@
       });
       nom.appendChild(ed);
     } else {
-      var libelle = el("span", "pc-rec-label", recupNom(r));
+      var libelle = el("span", "pc-comp-label pc-rec-label", recupNom(r));
       libelle.title = recupNom(r);
       nom.appendChild(libelle);
     }
     row.appendChild(nom);
 
-    var meta = el("div", "pc-rec-meta");
+    var meta = el("div", "pc-rec-level");
     var ajustable = edit && !r.effetActif && !r.equipement;
     var valeur = el("span", "pc-rec-value");
     if (ajustable) {
@@ -4989,15 +4989,15 @@
           r.niveau = clamp(Math.round(v), -max, max);
           recupOublieSuivi(r.id);
         }, "Niveau");
-      meta.appendChild(fld("Niveau", niveau));
+      meta.appendChild(niveau);
     } else meta.appendChild(valeur);
 
     var secondes = recupSecondesRestantesModule(r);
     var duree = el("span", "pc-rec-duration");
     duree.title = secondes === null ? "Durée permanente" : "Temps restant";
     duree.classList.toggle("infinite", secondes === null);
-    if (!persoEdit) meta.appendChild(duree);
     row.appendChild(meta);
+    row.appendChild(duree);
 
     var actions = el("div", "pc-rec-actions"), on = null, accelere = null;
     if (!edit && r.perso) {
@@ -5013,7 +5013,7 @@
     if (secondes !== null) {
       accelere = miniBtn("Accélérer", "Terminer cette récupération sans avancer l’horloge", function () {
         if (ficheModifiable() && recupAccelereModule(r)) refresh();
-      }, "pc-rec-accelerate");
+      }, "pc-rec-action pc-rec-accelerate");
       actions.appendChild(accelere);
     }
     if (ajustable && !r.perso) {
@@ -5021,7 +5021,7 @@
         if (!isEdit("recuperation") || recupNiveauBase(r) === recupNiveauRegle(r)) return;
         ecritRecupNiveau(r, recupNiveauRegle(r));
         refresh();
-      });
+      }, "pc-rec-action pc-rec-default");
       recupHooks.push(function () { defaut.disabled = !isEdit("recuperation") || recupNiveauBase(r) === recupNiveauRegle(r); });
       actions.appendChild(defaut);
     }
@@ -5032,7 +5032,7 @@
       del.addEventListener("click", function () { if (isEdit("recuperation")) supprimeRecupAjoutModule(r); });
       actions.appendChild(del);
     }
-    if (actions.childNodes.length) row.appendChild(actions);
+    row.appendChild(actions);
 
     if (persoEdit) {
       var options = el("div", "pc-rec-options");
@@ -5052,10 +5052,8 @@
           r.temps = Math.max(0, v);
           recupResetDureeModule(r);
         }, "Temps restant");
-        var tempsEtUnite = el("div", "pc-rec-time-fields");
-        tempsEtUnite.appendChild(fld("Temps restant", temps));
-        tempsEtUnite.appendChild(fld("Unité", recupSelectDureeModule(r)));
-        options.appendChild(tempsEtUnite);
+        options.appendChild(fld("Temps restant", temps));
+        options.appendChild(fld("Unité", recupSelectDureeModule(r)));
       }
       row.appendChild(options);
     }
@@ -5143,6 +5141,13 @@
     groupes.forEach(function (groupe, cle) {
       var box = el("section", "pc-rec-group");
       box.appendChild(recupEnteteReserveModule(cle));
+      if (groupe.length) {
+        var head = el("div", "pc-comp-row pc-rec-row head");
+        ["Récupération", isEdit("recuperation") ? "Niveau" : "Cadence", "Durée", "Actions"].forEach(function (nom) {
+          head.appendChild(el("span", null, nom));
+        });
+        box.appendChild(head);
+      }
       recupOrdreGroupeModule(cle, groupe).forEach(function (r, index) {
         box.appendChild(recupRangeeModule(r, index % 2 === 1));
       });
@@ -5159,10 +5164,16 @@
     tools.appendChild(ligne);
     recupFiltres = [];
     function filtre(nom, aide, lire, bascule) {
-      var button = el("button", "pc-chip", nom);
-      button.type = "button"; button.title = aide;
-      button.setAttribute("data-consultation", "");
-      button.addEventListener("click", function () { bascule(); rebuildRecuperation(); });
+      var button = el("span", "pc-chip", nom);
+      button.title = aide; button.tabIndex = 0;
+      button.setAttribute("role", "button");
+      button.setAttribute("data-consultation", "1");
+      function active() { bascule(); rebuildRecuperation(); }
+      button.addEventListener("click", active);
+      button.addEventListener("keydown", function (e) {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault(); active();
+      });
       recupFiltres.push(function () {
         button.classList.toggle("on", lire());
         button.setAttribute("aria-pressed", String(lire()));
