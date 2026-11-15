@@ -47,8 +47,14 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
  for (const [k,pct,cost] of [['pv',80,10],['pe',125,16],['pm',70,9]]) {
   const mod=p.locator('[data-module="'+k+'"]');
   const cout=mod.locator('.pc-vital-consommation');
-  assert.equal(await cout.locator('.pc-info').last().innerText(),pct+' %');
-  assert.ok(await cout.evaluate(n=>n.previousElementSibling.classList.contains('pc-vital-cmd')));
+  assert.equal(await cout.innerText(),'Coût '+pct+' %');
+  assert.ok(await cout.evaluate(n=>{
+    const titre=n.previousElementSibling, valeur=n.nextElementSibling;
+    if (!n.parentElement.matches('.pc-vital-tete') ||
+        !titre.matches('.pc-vital-titre') || !valeur.matches('.pc-vital-val')) return false;
+    const a=titre.getBoundingClientRect(), b=n.getBoundingClientRect(), c=valeur.getBoundingClientRect();
+    return a.right<=b.left && b.right<=c.left && b.top<c.bottom && c.top<b.bottom;
+  }));
   await mod.locator('.pc-vital-delta').fill('-13.4');await mod.getByRole('button',{name:'Appliquer',exact:true}).click();
   assert.equal((await read()).etat[k],100-cost);
  }
