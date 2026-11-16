@@ -60,6 +60,24 @@
     out.mains = 1;
     return out;
   }
+  function normAttaquePersonnalisee(a, comps) {
+    var out = normCombatLibre(a, comps);
+    if (!out) return null;
+    out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
+    ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
+      var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
+      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm|mult)$/.test(k) ? Math.max(0, valeur) : valeur;
+      else delete out[k];
+    });
+    ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
+      out[k] = {};
+      combatTypes().forEach(function (t) {
+        var v = a[k] && a[k][t], valeur = typeof v === "number" ? v : litNombreSigne(v);
+        if (isFinite(valeur)) out[k][t] = k === "multiplicateurs" ? Math.max(0, valeur) : valeur;
+      });
+    });
+    return out;
+  }
   function normalize(s) {
     var b = blank();
     if (!s || typeof s !== "object") return b;
@@ -221,7 +239,7 @@
     if (s.taille === "enorme") s.taille = "tres-grande";
     if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
+    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMana: !!attaqueOptions.utiliseMana, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
@@ -263,7 +281,7 @@
           id: String(a.id || "") || uid("atk"),
           arme: String(a.arme || ""),
           nom: String(a.nom || ""),
-          personnalisee: normCombatLibre(a.personnalisee, vusComps),
+          personnalisee: normAttaquePersonnalisee(a.personnalisee, vusComps),
           utiliseEndurance: !!a.utiliseEndurance,
           utiliseMunition: !!a.utiliseMunition,
           munition: String(a.munition || "")

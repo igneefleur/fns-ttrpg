@@ -86,16 +86,19 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatOptionsPaires(data, premiere, seconde) {
+  function combatOptionsPaires(data, premiere, seconde, manaActif) {
     var options = el("div", "pc-combat-ressources");
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
     bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation PE"));
-    var mana = el("button", "c pc-info", "Consommation PM");
-    mana.type = "button";
-    mana.disabled = true;
-    mana.title = "Aucun coût en mana n’est défini pour ces actions.";
+    var mana = manaActif ? combatRessource(data, "utiliseMana", "Consommation PM") :
+      el("button", "c pc-info", "Consommation PM");
+    if (!manaActif) {
+      mana.type = "button";
+      mana.disabled = true;
+      mana.title = "Aucun coût en mana n’est défini pour ces actions.";
+    }
     bas.appendChild(mana);
     options.appendChild(haut);
     options.appendChild(bas);
@@ -233,7 +236,13 @@
     var ligne = el("div", "pc-combat-tete");
     var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
     tete.setAttribute("aria-expanded", String(ouvert));
-    tete.appendChild(el("span", "pc-attaque-nom", nom)); tete.appendChild(el("span", "pc-attaque-meta", resume));
+    tete.appendChild(el("span", "pc-attaque-nom", nom));
+    if (typeof resume === "string") tete.appendChild(el("span", "pc-attaque-meta", resume));
+    else {
+      var meta = el("span", "pc-attaque-meta pc-attaque-meta-icons");
+      meta.appendChild(resume);
+      tete.appendChild(meta);
+    }
     tete.addEventListener("click", toggle); ligne.appendChild(tete);
     var outils = el("div", "pc-combat-outils");
     if (liste) {
@@ -242,7 +251,11 @@
         if (!isEdit(module)) { ev.preventDefault(); return; }
         combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
       });
-      drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); }); outils.appendChild(drag);
+      drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); });
+      if (module === "attaque") {
+        ligne.classList.add("pc-combat-tete-attaque");
+        ligne.insertBefore(drag, tete);
+      } else outils.appendChild(drag);
       card.addEventListener("dragover", function (ev) {
         if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
         ev.preventDefault(); ev.dataTransfer.dropEffect = "move";

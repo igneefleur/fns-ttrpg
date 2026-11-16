@@ -304,5 +304,45 @@ test('conversion des anciens dégâts par type conserve les fractions et les mod
  const base=w.ctx.baseDegatsArme(it.arme);
  assert.equal(base.feu,0.123456);assert.equal(base.physique,7.00001);
 });
+test('attaque personnalisée liée : base et MODs de l’arme, multiplicateurs, munitions et coûts distincts',()=>{
+ const it=weapon(),a=ammo(),w=attackContext([it,a]);
+ it.arme.degatsParType={physique:30,feu:10};it.arme.modsDegats=['Force'];
+ const entree={nom:'Tir ardent',munition:'ammo',personnalisee:{
+  sousType:'arme',attaque:8,coutPe:3,coutPm:2,degatsParType:{froid:999},
+  primaire:8,primaires:{feu:4},mult:1.5,multiplicateurs:{feu:2},secondaire:4,secondaires:{feu:5}
+ }};
+ w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseMana=true;
+ w.ctx.combatMod=(k,t,d=0)=>k==='tauxDegats'&&t==='feu'?120:d;
+ assert.equal(w.ctx.degatsTypes(null,'feu',false,it,entree),'61 physique + 93 feu');
+ w.ctx.envoieAttaqueSimple(entree,it,def());
+ assert.equal(w.chats[0].champs[0][1],'61 physique + 93 feu');
+ assert.equal(w.ctx.state.etat.pe,97);assert.equal(w.ctx.state.etat.pm,8);assert.equal(a.qte,0);
+});
+test('attaque personnalisée sans arme : bonus sur un nouveau type et multiplicateur à zéro',()=>{
+ const w=attackContext([]);
+ const perso={sousType:'contact',attaque:8,coutPe:0,mult:2,multiplicateurs:{physique:0},
+  degatsParType:{physique:10},primaires:{feu:6},secondaires:{physique:3}};
+ w.ctx.envoieAttaqueSimple({nom:'Onde',personnalisee:perso},{nom:'Onde',arme:perso},{types:['physique']});
+ assert.equal(w.chats[0].champs[0][1],'3 physique + 12 feu');
+ assert.equal(w.ctx.state.etat.pe,100);
+});
+test('portée personnalisée : origine conservée en mêlée, masquée à distance et avec un arc',()=>{
+ const w=attackContext([]);
+ vm.runInContext(attack.slice(attack.indexOf('    var HX_NS'),attack.indexOf('    // ---------- carré de garde')),w.ctx);
+ const trajet='soi:frappe>1:passe>3:frappe';
+ assert.deepEqual(Array.from(w.ctx.etapesPortee(trajet,0,false,false),e=>e.r),[0,-1,-3]);
+ assert.deepEqual(Array.from(w.ctx.etapesPortee(trajet,0,false,true),e=>e.r),[-1,-3]);
+ const entree={personnalisee:{sousType:'arme'}};
+ assert.equal(w.ctx.attaqueADistance(entree,{categorie:'Armes à rechargement à une main'}),true);
+ assert.equal(w.ctx.attaqueADistance(entree,{categorie:'Armes à 1 case'}),false);
+});
+test('les réglages par attaque transitent dans le bloc de synchronisation existant',()=>{
+ const source=M.blank();
+ source.combatOptions.attaques.utiliseMana=true;
+ source.attaques=[{id:'a',arme:'arc',personnalisee:{sousType:'arme',coutPe:0,coutPm:4,
+  primaire:-2,primaires:{feu:1.25},mult:0,multiplicateurs:{eclair:1.2},secondaire:3,secondaires:{froid:2}}}];
+ const copie=C.Compact.read(C.Compact.encode(source)).state;
+ assert.deepEqual(copie.attaques,source.attaques);assert.equal(copie.combatOptions.attaques.utiliseMana,true);
+});
 test('imprégnation : synchronisée dans le bloc combat existant',()=>{const before=M.blank(),after=C.copy(before);after.combatOptions.attaques.impregnation='infuse-mana';const attrs=C.Compact.encode(after),saved=C.Compact.read(attrs).state;assert.equal(saved.combatOptions.attaques.impregnation,'infuse-mana');assert.equal(Object.keys(attrs).length,Object.keys(C.Compact.encode(before)).length);});
 console.log(n+' scénarios Techniques, consommation et munitions validés.');
