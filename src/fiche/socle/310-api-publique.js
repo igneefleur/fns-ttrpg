@@ -11,7 +11,12 @@
     var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
     var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','temperatureMonde','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
     var oldData=state.modData||{},newData=s.modData||{};
-    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||k==='reservesVitales'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=JSON.stringify(oldData.recuperation)===JSON.stringify(newData.recuperation)?[]:['recuperation'];
+    var modulesDonnees = ["recuperation", "comps", "optcomps", "attaque"];
+    var modulesDonneesChanges = Object.keys(Object.assign({}, oldData, newData)).filter(function (k) {
+      return JSON.stringify(oldData[k]) !== JSON.stringify(newData[k]);
+    });
+    if (modulesDonneesChanges.every(function (k) { return k === "reservesVitales" || modulesDonnees.indexOf(k) >= 0; }))
+      structural.modData = modulesDonneesChanges.filter(function (k) { return k !== "reservesVitales"; });
     var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
     if(partial)changes.forEach(function(k){(structural[k]||[]).forEach(function(id){if(targets.indexOf(id)<0)targets.push(id);});});
     var actif = document.activeElement, focus = null, positions = [];

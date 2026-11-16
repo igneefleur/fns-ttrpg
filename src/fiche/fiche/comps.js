@@ -182,7 +182,16 @@
     return row;
   }
   // Le repli est local à cette fiche ouverte ; aucun attribut de personnage.
-  var compReplies = Object.create(null);
+  function compGroupeReplie(groupe, replie) {
+    var noms = preferenceModule("comps", "groupesReplies");
+    if (!Array.isArray(noms)) noms = [];
+    if (replie === undefined) return noms.indexOf(groupe) >= 0;
+    if (replie) {
+      if (noms.indexOf(groupe) < 0) preferenceModule("comps", "groupesReplies", noms.concat(groupe));
+    } else if (noms.indexOf(groupe) >= 0) {
+      preferenceModule("comps", "groupesReplies", noms.filter(function (nom) { return nom !== groupe; }));
+    }
+  }
   var dragComp = null;
   function finDragComp() {
     dragComp = null;
@@ -264,7 +273,7 @@
   var compBox = null;
   var compSearch = null, compInvestiesChip = null;
   var compFilter = "";
-  var compOnly = false;      // « Investies » : éteinte par défaut — l'auteur veut TOUT voir
+  function compOnly() { return preferenceModule("comps", "investies") !== false; }
   // L'outil de recherche se coupe depuis l'onglet Options. Coupé, il DISPARAÎT
   // et cesse d'agir : un filtre invisible qui masque encore des lignes est un
   // piège. Réglage d'AFFICHAGE, donc dans le vrai localStorage du navigateur,
@@ -285,7 +294,10 @@
   function rebuildComps() {
     if (!compBox) return;
     if (compSearch) compSearch.value = compFilter;
-    if (compInvestiesChip) compInvestiesChip.classList.toggle("on", compOnly);
+    if (compInvestiesChip) {
+      compInvestiesChip.classList.toggle("on", compOnly());
+      compInvestiesChip.setAttribute("aria-pressed", String(compOnly()));
+    }
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var head = el("div", "pc-comp-row head");
@@ -295,7 +307,7 @@
     compBox.appendChild(head);
     var flt = filtreDe(compFilter);
     var liste = state.comps.filter(function (c) {
-      if (compOnly && !compInvestie(c)) return false;
+      if (compOnly() && !compInvestie(c)) return false;
       if (flt && pli(c.nom).indexOf(flt) < 0 && pli(c.groupe).indexOf(flt) < 0) return false;
       return true;
     });
@@ -319,11 +331,11 @@
         titre.appendChild(poigneeComp("Déplacer le groupe", function () { return { type: "groupe", groupe: g }; }, groupe));
         titre.appendChild(el("span", "pc-comp-groupe-nom", g || "Sans groupe"));
         titre.appendChild(el("span", "pc-comp-groupe-trait"));
-        var bouton = el("button", "pc-comp-repli", compReplies[g] ? "▸" : "▾");
+        var bouton = el("button", "pc-comp-repli", compGroupeReplie(g) ? "▸" : "▾");
         bouton.type = "button";
-        bouton.setAttribute("aria-expanded", String(!compReplies[g]));
-        bouton.setAttribute("aria-label", (compReplies[g] ? "Déplier " : "Replier ") + (g || "Sans groupe"));
-        var toggle = function () { compReplies[g] = !compReplies[g]; rebuildComps(); };
+        bouton.setAttribute("aria-expanded", String(!compGroupeReplie(g)));
+        bouton.setAttribute("aria-label", (compGroupeReplie(g) ? "Déplier " : "Replier ") + (g || "Sans groupe"));
+        var toggle = function () { compGroupeReplie(g, !compGroupeReplie(g)); save(); rebuildComps(); };
         bouton.addEventListener("click", function (e) { e.stopPropagation(); toggle(); });
         titre.addEventListener("dblclick", function (e) {
           if (e.target.closest("button")) return;
@@ -343,7 +355,7 @@
           if (dragComp.type !== "groupe" || dragComp.groupe === g) return false;
           var r = groupe.getBoundingClientRect(); return e.clientY < r.top + r.height / 2 ? "avant" : "apres";
         }, function (e, p) { deplaceGroupe(dragComp.groupe, g, p === "avant"); });
-        if (!compReplies[g]) visibles.forEach(function (c, i) {
+        if (!compGroupeReplie(g)) visibles.forEach(function (c, i) {
           groupe.appendChild(compRow(c, i % 2 === 1, { module: "comps", reg: compHooks }));
         });
         compBox.appendChild(groupe);
@@ -385,10 +397,10 @@
         var g = grp.value === "nouveau" ? nouveauNom.value.trim() : grp.value === "sans" ? "" : existants[Number(grp.value.slice(1))];
         if (grp.value === "nouveau" && !g) { nouveauNom.focus(); return; }
         state.comps.push({ id: uid("c"), nom: n, groupe: g, rang: 0 });
-        compReplies[g] = false;
+        compGroupeReplie(g, false);
         nom.value = "";
         // ne jamais ajouter une compétence qui resterait invisible
-        if (compOnly) compOnly = false;
+        if (compOnly()) preferenceModule("comps", "investies", false);
         if (filtreDe(compFilter)) compFilter = "";
         refresh();
         rebuildComps();
@@ -415,10 +427,10 @@
     puce.setAttribute("data-consultation","1");
     compInvestiesChip = puce;
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
-    puce.classList.toggle("on", compOnly);
+    puce.classList.toggle("on", compOnly());
     puce.addEventListener("click", function () {
-      compOnly = !compOnly;
-      puce.classList.toggle("on", compOnly);
+      preferenceModule("comps", "investies", !compOnly());
+      save();
       rebuildComps();
     });
     l1.appendChild(puce);

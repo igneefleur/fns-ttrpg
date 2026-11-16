@@ -1,5 +1,5 @@
   // ---- Attaques liées aux armes ou créées librement ----
-  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null), calculs: Object.create(null) };
+  var attaqueVue = { ouverts: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null), calculs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; le titre visible devient « Attaques ».
@@ -7,8 +7,7 @@
     var box = el("div", "pc-attaques");
     b.appendChild(box);
     var ouverts = attaqueVue.ouverts;   // état d'interface seulement, jamais sauvegardé
-    var orientation = attaqueVue.orientation;                 // 0 = haut, puis six directions dans le sens horaire
-    var miroirs = attaqueVue.miroirs;   // par raccourci d'arme : main droite par défaut, gauche en miroir
+    var orientation = 0;  // 0 = haut, puis six directions dans le sens horaire
 
     function impregnationSelectionnee() {
       var id = state.combatOptions.attaques.impregnation;
@@ -433,7 +432,7 @@
 
     function carteCoup(entree, it, coup, def) {
       var types = typesCoup(coup, def, entree);
-      var miroir = !!miroirs[entree.id];
+      var miroir = !!entree.miroir;
       var btn = el("button", "pc-attaque-coup");
       btn.type = "button";
       btn.title = "Envoyer les dégâts dans le tchat";
@@ -557,14 +556,6 @@
       commandes.appendChild(effacer);
       box.appendChild(commandes);
       return box;
-    }
-
-    function iconeDegats(type) {
-      var img = el("img", "pc-attaque-icone-degats");
-      img.src = siteBase() + "assets/owd/combat/damage-" + type + ".png";
-      img.alt = combatLibType(type);
-      img.title = img.alt;
-      return img;
     }
 
     function bilanDegats(valeurs, libelle) {
@@ -899,7 +890,8 @@
         bouton.setAttribute("aria-pressed", String(i === orientation));
         bouton.title = bouton.getAttribute("aria-label");
         bouton.addEventListener("click", function () {
-          attaqueVue.orientation = orientation = i;
+          preferenceModule("attaque", "orientation", i);
+          save();
           rendre();
         });
         directions.appendChild(bouton);
@@ -907,13 +899,14 @@
       visee.appendChild(directions);
       controles.appendChild(visee);
 
-      var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋");
+      var mir = el("button", "pc-mini pc-attaque-miroir" + (entree.miroir ? " on" : ""), "⇋");
       mir.type = "button";
-      mir.setAttribute("aria-pressed", miroirs[entree.id] ? "true" : "false");
-      mir.title = miroirs[entree.id] ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
+      mir.setAttribute("aria-pressed", entree.miroir ? "true" : "false");
+      mir.title = entree.miroir ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
       mir.setAttribute("aria-label", mir.title);
       mir.addEventListener("click", function () {
-        miroirs[entree.id] = !miroirs[entree.id];
+        entree.miroir = !entree.miroir;
+        save();
         rendre();
       });
       controles.appendChild(mir);
@@ -963,6 +956,7 @@
     function rendre() {
       if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
+      orientation = clamp(num(preferenceModule("attaque", "orientation"), 0), 0, 5);
       if (!Array.isArray(state.attaques)) state.attaques = [];
       var options = state.combatOptions.attaques;
       box.appendChild(combatOptionsPaires(options,

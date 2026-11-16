@@ -2,8 +2,14 @@
   // Les sources automatiques gardent leurs règles. Les sources manuelles
   // vivent dans modData.recuperation et peuvent être suspendues ou permanentes.
   var recupBox = null;
-  var recupOnly = false;
-  var recupNatives = true;
+  function recupFiltre(cle) {
+    return (preferenceModule("recuperation", "filtres") || {})[cle] === true;
+  }
+  function recupFiltreEcrit(cle, valeur) {
+    var filtres = preferenceModule("recuperation", "filtres") || {};
+    filtres[cle] = valeur;
+    preferenceModule("recuperation", "filtres", filtres);
+  }
   var recupVueSig = "";
 
   var RECUP_DUREES = [
@@ -483,9 +489,9 @@
   }
 
   function recupSignatureModule(liste) {
-    return JSON.stringify(liste.map(function (r) {
-      return [r.id, r.reserve, r.categorie, recupSecondesRestantesModule(r) === null, recupOnly && recupEtatVueModule(r).actif];
-    }));
+    return JSON.stringify([recupFiltre("actives"), recupFiltre("naturelles"), liste.map(function (r) {
+      return [r.id, r.reserve, r.categorie, recupSecondesRestantesModule(r) === null, recupFiltre("actives") && recupEtatVueModule(r).actif];
+    })]);
   }
   function joueRecupHooksModule() {
     recupHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
@@ -502,7 +508,7 @@
       id: uid("r"), perso: true, nom: recupNomNouveauModule(reserve), reserve: reserve,
       niveau: 0, actif: false, temps: 10, type: d.cle, resteSecondes: 10 * d.secondes
     });
-    recupOnly = false;
+    if (recupFiltre("actives")) recupFiltreEcrit("actives", false);
     refresh(); rebuildRecuperation();
   }
 
@@ -537,7 +543,7 @@
     var toute = recupListeModule(), groupes = new Map();
     toute.forEach(function (r) {
       if (!groupes.has(r.reserve)) groupes.set(r.reserve, []);
-      if ((recupNatives || r.categorie !== "naturelle") && (!recupOnly || recupEtatVueModule(r).actif)) {
+      if ((recupFiltre("naturelles") || r.categorie !== "naturelle") && (!recupFiltre("actives") || recupEtatVueModule(r).actif)) {
         groupes.get(r.reserve).push(r);
       }
     });
@@ -571,7 +577,7 @@
       button.title = aide; button.tabIndex = 0;
       button.setAttribute("role", "button");
       button.setAttribute("data-consultation", "1");
-      function active() { bascule(); rebuildRecuperation(); }
+      function active() { bascule(); save(); rebuildRecuperation(); }
       button.addEventListener("click", active);
       button.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" && e.key !== " ") return;
@@ -583,8 +589,8 @@
       });
       ligne.appendChild(button);
     }
-    filtre("Actives", "Afficher uniquement les récupérations actives", function () { return recupOnly; }, function () { recupOnly = !recupOnly; });
-    filtre("Naturelles", "Afficher les récupérations naturelles", function () { return recupNatives; }, function () { recupNatives = !recupNatives; });
+    filtre("Actives", "Afficher uniquement les récupérations actives", function () { return recupFiltre("actives"); }, function () { recupFiltreEcrit("actives", !recupFiltre("actives")); });
+    filtre("Naturelles", "Afficher les récupérations naturelles", function () { return recupFiltre("naturelles"); }, function () { recupFiltreEcrit("naturelles", !recupFiltre("naturelles")); });
     b.appendChild(tools);
 
     recupBox = el("div", "pc-rec-list");

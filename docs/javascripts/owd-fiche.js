@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.7b";
+  var RELEASE = "4.38.8b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -869,7 +869,7 @@
     ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
       combatTypes().forEach(function (t) {
         var v = cm[k] && cm[k][t], n = Number(v);
-        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "tauxDegats" ? Math.max(0, n) : n;
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = n;
       });
     });
     // ---- attaques ----
@@ -886,7 +886,8 @@
           personnalisee: normAttaquePersonnalisee(a.personnalisee, vusComps),
           utiliseEndurance: !!a.utiliseEndurance,
           utiliseMunition: !!a.utiliseMunition,
-          munition: String(a.munition || "")
+          munition: String(a.munition || ""),
+          miroir: !!a.miroir
         };
       });
 
@@ -2733,6 +2734,7 @@
       effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
+    delete o.recuperation.filtres;
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
     return o;
   }
@@ -2746,8 +2748,10 @@
     state.effAlcool = num(o.effAlcool, 0);
     state.horlogeAlcool = copieTemps(o.horlogeAlcool) || {jours:0, heures:0, minutes:0, secondes:0};
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
+    var filtres = recupCoffre(false).filtres;
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
+    if (filtres) recupCoffre(true).filtres = filtres;
     effVu = null;
   }
   function memePhotoTemps(a, b) {
@@ -3196,7 +3200,7 @@
   // filtres de VUE du bloc Options, propres à lui : les siens ne doivent pas
   // suivre ceux de l'onglet Fiche, on n'y cherche pas la même chose
   var optFilter = "";
-  var optOnly = COMPACT;
+  function optOnly() { return preferenceModule("optcomps", "investies") !== false; }
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];
@@ -4419,6 +4423,13 @@
     n.title = "Module muselé après " + e.echecs + " rafraîchissements en erreur : " + e.erreur;
   }
 
+  function preferenceModule(id, cle, valeur) {
+    var d = state.modData && state.modData[id];
+    if (valeur === undefined) return d && d[cle];
+    if (!state.modData) state.modData = {};
+    if (!d) d = state.modData[id] = {};
+    d[cle] = valeur;
+  }
   // ---------- le contexte d'un module ----------
   // C'est TOUT ce qu'un module touche, natif comme mod. Les natifs ne s'en
   // servent pas (ils appellent les fonctions directement) mais ils le
@@ -4710,8 +4721,14 @@
   // Les sources automatiques gardent leurs règles. Les sources manuelles
   // vivent dans modData.recuperation et peuvent être suspendues ou permanentes.
   var recupBox = null;
-  var recupOnly = false;
-  var recupNatives = true;
+  function recupFiltre(cle) {
+    return (preferenceModule("recuperation", "filtres") || {})[cle] === true;
+  }
+  function recupFiltreEcrit(cle, valeur) {
+    var filtres = preferenceModule("recuperation", "filtres") || {};
+    filtres[cle] = valeur;
+    preferenceModule("recuperation", "filtres", filtres);
+  }
   var recupVueSig = "";
 
   var RECUP_DUREES = [
@@ -5191,9 +5208,9 @@
   }
 
   function recupSignatureModule(liste) {
-    return JSON.stringify(liste.map(function (r) {
-      return [r.id, r.reserve, r.categorie, recupSecondesRestantesModule(r) === null, recupOnly && recupEtatVueModule(r).actif];
-    }));
+    return JSON.stringify([recupFiltre("actives"), recupFiltre("naturelles"), liste.map(function (r) {
+      return [r.id, r.reserve, r.categorie, recupSecondesRestantesModule(r) === null, recupFiltre("actives") && recupEtatVueModule(r).actif];
+    })]);
   }
   function joueRecupHooksModule() {
     recupHooks.forEach(function (fn) { try { fn(); } catch (e) {} });
@@ -5210,7 +5227,7 @@
       id: uid("r"), perso: true, nom: recupNomNouveauModule(reserve), reserve: reserve,
       niveau: 0, actif: false, temps: 10, type: d.cle, resteSecondes: 10 * d.secondes
     });
-    recupOnly = false;
+    if (recupFiltre("actives")) recupFiltreEcrit("actives", false);
     refresh(); rebuildRecuperation();
   }
 
@@ -5245,7 +5262,7 @@
     var toute = recupListeModule(), groupes = new Map();
     toute.forEach(function (r) {
       if (!groupes.has(r.reserve)) groupes.set(r.reserve, []);
-      if ((recupNatives || r.categorie !== "naturelle") && (!recupOnly || recupEtatVueModule(r).actif)) {
+      if ((recupFiltre("naturelles") || r.categorie !== "naturelle") && (!recupFiltre("actives") || recupEtatVueModule(r).actif)) {
         groupes.get(r.reserve).push(r);
       }
     });
@@ -5279,7 +5296,7 @@
       button.title = aide; button.tabIndex = 0;
       button.setAttribute("role", "button");
       button.setAttribute("data-consultation", "1");
-      function active() { bascule(); rebuildRecuperation(); }
+      function active() { bascule(); save(); rebuildRecuperation(); }
       button.addEventListener("click", active);
       button.addEventListener("keydown", function (e) {
         if (e.key !== "Enter" && e.key !== " ") return;
@@ -5291,8 +5308,8 @@
       });
       ligne.appendChild(button);
     }
-    filtre("Actives", "Afficher uniquement les récupérations actives", function () { return recupOnly; }, function () { recupOnly = !recupOnly; });
-    filtre("Naturelles", "Afficher les récupérations naturelles", function () { return recupNatives; }, function () { recupNatives = !recupNatives; });
+    filtre("Actives", "Afficher uniquement les récupérations actives", function () { return recupFiltre("actives"); }, function () { recupFiltreEcrit("actives", !recupFiltre("actives")); });
+    filtre("Naturelles", "Afficher les récupérations naturelles", function () { return recupFiltre("naturelles"); }, function () { recupFiltreEcrit("naturelles", !recupFiltre("naturelles")); });
     b.appendChild(tools);
 
     recupBox = el("div", "pc-rec-list");
@@ -6149,39 +6166,56 @@
       });
     if (!ouvert) return card;
 
-    // La présentation est celle des défenses pour LES DEUX modules, y compris
-    // les alignements, la typographie et l'espacement de leurs tableaux.
     var detail = el("div", "pc-attaque-detail pc-defense-detail pc-combat-mod-detail");
-    var table = el("table", "pc-defense-valeurs pc-combat-mod-table"), head = el("tr");
-    (attaque ? ["Type", "Prim.", "Mult.", "Sec.", "Perso %"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
-      head.appendChild(el("th", null, s));
+    var wrap = el("div", "pc-attaque-grille-wrap");
+    var table = el("table", "pc-attaque-grille-degats pc-combat-mod-table"), head = el("tr");
+    table.setAttribute("aria-label", titre);
+    head.appendChild(el("th", null, "Dégâts"));
+    var types = combatTypes();
+    types.forEach(function (t) {
+      var th = el("th");
+      th.scope = "col";
+      th.appendChild(iconeDegats(t));
+      head.appendChild(th);
     });
     table.appendChild(head);
-    combatTypes().forEach(function (t) {
-      var row = el("tr"); row.dataset.damageType = t;
-      row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Bonus au multiplicateur du type", 1],
-        ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
-        [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
-        var k = colonne[0];
-        var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
-        var i = el("input", "pc-num");
-        var mult = k === "attaquesMultiplicateurs", valeurInitiale = combatMod(k, t, colonne[2]);
-        champNombreSigne(i); i.step = "any"; i.value = mult ? bonusDuFacteur(valeurInitiale) : valeurInitiale;
-        i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
+    var lignes = attaque ? [
+      ["Bonus pri.", "attaquesPrimaires", "Bonus primaire", 0, false],
+      ["Mult. att.", "attaquesMultiplicateurs", "Bonus au multiplicateur d’attaque", 1, false],
+      ["Bonus sec.", "attaques", "Bonus secondaire", 0, false],
+      ["Mult. dég.", "tauxDegats", "Bonus au multiplicateur de dégâts", 100, true]
+    ] : [
+      ["Prot.", "protections", "Protection", 0, false],
+      ["Rés.", "resistances", "Résistance", 0, true]
+    ];
+    lignes.forEach(function (ligne) {
+      var k = ligne[1], titre = ligne[2], base = ligne[3];
+      var row = el("tr"), libelle = el("th", null, ligne[0] + (ligne[4] ? " %" : ""));
+      libelle.scope = "row";
+      libelle.title = titre;
+      row.appendChild(libelle);
+      types.forEach(function (t) {
+        var td = el("td"), i = champNombreSigne(el("input", "pc-num"));
+        var valeur = combatMod(k, t, base);
+        valeur = base === 1 ? bonusDuFacteur(valeur) : valeur - base;
+        i.value = valeur === 0 ? "" : valeur;
+        i.setAttribute("aria-label", titre + " " + combatLibType(t) + (ligne[4] ? " (%)" : ""));
         i.addEventListener("input", function () {
-          var n = i.value.trim() ? litNombreSigne(i.value) : mult ? 0 : colonne[2];
-          if (!isFinite(n) || k === "tauxDegats" && n < 0) return;
-          state.combatModifiers[k][t] = n + (mult ? 1 : 0); save();
+          var n = i.value.trim() ? litNombreSigne(i.value) : 0;
+          if (!isFinite(n)) return;
+          var groupe = state.combatModifiers[k] || (state.combatModifiers[k] = {});
+          if (!i.value.trim()) delete groupe[t];
+          else groupe[t] = base + n;
+          save();
         });
         i.addEventListener("change", function () { refresh(); });
-        valeur.appendChild(i);
-        if (k === "resistances") valeur.appendChild(el("span", "pc-combat-mod-pourcent", "%"));
-        td.appendChild(valeur); row.appendChild(td);
+        td.appendChild(i);
+        row.appendChild(td);
       });
       table.appendChild(row);
     });
-    detail.appendChild(table); card.appendChild(detail); return card;
+    wrap.appendChild(table);
+    detail.appendChild(wrap); card.appendChild(detail); return card;
   }
   function combatOptionsPaires(data, premiere, seconde) {
     var options = el("div", "pc-combat-ressources");
@@ -6321,6 +6355,14 @@
     }
     return svg;
   }
+  function iconeDegats(type) {
+    var img = el("img", "pc-attaque-icone-degats");
+    img.src = siteBase() + "assets/owd/combat/damage-" + type + ".png";
+    img.alt = combatLibType(type);
+    img.title = img.alt;
+    return img;
+  }
+
   function iconeCombat(fichier, libelle, repli) {
     var img = el("img", "pc-attaque-icone-degats");
     img.alt = img.title = libelle;
@@ -6484,7 +6526,7 @@
     rendre(); hooks.push(rendre); return b;
   }
   // ---- Attaques liées aux armes ou créées librement ----
-  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null), calculs: Object.create(null) };
+  var attaqueVue = { ouverts: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null), calculs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; le titre visible devient « Attaques ».
@@ -6492,8 +6534,7 @@
     var box = el("div", "pc-attaques");
     b.appendChild(box);
     var ouverts = attaqueVue.ouverts;   // état d'interface seulement, jamais sauvegardé
-    var orientation = attaqueVue.orientation;                 // 0 = haut, puis six directions dans le sens horaire
-    var miroirs = attaqueVue.miroirs;   // par raccourci d'arme : main droite par défaut, gauche en miroir
+    var orientation = 0;  // 0 = haut, puis six directions dans le sens horaire
 
     function impregnationSelectionnee() {
       var id = state.combatOptions.attaques.impregnation;
@@ -6918,7 +6959,7 @@
 
     function carteCoup(entree, it, coup, def) {
       var types = typesCoup(coup, def, entree);
-      var miroir = !!miroirs[entree.id];
+      var miroir = !!entree.miroir;
       var btn = el("button", "pc-attaque-coup");
       btn.type = "button";
       btn.title = "Envoyer les dégâts dans le tchat";
@@ -7042,14 +7083,6 @@
       commandes.appendChild(effacer);
       box.appendChild(commandes);
       return box;
-    }
-
-    function iconeDegats(type) {
-      var img = el("img", "pc-attaque-icone-degats");
-      img.src = siteBase() + "assets/owd/combat/damage-" + type + ".png";
-      img.alt = combatLibType(type);
-      img.title = img.alt;
-      return img;
     }
 
     function bilanDegats(valeurs, libelle) {
@@ -7384,7 +7417,8 @@
         bouton.setAttribute("aria-pressed", String(i === orientation));
         bouton.title = bouton.getAttribute("aria-label");
         bouton.addEventListener("click", function () {
-          attaqueVue.orientation = orientation = i;
+          preferenceModule("attaque", "orientation", i);
+          save();
           rendre();
         });
         directions.appendChild(bouton);
@@ -7392,13 +7426,14 @@
       visee.appendChild(directions);
       controles.appendChild(visee);
 
-      var mir = el("button", "pc-mini pc-attaque-miroir" + (miroirs[entree.id] ? " on" : ""), "⇋");
+      var mir = el("button", "pc-mini pc-attaque-miroir" + (entree.miroir ? " on" : ""), "⇋");
       mir.type = "button";
-      mir.setAttribute("aria-pressed", miroirs[entree.id] ? "true" : "false");
-      mir.title = miroirs[entree.id] ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
+      mir.setAttribute("aria-pressed", entree.miroir ? "true" : "false");
+      mir.title = entree.miroir ? "Arme tenue en main gauche : revenir en main droite" : "Passer l'arme de la main droite à la main gauche";
       mir.setAttribute("aria-label", mir.title);
       mir.addEventListener("click", function () {
-        miroirs[entree.id] = !miroirs[entree.id];
+        entree.miroir = !entree.miroir;
+        save();
         rendre();
       });
       controles.appendChild(mir);
@@ -7448,6 +7483,7 @@
     function rendre() {
       if (window.__owdVueAttaques && window.__owdAttackPreview) window.__owdAttackPreview(null);
       box.innerHTML = "";
+      orientation = clamp(num(preferenceModule("attaque", "orientation"), 0), 0, 5);
       if (!Array.isArray(state.attaques)) state.attaques = [];
       var options = state.combatOptions.attaques;
       box.appendChild(combatOptionsPaires(options,
@@ -8270,7 +8306,16 @@
     return row;
   }
   // Le repli est local à cette fiche ouverte ; aucun attribut de personnage.
-  var compReplies = Object.create(null);
+  function compGroupeReplie(groupe, replie) {
+    var noms = preferenceModule("comps", "groupesReplies");
+    if (!Array.isArray(noms)) noms = [];
+    if (replie === undefined) return noms.indexOf(groupe) >= 0;
+    if (replie) {
+      if (noms.indexOf(groupe) < 0) preferenceModule("comps", "groupesReplies", noms.concat(groupe));
+    } else if (noms.indexOf(groupe) >= 0) {
+      preferenceModule("comps", "groupesReplies", noms.filter(function (nom) { return nom !== groupe; }));
+    }
+  }
   var dragComp = null;
   function finDragComp() {
     dragComp = null;
@@ -8352,7 +8397,7 @@
   var compBox = null;
   var compSearch = null, compInvestiesChip = null;
   var compFilter = "";
-  var compOnly = false;      // « Investies » : éteinte par défaut — l'auteur veut TOUT voir
+  function compOnly() { return preferenceModule("comps", "investies") !== false; }
   // L'outil de recherche se coupe depuis l'onglet Options. Coupé, il DISPARAÎT
   // et cesse d'agir : un filtre invisible qui masque encore des lignes est un
   // piège. Réglage d'AFFICHAGE, donc dans le vrai localStorage du navigateur,
@@ -8373,7 +8418,10 @@
   function rebuildComps() {
     if (!compBox) return;
     if (compSearch) compSearch.value = compFilter;
-    if (compInvestiesChip) compInvestiesChip.classList.toggle("on", compOnly);
+    if (compInvestiesChip) {
+      compInvestiesChip.classList.toggle("on", compOnly());
+      compInvestiesChip.setAttribute("aria-pressed", String(compOnly()));
+    }
     compHooks = [];   // les lignes vont être détruites : leurs hooks avec
     compBox.innerHTML = "";
     var head = el("div", "pc-comp-row head");
@@ -8383,7 +8431,7 @@
     compBox.appendChild(head);
     var flt = filtreDe(compFilter);
     var liste = state.comps.filter(function (c) {
-      if (compOnly && !compInvestie(c)) return false;
+      if (compOnly() && !compInvestie(c)) return false;
       if (flt && pli(c.nom).indexOf(flt) < 0 && pli(c.groupe).indexOf(flt) < 0) return false;
       return true;
     });
@@ -8407,11 +8455,11 @@
         titre.appendChild(poigneeComp("Déplacer le groupe", function () { return { type: "groupe", groupe: g }; }, groupe));
         titre.appendChild(el("span", "pc-comp-groupe-nom", g || "Sans groupe"));
         titre.appendChild(el("span", "pc-comp-groupe-trait"));
-        var bouton = el("button", "pc-comp-repli", compReplies[g] ? "▸" : "▾");
+        var bouton = el("button", "pc-comp-repli", compGroupeReplie(g) ? "▸" : "▾");
         bouton.type = "button";
-        bouton.setAttribute("aria-expanded", String(!compReplies[g]));
-        bouton.setAttribute("aria-label", (compReplies[g] ? "Déplier " : "Replier ") + (g || "Sans groupe"));
-        var toggle = function () { compReplies[g] = !compReplies[g]; rebuildComps(); };
+        bouton.setAttribute("aria-expanded", String(!compGroupeReplie(g)));
+        bouton.setAttribute("aria-label", (compGroupeReplie(g) ? "Déplier " : "Replier ") + (g || "Sans groupe"));
+        var toggle = function () { compGroupeReplie(g, !compGroupeReplie(g)); save(); rebuildComps(); };
         bouton.addEventListener("click", function (e) { e.stopPropagation(); toggle(); });
         titre.addEventListener("dblclick", function (e) {
           if (e.target.closest("button")) return;
@@ -8431,7 +8479,7 @@
           if (dragComp.type !== "groupe" || dragComp.groupe === g) return false;
           var r = groupe.getBoundingClientRect(); return e.clientY < r.top + r.height / 2 ? "avant" : "apres";
         }, function (e, p) { deplaceGroupe(dragComp.groupe, g, p === "avant"); });
-        if (!compReplies[g]) visibles.forEach(function (c, i) {
+        if (!compGroupeReplie(g)) visibles.forEach(function (c, i) {
           groupe.appendChild(compRow(c, i % 2 === 1, { module: "comps", reg: compHooks }));
         });
         compBox.appendChild(groupe);
@@ -8473,10 +8521,10 @@
         var g = grp.value === "nouveau" ? nouveauNom.value.trim() : grp.value === "sans" ? "" : existants[Number(grp.value.slice(1))];
         if (grp.value === "nouveau" && !g) { nouveauNom.focus(); return; }
         state.comps.push({ id: uid("c"), nom: n, groupe: g, rang: 0 });
-        compReplies[g] = false;
+        compGroupeReplie(g, false);
         nom.value = "";
         // ne jamais ajouter une compétence qui resterait invisible
-        if (compOnly) compOnly = false;
+        if (compOnly()) preferenceModule("comps", "investies", false);
         if (filtreDe(compFilter)) compFilter = "";
         refresh();
         rebuildComps();
@@ -8503,10 +8551,10 @@
     puce.setAttribute("data-consultation","1");
     compInvestiesChip = puce;
     puce.title = "N'afficher que les compétences où un rang, un modificateur ou un forçage est posé.";
-    puce.classList.toggle("on", compOnly);
+    puce.classList.toggle("on", compOnly());
     puce.addEventListener("click", function () {
-      compOnly = !compOnly;
-      puce.classList.toggle("on", compOnly);
+      preferenceModule("comps", "investies", !compOnly());
+      save();
       rebuildComps();
     });
     l1.appendChild(puce);
@@ -12945,10 +12993,11 @@
     var l2 = el("div", "row");
     var puce = el("span", "pc-chip", "Investies");
     puce.title = "N'afficher que les compétences où un rang ou un levier est posé.";
-    puce.classList.toggle("on", optOnly);
+    puce.classList.toggle("on", optOnly());
+    puce.setAttribute("aria-pressed", String(optOnly()));
     puce.addEventListener("click", function () {
-      optOnly = !optOnly;
-      puce.classList.toggle("on", optOnly);
+      preferenceModule("optcomps", "investies", !optOnly());
+      save();
       optCompsRebuild();
     });
     l2.appendChild(puce);
@@ -12996,7 +13045,7 @@
     function compsVisibles() {
       var flt = filtreDe(optFilter);
       return state.comps.filter(function (c) {
-        if (optOnly && !compInvestie(c)) return false;
+        if (optOnly() && !compInvestie(c)) return false;
         if (flt && pli(c.nom).indexOf(flt) < 0 && pli(c.groupe).indexOf(flt) < 0) return false;
         return true;
       });
@@ -13049,6 +13098,8 @@
       });
 
     optCompsRebuild = function () {
+      puce.classList.toggle("on", optOnly());
+      puce.setAttribute("aria-pressed", String(optOnly()));
       optHooks.length = 0;
       rebatis.forEach(function (f) { f(); });
       // Les fonctions qui viennent de naître n'ont pas été jouées par la passe
@@ -13994,7 +14045,12 @@
     var structural={notes:[],background:['bg'],avantages:['avantages'],comps:['comps','optcomps','attaque','defense'],techniques:['techniques'],inv:['inv','attaque','defense','effets'],attaques:['attaque'],defenses:['defense'],combatOptions:['attaque','defense'],combatModifiers:['attaque','defense'],combatAffichage:['attaque','defense'],effetsActifs:['effets','recuperation'],effetsPermanents:['effets','recuperation'],caracs:['caracs'],caracsXp:['caracs'],caracsLeviers:['modcaracs'],capsLeviers:['optcaps'],compsLeviers:['optcomps','comps']};
     var scalar=['name','portrait','age','sexe','genre','espece','taille','xpTotal','etat','effort','temperature','temperatureMonde','qualiteSommeil','horloge','horlogeDigestion','horlogeExposition','horlogeAlcool','effAlcool','effAlcoolSecondes','effParties','effAutre','effDesactive','effPause','allure','allureCran','desTailles','desUtilises'];
     var oldData=state.modData||{},newData=s.modData||{};
-    if(Object.keys(oldData).concat(Object.keys(newData)).every(function(k){return k==='recuperation'||k==='reservesVitales'||JSON.stringify(oldData[k])===JSON.stringify(newData[k]);}))structural.modData=JSON.stringify(oldData.recuperation)===JSON.stringify(newData.recuperation)?[]:['recuperation'];
+    var modulesDonnees = ["recuperation", "comps", "optcomps", "attaque"];
+    var modulesDonneesChanges = Object.keys(Object.assign({}, oldData, newData)).filter(function (k) {
+      return JSON.stringify(oldData[k]) !== JSON.stringify(newData[k]);
+    });
+    if (modulesDonneesChanges.every(function (k) { return k === "reservesVitales" || modulesDonnees.indexOf(k) >= 0; }))
+      structural.modData = modulesDonneesChanges.filter(function (k) { return k !== "reservesVitales"; });
     var targets=[],partial=!modulesPersoActifs()&&changes.every(function(k){return structural[k]||scalar.indexOf(k)>=0;});
     if(partial)changes.forEach(function(k){(structural[k]||[]).forEach(function(id){if(targets.indexOf(id)<0)targets.push(id);});});
     var actif = document.activeElement, focus = null, positions = [];

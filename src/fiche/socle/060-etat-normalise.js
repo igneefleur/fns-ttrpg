@@ -267,7 +267,7 @@
     ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
       combatTypes().forEach(function (t) {
         var v = cm[k] && cm[k][t], n = Number(v);
-        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "tauxDegats" ? Math.max(0, n) : n;
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = n;
       });
     });
     // ---- attaques ----
@@ -284,7 +284,8 @@
           personnalisee: normAttaquePersonnalisee(a.personnalisee, vusComps),
           utiliseEndurance: !!a.utiliseEndurance,
           utiliseMunition: !!a.utiliseMunition,
-          munition: String(a.munition || "")
+          munition: String(a.munition || ""),
+          miroir: !!a.miroir
         };
       });
 

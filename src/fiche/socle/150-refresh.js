@@ -19,7 +19,7 @@
   // filtres de VUE du bloc Options, propres à lui : les siens ne doivent pas
   // suivre ceux de l'onglet Fiche, on n'y cherche pas la même chose
   var optFilter = "";
-  var optOnly = COMPACT;
+  function optOnly() { return preferenceModule("optcomps", "investies") !== false; }
 
   function regModule(id) {
     if (!regsModules[id]) regsModules[id] = [];

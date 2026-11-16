@@ -49,39 +49,56 @@
       });
     if (!ouvert) return card;
 
-    // La présentation est celle des défenses pour LES DEUX modules, y compris
-    // les alignements, la typographie et l'espacement de leurs tableaux.
     var detail = el("div", "pc-attaque-detail pc-defense-detail pc-combat-mod-detail");
-    var table = el("table", "pc-defense-valeurs pc-combat-mod-table"), head = el("tr");
-    (attaque ? ["Type", "Prim.", "Mult.", "Sec.", "Perso %"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
-      head.appendChild(el("th", null, s));
+    var wrap = el("div", "pc-attaque-grille-wrap");
+    var table = el("table", "pc-attaque-grille-degats pc-combat-mod-table"), head = el("tr");
+    table.setAttribute("aria-label", titre);
+    head.appendChild(el("th", null, "Dégâts"));
+    var types = combatTypes();
+    types.forEach(function (t) {
+      var th = el("th");
+      th.scope = "col";
+      th.appendChild(iconeDegats(t));
+      head.appendChild(th);
     });
     table.appendChild(head);
-    combatTypes().forEach(function (t) {
-      var row = el("tr"); row.dataset.damageType = t;
-      row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Bonus au multiplicateur du type", 1],
-        ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
-        [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
-        var k = colonne[0];
-        var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
-        var i = el("input", "pc-num");
-        var mult = k === "attaquesMultiplicateurs", valeurInitiale = combatMod(k, t, colonne[2]);
-        champNombreSigne(i); i.step = "any"; i.value = mult ? bonusDuFacteur(valeurInitiale) : valeurInitiale;
-        i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
+    var lignes = attaque ? [
+      ["Bonus pri.", "attaquesPrimaires", "Bonus primaire", 0, false],
+      ["Mult. att.", "attaquesMultiplicateurs", "Bonus au multiplicateur d’attaque", 1, false],
+      ["Bonus sec.", "attaques", "Bonus secondaire", 0, false],
+      ["Mult. dég.", "tauxDegats", "Bonus au multiplicateur de dégâts", 100, true]
+    ] : [
+      ["Prot.", "protections", "Protection", 0, false],
+      ["Rés.", "resistances", "Résistance", 0, true]
+    ];
+    lignes.forEach(function (ligne) {
+      var k = ligne[1], titre = ligne[2], base = ligne[3];
+      var row = el("tr"), libelle = el("th", null, ligne[0] + (ligne[4] ? " %" : ""));
+      libelle.scope = "row";
+      libelle.title = titre;
+      row.appendChild(libelle);
+      types.forEach(function (t) {
+        var td = el("td"), i = champNombreSigne(el("input", "pc-num"));
+        var valeur = combatMod(k, t, base);
+        valeur = base === 1 ? bonusDuFacteur(valeur) : valeur - base;
+        i.value = valeur === 0 ? "" : valeur;
+        i.setAttribute("aria-label", titre + " " + combatLibType(t) + (ligne[4] ? " (%)" : ""));
         i.addEventListener("input", function () {
-          var n = i.value.trim() ? litNombreSigne(i.value) : mult ? 0 : colonne[2];
-          if (!isFinite(n) || k === "tauxDegats" && n < 0) return;
-          state.combatModifiers[k][t] = n + (mult ? 1 : 0); save();
+          var n = i.value.trim() ? litNombreSigne(i.value) : 0;
+          if (!isFinite(n)) return;
+          var groupe = state.combatModifiers[k] || (state.combatModifiers[k] = {});
+          if (!i.value.trim()) delete groupe[t];
+          else groupe[t] = base + n;
+          save();
         });
         i.addEventListener("change", function () { refresh(); });
-        valeur.appendChild(i);
-        if (k === "resistances") valeur.appendChild(el("span", "pc-combat-mod-pourcent", "%"));
-        td.appendChild(valeur); row.appendChild(td);
+        td.appendChild(i);
+        row.appendChild(td);
       });
       table.appendChild(row);
     });
-    detail.appendChild(table); card.appendChild(detail); return card;
+    wrap.appendChild(table);
+    detail.appendChild(wrap); card.appendChild(detail); return card;
   }
   function combatOptionsPaires(data, premiere, seconde) {
     var options = el("div", "pc-combat-ressources");
@@ -221,6 +238,14 @@
     }
     return svg;
   }
+  function iconeDegats(type) {
+    var img = el("img", "pc-attaque-icone-degats");
+    img.src = siteBase() + "assets/owd/combat/damage-" + type + ".png";
+    img.alt = combatLibType(type);
+    img.title = img.alt;
+    return img;
+  }
+
   function iconeCombat(fichier, libelle, repli) {
     var img = el("img", "pc-attaque-icone-degats");
     img.alt = img.title = libelle;

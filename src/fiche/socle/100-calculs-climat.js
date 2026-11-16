@@ -520,6 +520,7 @@
       effetsActifs: copieTemps(state.effetsActifs || []),
       recuperation: copieTemps(recupCoffre(false)) || {}
     };
+    delete o.recuperation.filtres;
     TEMPS_CLES.forEach(function (k) { o[k] = state.etat[k]; });
     return o;
   }
@@ -533,8 +534,10 @@
     state.effAlcool = num(o.effAlcool, 0);
     state.horlogeAlcool = copieTemps(o.horlogeAlcool) || {jours:0, heures:0, minutes:0, secondes:0};
     if (!state.modData || typeof state.modData !== "object" || Array.isArray(state.modData)) state.modData = {};
+    var filtres = recupCoffre(false).filtres;
     if (o.recuperation && Object.keys(o.recuperation).length) state.modData.recuperation = copieTemps(o.recuperation);
     else delete state.modData.recuperation;
+    if (filtres) recupCoffre(true).filtres = filtres;
     effVu = null;
   }
   function memePhotoTemps(a, b) {

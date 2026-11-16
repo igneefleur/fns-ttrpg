@@ -31,10 +31,11 @@
     var l2 = el("div", "row");
     var puce = el("span", "pc-chip", "Investies");
     puce.title = "N'afficher que les compétences où un rang ou un levier est posé.";
-    puce.classList.toggle("on", optOnly);
+    puce.classList.toggle("on", optOnly());
+    puce.setAttribute("aria-pressed", String(optOnly()));
     puce.addEventListener("click", function () {
-      optOnly = !optOnly;
-      puce.classList.toggle("on", optOnly);
+      preferenceModule("optcomps", "investies", !optOnly());
+      save();
       optCompsRebuild();
     });
     l2.appendChild(puce);
@@ -82,7 +83,7 @@
     function compsVisibles() {
       var flt = filtreDe(optFilter);
       return state.comps.filter(function (c) {
-        if (optOnly && !compInvestie(c)) return false;
+        if (optOnly() && !compInvestie(c)) return false;
         if (flt && pli(c.nom).indexOf(flt) < 0 && pli(c.groupe).indexOf(flt) < 0) return false;
         return true;
       });
@@ -135,6 +136,8 @@
       });
 
     optCompsRebuild = function () {
+      puce.classList.toggle("on", optOnly());
+      puce.setAttribute("aria-pressed", String(optOnly()));
       optHooks.length = 0;
       rebatis.forEach(function (f) { f(); });
       // Les fonctions qui viennent de naître n'ont pas été jouées par la passe

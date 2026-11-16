@@ -1,3 +1,10 @@
+  function preferenceModule(id, cle, valeur) {
+    var d = state.modData && state.modData[id];
+    if (valeur === undefined) return d && d[cle];
+    if (!state.modData) state.modData = {};
+    if (!d) d = state.modData[id] = {};
+    d[cle] = valeur;
+  }
   // ---------- le contexte d'un module ----------
   // C'est TOUT ce qu'un module touche, natif comme mod. Les natifs ne s'en
   // servent pas (ils appellent les fonctions directement) mais ils le
