@@ -2205,10 +2205,32 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-garde-dessin rect:focus { outline:none; stroke:var(--accent); stroke-width:.5; }
 .perso-fiche .pc-garde-dessin path,.perso-fiche .pc-garde-dessin circle { pointer-events:none; }
 
-.perso-fiche .pc-attaque-editor-mult .pc-f { width:100%; }
-.perso-fiche .pc-attaque-editor-types { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
-.perso-fiche .pc-attaque-custom-dessin input,.perso-fiche .pc-attaque-custom-dessin select { width:100%; min-width:0; box-sizing:border-box; }
-.perso-fiche .pc-attaque-editor-types .pc-f { min-width:0; }
+.perso-fiche .pc-attaque-nom-edit { grid-column: 1 / -1; }
+.perso-fiche .pc-attaque-mods-perso { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
+.perso-fiche .pc-attaque-custom-info select { width: 100%; min-width: 0; }
+.perso-fiche .pc-combat-tete-attaque > .pc-combat-drag { margin-left: .3rem; }
+.perso-fiche .pc-combat-tete-attaque > .pc-attaque-tete { min-width: 0; padding-right: 1.6rem; }
+.perso-fiche .pc-combat-tete-attaque .pc-attaque-meta-icons { white-space: normal; }
+.pc-attaque-bilan { display: inline-flex; flex-wrap: wrap; align-items: center; justify-content: end; gap: .18rem .32rem; }
+.pc-attaque-bilan-type { display: inline-flex; align-items: center; gap: .13rem; white-space: nowrap; }
+.perso-fiche .pc-attaque-icone-degats { width: 1rem; height: 1rem; object-fit: contain; vertical-align: middle; }
+.perso-fiche .pc-attaque-grille-wrap { width: 100%; min-width: 0; overflow-x: auto; margin-bottom: .35rem; }
+.perso-fiche .pc-attaque-grille-degats {
+  width: 100%; min-width: 16.7rem; border-collapse: collapse; color: var(--ink); font-size: var(--fs-meta);
+}
+.perso-fiche .pc-attaque-grille-degats th,
+.perso-fiche .pc-attaque-grille-degats td {
+  min-width: 1.35rem; padding: .25rem .1rem; border: 1px solid var(--hair); text-align: center; vertical-align: middle;
+}
+.perso-fiche .pc-attaque-grille-degats th { background: var(--stripe); }
+.perso-fiche .pc-attaque-grille-degats th:first-child { padding-inline: .3rem; text-align: left; }
+.perso-fiche .pc-attaque-grille-degats tr > :nth-child(2) { width: 2.65rem; }
+.perso-fiche .pc-attaque-grille-degats td input {
+  display: block; margin: 0 auto; width: 100%; min-width: 0; box-sizing: border-box;
+  padding: .2rem 0; text-align: center; font: inherit;
+}
+.perso-fiche .pc-attaque-calcul > summary { cursor: pointer; font-size: var(--fs-meta); margin-bottom: .3rem; }
+.perso-fiche .pc-attaque-grille-total td { background: var(--stripe); font-weight: 700; }
 
 /* Lisibilité et alignement des cartes de combat. */
 .perso-fiche .pc-combat-tete { min-height:1.85rem; display:flex; align-items:center; }

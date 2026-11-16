@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.0b";
+  var RELEASE = "4.38.1b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -505,7 +505,7 @@
       attaques: [],
       combatAffichage: { modificateursAttaque: true, defenseSans: true, defenseEsquive: true, modificateursDefense: true },
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
+      combatOptions: { attaques: { utiliseEndurance: false, utiliseMana: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
@@ -660,6 +660,24 @@
     out.modsDegats = normModsArme(a.modsDegats); out.modsParade = normModsArme(a.modsParade);
     out.comp = a.comp && comps[a.comp] ? String(a.comp) : "";
     out.mains = 1;
+    return out;
+  }
+  function normAttaquePersonnalisee(a, comps) {
+    var out = normCombatLibre(a, comps);
+    if (!out) return null;
+    out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
+    ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
+      var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
+      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm|mult)$/.test(k) ? Math.max(0, valeur) : valeur;
+      else delete out[k];
+    });
+    ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
+      out[k] = {};
+      combatTypes().forEach(function (t) {
+        var v = a[k] && a[k][t], valeur = typeof v === "number" ? v : litNombreSigne(v);
+        if (isFinite(valeur)) out[k][t] = k === "multiplicateurs" ? Math.max(0, valeur) : valeur;
+      });
+    });
     return out;
   }
   function normalize(s) {
@@ -823,7 +841,7 @@
     if (s.taille === "enorme") s.taille = "tres-grande";
     if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
+    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMana: !!attaqueOptions.utiliseMana, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
       defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
@@ -865,7 +883,7 @@
           id: String(a.id || "") || uid("atk"),
           arme: String(a.arme || ""),
           nom: String(a.nom || ""),
-          personnalisee: normCombatLibre(a.personnalisee, vusComps),
+          personnalisee: normAttaquePersonnalisee(a.personnalisee, vusComps),
           utiliseEndurance: !!a.utiliseEndurance,
           utiliseMunition: !!a.utiliseMunition,
           munition: String(a.munition || "")
@@ -6168,16 +6186,19 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatOptionsPaires(data, premiere, seconde) {
+  function combatOptionsPaires(data, premiere, seconde, manaActif) {
     var options = el("div", "pc-combat-ressources");
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
     bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation PE"));
-    var mana = el("button", "c pc-info", "Consommation PM");
-    mana.type = "button";
-    mana.disabled = true;
-    mana.title = "Aucun coût en mana n’est défini pour ces actions.";
+    var mana = manaActif ? combatRessource(data, "utiliseMana", "Consommation PM") :
+      el("button", "c pc-info", "Consommation PM");
+    if (!manaActif) {
+      mana.type = "button";
+      mana.disabled = true;
+      mana.title = "Aucun coût en mana n’est défini pour ces actions.";
+    }
     bas.appendChild(mana);
     options.appendChild(haut);
     options.appendChild(bas);
@@ -6315,7 +6336,13 @@
     var ligne = el("div", "pc-combat-tete");
     var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
     tete.setAttribute("aria-expanded", String(ouvert));
-    tete.appendChild(el("span", "pc-attaque-nom", nom)); tete.appendChild(el("span", "pc-attaque-meta", resume));
+    tete.appendChild(el("span", "pc-attaque-nom", nom));
+    if (typeof resume === "string") tete.appendChild(el("span", "pc-attaque-meta", resume));
+    else {
+      var meta = el("span", "pc-attaque-meta pc-attaque-meta-icons");
+      meta.appendChild(resume);
+      tete.appendChild(meta);
+    }
     tete.addEventListener("click", toggle); ligne.appendChild(tete);
     var outils = el("div", "pc-combat-outils");
     if (liste) {
@@ -6324,7 +6351,11 @@
         if (!isEdit(module)) { ev.preventDefault(); return; }
         combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
       });
-      drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); }); outils.appendChild(drag);
+      drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); });
+      if (module === "attaque") {
+        ligne.classList.add("pc-combat-tete-attaque");
+        ligne.insertBefore(drag, tete);
+      } else outils.appendChild(drag);
       card.addEventListener("dragover", function (ev) {
         if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
         ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
@@ -6442,7 +6473,7 @@
     rendre(); hooks.push(rendre); return b;
   }
   // ---- Attaques liées aux armes ou créées librement ----
-  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null) };
+  var attaqueVue = { ouverts: Object.create(null), orientation: 0, miroirs: Object.create(null), portees: Object.create(null), gardes: Object.create(null), pinceaux: Object.create(null), calculs: Object.create(null) };
   function buildAttaque() {
     // L'id technique reste « attaque » pour préserver les dispositions déjà
     // sauvegardées ; le titre visible devient « Attaques ».
@@ -6480,6 +6511,22 @@
       });
       return trouve;
     }
+    function attaqueADistance(entree, def) {
+      var a = entree.personnalisee;
+      return !!(a && (a.sousType === "distance" ||
+        a.sousType === "arme" && def && /distance|rechargement/i.test(def.categorie || "")));
+    }
+    function typesDegatsActifs(it, entree, type) {
+      var a = entree && entree.personnalisee;
+      var arme = it && it.arme;
+      var source = arme && typeArme(arme.type);
+      if (a && a.sousType === "arme") type = typesCoup(null, source).touche;
+      if (!type || combatTypes().indexOf(type) < 0) type = "physique";
+      return { bases: arme ? baseDegatsArme(arme, type) : {}, type: type };
+    }
+    function multPersonnalise(valeur) {
+      return valeur == null || valeur === "" ? 1 : degatsPositifs(valeur);
+    }
     function modsDegatsArme(it) {
       if (!it || !it.arme) return 0;
       var a = it.arme, total = 0;
@@ -6505,32 +6552,39 @@
     }
     function detailDegats(it, entree, coup, type) {
       var types = combatTypes();
-      if (/^(tranchant|contondant|perforant)$/.test(type) || types.indexOf(type) < 0) type = "physique";
-      var bases = baseDegatsArme(it.arme, type);
+      var a = entree && entree.personnalisee || {};
+      var actifs = typesDegatsActifs(it, entree, type), bases = actifs.bases;
+      type = actifs.type;
       var total = totalDegatsBase(bases), mods = modsDegatsArme(it);
-      var ammo = munitionSelectionnee(entree, typeArme(it.arme.type));
+      var def = it && typeArme(it.arme.type);
+      var ammo = categorieMunition(def) ? munitionSelectionnee(entree, def) : null;
       var munitions = ammo && pnum(ammo.qte) && ammo.munitionStats ? baseDegatsArme(ammo.munitionStats, undefined, true) : {};
       var commune = impregnationSelectionnee(), impregnation = commune && commune.type ? commune : null;
       if (!commune) {
         var source = effetsSources().find(function (x) {
-          return it.ref && x.e.cible === it.ref && x.d.ops.impregnation && x.d.ops.impregnation.type;
+          return it && it.ref && x.e.cible === it.ref && x.d.ops.impregnation && x.d.ops.impregnation.type;
         });
         if (source) impregnation = source.d.ops.impregnation;
       }
-      var multCoup = multiplicateurCoup(coup);
+      var multCoup = a.type && !a.trajet && a.sousType !== "arme" && coup ?
+        multiplicateurCoup(coup) : multiplicateurCoup(coup) * multPersonnalise(a.mult);
       return types.map(function (t) {
         var base = bases[t] || 0;
-        var primaire = combatMod("attaquesPrimaires", t) + (munitions[t] || 0);
-        var secondaire = combatMod("attaques", t);
+        var proportion = total ? base / total : (t === type ? 1 : 0);
+        var primaire = combatMod("attaquesPrimaires", t) + (munitions[t] || 0) +
+          nombreDegats(a.primaire) * proportion + nombreDegats(a.primaires && a.primaires[t]);
+        var secondaire = combatMod("attaques", t) +
+          nombreDegats(a.secondaire) * proportion + nombreDegats(a.secondaires && a.secondaires[t]);
         if (impregnation && impregnation.type === t) {
           primaire += total * nombreDegats(impregnation.pct) / 100;
           secondaire += nombreDegats(impregnation.flat);
         }
         if (!base && !primaire && !secondaire && t !== type) return null;
         return {
-          type: t, base: base, mods: total ? mods * base / total : 0,
+          type: t, base: base, mods: total ? mods * proportion : 0,
           primaire: primaire, secondaire: secondaire,
-          multCoup: multCoup, multType: Math.max(0, combatMod("attaquesMultiplicateurs", t, 1)),
+          multCoup: multCoup, multType: Math.max(0, combatMod("attaquesMultiplicateurs", t, 1)) *
+            multPersonnalise(a.multiplicateurs && a.multiplicateurs[t]),
           taux: Math.max(0, combatMod("tauxDegats", t, 100) + effetBonus("degats", t))
         };
       }).filter(Boolean);
@@ -6579,9 +6633,10 @@
       });
       return trouve;
     }
-    function coutEndurance(it) {
-      // La dépense vient de CET objet d'arme, pas de son type du livre : une
-      // arme personnalisée à difficulté 5 coûte donc bien 5 PE.
+    function coutEndurance(it, attaque) {
+      // Les anciennes attaques personnalisées utilisaient l'Attaque comme coût.
+      if (attaque) return attaque.coutPe == null || attaque.coutPe === "" ?
+        degatsPositifs(attaque.attaque) : degatsPositifs(attaque.coutPe);
       return Math.max(0, snum(it && it.arme ? it.arme.attaque : 0));
     }
     function categorieMunition(def) {
@@ -6619,7 +6674,12 @@
       o.qte = Math.max(0, Math.round((pnum(o.qte) - 1) * 100) / 100);
     }
     function prepareRessources(entree, it, def) {
-      var out = { endurance: coutEndurance(it), munition: null };
+      var a = entree.personnalisee;
+      var out = {
+        endurance: coutEndurance(it, a),
+        mana: a ? degatsPositifs(a.coutPm) : 0,
+        munition: null
+      };
       if (state.combatOptions.attaques.utiliseMunition && categorieMunition(def)) {
         out.munition = munitionSelectionnee(entree, def);
         if (!out.munition || pnum(out.munition.qte) < 1) {
@@ -6630,13 +6690,14 @@
       return out;
     }
     function executeAttaque(entree, it, def, preparerMessage) {
-      if (!window.OwdInventoryData.isCarried(state.inv.objets,it)) {
+      var armeReelle = !entree.personnalisee || entree.personnalisee.sousType === "arme";
+      if (armeReelle && !window.OwdInventoryData.isCarried(state.inv.objets,it)) {
         flash("Cette arme est par terre : ramassez-la avant d'attaquer.");
         return;
       }
       // 2 : transportable dans une main, mais utilisable seulement à deux.
       // Les 2 obligatoires occupent déjà les deux mains dès leur équipement.
-      if ((it.mains === 2 || it.mains === "2 obligatoires") &&
+      if (armeReelle && (it.mains === 2 || it.mains === "2 obligatoires") &&
           (it.ou === "mainG" || it.ou === "mainD") && !it.tenueDeuxMains) {
         flash("Cette arme nécessite deux mains pour être utilisée. Déposez-la sur « 2 Mains ».");
         return;
@@ -6647,6 +6708,8 @@
       var message = preparerMessage();
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = (courant("pe") - effetCout("pe",r.endurance));
+      if (state.combatOptions.attaques.utiliseMana && r.mana > 0)
+        state.etat.pm = (courant("pm") - effetCout("pm",r.mana));
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         retireUneMunition(r.munition);
       }
@@ -6657,19 +6720,26 @@
     function messageDegats(titre, it, entree, coup, types) {
       var hit = chiffresDegats(coup, types.touche, false, it, entree);
       var pass = chiffresDegats(coup, types.passage, true, it, entree);
-      return { titre: titre, combat: { kind: "attack", hit: hit, pass: pass }, champs: [
-        ["Case de touche", formatDegats(hit)], ["Case de passage", formatDegats(pass)]
-      ] };
+      var champs = [["Case de touche", formatDegats(hit)], ["Case de passage", formatDegats(pass)]];
+      var a = entree.personnalisee;
+      if (a) {
+        if (a.attaque != null && a.attaque !== "") champs.push(["Attaque", fmtP(Math.max(0, nombreDegats(a.attaque) + effetBonus("attaque")))]);
+        var comp = a.comp && (state.comps || []).find(function (c) { return c.id === a.comp; });
+        if (comp) champs.push(["Compétence", comp.nom]);
+      }
+      return { titre: titre, combat: { kind: "attack", hit: hit, pass: pass }, champs: champs };
     }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
-        return messageDegats((coup && coup.nom || "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"),
+        return messageDegats(entree.personnalisee ? (entree.nom || "Attaque personnalisée") :
+          (coup && coup.nom || "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"),
           it, entree, coup, typesCoup(coup, def));
       });
     }
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
-        return messageDegats("Attaque — " + (it.nom || (def && def.nom) || "Arme"),
+        return messageDegats(entree.personnalisee ? (entree.nom || "Attaque personnalisée") :
+          "Attaque — " + (it.nom || (def && def.nom) || "Arme"),
           it, entree, null, typesCoup(null, def));
       });
     }
@@ -6753,8 +6823,11 @@
       }
       return pts.join(" ");
     }
-    function carteHex(brut, ori, miroir, minimum) {
-      var etapes = hxEtapes(brut, ori, miroir), parCase = {};
+    function etapesPortee(brut, ori, miroir, distance) {
+      return hxEtapes(brut, ori, miroir).filter(function (e) { return !distance || e.q || e.r; });
+    }
+    function carteHex(brut, ori, miroir, minimum, distance) {
+      var etapes = etapesPortee(brut, ori, miroir, distance), parCase = {};
       etapes.forEach(function (e) { parCase[e.q + "," + e.r] = e; });
       var portee = Math.max(minimum || 1, etapes.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 1));
       var largeur = HX_R * (1.5 * portee + 1);
@@ -6765,7 +6838,7 @@
         viewBox: (-largeur).toFixed(1) + " " + (-hauteur).toFixed(1) + " " + (2 * largeur).toFixed(1) + " " + (2 * hauteur).toFixed(1)
       });
       for (var q = -portee; q <= portee; q++) for (var r = -portee; r <= portee; r++) {
-        if (hxDistance(q, r) > portee) continue;
+        if (hxDistance(q, r) > portee || distance && !q && !r) continue;
         var centre = hxCentre(q, r), e = parCase[q + "," + r];
         svg.appendChild(svgEl("polygon", {
           "class": e ? (e.role === "frappe" ? "hx-frappe" : "hx-passe") : "hx-vide",
@@ -6778,8 +6851,8 @@
           "class": "hx-rang hx-rang--" + e.role, x: c[0].toFixed(2), y: c[1].toFixed(2), dy: "0.34em"
         }, String(e.rang)));
       });
-      svg.appendChild(svgEl("polygon", { "class": "hx-soi", points: hxSommets(0, 0, HX_R - 0.7) }));
-      svg.appendChild(svgEl("path", {
+      if (!distance && !parCase["0,0"]) svg.appendChild(svgEl("polygon", { "class": "hx-soi", points: hxSommets(0, 0, HX_R - 0.7) }));
+      if (!distance) svg.appendChild(svgEl("path", {
         "class": "hx-visee",
         d: "M 0 4 L 0 -5 M -2.4 -2.1 L 0 -5 L 2.4 -2.1",
         transform: "rotate(" + (ori * 60) + " 0 0)"
@@ -6834,11 +6907,12 @@
       btn.type = "button";
       btn.title = "Envoyer les dégâts dans le tchat";
       btn.addEventListener("click", function () { envoieCoup(entree, it, coup, def); });
-      btn.appendChild(carteHex(coup.trajet, orientation, miroir, entree.personnalisee ? 1 : 3));
+      var distance = attaqueADistance(entree, def);
+      btn.appendChild(carteHex(coup.trajet, orientation, miroir, entree.personnalisee ? 1 : 3, distance));
       if (window.__owdVueAttaques && window.__owdAttackPreview) {
         btn.addEventListener("pointerenter", function () {
-          var path = hxEtapes(coup.trajet, 0, false).map(function (e) { return [e.q,e.r,e.role === "frappe" ? "hit" : "pass"]; });
-          if (path.length) window.__owdAttackPreview({mirror:miroir,orientation:orientation,path:path});
+          var path = etapesPortee(coup.trajet, 0, false, distance).map(function (e) { return [e.q,e.r,e.role === "frappe" ? "hit" : "pass"]; });
+          window.__owdAttackPreview(path.length ? {mirror:miroir,orientation:orientation,path:path} : null);
         });
         btn.addEventListener("pointerleave", function () { window.__owdAttackPreview(null); });
       }
@@ -6847,11 +6921,19 @@
       var texte = el("div", "pc-attaque-coup-texte");
       var nom = el("div", "pc-attaque-coup-nom");
       nom.appendChild(document.createTextNode(coup.nom || "Attaque"));
-      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(multiplicateurCoup(coup))));
+      var custom = entree.personnalisee;
+      var mult = custom && (custom.trajet || !custom.type || custom.sousType === "arme") ?
+        multPersonnalise(custom.mult) : multiplicateurCoup(coup);
+      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(coup, types.touche, false, it, entree)));
-      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(coup, types.passage, true, it, entree)));
+      if (entree.personnalisee) {
+        chiffres.appendChild(bilanDegats(chiffresDegats(coup, types.touche, false, it, entree), "Touche"));
+        chiffres.appendChild(bilanDegats(chiffresDegats(coup, types.passage, true, it, entree), "Passage"));
+      } else {
+        chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(coup, types.touche, false, it, entree)));
+        chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(coup, types.passage, true, it, entree)));
+      }
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -6860,7 +6942,7 @@
       return btn;
     }
 
-    function editeurTrajet(entree) {
+    function editeurTrajet(entree, distance) {
       var box = el("div", "pc-attaque-editor"), path = hxEtapes(entree.personnalisee.trajet, 0, false);
       var rayon = Math.max(3, attaqueVue.portees[entree.id] || 3, path.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 0));
       var brush = attaqueVue.pinceaux[entree.id] || "frappe";
@@ -6870,10 +6952,12 @@
         bt.setAttribute("aria-pressed", String(brush === v[0])); tools.appendChild(bt);
       });
       box.appendChild(tools);
-      var svg = carteHex(entree.personnalisee.trajet, 0, false, rayon);
+      var svg = carteHex(entree.personnalisee.trajet, 0, false, rayon, distance);
       function ecrit() {
         entree.personnalisee.trajet = path.map(function (e) {
-          var n = hxDistance(e.q, e.r), cells = hxAnneau(n), at = -1;
+          var n = hxDistance(e.q, e.r);
+          if (!n) return "soi:" + e.role;
+          var cells = hxAnneau(n), at = -1;
           cells.some(function (c, i) { if (c[0] === e.q && c[1] === e.r) { at = i; return true; } return false; });
           var nom = String(n) + (at === 0 ? "" : at <= 3 * n ? "d" + at : "g" + (6 * n - at));
           return nom + ":" + e.role;
@@ -6928,57 +7012,277 @@
       box.appendChild(svg); box.appendChild(miniBtn("Effacer la garde", null, function () { entree.personnalisee.garde = ""; delete attaqueVue.gardes[entree.id]; refresh(); })); return box;
     }
 
+    function iconeDegats(type) {
+      var img = el("img", "pc-attaque-icone-degats");
+      img.src = siteBase() + "assets/owd/combat/damage-" + type + ".png";
+      img.alt = combatLibType(type);
+      img.title = img.alt;
+      return img;
+    }
+
+    function bilanDegats(valeurs, libelle) {
+      var bilan = el("span", "pc-attaque-bilan");
+      if (libelle) bilan.appendChild(el("span", "pc-attaque-bilan-label", libelle));
+      valeurs.forEach(function (x) {
+        var valeur = el("span", "pc-attaque-bilan-type");
+        valeur.appendChild(iconeDegats(x.type));
+        valeur.appendChild(el("span", null, fmtP(x.valeur)));
+        bilan.appendChild(valeur);
+      });
+      return bilan;
+    }
+
+    function nombreAttaque(data, cle, libelle, defaut, positif, modifier) {
+      var champ = champNombreSigne(el("input", "pc-edit-field"));
+      champ.value = data[cle] == null ? "" : data[cle];
+      champ.placeholder = defaut;
+      champ.setAttribute("aria-label", libelle);
+      champ.addEventListener("input", function () {
+        var vide = !champ.value.trim(), valeur = litNombreSigne(champ.value);
+        if (!vide && (!isFinite(valeur) || positif && valeur < 0)) return;
+        if (modifier) modifier(vide ? 0 : valeur);
+        else if (vide) delete data[cle];
+        else data[cle] = valeur;
+        save();
+      });
+      champ.addEventListener("change", function () { refresh(); });
+      return champ;
+    }
+
+    function grilleDegatsPerso(entree, it, types, edition) {
+      var a = entree.personnalisee, liee = a.sousType === "arme";
+      var bases = typesDegatsActifs(it, entree, types.touche).bases;
+      var details = edition ? [] : detailDegats(it, entree, null, types.touche);
+      var finaux = it ? chiffresDegats(null, types.touche, false, it, entree) : [];
+      var etablis = {}, fin = {};
+      details.forEach(function (x) { etablis[x.type] = x; });
+      finaux.forEach(function (x) { fin[x.type] = x.valeur; });
+      var colonnes = edition ? combatTypes() : combatTypes().filter(function (t) { return etablis[t]; });
+      var wrap = el("div", "pc-attaque-grille-wrap");
+      var table = el("table", "pc-attaque-grille-degats");
+      table.setAttribute("aria-label", "Dégâts par type");
+      var head = el("tr");
+      head.appendChild(el("th", null, "Dégâts"));
+      head.appendChild(el("th", null, "Général"));
+      colonnes.forEach(function (t) {
+        var th = el("th");
+        th.appendChild(iconeDegats(t));
+        head.appendChild(th);
+      });
+      table.appendChild(head);
+
+      function ligne(nom, general, cellule, classe) {
+        var tr = el("tr", classe), titre = el("th", null, nom);
+        titre.scope = "row";
+        tr.appendChild(titre);
+        function ajoute(contenu) {
+          var td = el("td");
+          if (typeof contenu === "string") td.textContent = contenu;
+          else td.appendChild(contenu);
+          tr.appendChild(td);
+        }
+        ajoute(general);
+        colonnes.forEach(function (t) { ajoute(cellule(t)); });
+        table.appendChild(tr);
+      }
+
+      function affiche(n) { return n == null || n === 0 ? "—" : fmtP(n); }
+      function somme(xs) { return xs.reduce(function (n, x) { return n + x.valeur; }, 0); }
+      ligne("Base", affiche(totalDegatsBase(bases)), function (t) {
+        if (liee || !edition) return affiche(bases[t]);
+        return nombreAttaque(bases, t, "Base " + combatLibType(t), "", true, function (valeur) {
+          if (valeur) bases[t] = valeur;
+          else delete bases[t];
+          actualiseDegatsArme(a, bases);
+        });
+      });
+      if (!edition) ligne("MODs", "—", function (t) { return affiche(etablis[t].mods); });
+      [["Bonus primaire", "primaire", "primaires", false], ["Multiplicateur", "mult", "multiplicateurs", true],
+        ["Bonus secondaire", "secondaire", "secondaires", false]].forEach(function (rang) {
+        var titre = rang[0], gen = rang[1], carte = rang[2], mult = rang[3];
+        var general = edition ? nombreAttaque(a, gen, titre + " général", mult ? "×1" : "", mult) :
+          (mult ? fmtMult(multPersonnalise(a.mult)) : affiche(a[gen]));
+        ligne(titre, general, function (t) {
+          if (!edition) return mult ? fmtMult(etablis[t].multType) : affiche(etablis[t][gen]);
+          return nombreAttaque(a[carte], t, titre + " " + combatLibType(t), mult ? "×1" : "", mult);
+        });
+      });
+      if (!edition) ligne("Taux perso.", "—", function (t) { return fmtP(etablis[t].taux) + " %"; });
+      ligne("Dégâts finaux", it ? fmtP(somme(finaux)) : "—", function (t) {
+        return fin[t] == null ? "—" : fmtP(fin[t]);
+      }, "pc-attaque-grille-total");
+      wrap.appendChild(table);
+      return wrap;
+    }
+
+    function choixArme(entree, arme) {
+      var source = el("select", "pc-select pc-edit-field pc-attaque-source");
+      var vide = el("option", null, "Choisir une arme");
+      vide.value = "";
+      source.appendChild(vide);
+      armesInventaire().forEach(function (o) {
+        var op = el("option", null, o.nom || "Arme sans nom");
+        op.value = assureRef(o);
+        op.selected = arme === o;
+        source.appendChild(op);
+      });
+      if (entree.arme && !arme) {
+        var absent = el("option", null, "Arme introuvable");
+        absent.value = entree.arme;
+        absent.selected = true;
+        source.appendChild(absent);
+      }
+      source.setAttribute("aria-label", "Arme");
+      source.addEventListener("change", function () { entree.arme = source.value; refresh(); });
+      return fld("Arme", source);
+    }
+
+    function choixMunition(entree, def) {
+      var munBox = el("div", "pc-attaque-munitions");
+      var sm = el("select", "pc-select pc-attaque-munition");
+      var om0 = el("option", null, "Choisir une munition"); om0.value = ""; sm.appendChild(om0);
+      var compatibles = munitionsCompatibles(def), trouveMunition = false;
+      compatibles.forEach(function (o) {
+        var op = el("option", null, libelleMunition(o));
+        op.value = assureRef(o);
+        if (op.value === String(entree.munition || "")) { op.selected = true; trouveMunition = true; }
+        sm.appendChild(op);
+      });
+      if (entree.munition && !trouveMunition) {
+        var precedente = objetInventaire(entree.munition);
+        var ancienne = el("option", null, precedente && pnum(precedente.qte) === 0 ? libelleMunition(precedente) + " (épuisée)" : "Munition indisponible");
+        ancienne.value = String(entree.munition); ancienne.selected = true; sm.appendChild(ancienne);
+      }
+      sm.addEventListener("change", function () { entree.munition = sm.value; refresh(); });
+      munBox.appendChild(fld("Munitions", sm));
+      return munBox;
+    }
+
+    function editeurAttaquePerso(edit, choix, entree, it, def, types) {
+      var a = entree.personnalisee;
+      var sousType = el("select", "pc-select pc-edit-field pc-attaque-sous-type");
+      [["arme", "À partir d’une arme"], ["contact", "Corps à corps"], ["distance", "Distance"]].forEach(function (valeur) {
+        var option = el("option", null, valeur[1]);
+        option.value = valeur[0];
+        option.selected = a.sousType === valeur[0];
+        sousType.appendChild(option);
+      });
+      sousType.setAttribute("aria-label", "Sous-type");
+      sousType.addEventListener("change", function () { a.sousType = sousType.value; refresh(); });
+      choix.appendChild(fld("Sous-type", sousType));
+      var nom = combatTexte("Nom", entree, "nom");
+      nom.classList.add("pc-attaque-nom-edit");
+      nom.querySelector("input").setAttribute("aria-label", "Nom");
+      choix.appendChild(nom);
+      if (a.sousType === "arme") {
+        var arme = choixArme(entree, it);
+        arme.classList.add("pc-attaque-nom-edit");
+        choix.appendChild(arme);
+        if (categorieMunition(def)) {
+          var munition = choixMunition(entree, def);
+          munition.classList.add("pc-attaque-nom-edit");
+          choix.appendChild(munition);
+        }
+      }
+
+      var comp = combatComp(a);
+      comp.setAttribute("aria-label", "Compétence");
+      choix.appendChild(fld("Compétence", comp));
+      choix.appendChild(fld("Attaque", nombreAttaque(a, "attaque", "Attaque", "", true)));
+      choix.appendChild(fld("Coût PE", nombreAttaque(a, "coutPe", "Coût PE", fmtP(coutEndurance(it, a)), true)));
+      choix.appendChild(fld("Coût PM", nombreAttaque(a, "coutPm", "Coût PM", "0", true)));
+
+      if (a.sousType !== "arme") {
+        var mods = el("div", "pc-attaque-mods-perso");
+        a.modsDegats.forEach(function (cle, rang) {
+          var select = el("select", "pc-select pc-edit-field");
+          select.setAttribute("aria-label", "MOD " + (rang + 1));
+          [""].concat(caracsOrdre()).forEach(function (carac) {
+            var option = el("option", null, carac ? abbrCarac(carac) : "—");
+            option.value = carac;
+            option.selected = carac === cle;
+            select.appendChild(option);
+          });
+          select.addEventListener("change", function () { a.modsDegats[rang] = select.value; refresh(); });
+          mods.appendChild(select);
+        });
+        choix.appendChild(fld("MODs de dégâts", mods, "pc-attaque-nom-edit"));
+      }
+      edit.appendChild(grilleDegatsPerso(entree, it, types, true));
+      if (it) {
+        var calcul = el("details", "pc-attaque-calcul");
+        calcul.open = !!attaqueVue.calculs[entree.id];
+        calcul.addEventListener("toggle", function () { attaqueVue.calculs[entree.id] = calcul.open; });
+        calcul.appendChild(el("summary", null, "Détail du calcul"));
+        calcul.appendChild(grilleDegatsPerso(entree, it, types, false));
+        edit.appendChild(calcul);
+      }
+
+      var layout = el("div", "pc-attaque-custom-layout");
+      var dessin = el("div", "pc-attaque-custom-dessin");
+      var infos = el("div", "pc-attaque-custom-info");
+      dessin.appendChild(editeurTrajet(entree, attaqueADistance(entree, def)));
+      infos.appendChild(fld("Type de touche", combatType(a, "touche")));
+      infos.appendChild(fld("Type de passage", combatType(a, "passage")));
+      infos.appendChild(editeurGarde(entree));
+      layout.appendChild(dessin);
+      layout.appendChild(infos);
+      edit.appendChild(layout);
+    }
+
     function carte(entree) {
       var card = el("div", "pc-attaque-card"); card.dataset.attackId = entree.id;
-      var it = entree.personnalisee ? { nom: entree.nom || "Attaque personnalisée", arme: entree.personnalisee } : objetArme(entree.arme);
-
-      var ouvert = !!ouverts[entree.id], def = it && typeArme(it.arme.type), meta = [];
-      if (it) {
+      var a = entree.personnalisee, liee = a && a.sousType === "arme";
+      var it = a && !liee ? { nom: entree.nom || "Attaque personnalisée", arme: a } : objetArme(entree.arme);
+      var def = it && typeArme(it.arme.type);
+      var ouvert = !!ouverts[entree.id], meta = [];
+      var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
+      if (a) {
+        var typesArme = typesCoup(null, def);
+        var touche = a.touche || typesArme.touche;
+        var passage = a.passage || a.touche || typesArme.passage;
+        def = Object.assign({}, def, { types: [touche, passage] });
+        if (a.trajet || !a.type || liee) coups = a.trajet ? [{
+          nom: entree.nom || "Attaque personnalisée", trajet: a.trajet, garde: a.garde, types: def.types
+        }] : [];
+        var coutPe = coutEndurance(it, a);
+        if (coutPe) meta.push(fmtP(coutPe) + " PE");
+        if (a.coutPm) meta.push(fmtP(a.coutPm) + " PM");
+      } else if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
         meta.push("Dégâts " + formatDegats(chiffresDegats(null, typesCoup(null, def).touche, false, it, entree)));
       }
-      combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
+      var types = typesCoup(coups[0], def);
+      var nom = a ? entree.nom || "Attaque personnalisée" : it ? it.nom || "Arme sans nom" : "Nouvelle attaque";
+      var resume = a ? bilanDegats(it ? chiffresDegats(null, types.touche, false, it, entree) : [], meta.join(" · ")) : meta.join(" · ");
+      combatCarteTete(card, nom, resume, ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
       if (!ouvert) return card;
       function supprimer() { combatSupprimer(card, function () { state.attaques = state.attaques.filter(function (a) { return a.id !== entree.id; }); refresh(); }); }
 
-      // Le choix de l'arme n'existe qu'en édition. L'entrée garde une `ref`
-      // interne : renommer l'objet dans l'inventaire ne casse pas le raccourci.
       var edit = el("div", "pc-attaque-edit pc-edit-only");
       var choix = el("div", "pc-attaque-choix");
       var type = el("select", "pc-select pc-edit-field pc-attaque-type");
       [["arme", "Armes"], ["custom", "Attaque personnalisée"]].forEach(function (v) {
-        var op = el("option", null, v[1]); op.value = v[0]; op.selected = (entree.personnalisee ? "custom" : "arme") === v[0]; type.appendChild(op);
+        var op = el("option", null, v[1]); op.value = v[0]; op.selected = (a ? "custom" : "arme") === v[0]; type.appendChild(op);
       });
+      type.setAttribute("aria-label", "Type d’attaque");
       type.addEventListener("change", function () {
-        if (type.value === "custom") {
-          entree.arme = "";
-          entree.personnalisee = entree.personnalisee || { attaque: "8", degats: "0", modsDegats: ["", "", ""], modsParade: ["", "", ""], comp: "", type: "", mult: "1", trajet: "", garde: "", touche: "", passage: "" };
-        } else entree.personnalisee = null;
-        ouverts[entree.id] = true; refresh();
+        entree.personnalisee = type.value === "custom" ? {
+          sousType: entree.arme ? "arme" : "contact", attaque: "8", coutPe: 0, coutPm: 0,
+          degatsParType: {}, modsDegats: ["", "", ""], comp: "", type: "", trajet: "", garde: "",
+          touche: "", passage: "", primaires: {}, multiplicateurs: {}, secondaires: {}
+        } : null;
+        ouverts[entree.id] = true;
+        refresh();
       });
       choix.appendChild(fld("Type", type));
-      if (entree.personnalisee) choix.appendChild(combatTexte("Nom", entree, "nom"));
-      else {
-        var source = el("select", "pc-select pc-edit-field pc-attaque-source"), vide = el("option", null, "Choisir une arme"); vide.value = ""; source.appendChild(vide);
-        armesInventaire().forEach(function (o) { var op = el("option", null, o.nom || "Arme sans nom"); op.value = assureRef(o); op.selected = it === o; source.appendChild(op); });
-        if (entree.arme && !it) { var absent = el("option", null, "Arme introuvable"); absent.value = entree.arme; absent.selected = true; source.appendChild(absent); }
-        source.addEventListener("change", function () { entree.arme = source.value; ouverts[entree.id] = true; refresh(); });
-        choix.appendChild(fld("Source", source));
-      }
       edit.appendChild(choix);
-      if (entree.personnalisee) {
-        var layout = el("div", "pc-attaque-custom-layout"), infos = el("div", "pc-attaque-custom-info");
-        var dessin = el("div", "pc-attaque-custom-dessin"); dessin.appendChild(editeurTrajet(entree));
-        var mult = el("div", "pc-attaque-editor-mult"); mult.appendChild(combatTexte("Multiplicateur", entree.personnalisee, "mult")); dessin.appendChild(mult);
-        var types = el("div", "pc-attaque-editor-types");
-        types.appendChild(fld("Type de touche", combatType(entree.personnalisee, "touche")));
-        types.appendChild(fld("Type de passage", combatType(entree.personnalisee, "passage"))); dessin.appendChild(types);
-        layout.appendChild(dessin); infos.appendChild(carteArme(it, true)); infos.appendChild(editeurGarde(entree)); layout.appendChild(infos); edit.appendChild(layout);
-      }
+      if (a) editeurAttaquePerso(edit, choix, entree, it, def, types);
+      else choix.appendChild(choixArme(entree, it));
       card.appendChild(edit);
-      if (isEdit("attaque") && entree.personnalisee) { supprimer(); return card; }
+      if (isEdit("attaque") && a) { supprimer(); return card; }
 
       if (!it) {
         card.appendChild(el("div", "pc-empty pc-attaque-vide",
@@ -6986,46 +7290,24 @@
         supprimer(); return card;
       }
 
-      def = typeArme(it.arme.type);
-      var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
-      if (entree.personnalisee && it.arme.trajet) coups = [{ nom: it.nom, mult: it.arme.mult,
-        trajet: it.arme.trajet, garde: it.arme.garde, types: [it.arme.touche, it.arme.passage || it.arme.touche] }];
-      if (entree.personnalisee && !it.arme.trajet && !it.arme.type) def = { types: [it.arme.touche] };
       var detail = el("div", "pc-attaque-detail");
 
-      if (categorieMunition(def)) {
-        var munBox = el("div", "pc-attaque-munitions");
-        var sm = el("select", "pc-select pc-attaque-munition");
-        var om0 = el("option", null, "Choisir une munition"); om0.value = ""; sm.appendChild(om0);
-        var compatibles = munitionsCompatibles(def), trouveMunition = false;
-        compatibles.forEach(function (o) {
-          var op = el("option", null, libelleMunition(o));
-          op.value = assureRef(o);
-          if (op.value === String(entree.munition || "")) { op.selected = true; trouveMunition = true; }
-          sm.appendChild(op);
-        });
-        if (entree.munition && !trouveMunition) {
-          var precedente = objetInventaire(entree.munition);
-          var ancienne = el("option", null, precedente && pnum(precedente.qte) === 0 ? libelleMunition(precedente) + " (épuisée)" : "Munition indisponible");
-          ancienne.value = String(entree.munition); ancienne.selected = true; sm.appendChild(ancienne);
-        }
-        sm.addEventListener("change", function () { entree.munition = sm.value; refresh(); });
-        munBox.appendChild(fld("Munitions", sm));
-        detail.appendChild(munBox);
-      }
+      if (categorieMunition(def)) detail.appendChild(choixMunition(entree, def));
 
-      var detailTypes = el("div", "pc-attaque-detail-degats-wrap");
-      detailTypes.appendChild(tableauDegats(it, entree, typesCoup(coups[0], def).touche));
-      detail.appendChild(detailTypes);
+      if (!a) {
+        var detailTypes = el("div", "pc-attaque-detail-degats-wrap");
+        detailTypes.appendChild(tableauDegats(it, entree, types.touche));
+        detail.appendChild(detailTypes);
+      }
       // Les armes de mêlée du livre ont six trajets. Les armes à distance,
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
       if (!coups.length) {
         var simple = el("button", "pc-attaque-simple");
         simple.type = "button";
-        var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, degatsTypes(null, stypes[0] || "—", false, it, entree)));
+        simple.appendChild(a ? bilanDegats(chiffresDegats(null, types.touche, false, it, entree)) :
+          el("span", null, degatsTypes(null, types.touche, false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
@@ -7038,7 +7320,8 @@
       var lgSoi = el("span", null); lgSoi.appendChild(el("i", "soi")); lgSoi.appendChild(document.createTextNode("vous"));
       var lgTouche = el("span", null); lgTouche.appendChild(el("i", "touche")); lgTouche.appendChild(document.createTextNode("touche"));
       var lgPasse = el("span", null); lgPasse.appendChild(el("i", "passe")); lgPasse.appendChild(document.createTextNode("passage"));
-      cles.appendChild(lgSoi); cles.appendChild(lgTouche); cles.appendChild(lgPasse);
+      if (!attaqueADistance(entree, def)) cles.appendChild(lgSoi);
+      cles.appendChild(lgTouche); cles.appendChild(lgPasse);
       legende.appendChild(cles);
 
       var controles = el("div", "pc-attaque-controles");
@@ -7121,7 +7404,7 @@
       var options = state.combatOptions.attaques;
       box.appendChild(combatOptionsPaires(options,
         combatRessource(options, "lente", "Attaque Lente"),
-        combatRessource(options, "utiliseMunition", "Consommation Munition")));
+        combatRessource(options, "utiliseMunition", "Consommation Munition"), true));
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
       box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {
