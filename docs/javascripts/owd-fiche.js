@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.1b";
+  var RELEASE = "4.38.2b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -668,14 +668,14 @@
     out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
     ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
       var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
-      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm|mult)$/.test(k) ? Math.max(0, valeur) : valeur;
+      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm)$/.test(k) ? Math.max(0, valeur) : valeur;
       else delete out[k];
     });
     ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
       out[k] = {};
       combatTypes().forEach(function (t) {
         var v = a[k] && a[k][t], valeur = typeof v === "number" ? v : litNombreSigne(v);
-        if (isFinite(valeur)) out[k][t] = k === "multiplicateurs" ? Math.max(0, valeur) : valeur;
+        if (isFinite(valeur)) out[k][t] = valeur;
       });
     });
     return out;
@@ -869,7 +869,7 @@
     ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
       combatTypes().forEach(function (t) {
         var v = cm[k] && cm[k][t], n = Number(v);
-        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "attaquesPrimaires" ? n : Math.max(0, n);
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "tauxDegats" ? Math.max(0, n) : n;
       });
     });
     // ---- attaques ----
@@ -6134,6 +6134,10 @@
     if (valeur == null) return defaut == null ? 0 : defaut;
     return k === "protections" || k === "resistances" ? snum(valeur) : (Number(valeur) || 0);
   }
+  // Les sauvegardes conservent les facteurs historiques (×1 est neutre).
+  function bonusDuFacteur(facteur) {
+    return Number((facteur - 1).toPrecision(15));
+  }
   // État de dépliage purement visuel, comme les cartes d'attaque et de défense.
   // Aucun nouvel attribut de personnage n'est nécessaire.
   var combatModVue = { attaque: false, defense: false };
@@ -6164,18 +6168,19 @@
     combatTypes().forEach(function (t) {
       var row = el("tr"); row.dataset.damageType = t;
       row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Multiplicateur du type", 1],
+      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Bonus au multiplicateur du type", 1],
         ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
         [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
         var k = colonne[0];
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t, colonne[2]);
+        var mult = k === "attaquesMultiplicateurs", valeurInitiale = combatMod(k, t, colonne[2]);
+        champNombreSigne(i); i.step = "any"; i.value = mult ? bonusDuFacteur(valeurInitiale) : valeurInitiale;
         i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
         i.addEventListener("input", function () {
-          var n = i.value.trim() ? litNombreSigne(i.value) : colonne[2];
-          if (!isFinite(n) || (k === "attaquesMultiplicateurs" || k === "tauxDegats") && n < 0) return;
-          state.combatModifiers[k][t] = n; save();
+          var n = i.value.trim() ? litNombreSigne(i.value) : mult ? 0 : colonne[2];
+          if (!isFinite(n) || k === "tauxDegats" && n < 0) return;
+          state.combatModifiers[k][t] = n + (mult ? 1 : 0); save();
         });
         i.addEventListener("change", function () { refresh(); });
         valeur.appendChild(i);
@@ -6525,7 +6530,7 @@
       return { bases: arme ? baseDegatsArme(arme, type) : {}, type: type };
     }
     function multPersonnalise(valeur) {
-      return valeur == null || valeur === "" ? 1 : degatsPositifs(valeur);
+      return valeur == null || valeur === "" ? 1 : nombreDegats(valeur);
     }
     function modsDegatsArme(it) {
       if (!it || !it.arme) return 0;
@@ -6566,8 +6571,7 @@
         });
         if (source) impregnation = source.d.ops.impregnation;
       }
-      var multCoup = a.type && !a.trajet && a.sousType !== "arme" && coup ?
-        multiplicateurCoup(coup) : multiplicateurCoup(coup) * multPersonnalise(a.mult);
+      var multCoup = multiplicateurCoup(coup) + multPersonnalise(a.mult) - 1;
       return types.map(function (t) {
         var base = bases[t] || 0;
         var proportion = total ? base / total : (t === type ? 1 : 0);
@@ -6583,8 +6587,8 @@
         return {
           type: t, base: base, mods: total ? mods * proportion : 0,
           primaire: primaire, secondaire: secondaire,
-          multCoup: multCoup, multType: Math.max(0, combatMod("attaquesMultiplicateurs", t, 1)) *
-            multPersonnalise(a.multiplicateurs && a.multiplicateurs[t]),
+          multCoup: multCoup, multType: combatMod("attaquesMultiplicateurs", t, 1) +
+            multPersonnalise(a.multiplicateurs && a.multiplicateurs[t]) - 1,
           taux: Math.max(0, combatMod("tauxDegats", t, 100) + effetBonus("degats", t))
         };
       }).filter(Boolean);
@@ -6592,7 +6596,9 @@
     function chiffresDegats(coup, type, passage, it, entree) {
       var diviseur = (state.combatOptions.attaques.lente ? 2 : 1) * (passage ? 2 : 1);
       var valeurs = detailDegats(it, entree, coup, type).map(function (x) {
-        var total = ((x.base + x.mods + x.primaire) * x.multCoup * x.multType + x.secondaire) * x.taux / 100;
+        // Chaque facteur apporte son écart à ×1 au cumul, borné une fois.
+        var mult = Math.max(0, x.multCoup + x.multType - 1);
+        var total = ((x.base + x.mods + x.primaire) * mult + x.secondaire) * x.taux / 100;
         return { type: x.type, valeur: Math.max(0, Math.floor(total / diviseur + 1e-9)) };
       });
       var positifs = valeurs.filter(function (x) { return x.valeur > 0; });
@@ -6605,7 +6611,7 @@
       var table = el("table", "pc-defense-valeurs pc-attaque-detail-degats");
       var entete = el("tr");
       [["Type", "Type de dégâts"], ["Base", "Dégâts de base"], ["MODs", "MODs répartis"],
-        ["Prim.", "Bonus primaires"], ["Mult.", "Multiplicateur propre au type"],
+        ["Prim.", "Bonus primaires"], ["Mult.", "Bonus au multiplicateur du type"],
         ["Sec.", "Bonus secondaires"], ["Perso %", "Taux final du personnage"]].forEach(function (colonne) {
         var th = el("th", null, colonne[0]); th.title = colonne[1]; entete.appendChild(th);
       });
@@ -6614,7 +6620,7 @@
         var row = el("tr");
         row.dataset.damageType = x.type;
         [combatLibType(x.type), fmtP(x.base), fmtP(x.mods), fmtP(x.primaire),
-          fmtMult(x.multType), fmtP(x.secondaire), fmtP(x.taux) + " %"].forEach(function (texte) {
+          sign(bonusDuFacteur(x.multType)), fmtP(x.secondaire), fmtP(x.taux) + " %"].forEach(function (texte) {
           row.appendChild(el("td", null, texte));
         });
         table.appendChild(row);
@@ -6922,8 +6928,7 @@
       var nom = el("div", "pc-attaque-coup-nom");
       nom.appendChild(document.createTextNode(coup.nom || "Attaque"));
       var custom = entree.personnalisee;
-      var mult = custom && (custom.trajet || !custom.type || custom.sousType === "arme") ?
-        multPersonnalise(custom.mult) : multiplicateurCoup(coup);
+      var mult = multiplicateurCoup(coup) + multPersonnalise(custom && custom.mult) - 1;
       nom.appendChild(el("span", "pc-attaque-mult", fmtMult(mult)));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
@@ -7032,9 +7037,9 @@
       return bilan;
     }
 
-    function nombreAttaque(data, cle, libelle, defaut, positif, modifier) {
+    function nombreAttaque(data, cle, libelle, defaut, positif, modifier, decalage) {
       var champ = champNombreSigne(el("input", "pc-edit-field"));
-      champ.value = data[cle] == null ? "" : data[cle];
+      champ.value = data[cle] == null ? "" : decalage ? bonusDuFacteur(data[cle]) : data[cle];
       champ.placeholder = defaut;
       champ.setAttribute("aria-label", libelle);
       champ.addEventListener("input", function () {
@@ -7042,7 +7047,7 @@
         if (!vide && (!isFinite(valeur) || positif && valeur < 0)) return;
         if (modifier) modifier(vide ? 0 : valeur);
         else if (vide) delete data[cle];
-        else data[cle] = valeur;
+        else data[cle] = valeur + (decalage || 0);
         save();
       });
       champ.addEventListener("change", function () { refresh(); });
@@ -7063,7 +7068,13 @@
       table.setAttribute("aria-label", "Dégâts par type");
       var head = el("tr");
       head.appendChild(el("th", null, "Dégâts"));
-      head.appendChild(el("th", null, "Général"));
+      var general = el("th");
+      var icone = el("img", "pc-attaque-icone-degats");
+      icone.alt = icone.title = "Général";
+      icone.addEventListener("error", function () { general.textContent = icone.alt; });
+      icone.src = "https://static.wikia.nocookie.net/outward_gamepedia/images/b/b5/BarrierStat.png/revision/latest/scale-to-width-down/14?cb=20201220130627";
+      general.appendChild(icone);
+      head.appendChild(general);
       colonnes.forEach(function (t) {
         var th = el("th");
         th.appendChild(iconeDegats(t));
@@ -7078,7 +7089,10 @@
         function ajoute(contenu) {
           var td = el("td");
           if (typeof contenu === "string") td.textContent = contenu;
-          else td.appendChild(contenu);
+          else {
+            contenu.classList.add("pc-num");
+            td.appendChild(contenu);
+          }
           tr.appendChild(td);
         }
         ajoute(general);
@@ -7097,14 +7111,15 @@
         });
       });
       if (!edition) ligne("MODs", "—", function (t) { return affiche(etablis[t].mods); });
-      [["Bonus primaire", "primaire", "primaires", false], ["Multiplicateur", "mult", "multiplicateurs", true],
+      [["Bonus primaire", "primaire", "primaires", false], ["Bonus mult.", "mult", "multiplicateurs", true],
         ["Bonus secondaire", "secondaire", "secondaires", false]].forEach(function (rang) {
         var titre = rang[0], gen = rang[1], carte = rang[2], mult = rang[3];
-        var general = edition ? nombreAttaque(a, gen, titre + " général", mult ? "×1" : "", mult) :
-          (mult ? fmtMult(multPersonnalise(a.mult)) : affiche(a[gen]));
+        var libelle = mult ? "Bonus au multiplicateur" : titre;
+        var general = edition ? nombreAttaque(a, gen, libelle + " général", mult ? "0" : "", false, null, mult ? 1 : 0) :
+          (mult ? affiche(bonusDuFacteur(multPersonnalise(a.mult))) : affiche(a[gen]));
         ligne(titre, general, function (t) {
-          if (!edition) return mult ? fmtMult(etablis[t].multType) : affiche(etablis[t][gen]);
-          return nombreAttaque(a[carte], t, titre + " " + combatLibType(t), mult ? "×1" : "", mult);
+          if (!edition) return mult ? affiche(bonusDuFacteur(etablis[t].multType)) : affiche(etablis[t][gen]);
+          return nombreAttaque(a[carte], t, libelle + " " + combatLibType(t), mult ? "0" : "", false, null, mult ? 1 : 0);
         });
       });
       if (!edition) ligne("Taux perso.", "—", function (t) { return fmtP(etablis[t].taux) + " %"; });
@@ -7188,7 +7203,7 @@
       var comp = combatComp(a);
       comp.setAttribute("aria-label", "Compétence");
       choix.appendChild(fld("Compétence", comp));
-      choix.appendChild(fld("Attaque", nombreAttaque(a, "attaque", "Attaque", "", true)));
+      choix.appendChild(fld("Difficulté d’Attaque", nombreAttaque(a, "attaque", "Difficulté d’Attaque", "", true)));
       choix.appendChild(fld("Coût PE", nombreAttaque(a, "coutPe", "Coût PE", fmtP(coutEndurance(it, a)), true)));
       choix.appendChild(fld("Coût PM", nombreAttaque(a, "coutPm", "Coût PM", "0", true)));
 

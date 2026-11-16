@@ -288,7 +288,7 @@ test('le multiplicateur de type précède le secondaire, le taux du personnage v
  it.arme.degatsParType={physique:80,feu:20};
  w.ctx.combatMod=(k,t,d=0)=>t!=='feu'?d:({attaquesPrimaires:5,attaques:5,attaquesMultiplicateurs:1.2,tauxDegats:120}[k]??d);
  w.ctx.effetBonus=(k,t)=>k==='degats'&&t==='feu'?10:0;
- assert.equal(w.ctx.degatsTypes({mult:1.4},'physique',false,it),'112 physique + 61 feu');
+ assert.equal(w.ctx.degatsTypes({mult:1.4},'physique',false,it),'112 physique + 58 feu');
 });
 test('munition primaire, imprégnation ciblée avec fixe secondaire et taux personnage',()=>{
  const it=weapon(),a=ammo(),w=attackContext([it,a]);
@@ -313,9 +313,9 @@ test('attaque personnalisée liée : base et MODs de l’arme, multiplicateurs, 
  }};
  w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseMana=true;
  w.ctx.combatMod=(k,t,d=0)=>k==='tauxDegats'&&t==='feu'?120:d;
- assert.equal(w.ctx.degatsTypes(null,'feu',false,it,entree),'61 physique + 93 feu');
+ assert.equal(w.ctx.degatsTypes(null,'feu',false,it,entree),'61 physique + 79 feu');
  w.ctx.envoieAttaqueSimple(entree,it,def());
- assert.equal(w.chats[0].champs[0][1],'61 physique + 93 feu');
+ assert.equal(w.chats[0].champs[0][1],'61 physique + 79 feu');
  assert.equal(w.ctx.state.etat.pe,97);assert.equal(w.ctx.state.etat.pm,8);assert.equal(a.qte,0);
 });
 test('attaque personnalisée sans arme : bonus sur un nouveau type et multiplicateur à zéro',()=>{
@@ -323,8 +323,20 @@ test('attaque personnalisée sans arme : bonus sur un nouveau type et multiplica
  const perso={sousType:'contact',attaque:8,coutPe:0,mult:2,multiplicateurs:{physique:0},
   degatsParType:{physique:10},primaires:{feu:6},secondaires:{physique:3}};
  w.ctx.envoieAttaqueSimple({nom:'Onde',personnalisee:perso},{nom:'Onde',arme:perso},{types:['physique']});
- assert.equal(w.chats[0].champs[0][1],'3 physique + 12 feu');
+ assert.equal(w.chats[0].champs[0][1],'13 physique + 12 feu');
  assert.equal(w.ctx.state.etat.pe,100);
+});
+test('cumul additif : +0,4 général, puis +0,2 ou −0,2 feu',()=>{
+ const it=weapon(),w=attackContext([it]);
+ it.arme.degatsParType={physique:10};it.arme.modsDegats=['Force'];w.ctx.caracTotal=()=>200;
+ const a={sousType:'arme',mult:1.4,primaires:{feu:20},multiplicateurs:{feu:1.2}};
+ const entree={personnalisee:a};
+ assert.equal(w.ctx.degatsTypes(null,'physique',false,it,entree),'70 physique + 32 feu');
+ a.multiplicateurs.feu=0.8;
+ assert.equal(w.ctx.degatsTypes(null,'physique',false,it,entree),'70 physique + 24 feu');
+ a.multiplicateurs.feu=-1;
+ a.secondaires={feu:7};
+ assert.equal(w.ctx.degatsTypes(null,'physique',false,it,entree),'70 physique + 7 feu');
 });
 test('portée personnalisée : origine conservée en mêlée, masquée à distance et avec un arc',()=>{
  const w=attackContext([]);

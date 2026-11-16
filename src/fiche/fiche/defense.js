@@ -34,6 +34,10 @@
     if (valeur == null) return defaut == null ? 0 : defaut;
     return k === "protections" || k === "resistances" ? snum(valeur) : (Number(valeur) || 0);
   }
+  // Les sauvegardes conservent les facteurs historiques (×1 est neutre).
+  function bonusDuFacteur(facteur) {
+    return Number((facteur - 1).toPrecision(15));
+  }
   // État de dépliage purement visuel, comme les cartes d'attaque et de défense.
   // Aucun nouvel attribut de personnage n'est nécessaire.
   var combatModVue = { attaque: false, defense: false };
@@ -64,18 +68,19 @@
     combatTypes().forEach(function (t) {
       var row = el("tr"); row.dataset.damageType = t;
       row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Multiplicateur du type", 1],
+      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Bonus au multiplicateur du type", 1],
         ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
         [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
         var k = colonne[0];
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t, colonne[2]);
+        var mult = k === "attaquesMultiplicateurs", valeurInitiale = combatMod(k, t, colonne[2]);
+        champNombreSigne(i); i.step = "any"; i.value = mult ? bonusDuFacteur(valeurInitiale) : valeurInitiale;
         i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
         i.addEventListener("input", function () {
-          var n = i.value.trim() ? litNombreSigne(i.value) : colonne[2];
-          if (!isFinite(n) || (k === "attaquesMultiplicateurs" || k === "tauxDegats") && n < 0) return;
-          state.combatModifiers[k][t] = n; save();
+          var n = i.value.trim() ? litNombreSigne(i.value) : mult ? 0 : colonne[2];
+          if (!isFinite(n) || k === "tauxDegats" && n < 0) return;
+          state.combatModifiers[k][t] = n + (mult ? 1 : 0); save();
         });
         i.addEventListener("change", function () { refresh(); });
         valeur.appendChild(i);

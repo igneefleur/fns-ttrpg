@@ -66,14 +66,14 @@
     out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
     ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
       var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
-      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm|mult)$/.test(k) ? Math.max(0, valeur) : valeur;
+      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm)$/.test(k) ? Math.max(0, valeur) : valeur;
       else delete out[k];
     });
     ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
       out[k] = {};
       combatTypes().forEach(function (t) {
         var v = a[k] && a[k][t], valeur = typeof v === "number" ? v : litNombreSigne(v);
-        if (isFinite(valeur)) out[k][t] = k === "multiplicateurs" ? Math.max(0, valeur) : valeur;
+        if (isFinite(valeur)) out[k][t] = valeur;
       });
     });
     return out;
@@ -267,7 +267,7 @@
     ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
       combatTypes().forEach(function (t) {
         var v = cm[k] && cm[k][t], n = Number(v);
-        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "attaquesPrimaires" ? n : Math.max(0, n);
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "tauxDegats" ? Math.max(0, n) : n;
       });
     });
     // ---- attaques ----
