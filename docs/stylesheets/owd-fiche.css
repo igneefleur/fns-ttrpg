@@ -2203,6 +2203,9 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-garde-dessin path,.perso-fiche .pc-garde-dessin circle { pointer-events:none; }
 
 .perso-fiche .pc-attaque-nom-edit { grid-column: 1 / -1; }
+.perso-fiche .pc-attaque-couts { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.perso-fiche .pc-attaque-champ-icone { display: grid; grid-template-columns: minmax(0,1fr) auto; column-gap: .25rem; align-items: center; }
+.perso-fiche .pc-attaque-champ-icone > label { grid-column: 1 / -1; }
 .perso-fiche .pc-attaque-mods-perso { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 4px; }
 .perso-fiche .pc-attaque-custom-info select { width: 100%; min-width: 0; }
 .perso-fiche .pc-combat-tete-attaque > .pc-combat-drag { margin-left: .3rem; }

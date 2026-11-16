@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.3b";
+  var RELEASE = "4.38.4b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -666,9 +666,9 @@
     var out = normCombatLibre(a, comps);
     if (!out) return null;
     out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
-    ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
+    ["coutPv", "coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
       var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
-      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm)$/.test(k) ? Math.max(0, valeur) : valeur;
+      if (isFinite(valeur)) out[k] = /^coutP[evm]$/.test(k) ? Math.max(0, valeur) : valeur;
       else delete out[k];
     });
     ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
@@ -6688,6 +6688,7 @@
     function prepareRessources(entree, it, def) {
       var a = entree.personnalisee;
       var out = {
+        vie: a ? degatsPositifs(a.coutPv) : 0,
         endurance: coutEndurance(it, a),
         mana: a ? degatsPositifs(a.coutPm) : 0,
         munition: null
@@ -6718,6 +6719,8 @@
       if (!r) return;
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
       var message = preparerMessage();
+      if (r.vie > 0)
+        state.etat.pv = (courant("pv") - effetCout("pv",r.vie));
       if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
         state.etat.pe = (courant("pe") - effetCout("pe",r.endurance));
       if (state.combatOptions.attaques.utiliseMana && r.mana > 0)
@@ -7048,16 +7051,16 @@
       return img;
     }
 
-    function iconeOutward(chemin, libelle, repli) {
+    function iconeCombat(fichier, libelle, repli) {
       var img = el("img", "pc-attaque-icone-degats");
       img.alt = img.title = libelle;
       img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
-      img.src = "https://static.wikia.nocookie.net/outward_gamepedia/images/" + chemin;
+      img.src = siteBase() + "assets/owd/combat/" + fichier + ".png";
       return img;
     }
 
     function iconeEndurance() {
-      return iconeOutward("8/8d/Stamina.png/revision/latest?cb=20190408075056", "Endurance", "PE");
+      return iconeCombat("pe", "Endurance", "PE");
     }
 
     function bilanDegats(valeurs, libelle) {
@@ -7106,7 +7109,7 @@
       var head = el("tr");
       head.appendChild(el("th", null, "Dégâts"));
       var general = el("th");
-      general.appendChild(iconeOutward("6/6e/Attack_Speed.png/revision/latest/scale-to-width-down/22?cb=20190408075010", "Général", "Gén."));
+      general.appendChild(iconeCombat("pv", "Général", "Gén."));
       head.appendChild(general);
       colonnes.forEach(function (t) {
         var th = el("th");
@@ -7236,11 +7239,20 @@
       var comp = combatComp(a);
       comp.setAttribute("aria-label", "Compétence");
       choix.appendChild(fld("Compétence", comp));
-      choix.appendChild(fld("Difficulté d’Attaque", nombreAttaque(a, "attaque", "Difficulté d’Attaque", "", true)));
-      var cout = fld("Coût ", nombreAttaque(a, "coutPe", "Coût en endurance", fmtP(coutEndurance(it, a)), true));
-      cout.firstChild.appendChild(iconeEndurance());
-      choix.appendChild(cout);
-      choix.appendChild(fld("Coût PM", nombreAttaque(a, "coutPm", "Coût PM", "0", true)));
+      var difficulte = "Difficulté d’Attaque";
+      var champAttaque = fld(difficulte, nombreAttaque(a, "attaque", difficulte, "", true), "pc-attaque-champ-icone");
+      champAttaque.appendChild(iconeCombat("vitesse-attaque", "", ""));
+      choix.appendChild(champAttaque);
+
+      var couts = el("div", "pc-attaque-couts pc-attaque-nom-edit");
+      [["PV", "coutPv", "0", "Vie"], ["PE", "coutPe", fmtP(coutEndurance(it, a)), "Endurance"],
+        ["PM", "coutPm", "0", "Mana"]].forEach(function (cout) {
+        var nom = "Coût " + cout[0];
+        var champ = fld(nom, nombreAttaque(a, cout[1], nom, cout[2], true), "pc-attaque-champ-icone");
+        champ.appendChild(iconeCombat(cout[0].toLowerCase(), cout[3], ""));
+        couts.appendChild(champ);
+      });
+      choix.appendChild(couts);
 
       if (a.sousType !== "arme") {
         var mods = el("div", "pc-attaque-mods-perso");
@@ -7296,13 +7308,13 @@
         if (a.trajet || !a.type || liee) coups = a.trajet ? [{
           nom: entree.nom || "Attaque personnalisée", trajet: a.trajet, garde: a.garde, types: def.types
         }] : [];
-        var coutPe = coutEndurance(it, a);
-        if (coutPe) {
-          var endurance = el("span", "pc-attaque-bilan-type", fmtP(coutPe));
-          endurance.appendChild(iconeEndurance());
-          couts.appendChild(endurance);
-        }
-        if (a.coutPm) couts.appendChild(el("span", null, fmtP(a.coutPm) + " PM"));
+        [[a.coutPv, "pv", "Vie", "PV"], [coutEndurance(it, a), "pe", "Endurance", "PE"],
+          [a.coutPm, "pm", "Mana", "PM"]].forEach(function (cout) {
+          if (!cout[0]) return;
+          var valeur = el("span", "pc-attaque-bilan-type", fmtP(cout[0]));
+          valeur.appendChild(iconeCombat(cout[1], cout[2], cout[3]));
+          couts.appendChild(valeur);
+        });
       } else if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
@@ -7325,7 +7337,7 @@
       type.setAttribute("aria-label", "Type d’attaque");
       type.addEventListener("change", function () {
         entree.personnalisee = type.value === "custom" ? {
-          sousType: entree.arme ? "arme" : "contact", attaque: "8", coutPe: 0, coutPm: 0,
+          sousType: entree.arme ? "arme" : "contact", attaque: "8", coutPv: 0, coutPe: 0, coutPm: 0,
           degatsParType: {}, modsDegats: ["", "", ""], comp: "", type: "", trajet: "", garde: "",
           touche: "", passage: "", primaires: {}, multiplicateurs: {}, secondaires: {}
         } : null;

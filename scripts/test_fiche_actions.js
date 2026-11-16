@@ -308,15 +308,15 @@ test('attaque personnalisée liée : base et MODs de l’arme, multiplicateurs, 
  const it=weapon(),a=ammo(),w=attackContext([it,a]);
  it.arme.degatsParType={physique:30,feu:10};it.arme.modsDegats=['Force'];
  const entree={nom:'Tir ardent',munition:'ammo',personnalisee:{
-  sousType:'arme',attaque:8,coutPe:3,coutPm:2,degatsParType:{froid:999},
+  sousType:'arme',attaque:8,coutPv:4,coutPe:3,coutPm:2,degatsParType:{froid:999},
   primaire:8,primaires:{feu:4},mult:1.5,multiplicateurs:{feu:2},secondaire:4,secondaires:{feu:5}
  }};
- w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseMana=true;
+ w.ctx.state.etat.pv=20;w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseMana=true;
  w.ctx.combatMod=(k,t,d=0)=>k==='tauxDegats'&&t==='feu'?120:d;
  assert.equal(w.ctx.degatsTypes(null,'feu',false,it,entree),'61 physique + 79 feu');
  w.ctx.envoieAttaqueSimple(entree,it,def());
  assert.equal(w.chats[0].champs[0][1],'61 physique + 79 feu');
- assert.equal(w.ctx.state.etat.pe,97);assert.equal(w.ctx.state.etat.pm,8);assert.equal(a.qte,0);
+ assert.equal(w.ctx.state.etat.pv,16);assert.equal(w.ctx.state.etat.pe,97);assert.equal(w.ctx.state.etat.pm,8);assert.equal(a.qte,0);
 });
 test('attaque personnalisée sans arme : bonus sur un nouveau type et multiplicateur à zéro',()=>{
  const w=attackContext([]);
@@ -351,7 +351,7 @@ test('portée personnalisée : origine conservée en mêlée, masquée à distan
 test('les réglages par attaque transitent dans le bloc de synchronisation existant',()=>{
  const source=M.blank();
  source.combatOptions.attaques.utiliseMana=true;
- source.attaques=[{id:'a',arme:'arc',personnalisee:{sousType:'arme',coutPe:0,coutPm:4,
+ source.attaques=[{id:'a',arme:'arc',personnalisee:{sousType:'arme',coutPv:2,coutPe:0,coutPm:4,
   primaire:-2,primaires:{feu:1.25},mult:0,multiplicateurs:{eclair:1.2},secondaire:3,secondaires:{froid:2}}}];
  const copie=C.Compact.read(C.Compact.encode(source)).state;
  assert.deepEqual(copie.attaques,source.attaques);assert.equal(copie.combatOptions.attaques.utiliseMana,true);

@@ -64,9 +64,9 @@
     var out = normCombatLibre(a, comps);
     if (!out) return null;
     out.sousType = ["arme", "distance"].indexOf(a.sousType) >= 0 ? a.sousType : "contact";
-    ["coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
+    ["coutPv", "coutPe", "coutPm", "primaire", "secondaire", "mult"].forEach(function (k) {
       var valeur = typeof a[k] === "number" ? a[k] : litNombreSigne(a[k]);
-      if (isFinite(valeur)) out[k] = /^(coutPe|coutPm)$/.test(k) ? Math.max(0, valeur) : valeur;
+      if (isFinite(valeur)) out[k] = /^coutP[evm]$/.test(k) ? Math.max(0, valeur) : valeur;
       else delete out[k];
     });
     ["primaires", "multiplicateurs", "secondaires"].forEach(function (k) {
