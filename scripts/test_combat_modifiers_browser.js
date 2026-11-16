@@ -60,11 +60,11 @@ const server=http.createServer((req,res)=> {
   await modDef.getByRole('button',{name:'Agrandir',exact:true}).click();
   assert.equal(await modAtk.locator('.pc-defense-valeurs').count(),1);
   assert.equal(await modDef.locator('.pc-defense-valeurs').count(),1);
-  assert.equal(await modAtk.locator('[data-damage-type]').count(),9);
-  assert.equal(await modDef.locator('[data-damage-type]').count(),9);
-  assert.equal(await modAtk.getByLabel('Dégâts Feu',{exact:true}).isDisabled(),false);
+  assert.equal(await modAtk.locator('[data-damage-type]').count(),7);
+  assert.equal(await modDef.locator('[data-damage-type]').count(),7);
+  assert.equal(await modAtk.getByLabel('Bonus secondaire Feu',{exact:true}).isDisabled(),false);
   async function fill(box,label,n){const i=box.getByLabel(label,{exact:true});assert.equal(await i.isDisabled(),false);await i.fill(String(n));await i.dispatchEvent('change');}
-  await fill(atk,'Dégâts Feu',5);await fill(atk,'Dégâts Froid',3);
+  await fill(atk,'Bonus secondaire Feu',5);await fill(atk,'Bonus secondaire Froid',3);
   await custom.getByRole('button',{name:'Agrandir',exact:true}).click();
   assert.match(await custom.locator('span.touche').textContent(),/33 feu.*3 froid/);
   assert.match(await custom.locator('.passage').textContent(),/16 feu.*1 froid/);

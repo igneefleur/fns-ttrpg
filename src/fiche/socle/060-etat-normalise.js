@@ -51,6 +51,10 @@
     ["attaque", "degats", "parade", "reduction", "type", "mult", "trajet", "garde", "touche", "passage"].forEach(function (k) {
       out[k] = String(a[k] == null ? "" : a[k]);
     });
+    if (a.degatsParType && typeof a.degatsParType === "object" && !Array.isArray(a.degatsParType))
+      actualiseDegatsArme(out, baseDegatsArme(a));
+    else if (a.repartition && typeof a.repartition === "object")
+      out.repartition = JSON.parse(JSON.stringify(a.repartition));
     out.modsDegats = normModsArme(a.modsDegats); out.modsParade = normModsArme(a.modsParade);
     out.comp = a.comp && comps[a.comp] ? String(a.comp) : "";
     out.mains = 1;
@@ -227,7 +231,7 @@
       modificateursDefense: combatAffichage.modificateursDefense !== false
     };
     var cm = s.combatModifiers || {};
-    s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    s.combatModifiers = { attaques: {}, attaquesPrimaires: {}, attaquesMultiplicateurs: {}, tauxDegats: {}, protections: {}, resistances: {} };
     var legacyPhysique=cm.legacyPhysique && typeof cm.legacyPhysique==="object" ? JSON.parse(JSON.stringify(cm.legacyPhysique)) : {};
     ["attaques","protections","resistances"].forEach(function(k){
       if(cm[k] && ["contondant","perforant","tranchant"].some(function(t){return snum(cm[k][t])!==0;}))legacyPhysique[k]={contondant:snum(cm[k].contondant),perforant:snum(cm[k].perforant),tranchant:snum(cm[k].tranchant)};
@@ -241,6 +245,12 @@
       // Archives uniquement : conserver les anciennes clés sans les réutiliser
       // dans les calculs Physique ni dans les champs visibles.
       ["contondant","perforant","tranchant"].forEach(function(t){var v=cm[k]&&cm[k][t];if(v===undefined && legacyPhysique[k])v=legacyPhysique[k][t];if(v!==undefined && isFinite(Number(v)))s.combatModifiers[k][t]=Number(v);});
+    });
+    ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
+      combatTypes().forEach(function (t) {
+        var v = cm[k] && cm[k][t], n = Number(v);
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "attaquesPrimaires" ? n : Math.max(0, n);
+      });
     });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens

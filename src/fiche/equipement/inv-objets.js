@@ -50,7 +50,9 @@
       ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
-    if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
+    if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);var bases = baseDegatsArme(a);
+      add("Dégâts", fmtP(totalDegatsBase(bases)));
+      Object.keys(bases).forEach(function (t) { add("Dégâts — " + combatLibType(t), fmtP(bases[t])); });
       add("Mods dégâts",(a.modsDegats||[]).filter(Boolean).join(" · "));add("Parade",a.parade);add("Réduction",a.reduction);
       add("Mods parade",(a.modsParade||[]).filter(Boolean).join(" · "));
       var comp=(state.comps||[]).filter(function(c){return c.id===a.comp;})[0];if(comp)add("Compétence",comp.nom);
@@ -886,7 +888,7 @@
         it.contenant=v==="contenant"?(it.contenant||"liquide"):"";
         if(type==="contenant")it.sousType=it.contenant;
         it.contenu=type==="munition"?it.sousType:type==="consommable"?"":"";
-        it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:[],modsParade:[],comp:"",type:"",mains:1,repartition:{physique:100}}):null;
+        it.arme=v==="arme"?(it.arme||{attaque:"",degats:"",parade:"",reduction:"",modsDegats:normModsArme(),modsParade:normModsArme(),comp:"",type:"",mains:1,repartition:{physique:100}}):null;
         if (INV_EP.indexOf(it.ou) < 0 && !lieuPermis(it, it.ou)) it.ou = "sac";
         rangeEmplacements(items);
         save();

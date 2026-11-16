@@ -2788,3 +2788,7 @@ html.night .pc-stadebar.pc-tech-acquired-bar .seg.on {
 .pc-editable.editing .pc-tech-divider-name { display: block; }
 .pc-tech-divider.collapsed { border-bottom-style: dashed; }
 .pc-tech-divider.drop-target { outline: 1px dashed var(--accent); outline-offset: -2px; }
+
+/* Détail des dégâts : la grille peut défiler dans une colonne étroite. */
+.pc-attaque-detail-degats-wrap { overflow-x: auto; }
+.perso-fiche .pc-attaque-detail-degats { white-space: nowrap; }

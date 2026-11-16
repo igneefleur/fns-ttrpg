@@ -19,6 +19,34 @@
     return fld(libelle, i);
   }
 
+  function champsDegatsParType(a, type, projectile) {
+    var bases = baseDegatsArme(a, type, projectile);
+    var rep = el("div", "pc-arme-repartition");
+    var totalInput = el("div", "pc-edit-field pc-arme-total");
+    totalInput.setAttribute("role", "status");
+    totalInput.setAttribute("aria-label", "Total des dégâts de base");
+    function total() { totalInput.textContent = fmtP(totalDegatsBase(bases)); }
+    combatTypes().forEach(function (k) {
+      var input = champNombreSigne(el("input", "pc-edit-field"));
+      input.value = bases[k] == null ? "" : String(bases[k]);
+      input.placeholder = "0";
+      input.setAttribute("aria-label", "Dégâts de base " + combatLibType(k));
+      input.addEventListener("input", function () {
+        var v = input.value.trim() ? litNombreSigne(input.value) : 0;
+        if (!isFinite(v) || v < 0) return;
+        if (v) bases[k] = v; else delete bases[k];
+        actualiseDegatsArme(a, bases);
+        save();
+        total();
+      });
+      input.addEventListener("change", refresh);
+      rep.appendChild(fld(combatLibType(k), input));
+    });
+    rep.appendChild(fld("Total", totalInput));
+    total();
+    return rep;
+  }
+
   function carteArme(it, attaqueLibre, sousTypeHost) {
     // L’inventaire passe historiquement un callback en second argument.
     // Seul le booléen explicite des attaques libres masque la parade.
@@ -132,9 +160,8 @@
     l0.appendChild(fld("Compétence", selComp()));
     card.appendChild(l0);
 
-    var l1 = ligne("pc-arme-2");
+    var l1 = ligne("pc-arme-1");
     l1.appendChild(champArme("Attaque", a, "attaque", "Difficulté du jet d'attaque."));
-    l1.appendChild(champArme("Dégâts", a, "degats", "Dégâts de base de l'arme, avant ses MOD."));
     card.appendChild(l1);
 
     var l2 = ligne("pc-arme-3");
@@ -156,38 +183,9 @@
       else { var lType = ligne("pc-arme-1"); lType.appendChild(typeField); card.appendChild(lType); }
     }
 
-    if (!attaqueLibre) {
-      if (!a.repartition) a.repartition = {physique:100};
-      var rep = el("div", "pc-arme-repartition");
-      // Une sortie calculée, ni champ éditable, ni texte sélectionnable.
-      var totalInput = el("div", "pc-edit-field pc-arme-total");
-      totalInput.setAttribute("role", "status");
-      totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
-      totalInput.title = "Somme calculée automatiquement, non modifiable";
-      function total() {
-        var n = 0;
-        combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
-        totalInput.textContent = fmtP(n) + " %";
-        totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
-      }
-      // 4 rangées × 2, avec Brut / Total pour la dernière.
-      ["physique", "ethere", "feu", "froid", "eclair", "decomposition", "brut"].forEach(function (k) {
-        var input = el("input", "pc-edit-field");
-        input.type = "text";
-        input.inputMode = "decimal";
-        input.value = pnum(a.repartition[k]);
-        input.setAttribute("aria-label", "Dégâts " + combatLibType(k) + " (%)");
-        input.addEventListener("input", function () {
-          var v = litNombreSigne(input.value);
-          if (isFinite(v) && v >= 0) { a.repartition[k] = v; save(); total(); }
-        });
-        input.addEventListener("change", refresh);
-        rep.appendChild(fld(combatLibType(k) + " (%)", input));
-      });
-      rep.appendChild(fld("Total", totalInput));
-      total();
-      card.appendChild(rep);
+    card.appendChild(champsDegatsParType(a, attaqueLibre ? a.touche : undefined));
 
+    if (!attaqueLibre) {
       // Les prérequis sont tous prévus, y compris ceux encore peu utilisés.
       [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
        ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {

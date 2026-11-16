@@ -77,9 +77,15 @@ def reference(docs):
             if eid not in effects:
                 raise ValueError(f'Effet inconnu : {name}: {eid}')
         if o.get('arme'):
-            rep = o['arme'].get('repartition', {})
-            if abs(sum(rep.values()) - 100) > 1e-6:
-                raise ValueError(f'Répartition des dégâts invalide : {name}')
+            arme = o['arme']
+            bases = arme.get('degatsParType')
+            if not isinstance(bases, dict) or any(
+                k not in DAMAGE or isinstance(v, bool) or not isinstance(v, (int, float))
+                or not math.isfinite(v) or v < 0 for k,v in bases.items()
+            ):
+                raise ValueError(f'Dégâts par type invalides : {name}')
+            if not math.isclose(sum(bases.values()), float(arme['degats']), abs_tol=1e-8):
+                raise ValueError(f'Total des dégâts incohérent : {name}')
     return data
 
 
@@ -110,8 +116,8 @@ def champs(o, effects):
         for label, key in [('Modificateur de dégâts','modsDegats'), ('Modificateur de réduction','modsParade')]:
             for i, val in enumerate(a.get(key, [])):
                 if val: add(f'{label} {i+1}', abbr.get(val, val))
-        for key, val in a.get('repartition', {}).items():
-            add(DAMAGE.get(key, key) + ' (%)', val, True)
+        for key, val in a['degatsParType'].items():
+            add('Dégâts de base — ' + DAMAGE[key], val)
     for k, val in o.get('prerequis', {}).items():
         add(k.upper() + ' requise', val)
     if o.get('sac') or o['typeObjet'] == 'contenant':

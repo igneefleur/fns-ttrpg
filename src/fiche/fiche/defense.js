@@ -29,7 +29,11 @@
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
-  function combatMod(k, t) { return snum(state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t]); }
+  function combatMod(k, t, defaut) {
+    var valeur = state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t];
+    if (valeur == null) return defaut == null ? 0 : defaut;
+    return k === "protections" || k === "resistances" ? snum(valeur) : (Number(valeur) || 0);
+  }
   // État de dépliage purement visuel, comme les cartes d'attaque et de défense.
   // Aucun nouvel attribut de personnage n'est nécessaire.
   var combatModVue = { attaque: false, defense: false };
@@ -53,21 +57,25 @@
     // les alignements, la typographie et l'espacement de leurs tableaux.
     var detail = el("div", "pc-attaque-detail pc-defense-detail pc-combat-mod-detail");
     var table = el("table", "pc-defense-valeurs pc-combat-mod-table"), head = el("tr");
-    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
+    (attaque ? ["Type", "Prim.", "Mult.", "Sec.", "Perso %"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
       head.appendChild(el("th", null, s));
     });
     table.appendChild(head);
     combatTypes().forEach(function (t) {
       var row = el("tr"); row.dataset.damageType = t;
       row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
+      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Multiplicateur du type", 1],
+        ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
+        [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
+        var k = colonne[0];
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t);
-        i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
+        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t, colonne[2]);
+        i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
         i.addEventListener("input", function () {
-          var n = Number(i.value);
-          if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); }
+          var n = i.value.trim() ? litNombreSigne(i.value) : colonne[2];
+          if (!isFinite(n) || (k === "attaquesMultiplicateurs" || k === "tauxDegats") && n < 0) return;
+          state.combatModifiers[k][t] = n; save();
         });
         i.addEventListener("change", function () { refresh(); });
         valeur.appendChild(i);

@@ -14,11 +14,6 @@
       var id = state.combatOptions.attaques.impregnation;
       return (D().impregnations || []).find(function (d) { return d.id === id; }) || null;
     }
-    function bonusImpregnation() {
-      var d = impregnationSelectionnee();
-      return d ? snum(d.pct) / 100 : 0;
-    }
-
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       return objets.filter(function (o) { return o && o.arme; });
@@ -52,11 +47,6 @@
       });
       return total;
     }
-    function degatsArme(it) {
-      if (!it || !it.arme) return 0;
-      var total = brutArme(it);
-      return Math.floor(total / (state.combatOptions.attaques.lente ? 2 : 1) + 1e-9);
-    }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
         (def && Array.isArray(def.types) ? def.types : []);
@@ -67,62 +57,75 @@
       var n = Number(coup && coup.mult);
       return isFinite(n) && n > 0 ? n : 1;
     }
-    function degatsCoup(it, coup) {
-      var mult = multiplicateurCoup(coup);
-      // Équilibrage : le multiplicateur du coup ne porte QUE sur les dégâts
-      // de base de l'arme. Les MOD sont ajoutés ensuite, chacun valant
-      // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
-      // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
-      var touche = brutCoup(it, coup);
-      if (state.combatOptions.attaques.lente) touche = Math.floor(touche / 2);
-      return {
-        mult: mult,
-        touche: touche,
-        passage: Math.floor(touche / 2)
-      };
+    function formatDegats(valeurs) {
+      return valeurs.map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
     }
-    function degatsTypes(base, type, passage, it, entree) {
-      return chiffresDegats(base, type, passage, it, entree).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
-    }
-    function chiffresDegats(base, type, passage, it, entree) {
-      var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
-      primary = /^(tranchant|contondant|perforant)$/.test(primary) ? "physique" : primary;
-      if (combatTypes().indexOf(primary) < 0) primary = "physique";
-      var rep=it && it.arme && it.arme.repartition, somme=0;
-      if(rep)Object.keys(rep).forEach(function(k){somme+=pnum(rep[k]);});
-      if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
-      var ammo=entree&&munitionSelectionnee(entree,typeArme(it&&it.arme&&it.arme.type)),ms=ammo&&ammo.munitionStats;
-      if(ms&&ms.degats)combatTypes().forEach(function(k){var q=snum(ms.repartition&&ms.repartition[k]);if(q)valeurs[k]=(valeurs[k]||0)+snum(ms.degats)*q/100;});
-      // Une seule imprégnation : le choix commun remplace, dans ce module,
-      // l'imprégnation ciblée de l'arme. Sans choix, l'effet ciblé reste actif.
-      var impregnation = impregnationSelectionnee();
-      if (!impregnation) effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
-      // L'imprégnation commune crée des dégâts de son propre élément : son
-      // pourcentage porte uniquement sur la base de l'arme, jamais sur le
-      // multiplicateur du coup ni sur les MOD, et ne change pas la répartition.
-      // Ce supplément précède les bonus de dégâts par type. Le fixe, lui,
-      // conserve sa place après ces bonus (voir le calcul final ci-dessous).
-      if (impregnation && impregnation.type) {
-        var elementaire = snum(it && it.arme && it.arme.degats) * bonusImpregnation();
-        if (elementaire || snum(impregnation.flat))
-          valeurs[impregnation.type] = (valeurs[impregnation.type] || 0) + elementaire;
+    function detailDegats(it, entree, coup, type) {
+      var types = combatTypes();
+      if (/^(tranchant|contondant|perforant)$/.test(type) || types.indexOf(type) < 0) type = "physique";
+      var bases = baseDegatsArme(it.arme, type);
+      var total = totalDegatsBase(bases), mods = modsDegatsArme(it);
+      var ammo = munitionSelectionnee(entree, typeArme(it.arme.type));
+      var munitions = ammo && pnum(ammo.qte) && ammo.munitionStats ? baseDegatsArme(ammo.munitionStats, undefined, true) : {};
+      var commune = impregnationSelectionnee(), impregnation = commune && commune.type ? commune : null;
+      if (!commune) {
+        var source = effetsSources().find(function (x) {
+          return it.ref && x.e.cible === it.ref && x.d.ops.impregnation && x.d.ops.impregnation.type;
+        });
+        if (source) impregnation = source.d.ops.impregnation;
       }
-      combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
-      return Object.keys(valeurs).map(function (t) {
-        var fixe = impregnation && impregnation.type === t ? snum(impregnation.flat) : 0;
-        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+fixe+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
-        return { type: t, valeur: Math.max(0, n) };
-      }).filter(function (x) { return x.valeur || x.type === primary; });
+      var multCoup = multiplicateurCoup(coup);
+      return types.map(function (t) {
+        var base = bases[t] || 0;
+        var primaire = combatMod("attaquesPrimaires", t) + (munitions[t] || 0);
+        var secondaire = combatMod("attaques", t);
+        if (impregnation && impregnation.type === t) {
+          primaire += total * nombreDegats(impregnation.pct) / 100;
+          secondaire += nombreDegats(impregnation.flat);
+        }
+        if (!base && !primaire && !secondaire && t !== type) return null;
+        return {
+          type: t, base: base, mods: total ? mods * base / total : 0,
+          primaire: primaire, secondaire: secondaire,
+          multCoup: multCoup, multType: Math.max(0, combatMod("attaquesMultiplicateurs", t, 1)),
+          taux: Math.max(0, combatMod("tauxDegats", t, 100) + effetBonus("degats", t))
+        };
+      }).filter(Boolean);
     }
-    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
-    function brutCoup(it, coup) {
-      // Le multiplicateur du coup s'applique aux seuls dégâts de base de
-      // l'arme ; chaque MOD s'ajoute ensuite. L'imprégnation est calculée
-      // séparément, par élément, dans chiffresDegats().
-      return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it);
+    function chiffresDegats(coup, type, passage, it, entree) {
+      var diviseur = (state.combatOptions.attaques.lente ? 2 : 1) * (passage ? 2 : 1);
+      var valeurs = detailDegats(it, entree, coup, type).map(function (x) {
+        var total = ((x.base + x.mods + x.primaire) * x.multCoup * x.multType + x.secondaire) * x.taux / 100;
+        return { type: x.type, valeur: Math.max(0, Math.floor(total / diviseur + 1e-9)) };
+      });
+      var positifs = valeurs.filter(function (x) { return x.valeur > 0; });
+      return positifs.length ? positifs : valeurs.slice(0, 1);
+    }
+    function degatsTypes(coup, type, passage, it, entree) {
+      return formatDegats(chiffresDegats(coup, type, passage, it, entree));
+    }
+    function tableauDegats(it, entree, type) {
+      var table = el("table", "pc-defense-valeurs pc-attaque-detail-degats");
+      var entete = el("tr");
+      [["Type", "Type de dégâts"], ["Base", "Dégâts de base"], ["MODs", "MODs répartis"],
+        ["Prim.", "Bonus primaires"], ["Mult.", "Multiplicateur propre au type"],
+        ["Sec.", "Bonus secondaires"], ["Perso %", "Taux final du personnage"]].forEach(function (colonne) {
+        var th = el("th", null, colonne[0]); th.title = colonne[1]; entete.appendChild(th);
+      });
+      table.appendChild(entete);
+      detailDegats(it, entree, null, type).forEach(function (x) {
+        var row = el("tr");
+        row.dataset.damageType = x.type;
+        [combatLibType(x.type), fmtP(x.base), fmtP(x.mods), fmtP(x.primaire),
+          fmtMult(x.multType), fmtP(x.secondaire), fmtP(x.taux) + " %"].forEach(function (texte) {
+          row.appendChild(el("td", null, texte));
+        });
+        table.appendChild(row);
+      });
+      return table;
     }
     function fmtMult(n) {
-      return "×" + Number(n || 1).toFixed(1);
+      return "×" + fmtP(n == null ? 1 : n);
     }
 
     // ---------- ressources consommées par une attaque ----------
@@ -195,8 +198,6 @@
         flash("Cette arme nécessite deux mains pour être utilisée. Déposez-la sur « 2 Mains ».");
         return;
       }
-      var rep=it.arme&&it.arme.repartition,sum=0;
-      if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
@@ -210,21 +211,23 @@
       if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
+    function messageDegats(titre, it, entree, coup, types) {
+      var hit = chiffresDegats(coup, types.touche, false, it, entree);
+      var pass = chiffresDegats(coup, types.passage, true, it, entree);
+      return { titre: titre, combat: { kind: "attack", hit: hit, pass: pass }, champs: [
+        ["Case de touche", formatDegats(hit)], ["Case de passage", formatDegats(pass)]
+      ] };
+    }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
-        var types = typesCoup(coup, def);
-        return { combat: { kind: "attack", hit: chiffresDegats(brutCoup(it, coup), types.touche, false, it, entree), pass: chiffresDegats(brutCoup(it, coup), types.passage, true, it, entree) }, titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
-          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
-          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
-        ] };
+        return messageDegats((coup && coup.nom || "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"),
+          it, entree, coup, typesCoup(coup, def));
       });
     }
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
-        var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
-        return { combat: { kind: "attack", hit: chiffresDegats(brutArme(it), type, false, it, entree), pass: chiffresDegats(brutArme(it), type, true, it, entree) }, titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
-          ["Case de touche", degatsTypes(brutArme(it), type, false, it, entree)], ["Case de passage", degatsTypes(brutArme(it), type, true, it, entree)]
-        ] };
+        return messageDegats("Attaque — " + (it.nom || (def && def.nom) || "Arme"),
+          it, entree, null, typesCoup(null, def));
       });
     }
 
@@ -382,7 +385,7 @@
     }
 
     function carteCoup(entree, it, coup, def) {
-      var dg = degatsCoup(it, coup), types = typesCoup(coup, def);
+      var types = typesCoup(coup, def);
       var miroir = !!miroirs[entree.id];
       var btn = el("button", "pc-attaque-coup");
       btn.type = "button";
@@ -401,11 +404,11 @@
       var texte = el("div", "pc-attaque-coup-texte");
       var nom = el("div", "pc-attaque-coup-nom");
       nom.appendChild(document.createTextNode(coup.nom || "Attaque"));
-      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
+      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(multiplicateurCoup(coup))));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)));
-      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(coup, types.touche, false, it, entree)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(coup, types.passage, true, it, entree)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -490,7 +493,7 @@
       if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
-        meta.push("Dégâts " + fmtP(degatsArme(it)));
+        meta.push("Dégâts " + formatDegats(chiffresDegats(null, typesCoup(null, def).touche, false, it, entree)));
       }
       combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
@@ -568,6 +571,9 @@
         detail.appendChild(munBox);
       }
 
+      var detailTypes = el("div", "pc-attaque-detail-degats-wrap");
+      detailTypes.appendChild(tableauDegats(it, entree, typesCoup(coups[0], def).touche));
+      detail.appendChild(detailTypes);
       // Les armes de mêlée du livre ont six trajets. Les armes à distance,
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
@@ -576,7 +582,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false, it, entree)));
+        simple.appendChild(el("span", null, degatsTypes(null, stypes[0] || "—", false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);

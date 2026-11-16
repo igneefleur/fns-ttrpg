@@ -4,7 +4,12 @@ const root=path.resolve(__dirname,'..')+'/',I=require('../docs/javascripts/owd-i
 let n=0;function test(label,fn){fn();console.log('OK '+label);n++;}
 const attack=fs.readFileSync(root+'src/fiche/fiche/attaque.js','utf8');
 function part(name,next){return attack.slice(attack.indexOf('    function '+name+'('),attack.indexOf('    function '+next+'('));}
-function attackContext(items){const chats=[],errors=[];const ctx={state:{inv:{objets:items},etat:{pe:100},combatOptions:{attaques:{utiliseMunition:true,utiliseEndurance:true,lente:false}}},D:()=>({impregnations:JSON.parse(fs.readFileSync(root+'docs/data/owd-boutique.json')).impregnations||[]}),window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,caracTotal:()=>20,fmtP:String,combatTypes:()=>['physique','feu'],combatMod:()=>0,effetsSources:()=>[],effetBonus:()=>0,effetCout:(_,v)=>v,armesData:()=>[{cle:'test',types:['physique'],munition:{cle:'balle'}}],flash:m=>errors.push(m),sayChat:(titre,champs)=>chats.push({titre,champs}),refresh(){I.normalizeSlots(items);},courant:k=>ctx.state.etat[k]};vm.createContext(ctx);for(const [a,b]of[['impregnationSelectionnee','bonusImpregnation'],['bonusImpregnation','armesInventaire'],['typeArme','modsDegatsArme'],['modsDegatsArme','degatsArme'],['typesCoup','multiplicateurCoup'],['multiplicateurCoup','degatsCoup'],['degatsTypes','brutArme'],['brutArme','brutCoup'],['brutCoup','fmtMult'],['objetInventaire','coutEndurance'],['coutEndurance','categorieMunition'],['categorieMunition','munitionsCompatibles'],['munitionSelectionnee','retireUneMunition'],['retireUneMunition','prepareRessources'],['prepareRessources','executeAttaque'],['executeAttaque','envoieCoup'],['envoieCoup','envoieAttaqueSimple']])vm.runInContext(part(a,b),ctx);const a=attack.indexOf('    function envoieAttaqueSimple('),b=attack.indexOf('    // ---------- carte hexagonale',a);vm.runInContext(attack.slice(a,b),ctx);return {ctx,chats,errors};}
+function attackContext(items){const chats=[],errors=[];const ctx={state:{inv:{objets:items},etat:{pe:100},combatOptions:{attaques:{utiliseMunition:true,utiliseEndurance:true,lente:false}}},D:()=>({impregnations:JSON.parse(fs.readFileSync(root+'docs/data/owd-boutique.json')).impregnations||[]}),window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,caracTotal:()=>20,fmtP:String,combatTypes:()=>['physique','feu','froid','eclair','decomposition','ethere','brut'],combatMod:(_k,_t,d=0)=>d,effetsSources:()=>[],effetBonus:()=>0,effetCout:(_,v)=>v,armesData:()=>[{cle:'test',types:['physique'],munition:{cle:'balle'}}],flash:m=>errors.push(m),sayChat:(titre,champs)=>chats.push({titre,champs}),refresh(){I.normalizeSlots(items);},courant:k=>ctx.state.etat[k]};vm.createContext(ctx);
+const inv=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8');
+vm.runInContext(inv.slice(inv.indexOf('  function nombreDegats('),inv.indexOf('  function enrichitObjet(')),ctx);
+for(const [a,b] of [['impregnationSelectionnee','armesInventaire'],['typeArme','fmtMult'],['objetInventaire','coutEndurance'],['coutEndurance','categorieMunition'],['categorieMunition','munitionsCompatibles'],['munitionSelectionnee','retireUneMunition'],['retireUneMunition','prepareRessources']])vm.runInContext(part(a,b),ctx);
+vm.runInContext(attack.slice(attack.indexOf('    function prepareRessources('),attack.indexOf('    // ---------- carte hexagonale')),ctx);
+return {ctx,chats,errors};}
 function weapon(){return {ref:'w',nom:'Test',qte:1,ou:'mainD',arme:{attaque:6,degats:10,type:'test',modsDegats:[]}};}
 function ammo(qte=1){return {ref:'ammo',nom:'Projectile spécial',qte,ou:'poches',taille:'Minuscule',typeObjet:'munition',sousType:'balle',desc:'Description conservée',munitionStats:{degats:7,repartition:{feu:100}}};}
 function def(){return {types:['physique'],munition:{cle:'balle'}};}
@@ -271,10 +276,33 @@ test('Techniques : les diviseurs se réorganisent par glisser-déposer sans dép
  assert.equal(data[1].techniques[0].nom,'Groupe');assert.equal(data[1].techniques[2].rangs[0].id,'r2');
 });
 test('persistance : la munition zéro et les nouveaux contenus restent identiques après synchronisation',()=>{const before=M.blank();before.inv.objets=[weapon(),ammo()];const attrs=C.Compact.encode(before),session=new C.Compact.Session(attrs,before),w=attackContext(before.inv.objets);w.ctx.envoieAttaqueSimple({munition:'ammo'},before.inv.objets[0],def());session.capture(before);attrs.owd_ops_test={current:JSON.stringify({epoch:session.epoch,ops:Object.values(session.outgoing())})};const saved=C.Compact.read(attrs).state;assert.equal(saved.inv.objets.find(o=>o.ref==='ammo').qte,0);assert.deepEqual(saved.inv.objets.find(o=>o.ref==='ammo').munitionStats,before.inv.objets[1].munitionStats);});
-test('imprégnation : pourcentage élémentaire indépendant du multiplicateur et des MOD',()=>{const it=weapon();it.arme.degats=100;it.arme.modsDegats=['Force'];it.arme.repartition={physique:80,feu:20};const w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='fire-imbue';assert.equal(w.ctx.brutCoup(it,{mult:1.2}),124);assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',false,it), '99 physique + 38 feu');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',true,it), '49 physique + 19 feu');});
-test('imprégnation : ×0.8 ne diminue pas le +20% élémentaire ; ciblage remplacé',()=>{const it=weapon();it.arme.degats=100;const w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='greater-decay-imbue';w.ctx.effetsSources=()=>[{d:{ops:{impregnation:{pct:10,flat:4,type:'feu'}}},e:{cible:'w'}}];assert.equal(w.ctx.brutCoup(it,{mult:.8}),80);assert.equal(w.ctx.degatsTypes(80,'physique',false,it),'80 physique + 35 decomposition');w.ctx.state.combatOptions.attaques.impregnation='';assert.equal(w.ctx.degatsTypes(80,'physique',false,it),'80 physique + 14 feu');});
-test('imprégnation : bonus élémentaires avant flat, choix neutre et identifiant inconnu',()=>{const it=weapon(),w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='fire-imbue';w.ctx.effetBonus=()=>100;assert.equal(w.ctx.degatsTypes(w.ctx.brutArme(it),'physique',false,it),'20 physique + 6 feu');for(const id of ['poison-imbue','wind-imbue','unknown','']){w.ctx.state.combatOptions.attaques.impregnation=id;assert.equal(w.ctx.brutCoup(it,{mult:.8}),8);it.arme.degats=7;it.arme.repartition={physique:95,feu:5};w.ctx.effetBonus=()=>0;assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.4}),'physique',false,it),'8 physique');it.arme.degats=10;}});
-test('imprégnation : +20 % de 100 feu distinct des 100 physiques, en touche et passage',()=>{const it=weapon();it.arme.degats=100;const w=attackContext([it]);w.ctx.state.combatOptions.attaques.impregnation='greater-decay-imbue';assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1}),'physique',false,it),'100 physique + 35 decomposition');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.4}),'physique',false,it),'140 physique + 35 decomposition');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.4}),'physique',true,it),'70 physique + 17 decomposition');w.ctx.state.combatOptions.attaques.lente=true;assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.4}),'physique',false,it),'70 physique + 17 decomposition');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.4}),'physique',true,it),'35 physique + 8 decomposition');});
-test('imprégnation : 100 dégâts répartis 70/30 et +20 % feu sans dégâts fixes',()=>{const it=weapon();it.arme.degats=100;it.arme.repartition={physique:70,ethere:30};const w=attackContext([it]);w.ctx.D=()=>({impregnations:[{id:'test-fire',type:'feu',pct:20,flat:0}]});w.ctx.state.combatOptions.attaques.impregnation='test-fire';assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1}),'physique',false,it),'70 physique + 30 ethere + 20 feu');assert.equal(w.ctx.degatsTypes(w.ctx.brutCoup(it,{mult:1.2}),'physique',false,it),'84 physique + 36 ethere + 20 feu');});
+test('MODs répartis, imprégnation primaire et fixe secondaire, sans arrondi intermédiaire',()=>{
+ const it=weapon(),w=attackContext([it]);
+ it.arme.degatsParType={physique:80,feu:20};it.arme.modsDegats=['Force'];
+ w.ctx.state.combatOptions.attaques.impregnation='fire-imbue';
+ assert.equal(w.ctx.degatsTypes({mult:1.2},'physique',false,it),'99 physique + 40 feu');
+ assert.equal(w.ctx.degatsTypes({mult:1.2},'physique',true,it),'49 physique + 20 feu');
+});
+test('le multiplicateur de type précède le secondaire, le taux du personnage vient après',()=>{
+ const it=weapon(),w=attackContext([it]);
+ it.arme.degatsParType={physique:80,feu:20};
+ w.ctx.combatMod=(k,t,d=0)=>t!=='feu'?d:({attaquesPrimaires:5,attaques:5,attaquesMultiplicateurs:1.2,tauxDegats:120}[k]??d);
+ w.ctx.effetBonus=(k,t)=>k==='degats'&&t==='feu'?10:0;
+ assert.equal(w.ctx.degatsTypes({mult:1.4},'physique',false,it),'112 physique + 61 feu');
+});
+test('munition primaire, imprégnation ciblée avec fixe secondaire et taux personnage',()=>{
+ const it=weapon(),a=ammo(),w=attackContext([it,a]);
+ w.ctx.effetsSources=()=>[{d:{ops:{impregnation:{pct:10,flat:4,type:'feu'}}},e:{cible:'w'}}];
+ w.ctx.effetBonus=(k,t)=>k==='degats'&&t==='feu'?20:0;
+ assert.equal(w.ctx.degatsTypes({mult:2},'physique',false,it,{munition:'ammo'}),'20 physique + 24 feu');
+});
+test('conversion des anciens dégâts par type conserve les fractions et les mods au rang ×6',()=>{
+ const it=weapon(),w=attackContext([it]);it.arme.degats=300;it.arme.repartition={physique:80,feu:20};
+ it.arme.modsDegats=['Force','Force','Force'];w.ctx.caracTotal=()=>100;
+ assert.equal(w.ctx.degatsTypes({mult:6},'physique',false,it),'1728 physique + 432 feu');
+ it.arme.degatsParType={physique:7.00001,feu:0.123456};
+ const base=w.ctx.baseDegatsArme(it.arme);
+ assert.equal(base.feu,0.123456);assert.equal(base.physique,7.00001);
+});
 test('imprégnation : synchronisée dans le bloc combat existant',()=>{const before=M.blank(),after=C.copy(before);after.combatOptions.attaques.impregnation='infuse-mana';const attrs=C.Compact.encode(after),saved=C.Compact.read(attrs).state;assert.equal(saved.combatOptions.attaques.impregnation,'infuse-mana');assert.equal(Object.keys(attrs).length,Object.keys(C.Compact.encode(before)).length);});
 console.log(n+' scénarios Techniques, consommation et munitions validés.');

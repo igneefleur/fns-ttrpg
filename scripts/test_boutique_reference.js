@@ -10,6 +10,7 @@ for(const it of list){
  const p=payload(it);
  for(const [top,key] of [['a','achat'],['v','vente'],['p','poids'],['l','volume']])assert.equal(p[top],it.objet[key],it.nom+': '+key);
  assert.equal(p.item.nom,it.nom);assert.equal(p.item.qte,3);assert.deepEqual(p.item.effets,it.objet.effets);
+ if(it.objet.arme)assert.deepEqual(p.item.arme.degatsParType,it.objet.arme.degatsParType,it.nom);
  assert.equal(p.item.catalogueId,it.objet.id);assert.ok(p.s.every(f=>f.every(v=>typeof v==='string')));
  assert.ok(p.i.startsWith('https://example.test/owd-beta/assets/'));
 }
@@ -33,6 +34,15 @@ for(const o of registry.equipements){
  assert.equal(n.taille,o.taille,o.nom);assert.equal(n.mains,o.mains,o.nom);assert.equal(n.catalogueId,o.id,o.nom);
  assert.deepEqual(n.stats,o.stats||{},o.nom+' stats');assert.deepEqual(n.proprietes,o.proprietes||{},o.nom+' propriétés');assert.deepEqual(n.reglesManuelles,o.reglesManuelles||[],o.nom+' règles');
 }
+const ancien={nom:'Astral Dagger',versionObjet:1,arme:{degats:'31.123456',repartition:{physique:70,feu:30}}};
+const migre=ctx.normalize({nom:ancien.nom,arme:{}},ancien);
+assert.ok(Math.abs(migre.arme.degatsParType.physique-21.7864192)<1e-10);
+assert.ok(Math.abs(migre.arme.degatsParType.feu-9.3370368)<1e-10);
+assert.equal(migre.arme.degatsParType.eclair,undefined);
+const edite={...ancien,arme:{...ancien.arme,degatsParType:{froid:2.123456}}};
+const relu=ctx.normalize({nom:edite.nom,arme:{}},edite);
+assert.equal(relu.arme.degatsParType.froid,2.123456);
+assert.equal(relu.arme.degatsParType.physique,undefined);
 const legacy=ctx.normalize({nom:'Gourde en cuir'}, {nom:'Gourde en cuir',typeObjet:'contenant',mains:1});assert.equal(legacy.nom,'Waterskin');assert.equal(legacy.catalogueId,'tableur:outils-de-survie-waterskin');
 console.log('OK normalisation persistante des '+registry.equipements.length+' objets et alias de migration.');
 

@@ -60,6 +60,43 @@
     var id=catalogueIndex.ids[o.catalogueId||o.id],name=catalogueIndex.names[o.nom],i=id===undefined?name:name===undefined?id:Math.min(id,name);
     return i===undefined?undefined:catalogueIndex.all[i];
   }
+  function nombreDegats(valeur) {
+    var n = Number(String(valeur == null ? "" : valeur).replace(",", "."));
+    return isFinite(n) ? n : 0;
+  }
+
+  function degatsPositifs(valeur) { return Math.max(0, nombreDegats(valeur)); }
+
+  function baseDegatsArme(arme, type, projectile) {
+    var bases = {}, source = arme.degatsParType;
+    if (source && typeof source === "object" && !Array.isArray(source)) {
+      combatTypes().forEach(function (k) { if (degatsPositifs(source[k])) bases[k] = degatsPositifs(source[k]); });
+      return bases;
+    }
+    var repartition = arme.repartition || {}, somme = 0;
+    combatTypes().forEach(function (k) { somme += degatsPositifs(repartition[k]); });
+    var total = degatsPositifs(arme.degats);
+    if (projectile) somme = 100;
+    if (somme > 0) combatTypes().forEach(function (k) {
+      if (degatsPositifs(repartition[k]) && total) bases[k] = total * degatsPositifs(repartition[k]) / somme;
+    });
+    else if (total) bases[combatTypes().indexOf(type) >= 0 ? type : "physique"] = total;
+    return bases;
+  }
+
+  function totalDegatsBase(bases) {
+    return Object.keys(bases).reduce(function (total, k) { return total + bases[k]; }, 0);
+  }
+
+  function actualiseDegatsArme(arme, bases) {
+    var total = totalDegatsBase(bases);
+    arme.degatsParType = bases;
+    // Les anciennes fiches et les lecteurs de transfert gardent une projection.
+    arme.degats = String(total);
+    arme.repartition = total ? {} : { physique: 100 };
+    if (total) Object.keys(bases).forEach(function (k) { arme.repartition[k] = 100 * bases[k] / total; });
+  }
+
   function enrichitObjet(n,o) {
     var modele=modeleCatalogue(o);
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
@@ -121,7 +158,22 @@
     delete n.proprietes.accrochable;
     n.munitionStats=o.munitionStats&&typeof o.munitionStats==="object"?JSON.parse(JSON.stringify(o.munitionStats)):{degats:0,repartition:{physique:100}};
     ["prot","res"].forEach(function(k){n[k+"_physique"]=o[k+"_physique"]===undefined?(modele&&modele[k+"_physique"]!==undefined?snum(modele[k+"_physique"]):Math.max(snum(o[k+"_contondant"]),snum(o[k+"_perforant"]),snum(o[k+"_tranchant"]))):snum(o[k+"_physique"]);});
-    if(n.arme){var rep=o.arme&&o.arme.repartition || modele&&modele.arme&&modele.arme.repartition || {physique:100};n.arme.repartition={};combatTypes().forEach(function(k){if(isFinite(Number(rep[k])))n.arme.repartition[k]=pnum(rep[k]);});if(!Object.keys(n.arme.repartition).length)n.arme.repartition={physique:100};n.arme.hits=Math.max(1,Math.floor(pnum(o.arme&&o.arme.hits)||1));["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.arme[k]=pnum(o.arme&&o.arme[k]);});}
+    if (n.arme) {
+      var armeSource = o.arme || {};
+      var rep = armeSource.repartition || (modele && modele.arme && modele.arme.repartition) || { physique: 100 };
+      n.arme.repartition = {};
+      combatTypes().forEach(function (k) {
+        if (isFinite(Number(rep[k]))) n.arme.repartition[k] = degatsPositifs(rep[k]);
+      });
+      if (!Object.keys(n.arme.repartition).length) n.arme.repartition = { physique: 100 };
+      if (armeSource.degatsParType || String(armeSource.degats == null ? "" : armeSource.degats).trim() !== "") {
+        actualiseDegatsArme(n.arme, baseDegatsArme({
+          degatsParType: armeSource.degatsParType, degats: armeSource.degats, repartition: n.arme.repartition
+        }));
+      }
+      n.arme.hits = Math.max(1, Math.floor(pnum(armeSource.hits) || 1));
+      ["for", "dex", "vig", "end", "res", "fer", "int", "cha"].forEach(function (k) { n.arme[k] = pnum(armeSource[k]); });
+    }
     if(n.typeObjet==="munition"){n.sousType={fleche:"fleches",carreau:"carreaux",balle:"balles",pierre:"pierres"}[n.sousType]||n.sousType;n.contenu=n.sousType;}
     return n;
   }
@@ -236,9 +288,10 @@
     }
     if(invType(it)==="munition"){
       if(!it.munitionStats)it.munitionStats={degats:0,repartition:{physique:100}};
-      var mun=el("div","pc-arme");mun.appendChild(champArme("Dégâts supplémentaires",it.munitionStats,"degats"));
-      if(!it.munitionStats.repartition)it.munitionStats.repartition={physique:100};
-      combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
+      var mun = el("div", "pc-arme");
+      mun.appendChild(el("div", "lbl", "Bonus primaires de la munition"));
+      mun.appendChild(champsDegatsParType(it.munitionStats, undefined, true));
+      body.appendChild(mun);
     }
     if(invAvecEffets(it)){
       var rs=el("div","pc-arme pc-obj-restauration");
