@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.5b";
+  var RELEASE = "4.38.6b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -505,7 +505,7 @@
       attaques: [],
       combatAffichage: { modificateursAttaque: true, defenseSans: true, defenseEsquive: true, modificateursDefense: true },
       combatModifiers: { attaques: {}, protections: {}, resistances: {} },
-      combatOptions: { attaques: { utiliseEndurance: false, utiliseMana: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseEndurance: false, lente: false, degatsAuto: false } },
+      combatOptions: { attaques: { utiliseRessources: false, utiliseMunition: false, lente: false, impregnation: "" }, defenses: { utiliseRessources: false, lente: false, degatsAuto: false } },
       defenses: { esquive: { comp: "", utiliseEndurance: false }, entrees: [] },
 
       // ---- avantages ----
@@ -841,8 +841,8 @@
     if (s.taille === "enorme") s.taille = "tres-grande";
     if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMana: !!attaqueOptions.utiliseMana, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
-      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
+    s.combatOptions = { attaques: { utiliseRessources: attaqueOptions.utiliseRessources == null ? !!(attaqueOptions.utiliseEndurance || attaqueOptions.utiliseMana) : !!attaqueOptions.utiliseRessources, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
+      defenses: { utiliseRessources: defenseOptions.utiliseRessources == null ? !!defenseOptions.utiliseEndurance : !!defenseOptions.utiliseRessources, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
       modificateursAttaque: combatAffichage.modificateursAttaque !== false,
@@ -6183,26 +6183,12 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatOptionsPaires(data, premiere, seconde, manaActif, iconePe) {
+  function combatOptionsPaires(data, premiere, seconde) {
     var options = el("div", "pc-combat-ressources");
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
-    var endurance = combatRessource(data, "utiliseEndurance", iconePe ? "Consommation" : "Consommation PE");
-    if (iconePe) {
-      endurance.classList.add("pc-combat-consommation-icone");
-      endurance.setAttribute("aria-label", "Consommation endurance");
-      endurance.appendChild(iconePe);
-    }
-    bas.appendChild(endurance);
-    var mana = manaActif ? combatRessource(data, "utiliseMana", "Consommation PM") :
-      el("button", "c pc-info", "Consommation PM");
-    if (!manaActif) {
-      mana.type = "button";
-      mana.disabled = true;
-      mana.title = "Aucun coût en mana n’est défini pour ces actions.";
-    }
-    bas.appendChild(mana);
+    bas.appendChild(combatRessource(data, "utiliseRessources", "Consommation Ressource"));
     options.appendChild(haut);
     options.appendChild(bas);
     return options;
@@ -6279,7 +6265,7 @@
       if (mode !== "sans") {
         champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
-        if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
+        if (state.combatOptions.defenses.utiliseRessources && !state.combatOptions.defenses.lente) {
           state.etat.pe = (courant("pe") - effetCout("pe",cout));
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }
@@ -6645,6 +6631,9 @@
         degatsPositifs(attaque.attaque) : degatsPositifs(attaque.coutPe);
       return Math.max(0, snum(it && it.arme ? it.arme.attaque : 0));
     }
+    function coutEnduranceAttaque(it, attaque) {
+      return !attaque && state.combatOptions.attaques.lente ? 0 : coutEndurance(it, attaque);
+    }
     function categorieMunition(def) {
       return def && def.munition && def.munition.cle ? String(def.munition.cle) : "";
     }
@@ -6683,7 +6672,7 @@
       var a = entree.personnalisee;
       var out = {
         vie: a ? degatsPositifs(a.coutPv) : 0,
-        endurance: coutEndurance(it, a),
+        endurance: coutEnduranceAttaque(it, a),
         mana: a ? degatsPositifs(a.coutPm) : 0,
         munition: null
       };
@@ -6713,12 +6702,11 @@
       if (!r) return;
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
       var message = preparerMessage();
-      if (r.vie > 0)
-        state.etat.pv = (courant("pv") - effetCout("pv",r.vie));
-      if (state.combatOptions.attaques.utiliseEndurance && !state.combatOptions.attaques.lente && r.endurance > 0)
-        state.etat.pe = (courant("pe") - effetCout("pe",r.endurance));
-      if (state.combatOptions.attaques.utiliseMana && r.mana > 0)
-        state.etat.pm = (courant("pm") - effetCout("pm",r.mana));
+      if (state.combatOptions.attaques.utiliseRessources) {
+        if (r.vie > 0) state.etat.pv = courant("pv") - effetCout("pv", r.vie);
+        if (r.endurance > 0) state.etat.pe = courant("pe") - effetCout("pe", r.endurance);
+        if (r.mana > 0) state.etat.pm = courant("pm") - effetCout("pm", r.mana);
+      }
       if (state.combatOptions.attaques.utiliseMunition && r.munition) {
         retireUneMunition(r.munition);
       }
@@ -7050,10 +7038,6 @@
       return img;
     }
 
-    function iconeEndurance() {
-      return iconeCombat("pe", "Endurance", "PE");
-    }
-
     function bilanDegats(valeurs, libelle) {
       var bilan = el("span", "pc-attaque-bilan");
       if (libelle) {
@@ -7109,9 +7093,10 @@
       });
       table.appendChild(head);
 
-      function ligne(nom, general, cellule, classe) {
+      function ligne(nom, general, cellule, classe, description) {
         var tr = el("tr", classe), titre = el("th", null, nom);
         titre.scope = "row";
+        if (description) titre.title = description;
         tr.appendChild(titre);
         function ajoute(contenu) {
           var td = el("td");
@@ -7138,21 +7123,23 @@
         });
       });
       if (!edition) ligne("MODs", "—", function (t) { return affiche(etablis[t].mods); });
-      [["Bonus primaire", "primaire", "primaires", false], ["Bonus mult.", "mult", "multiplicateurs", true],
-        ["Bonus secondaire", "secondaire", "secondaires", false]].forEach(function (rang) {
-        var titre = rang[0], gen = rang[1], carte = rang[2], mult = rang[3];
-        var libelle = mult ? "Bonus au multiplicateur" : titre;
-        var general = edition ? nombreAttaque(a, gen, libelle + " général", mult ? "0" : "", false, null, mult ? 1 : 0) :
-          (mult ? affiche(bonusDuFacteur(multPersonnalise(a.mult))) : affiche(a[gen]));
+      [["Bonus prim.", "primaire", "primaires", "Bonus primaire"], ["Mult.", "mult", "multiplicateurs", "Bonus au multiplicateur"],
+        ["Bonus sec.", "secondaire", "secondaires", "Bonus secondaire"]].forEach(function (rang) {
+        var titre = rang[0], gen = rang[1], carte = rang[2], libelle = rang[3];
+        var mult = gen === "mult";
+        var bonus = function (facteur) { var valeur = bonusDuFacteur(facteur); return valeur ? fmtP(valeur) : ""; };
+        var general = edition ? nombreAttaque(a, gen, libelle + " général", "", false, null, mult ? 1 : 0) :
+          (mult ? bonus(multPersonnalise(a.mult)) : affiche(a[gen]));
         ligne(titre, general, function (t) {
-          if (!edition) return mult ? affiche(bonusDuFacteur(etablis[t].multType)) : affiche(etablis[t][gen]);
-          return nombreAttaque(a[carte], t, libelle + " " + combatLibType(t), mult ? "0" : "", false, null, mult ? 1 : 0);
-        });
+          if (!edition) return mult ? bonus(etablis[t].multType) : affiche(etablis[t][gen]);
+          return nombreAttaque(a[carte], t, libelle + " " + combatLibType(t), "", false, null, mult ? 1 : 0);
+        }, null, libelle);
       });
       if (!edition) ligne("Taux perso.", "—", function (t) { return fmtP(etablis[t].taux) + " %"; });
-      ligne("Dégâts finaux", it ? fmtP(somme(finaux)) : "—", function (t) {
-        return fin[t] == null ? "—" : fmtP(fin[t]);
-      }, "pc-attaque-grille-total");
+      var total = somme(finaux);
+      ligne("Total", total ? fmtP(total) : "", function (t) {
+        return fin[t] ? fmtP(fin[t]) : "";
+      }, "pc-attaque-grille-total", "Dégâts finaux");
       wrap.appendChild(table);
       return wrap;
     }
@@ -7287,19 +7274,11 @@
       var it = a && !liee ? { nom: entree.nom || "Personnalisé", arme: a } : objetArme(entree.arme);
       var def = it && typeArme(it.arme.type);
       var ouvert = !!ouverts[entree.id], meta = [];
-      var couts = el("span", "pc-attaque-bilan");
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (a) {
         if (a.trajet || !a.type || liee) coups = a.trajet ? [{
           nom: entree.nom || "Personnalisé", trajet: a.trajet, garde: a.garde
         }] : [];
-        [[a.coutPv, "pv", "Vie", "PV"], [coutEndurance(it, a), "pe", "Endurance", "PE"],
-          [a.coutPm, "pm", "Mana", "PM"]].forEach(function (cout) {
-          if (!cout[0]) return;
-          var valeur = el("span", "pc-attaque-bilan-type", fmtP(cout[0]));
-          valeur.appendChild(iconeCombat(cout[1], cout[2], cout[3]));
-          couts.appendChild(valeur);
-        });
       } else if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
@@ -7307,7 +7286,21 @@
       }
       var types = typesCoup(coups[0], def, entree);
       var nom = a ? entree.nom || "Personnalisé" : it ? it.nom || "Arme sans nom" : "Nouvelle attaque";
-      var resume = a ? bilanDegats(it ? chiffresDegats(null, types.touche, false, it, entree) : [], couts.firstChild ? couts : null) : meta.join(" · ");
+      var resume = meta.join(" · ");
+      if (it && (a || !ouvert)) {
+        var couts = el("span", "pc-attaque-bilan");
+        [[a && a.coutPv, "pv", "Vie", "PV"], [coutEnduranceAttaque(it, a), "pe", "Endurance", "PE"],
+          [a && a.coutPm, "pm", "Mana", "PM"]].forEach(function (cout) {
+          if (!cout[0]) return;
+          var valeur = el("span", "pc-attaque-bilan-type");
+          valeur.appendChild(iconeCombat(cout[1], cout[2], cout[3]));
+          valeur.appendChild(el("span", null, fmtP(cout[0])));
+          couts.appendChild(valeur);
+        });
+        resume = el("span", "pc-attaque-resume");
+        resume.appendChild(couts);
+        resume.appendChild(bilanDegats(chiffresDegats(null, types.touche, false, it, entree)));
+      }
       combatCarteTete(card, nom, resume, ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
       if (!ouvert) return card;
@@ -7456,7 +7449,7 @@
       var options = state.combatOptions.attaques;
       box.appendChild(combatOptionsPaires(options,
         combatRessource(options, "lente", "Attaque Lente"),
-        combatRessource(options, "utiliseMunition", "Consommation Munition"), true, iconeEndurance()));
+        combatRessource(options, "utiliseMunition", "Consommation Munition")));
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
       box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {
