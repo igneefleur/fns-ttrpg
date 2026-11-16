@@ -20548,7 +20548,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.0,
+     "eclair": 13.0
+    }
    },
    "poids": 0.4,
    "desc": "Inflicts Haunted and Scorched. This off-hand weapon requires Dagger Skills to be used.",
@@ -20628,7 +20632,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.5,
    "desc": "Dagger that inflicts Bleeding.\nThis off-hand weapon requires Dagger Skills to be used.",
@@ -20702,7 +20709,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 0.4,
    "desc": "This off-hand weapon requires Dagger Skills to be used.",
@@ -20782,7 +20792,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.4,
    "desc": "Inflicts Pain. This off-hand weapon requires Dagger Skills to be used.",
@@ -20856,7 +20869,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "froid": 55.0
+    }
    },
    "poids": 0.4,
    "desc": "A luxurious dagger from the far North, whose frigid cold can inflict Hamper, Slow, and Cripple on foes. Reduces your Fire resistance. Dagger skills are necessary to use this off-hand weapon.",
@@ -20936,7 +20952,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "froid": 45.0
+    }
    },
    "poids": 0.4,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone. This off-hand weapon requires Dagger Skills to be used.",
@@ -21014,7 +21034,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "decomposition": 16.25
+    }
    },
    "poids": 0.4,
    "desc": "Craftable Dagger that inflicts Extreme Poison.\nThis off-hand weapon requires Dagger skills to be used.",
@@ -21088,7 +21112,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 0.4,
    "desc": "This off-hand weapon requires Dagger Skills to be used.",
@@ -21166,7 +21193,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "feu": 32.5
+    }
    },
    "poids": 0.4,
    "desc": "Ancient Artifact of the Scarlet Lady. This off-hand weapon requires Dagger Skills to be used.",
@@ -21237,7 +21268,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 0.4,
    "desc": "Dagger with a nasty edge.\nThis off-hand weapon requires Dagger Skills to be used.",
@@ -21308,7 +21342,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.5,
    "desc": "This scratched diamond dagger could use a shiny new finish, sealed onto it with flash fire... This off-hand weapon requires Dagger Skills to be used.",
@@ -21382,7 +21419,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0
+    }
    },
    "poids": 0.4,
    "desc": "Improvised blade made from scrap.\nThis off-hand weapon requires Dagger Skills to be used.",
@@ -21453,7 +21493,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.4,
    "desc": "Inflicts Blaze on Burning foes. This off-hand weapon requires Dagger Skills to be used.",
@@ -21527,7 +21570,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -21599,7 +21645,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -21675,7 +21724,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Cripple. This off-hand weapon requires Dagger Skills to be used.",
@@ -21749,7 +21801,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 24.5,
+     "eclair": 10.5
+    }
    },
    "poids": 1.5,
    "desc": "A great hunter's knife that emits light.\nThis off-hand weapon requires Dagger skills to be used.",
@@ -21824,7 +21880,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.5,
+     "eclair": 9.5
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -21902,7 +21962,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "decomposition": 8.75
+    }
    },
    "poids": 0.2,
    "desc": "",
@@ -21975,7 +22039,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -22047,7 +22114,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -22116,7 +22186,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.5,
+     "eclair": 4.5
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -22193,7 +22267,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "froid": 27.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -22265,7 +22343,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "ethere": 8.75
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -22337,7 +22419,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -22409,7 +22494,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -22481,7 +22569,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "decomposition": 42.5
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -22557,7 +22649,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -22626,7 +22721,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 15.0
+    }
    },
    "poids": 0.6,
    "desc": "",
@@ -22698,7 +22797,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -22767,7 +22869,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "decomposition": 23.75
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -22839,7 +22945,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -22908,7 +23017,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "decomposition": 17.5
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -22985,7 +23098,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23057,7 +23173,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -23126,7 +23245,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23198,7 +23320,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23270,7 +23396,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23342,7 +23472,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23411,7 +23544,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "eclair": 13.75
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -23480,7 +23617,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 55.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -23549,7 +23689,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -23621,7 +23764,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "ethere": 17.5
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -23690,7 +23837,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 10.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -23759,7 +23909,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 200.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -23828,7 +23981,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -23900,7 +24056,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 0.3,
    "desc": "",
@@ -23969,7 +24128,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -24038,7 +24200,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -24107,7 +24273,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 45.0
+    }
    },
    "poids": 0.4,
    "desc": "",
@@ -24176,7 +24346,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 44.0,
+     "decomposition": 11.0
+    }
    },
    "poids": 0.5,
    "desc": "Inflicts Scorched and Haunted.",
@@ -24256,7 +24430,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -24328,7 +24505,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0,
+     "froid": 20.0
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Slow Down.",
@@ -24402,7 +24583,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 5.0
+    }
    },
    "poids": 0.1,
    "desc": "",
@@ -24471,7 +24655,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.8,
    "desc": "Increases the power of Weapon Skills.",
@@ -24545,7 +24732,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 0.3,
    "desc": "Inflicts Bleeding",
@@ -24619,7 +24809,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -24697,7 +24890,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Pain",
@@ -24771,7 +24967,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.75,
+     "eclair": 19.25
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -24843,7 +25043,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 2.0,
    "desc": "Gilded simple Iron Knuckles, passed down by your ancestors.",
@@ -24914,7 +25117,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "froid": 37.5
+    }
    },
    "poids": 0.8,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -24989,7 +25196,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.75,
+     "decomposition": 21.25
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Extreme Poison",
@@ -25063,7 +25274,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -25132,7 +25346,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Weaken",
@@ -25206,7 +25423,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -25278,7 +25498,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 0.8,
    "desc": "A magnificent Damascene Gauntlet passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -25352,7 +25575,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 0.8,
    "desc": "A glowing Obsidian Gauntlet passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -25426,7 +25653,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -25500,7 +25730,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0,
+     "feu": 15.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Burning on enemies.",
@@ -25574,7 +25808,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "eclair": 10.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -25646,7 +25884,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Weaken and Sapped",
@@ -25721,7 +25962,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.3,
    "desc": "Fang Knuckles made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -25795,7 +26039,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -25867,7 +26114,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "froid": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "Sti, this thing is cold! Better bundle up before wearing it! Inflicts Chill and Slow, but reduces your Fire Resistance and lowers the temperature around you.",
@@ -25942,7 +26193,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -26011,7 +26265,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 2.0,
    "desc": "These cracked chromium knuckles are ruined by dried blood that can't be just washed off...",
@@ -26082,7 +26339,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Blood Leech",
@@ -26156,7 +26416,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -26230,7 +26493,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 0.8,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -26301,7 +26567,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.8,
    "desc": "Inflicts Cripple",
@@ -26375,7 +26644,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.0,
+     "eclair": 28.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -26444,7 +26717,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 18.75,
+     "decomposition": 6.25
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -26517,7 +26794,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -26589,7 +26869,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 24.5,
+     "eclair": 10.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -26658,7 +26942,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "ethere": 7.5
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -26730,7 +27018,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "ethere": 32.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -26806,7 +27098,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -26875,7 +27170,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 18.75,
+     "decomposition": 6.25
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -26949,7 +27248,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "decomposition": 30.0
+    }
    },
    "poids": 0.7,
    "desc": "",
@@ -27021,7 +27324,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -27090,7 +27396,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 40.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -27159,7 +27468,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 12.5,
+     "ethere": 12.5
+    }
    },
    "poids": 0.5,
    "desc": "",
@@ -27228,7 +27541,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 10.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -27300,7 +27616,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.6,
    "desc": "",
@@ -27372,7 +27691,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -27444,7 +27766,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -27513,7 +27838,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -27583,7 +27911,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "eclair": 80.0
+    }
    },
    "poids": 0.6,
    "desc": "",
@@ -27653,7 +27984,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -27723,7 +28057,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -27795,7 +28132,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 103.5,
+     "eclair": 11.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -27873,7 +28214,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 33.75,
+     "decomposition": 11.25
+    }
    },
    "poids": 0.7,
    "desc": "",
@@ -27946,7 +28291,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 76.0,
+     "eclair": 19.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -28024,7 +28373,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -28096,7 +28448,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -28165,7 +28520,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 49.5,
+     "eclair": 5.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -28242,7 +28601,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "froid": 32.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -28314,7 +28677,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 33.75,
+     "ethere": 11.25
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -28386,7 +28753,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -28458,7 +28828,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -28530,7 +28903,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -28608,7 +28984,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -28680,7 +29059,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0,
+     "decomposition": 55.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -28756,7 +29139,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -28825,7 +29211,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.25,
+     "eclair": 18.75
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -28897,7 +29287,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "froid": 60.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -28973,7 +29367,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 86.25,
+     "decomposition": 28.75
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29045,7 +29443,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29114,7 +29515,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "decomposition": 22.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29191,7 +29596,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29263,7 +29671,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "decomposition": 23.75
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29335,7 +29747,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -29404,7 +29819,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29476,7 +29894,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0,
+     "feu": 50.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29548,7 +29970,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29622,7 +30047,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "feu": 27.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29694,7 +30123,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -29763,7 +30195,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "eclair": 16.25
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -29832,7 +30268,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 65.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -29901,7 +30340,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -29973,7 +30415,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -30045,7 +30490,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "ethere": 22.5
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -30114,7 +30563,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -30183,7 +30635,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 250.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -30252,7 +30707,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -30324,7 +30782,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -30396,7 +30857,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -30470,7 +30934,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -30539,7 +31006,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "feu": 30.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -30608,7 +31079,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 57.5,
+     "eclair": 57.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -30677,7 +31152,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 2.0,
    "desc": "A Steel Saber made by a clever craftsman, passed down by your ancestors.",
@@ -30749,7 +31227,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -30819,7 +31300,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.0,
    "desc": "A blade left behind by Gep for a worthy adventurer. Unleashes powerful Ethereal Blasts, but reduces your Ethereal resistance. Craft it with Gep's Generosity to change its shape.",
@@ -30897,7 +31381,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Machete, passed down by your ancestors.",
@@ -30969,7 +31456,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 15.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -31041,7 +31532,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.75,
+     "decomposition": 21.25
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -31113,7 +31608,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "decomposition": 17.5
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -31187,7 +31686,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.0,
    "desc": "Inflicts Weaken",
@@ -31261,7 +31763,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 10.0
+    }
    },
    "poids": 0.6,
    "desc": "",
@@ -31331,7 +31836,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -31405,7 +31913,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 21.0,
+     "ethere": 14.0
+    }
    },
    "poids": 3.0,
    "desc": "A cracked ancient blade that appears wherever it is needed... Could these 3 cracks be healed?",
@@ -31477,7 +31989,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "eclair": 13.75
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -31547,7 +32063,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -31619,7 +32138,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -31689,7 +32211,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -31763,7 +32288,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.5,
+     "eclair": 9.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -31841,7 +32370,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "decomposition": 8.75
+    }
    },
    "poids": 0.7,
    "desc": "",
@@ -31914,7 +32447,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "eclair": 15.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -31992,7 +32529,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -32064,7 +32604,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -32133,7 +32676,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.5,
+     "eclair": 4.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -32210,7 +32757,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "froid": 27.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -32282,7 +32833,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "ethere": 8.75
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -32354,7 +32909,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -32426,7 +32984,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -32498,7 +33059,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -32576,7 +33140,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -32648,7 +33215,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "decomposition": 42.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -32724,7 +33295,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -32793,7 +33367,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "froid": 47.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -32869,7 +33447,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -32938,7 +33519,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "decomposition": 20.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33010,7 +33595,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -33079,7 +33667,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33151,7 +33742,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33223,7 +33818,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33295,7 +33894,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33364,7 +33966,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 55.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -33433,7 +34038,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -33505,7 +34113,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "ethere": 17.5
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -33574,7 +34186,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 10.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33643,7 +34258,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 200.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -33712,7 +34330,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -33784,7 +34405,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33856,7 +34480,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -33925,7 +34552,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -33994,7 +34624,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -34066,7 +34699,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -34135,7 +34772,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 45.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -34204,7 +34845,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "decomposition": 8.75
+    }
    },
    "poids": 0.7,
    "desc": "Inflicts Slow Down and Bleeding on enemies.",
@@ -34279,7 +34924,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "feu": 15.0
+    }
    },
    "poids": 0.7,
    "desc": "Inflicts Haunted and Curse.",
@@ -34359,7 +35008,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "froid": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -34432,7 +35085,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "froid": 27.5
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Slow Down.",
@@ -34506,7 +35163,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "Increases the power of Weapon Skills.",
@@ -34580,7 +35240,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.7,
    "desc": "Inflicts Bleeding on enemies.",
@@ -34654,7 +35317,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -34732,7 +35398,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "froid": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -34808,7 +35478,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -34878,7 +35551,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 3.0,
    "desc": "A pulsing one-handed sword that seems to stretch reflexively in search of new victims. Inflicts confusion.",
@@ -34952,7 +35628,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -35022,7 +35701,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 1.5,
    "desc": "A magnificent Damascene Sword passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -35096,7 +35778,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "feu": 32.5
+    }
    },
    "poids": 1.5,
    "desc": "A glowing Obsidian Sword passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -35170,7 +35856,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Burning on enemies.",
@@ -35244,7 +35934,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -35314,7 +36007,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 55.0
+    }
    },
    "poids": 0.0,
    "desc": "Summoned magical sword that lasts for a limited amount of time.",
@@ -35386,7 +36082,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 0.7,
    "desc": "A Fang Sword made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -35460,7 +36159,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.5,
    "desc": "The Commander said to make this sword fit for a king.",
@@ -35534,7 +36236,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 180.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -35604,7 +36309,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Blood Leech",
@@ -35678,7 +36386,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.5,
+     "eclair": 9.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -35756,7 +36468,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -35828,7 +36543,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -35897,7 +36615,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.5,
+     "eclair": 4.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -35974,7 +36696,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 26.25,
+     "ethere": 8.75
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -36046,7 +36772,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36118,7 +36847,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "decomposition": 42.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36194,7 +36927,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -36263,7 +36999,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 15.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -36335,7 +37075,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -36404,7 +37147,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "decomposition": 23.75
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Extreme Poison",
@@ -36478,7 +37225,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "decomposition": 17.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36555,7 +37306,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36627,7 +37381,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "decomposition": 20.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -36699,7 +37457,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36773,7 +37534,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "eclair": 13.75
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -36842,7 +37607,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -36914,7 +37682,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 17.5,
+     "ethere": 17.5
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -36983,7 +37755,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 5.0,
+     "ethere": 5.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -37057,7 +37833,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -37129,7 +37908,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 1.5,
    "desc": "A bloody Militia Sword passed down by your ancestors.",
@@ -37205,7 +37987,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -37274,7 +38059,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -37343,7 +38131,10 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -37415,7 +38206,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -37484,7 +38279,11 @@
     ],
     "modsParade": [
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "eclair": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -37553,7 +38352,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 76.0,
+     "eclair": 19.0
+    }
    },
    "poids": 1.0,
    "desc": "Inflicts Scorched and Curse.",
@@ -37633,7 +38436,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 6.0,
    "desc": "Inflicts Bleeding on enemies",
@@ -37707,7 +38513,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -37776,7 +38585,12 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.0,
+     "eclair": 31.5,
+     "decomposition": 31.5
+    }
    },
    "poids": 8.0,
    "desc": "Left alone over the ages, the Amethyst heart of the Butcher of Men has grown into a fearsome weapon, eager to slay again...",
@@ -37847,7 +38661,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "froid": 32.5
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Slow Down.",
@@ -37921,7 +38739,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 1.5,
    "desc": "Increases the power of Weapon Skills.",
@@ -37995,7 +38816,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -38067,7 +38891,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -38145,7 +38972,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Pain",
@@ -38219,7 +39049,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Hatchet, passed down by your ancestors.",
@@ -38290,7 +39123,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0,
+     "froid": 55.0
+    }
    },
    "poids": 1.5,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -38365,7 +39202,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -38434,7 +39274,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 78.75,
+     "decomposition": 26.25
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Extreme Poison on enemies.",
@@ -38508,7 +39352,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -38577,7 +39424,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -38649,7 +39499,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "ethere": 22.5
+    }
    },
    "poids": 0.8,
    "desc": "",
@@ -38723,7 +39577,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -38792,7 +39649,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 1.5,
    "desc": "A magnificent Damascene Axe passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -38866,7 +39726,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0,
+     "feu": 50.0
+    }
    },
    "poids": 1.5,
    "desc": "A glowing Obsidian Axe passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -38940,7 +39804,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -39014,7 +39881,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "feu": 30.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Burning on enemies.",
@@ -39088,7 +39959,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 8.0,
    "desc": "Every blow from this powerful one-handed axe will draw a scream from the victim. It inflicts pain.",
@@ -39162,7 +40036,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "eclair": 17.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -39231,7 +40109,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 4.0,
    "desc": "An axe safely holding the power of a volcano. Rapidly inflicts Blaze on a burning target, but reduces your Cold resistance.",
@@ -39309,7 +40190,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 4.0,
    "desc": "A Fang Axe made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -39383,7 +40267,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Blaze on Burning foes.",
@@ -39457,7 +40344,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0,
+     "feu": 55.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -39529,7 +40420,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 215.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -39598,7 +40492,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.0,
    "desc": "Inflicts Extreme Bleeding on enemies.",
@@ -39672,7 +40569,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Blood Leech",
@@ -39746,7 +40646,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 1.5,
    "desc": "A bloody Militia Axe passed down by your ancestors.",
@@ -39822,7 +40725,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.0,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -39893,7 +40799,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 4.0,
    "desc": "A strangely warm axe...Could this heat be intensified somehow?",
@@ -39964,7 +40873,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -40036,7 +40948,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 94.5,
+     "eclair": 10.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -40114,7 +41030,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 33.75,
+     "decomposition": 11.25
+    }
    },
    "poids": 0.9,
    "desc": "",
@@ -40187,7 +41107,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 49.5,
+     "eclair": 5.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -40264,7 +41188,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 33.75,
+     "ethere": 11.25
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -40336,7 +41264,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "decomposition": 47.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -40412,7 +41344,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "eclair": 17.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -40484,7 +41420,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -40553,7 +41492,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "decomposition": 22.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -40630,7 +41573,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "decomposition": 22.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -40702,7 +41649,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -40771,7 +41721,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 65.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -40840,7 +41793,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "ethere": 22.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -40909,7 +41866,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 10.0,
+     "ethere": 10.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -40983,7 +41944,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -41052,7 +42016,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -41121,7 +42088,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 93.0,
+     "eclair": 62.0
+    }
    },
    "poids": 4.0,
    "desc": "The mace of an ancient Calygrey passed down by their ancestors.",
@@ -41192,7 +42163,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 68.0,
+     "ethere": 17.0
+    }
    },
    "poids": 1.0,
    "desc": "Inflicts Chill and Doomed.",
@@ -41272,7 +42247,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 0.7,
    "desc": "",
@@ -41344,7 +42322,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 7.0,
    "desc": "Inflicts Confusion on enemies.",
@@ -41418,7 +42399,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.5,
+     "eclair": 19.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -41487,7 +42472,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "froid": 32.5
+    }
    },
    "poids": 5.0,
    "desc": "Inflicts Slow Down.",
@@ -41561,7 +42550,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 2.0,
    "desc": "Increases the power of Weapon Skills.",
@@ -41635,7 +42627,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Bleeding on enemies.",
@@ -41709,7 +42704,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -41787,7 +42785,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Pain",
@@ -41861,7 +42862,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -41930,7 +42934,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 7.0,
    "desc": "A gilded Club, passed down by your ancestors.",
@@ -42001,7 +43008,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.25,
+     "eclair": 18.75
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -42073,7 +43084,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0,
+     "froid": 55.0
+    }
    },
    "poids": 2.0,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -42148,7 +43163,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 82.5,
+     "decomposition": 27.5
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Extreme Poison",
@@ -42222,7 +43241,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -42291,7 +43313,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "decomposition": 12.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -42365,7 +43391,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Weaken",
@@ -42439,7 +43468,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 4.0,
    "desc": "A one handed mace that bends the elements against its victims. Inflicts elemental weakness.",
@@ -42513,7 +43545,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -42585,7 +43620,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 2.0,
    "desc": "A magnificent Damascene Mace passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -42659,7 +43697,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0,
+     "feu": 25.0
+    }
    },
    "poids": 0.7,
    "desc": "A flamin' weapon that don't go cold, perfect for a lad that can't die!\"",
@@ -42733,7 +43775,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "feu": 47.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -42805,7 +43851,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -42879,7 +43928,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "feu": 27.5
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Burning on enemies.",
@@ -42953,7 +44006,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "eclair": 17.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -43022,7 +44079,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 2.0,
    "desc": "The lowest of the low when it comes to weaponry, though it can easily be crafted with Wood.",
@@ -43093,7 +44153,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "A Fang Club made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -43167,7 +44230,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "decomposition": 140.0
+    }
    },
    "poids": 2.0,
    "desc": "A horrifying mace that brings miserable decay to all it strikes. Reduces your Light resistance",
@@ -43242,7 +44308,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 39.0,
+     "decomposition": 26.0
+    }
    },
    "poids": 2.0,
    "desc": "An ancient porcelain mace, sealed by some strange language...",
@@ -43313,7 +44383,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "froid": 52.5
+    }
    },
    "poids": 2.0,
    "desc": "The Dusk Father's knowledge made us all kings; we built our sky castles under the earth.",
@@ -43384,7 +44458,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Blaze on Burning foes.",
@@ -43458,7 +44535,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 215.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -43527,7 +44607,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Blood Leech",
@@ -43601,7 +44684,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 2.0,
    "desc": "A bloody Militia Mace passed down by your ancestors.",
@@ -43677,7 +44763,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.5,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -43748,7 +44837,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -43820,7 +44912,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "decomposition": 12.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -43893,7 +44989,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -43965,7 +45064,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "ethere": 12.5
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -44037,7 +45140,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0,
+     "ethere": 50.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -44113,7 +45220,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -44182,7 +45292,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "decomposition": 47.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -44254,7 +45368,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -44323,7 +45440,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 70.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -44392,7 +45512,11 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0,
+     "ethere": 25.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -44461,7 +45585,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -44533,7 +45660,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -44605,7 +45735,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -44677,7 +45810,10 @@
     ],
     "modsParade": [
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -44748,7 +45884,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 81.0,
+     "eclair": 9.0
+    }
    },
    "poids": 1.5,
    "desc": "The Staff of an ancient Calygrey passed down by their ancestors.",
@@ -44830,7 +45970,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 57.5,
+     "feu": 57.5
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Doomed.",
@@ -44913,7 +46057,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 58.5,
+     "eclair": 6.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -44992,7 +46140,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "feu": 22.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -45071,7 +46223,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Blaze. The gemstone atop the Scarlet Avatar's staff has been cracked and should be replaced....",
@@ -45151,7 +46306,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "ethere": 32.5
+    }
    },
    "poids": 2.0,
    "desc": "A Troglodyte Staff whose Mana Stones have matured, passed down by your ancestors.",
@@ -45229,7 +46388,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -45309,7 +46471,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Quarterstaff, passed down by your ancestors.",
@@ -45382,7 +46547,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "A Master's Staff made by a master artisan, passed down by your ancestors.",
@@ -45460,7 +46628,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 22.5,
+     "decomposition": 22.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -45539,7 +46711,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0
+    }
    },
    "poids": 1.5,
    "desc": "The magician using this hook favored magic manipulating fire, shadow, and time.\"",
@@ -45612,7 +46787,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -45688,7 +46866,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -45759,7 +46940,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.5,
    "desc": "A staff humming with the Scarlet Lady's immense power...It hungers for your mana and raises the temperature around you... Inflicts Blaze.",
@@ -45842,7 +47026,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "froid": 35.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -45921,7 +47109,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -46000,7 +47191,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 7.5,
+     "ethere": 7.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -46076,7 +47271,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "decomposition": 13.75
+    }
    },
    "poids": 1.0,
    "desc": "",
@@ -46151,7 +47350,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -46225,7 +47427,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -46299,7 +47504,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "froid": 42.5
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -46373,7 +47582,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "ethere": 15.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -46447,7 +47660,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -46521,7 +47737,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -46595,7 +47814,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -46675,7 +47897,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -46749,7 +47974,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "ethere": 67.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -46827,7 +48056,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "eclair": 23.75
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -46901,7 +48134,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -46972,7 +48208,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "froid": 72.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47047,7 +48287,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 108.75,
+     "decomposition": 36.25
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47121,7 +48365,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47192,7 +48439,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47266,7 +48516,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "decomposition": 60.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -47340,7 +48594,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -47414,7 +48671,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 165.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47488,7 +48748,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 62.5,
+     "feu": 62.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47562,7 +48826,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47638,7 +48905,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47712,7 +48983,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -47783,7 +49057,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.75,
+     "eclair": 21.25
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -47854,7 +49132,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 85.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -47925,7 +49206,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -47999,7 +49283,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -48073,7 +49360,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "ethere": 30.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -48144,7 +49435,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 305.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -48215,7 +49509,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -48289,7 +49586,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 135.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -48363,7 +49663,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -48439,7 +49742,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -48510,7 +49816,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -48584,7 +49893,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -48658,7 +49970,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "feu": 37.5
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -48729,7 +50045,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0,
+     "froid": 70.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -48800,7 +50120,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0,
+     "ethere": 25.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Doomed and Chill.",
@@ -48882,7 +50206,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -48953,7 +50280,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "froid": 40.0
+    }
    },
    "poids": 5.0,
    "desc": "Inflicts Slow Down.",
@@ -49029,7 +50360,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.0,
    "desc": "Increases the power of Weapon Skills.",
@@ -49105,7 +50439,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Bleeding on enemies.",
@@ -49181,7 +50518,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -49252,7 +50592,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -49332,7 +50675,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Pain",
@@ -49408,7 +50754,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Fishing Harpoon, passed down by your ancestors.",
@@ -49481,7 +50830,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Pitchfork, passed down by your ancestors.",
@@ -49554,7 +50906,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 61.75,
+     "eclair": 33.25
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -49628,7 +50984,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 191.25,
+     "ethere": 33.75
+    }
    },
    "poids": 3.0,
    "desc": "A cruel spear with a long reach once used by tribal queens one hundred generations ago.",
@@ -49701,7 +51061,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "froid": 67.5
+    }
    },
    "poids": 2.0,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -49778,7 +51142,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 112.5,
+     "decomposition": 37.5
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Extreme Poison",
@@ -49854,7 +51222,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -49925,7 +51296,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Weaken",
@@ -50001,7 +51375,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 125.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -50072,7 +51449,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 2.0,
    "desc": "A magnificent Damascene Spear passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -50148,7 +51528,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "feu": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -50222,7 +51606,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -50298,7 +51685,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Burning on enemies.",
@@ -50374,7 +51765,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -50445,7 +51839,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 22.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -50516,7 +51914,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "A spear that has been modified with materials found in the hollowed marsh, this spear tends to leave poison behind in the wounds of it's target.",
@@ -50592,7 +51993,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -50663,7 +52067,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 51.0,
+     "decomposition": 34.0
+    }
    },
    "poids": 2.0,
    "desc": "An ancient rusty spear...Perhaps something dangerously acidic could free it from the rust?",
@@ -50736,7 +52144,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -50810,7 +52221,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 132.5,
+     "decomposition": 132.5
+    }
    },
    "poids": 2.0,
    "desc": "A monstrously diseased spear. Inflicts Plague on hit, which can spread dangerously. Can poison you when you strike with it.",
@@ -50887,7 +52302,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Blaze on Burning foes.",
@@ -50963,7 +52381,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "ethere": 32.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -51034,7 +52456,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -51105,7 +52530,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -51176,7 +52604,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 310.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -51247,7 +52678,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 140.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -51321,7 +52755,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 2.0,
    "desc": "A bloody Militia Spear passed down by your ancestors.",
@@ -51399,7 +52836,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 2.0,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -51472,7 +52912,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "eclair": 65.0
+    }
    },
    "poids": 2.0,
    "desc": "Artifact spear of the Cabal of Winds.\nIt was forged to slay horrors, who are weak to lightning.",
@@ -51545,7 +52989,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 3.0,
    "desc": "A Trident taken from a surprisingly competent ancient Troglodyte, passed down by your ancestors.",
@@ -51618,7 +53065,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -51692,7 +53142,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 135.0,
+     "eclair": 15.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -51772,7 +53226,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "decomposition": 15.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -51847,7 +53305,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -51921,7 +53382,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 7.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -52000,7 +53465,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "ethere": 16.25
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -52074,7 +53543,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0,
+     "decomposition": 70.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -52152,7 +53625,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -52223,7 +53699,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "decomposition": 30.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -52302,7 +53782,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 93.75,
+     "decomposition": 31.25
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -52376,7 +53860,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 90.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -52447,7 +53934,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -52521,7 +54011,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -52592,7 +54086,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "ethere": 72.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -52663,7 +54161,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 96.0,
+     "froid": 24.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Curse and Haunted.",
@@ -52745,7 +54247,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 8.0,
    "desc": "Inflicts Bleeding on enemies.",
@@ -52821,7 +54326,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "froid": 45.0
+    }
    },
    "poids": 6.0,
    "desc": "Inflicts Slow Down.",
@@ -52897,7 +54406,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -52968,7 +54480,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 3.0,
    "desc": "Increases the power of Weapon Skills.",
@@ -53044,7 +54559,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "ethere": 72.5
+    }
    },
    "poids": 3.0,
    "desc": "The Dusk Father's knowledge is universal; even lesser beings can learn what we have been taught.",
@@ -53117,7 +54636,12 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 140.0,
+     "feu": 17.5,
+     "eclair": 17.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -53193,7 +54717,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 2.0,
    "desc": "Inflicts Bleeding on enemies.",
@@ -53269,7 +54796,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -53349,7 +54879,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -53423,7 +54956,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -53494,7 +55031,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 7.0,
    "desc": "A gilded Guisarme, passed down by your ancestors.",
@@ -53567,7 +55107,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0,
+     "froid": 85.0
+    }
    },
    "poids": 3.0,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -53644,7 +55188,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 112.5,
+     "decomposition": 37.5
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Extreme Poison",
@@ -53720,7 +55268,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -53791,7 +55342,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -53865,7 +55419,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -53936,7 +55493,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 180.0
+    }
    },
    "poids": 3.0,
    "desc": "A magnificent Damascene Halberd passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -54012,7 +55572,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 62.5,
+     "feu": 62.5
+    }
    },
    "poids": 3.0,
    "desc": "A glowing Obsidian Halberd passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -54088,7 +55652,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -54164,7 +55731,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Poison on enemies.",
@@ -54240,7 +55810,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "feu": 37.5
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Burning on enemies.",
@@ -54316,7 +55890,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.75,
+     "eclair": 21.25
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -54387,7 +55965,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 5.0,
    "desc": "The silk banner is completely ruined...Could someone restore it to beauty?",
@@ -54460,7 +56041,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 5.0,
    "desc": "A Cleaver Halberd made by a savage smith, passed down by your ancestors. Inflicts Extreme Bleeding on enemies.",
@@ -54536,7 +56120,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -54610,7 +56197,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -54684,7 +56274,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -54758,7 +56351,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "feu": 47.5,
+     "froid": 47.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -54829,7 +56426,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 310.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -54900,7 +56500,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 135.0
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Blood Leech",
@@ -54976,7 +56579,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 155.0
+    }
    },
    "poids": 3.0,
    "desc": "A bloody Militia Halberd passed down by your ancestors.",
@@ -55054,7 +56660,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -55127,7 +56736,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -55201,7 +56813,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -55272,7 +56887,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.5,
+     "eclair": 14.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -55352,7 +56971,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "decomposition": 13.75
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -55427,7 +57050,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.0,
+     "eclair": 7.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -55506,7 +57133,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "ethere": 15.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -55580,7 +57211,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "decomposition": 67.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -55658,7 +57293,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 61.75,
+     "eclair": 33.25
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -55732,7 +57371,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -55803,7 +57445,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "decomposition": 27.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -55882,7 +57528,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "decomposition": 60.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -55956,7 +57606,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -56027,7 +57680,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 85.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -56098,7 +57754,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0,
+     "ethere": 30.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -56169,7 +57829,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -56240,7 +57903,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -56314,7 +57980,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -56385,7 +58054,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 5.0,
    "desc": "Inflicts Pain on enemies.",
@@ -56461,7 +58133,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -56535,7 +58210,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 300.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -56606,7 +58284,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 126.0,
+     "eclair": 14.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -56686,7 +58368,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "decomposition": 12.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -56761,7 +58447,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 92.0,
+     "froid": 23.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -56841,7 +58531,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -56915,7 +58608,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -56986,7 +58682,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 58.5,
+     "eclair": 6.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -57065,7 +58765,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "froid": 40.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -57139,7 +58843,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "ethere": 13.75
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -57213,7 +58921,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -57287,7 +58998,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -57361,7 +59075,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -57441,7 +59158,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -57515,7 +59235,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "decomposition": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -57593,7 +59317,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -57664,7 +59391,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 22.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -57738,7 +59469,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -57809,7 +59543,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0,
+     "froid": 70.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -57884,7 +59622,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0,
+     "decomposition": 35.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -57958,7 +59700,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58029,7 +59774,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0,
+     "decomposition": 25.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58108,7 +59857,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58182,7 +59934,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 86.25,
+     "decomposition": 28.75
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -58256,7 +60012,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -58327,7 +60086,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58401,7 +60163,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "feu": 60.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58475,7 +60241,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58551,7 +60320,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "feu": 32.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58625,7 +60398,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -58696,7 +60472,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "eclair": 20.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -58767,7 +60547,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 80.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -58838,7 +60621,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -58912,7 +60698,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "ethere": 27.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -58983,7 +60773,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 7.5,
+     "ethere": 7.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -59059,7 +60853,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -59133,7 +60930,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -59207,7 +61007,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 140.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -59283,7 +61086,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -59354,7 +61160,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -59425,7 +61234,10 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -59499,7 +61311,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -59570,7 +61386,11 @@
     "modsParade": [
      "Dexterite",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 67.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -59641,7 +61461,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "decomposition": 13.75
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Slow Down and Bleeding on enemies.",
@@ -59718,7 +61542,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 84.0,
+     "froid": 21.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Haunted and Scorched.",
@@ -59800,7 +61628,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "froid": 40.0
+    }
    },
    "poids": 6.0,
    "desc": "Inflicts Slow Down.",
@@ -59876,7 +61708,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 2.5,
    "desc": "Increases the power of Weapon Skills.",
@@ -59952,7 +61787,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 1.5,
    "desc": "Inflicts Bleeding on enemies.",
@@ -60028,7 +61866,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -60108,7 +61949,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 2.5,
    "desc": "A long blade left behind by Gep for a worthy adventurer. Unleashes powerful Ethereal Blasts, but reduces your Ethereal resistance. Craft it with Gep's Generosity to change its shape.",
@@ -60188,7 +62032,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 22.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -60262,7 +62110,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 8.0,
    "desc": "A gilded Junk Claymore, passed down by your ancestors.",
@@ -60335,7 +62186,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -60406,7 +62260,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 80.0
+    }
    },
    "poids": 0.0,
    "desc": "Summoned magical sword that lasts for a limited amount of time.",
@@ -60479,7 +62336,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0,
+     "froid": 70.0
+    }
    },
    "poids": 2.5,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -60556,7 +62417,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0,
+     "decomposition": 35.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Extreme Poison",
@@ -60632,7 +62497,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 30.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -60703,7 +62571,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -60774,7 +62645,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Weaken",
@@ -60850,7 +62724,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -60921,7 +62798,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 170.0
+    }
    },
    "poids": 2.5,
    "desc": "A magnificent Damascene Claymore passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -60997,7 +62877,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "feu": 60.0
+    }
    },
    "poids": 2.5,
    "desc": "A glowing Obsidian Claymore passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -61073,7 +62957,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -61149,7 +63036,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 21.0,
+     "ethere": 14.0
+    }
    },
    "poids": 2.5,
    "desc": "A cracked ancient blade that appears wherever it is needed... Could these 3 cracks be healed?",
@@ -61222,7 +63113,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Burning on enemies.",
@@ -61298,7 +63193,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0,
+     "eclair": 20.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -61369,7 +63268,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 20.0,
+     "decomposition": 60.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Vulnerability to all non-physical elements on enemies.",
@@ -61445,7 +63348,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -61516,7 +63422,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 1.5,
    "desc": "A Fang Greatsword made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -61592,7 +63501,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 5.0,
    "desc": "A Prayer Claymore disgraced by a fallen hero, passed down by your ancestors.",
@@ -61665,7 +63577,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "eclair": 67.5
+    }
    },
    "poids": 2.5,
    "desc": "The Dawn Weaver's knowledge showed us the way; He came from the stars, and to the stars we shall follow.",
@@ -61738,7 +63654,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 4.0,
    "desc": "Using magic layered onto quality engineering, this two-handed blade emits both fire and ice energy on command.",
@@ -61819,7 +63738,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 27.5,
+     "ethere": 27.5
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -61890,7 +63813,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Blood Leech",
@@ -61966,7 +63892,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 140.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -62042,7 +63971,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -62113,7 +64045,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -62187,7 +64122,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 11.0,
    "desc": "Immense man-cutting saw of the bandit lord Zagis.\nInflicts Pain on enemies.",
@@ -62263,7 +64201,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 126.0,
+     "eclair": 14.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -62343,7 +64285,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -62417,7 +64362,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -62488,7 +64436,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 58.5,
+     "eclair": 6.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -62567,7 +64519,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 41.25,
+     "ethere": 13.75
+    }
    },
    "poids": 1.5,
    "desc": "",
@@ -62641,7 +64597,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -62715,7 +64674,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "decomposition": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -62793,7 +64756,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0,
+     "decomposition": 25.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -62872,7 +64839,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 86.25,
+     "decomposition": 28.75
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -62946,7 +64917,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63017,7 +64991,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63091,7 +65068,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 7.5,
+     "ethere": 7.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63167,7 +65148,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 300.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -63238,7 +65222,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -63312,7 +65299,10 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63383,7 +65373,11 @@
     "modsParade": [
      "Dexterite",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "feu": 35.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -63454,7 +65448,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 96.0,
+     "eclair": 24.0
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Chill and Scorched.",
@@ -63536,7 +65534,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -63607,7 +65608,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "froid": 42.5
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -63681,7 +65686,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.25,
+     "ethere": 18.75
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63755,7 +65764,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 4.0,
    "desc": "Increases the power of Weapon Skills.",
@@ -63831,7 +65843,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Bleeding on enemies.",
@@ -63907,7 +65922,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 25.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -63978,7 +65996,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -64058,7 +66079,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 5.0,
    "desc": "This Calygrey Axe seems like an instrument...The fossilized bones are cracked...Perhaps it could be repaired with some kind of Calygrey magic?",
@@ -64131,7 +66155,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -64205,7 +66232,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -64276,7 +66306,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 8.0,
    "desc": "A gilded Felling Greataxe, passed down by your ancestors.",
@@ -64349,7 +66382,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 155.0
+    }
    },
    "poids": 3.0,
    "desc": "An unorthodox Calygrey Instrument used by a great warrior. Reduces your Decay resistance.",
@@ -64430,7 +66466,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "froid": 72.5
+    }
    },
    "poids": 4.0,
    "desc": "Not enchantable and loses Durability over time. Can be repaired by crafting it with a Cold Stone.",
@@ -64507,7 +66547,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 112.5,
+     "decomposition": 37.5
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Extreme Poison",
@@ -64583,7 +66627,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -64654,7 +66701,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Weaken",
@@ -64730,7 +66780,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0,
+     "froid": 85.0
+    }
    },
    "poids": 4.0,
    "desc": "The greataxe of an adventurer who always looked out for his friends. This two-handed axe is so cold it drops your temperature.",
@@ -64806,7 +66860,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -64877,7 +66934,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 165.0
+    }
    },
    "poids": 4.0,
    "desc": "A magnificent Damascene Greataxe passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -64953,7 +67013,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "feu": 65.0
+    }
    },
    "poids": 4.0,
    "desc": "A glowing Obsidian Greataxe passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -65029,7 +67093,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -65105,7 +67172,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "feu": 37.5
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Burning on enemies.",
@@ -65181,7 +67252,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 63.75,
+     "eclair": 21.25
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -65252,7 +67327,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 2.5,
    "desc": "A Fang Greataxe made from the bones of ancient beasts, passed down by your ancestors. Inflicts Bleeding.",
@@ -65328,7 +67406,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -65402,7 +67483,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 310.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -65473,7 +67557,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 105.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -65547,7 +67634,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 140.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -65621,7 +67711,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 4.0,
    "desc": "A bloody Militia Greataxe passed down by your ancestors.",
@@ -65699,7 +67792,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -65770,7 +67866,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -65844,7 +67943,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 62.5,
+     "decomposition": 62.5
+    }
    },
    "poids": 4.0,
    "desc": "The Dusk Father's knowledge is eternal; this world is but one stop in His travel across the great void.",
@@ -65917,7 +68020,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0,
+     "eclair": 60.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -65988,7 +68095,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "decomposition": 15.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -66063,7 +68174,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -66137,7 +68251,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "eclair": 22.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -66208,7 +68326,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0,
+     "decomposition": 70.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -66286,7 +68408,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0,
+     "eclair": 25.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -66360,7 +68486,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -66431,7 +68560,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "decomposition": 15.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -66507,7 +68640,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 62.5,
+     "decomposition": 62.5
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -66581,7 +68718,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -66652,7 +68792,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 90.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -66723,7 +68866,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 32.5,
+     "ethere": 32.5
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -66794,7 +68941,11 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 12.5,
+     "ethere": 12.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -66870,7 +69021,10 @@
     "modsParade": [
      "Force",
      "Dexterite"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -66944,7 +69098,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0,
+     "ethere": 15.0
+    }
    },
    "poids": 2.5,
    "desc": "Inflicts Vulnerability to all non-physical elements on enemies.",
@@ -67020,7 +69178,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 62.5,
+     "decomposition": 62.5
+    }
    },
    "poids": 5.0,
    "desc": "This ghostly scythe polearm hungrily rips and tears the souls of the wicked. Inflicts haunted.",
@@ -67100,7 +69262,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 93.0,
+     "eclair": 62.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -67171,7 +69337,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "decomposition": 16.25
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -67246,7 +69416,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 104.0,
+     "eclair": 26.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -67326,7 +69500,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -67400,7 +69577,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -67471,7 +69651,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.0,
+     "eclair": 24.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -67542,7 +69726,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "froid": 47.5
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -67616,7 +69804,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -67690,7 +69881,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -67764,7 +69958,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -67844,7 +70041,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -67918,7 +70118,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -67989,7 +70192,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 78.75,
+     "eclair": 26.25
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -68063,7 +70270,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -68134,7 +70344,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 77.5,
+     "froid": 77.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68209,7 +70423,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 116.25,
+     "decomposition": 38.75
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68283,7 +70501,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68354,7 +70575,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "decomposition": 16.25
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68430,7 +70655,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68504,7 +70732,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "decomposition": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -68578,7 +70810,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -68649,7 +70884,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 175.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68723,7 +70961,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "feu": 67.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68797,7 +71039,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68873,7 +71118,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -68947,7 +71196,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -69018,7 +71270,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "eclair": 23.75
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -69089,7 +71345,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 95.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -69160,7 +71419,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -69234,7 +71496,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -69308,7 +71573,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "ethere": 35.0
+    }
    },
    "poids": 2.0,
    "desc": "",
@@ -69379,7 +71648,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0,
+     "ethere": 15.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -69455,7 +71728,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 315.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -69526,7 +71802,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -69600,7 +71879,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -69674,7 +71956,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 155.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -69750,7 +72035,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -69821,7 +72109,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -69895,7 +72186,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -69969,7 +72263,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -70040,7 +72337,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0,
+     "decomposition": 75.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -70111,7 +72412,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 116.0,
+     "decomposition": 29.0
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Doomed and Haunted.",
@@ -70193,7 +72498,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -70264,7 +72572,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0,
+     "froid": 50.0
+    }
    },
    "poids": 7.0,
    "desc": "Inflicts Slow Down.",
@@ -70340,7 +72652,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 260.0
+    }
    },
    "poids": 7.0,
    "desc": "A two-handed greathammer traditionally used to incite a duel to the death against a rival. It grants rage boon and discipline boon on enemies.",
@@ -70417,7 +72732,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -70491,7 +72809,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 7.0,
    "desc": "An ancient large bludgeon...There are two small reservoirs for different thick liquids...",
@@ -70564,7 +72885,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Bleeding on enemies.",
@@ -70640,7 +72964,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 170.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -70720,7 +73047,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 155.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Pain",
@@ -70796,7 +73126,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 87.5,
+     "ethere": 87.5
+    }
    },
    "poids": 4.0,
    "desc": "A strange foreign device, tuned to an ethereal frequency... Inflicts Aetherbomb on foes, but reduces your Physical resistance.",
@@ -70876,7 +73210,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 6.0,
    "desc": "A gilded Mining Pick, passed down by your ancestors.",
@@ -70949,7 +73286,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0,
+     "froid": 80.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -71024,7 +73365,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0,
+     "decomposition": 40.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -71098,7 +73443,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 50.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -71169,7 +73517,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Weaken",
@@ -71245,7 +73596,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 77.5,
+     "decomposition": 77.5
+    }
    },
    "poids": 3.0,
    "desc": "Inflicts Extreme Poison on enemies.",
@@ -71321,7 +73676,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 5.0,
    "desc": "Inflicts Pain on enemies.",
@@ -71397,7 +73755,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 135.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -71468,7 +73829,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 250.0
+    }
    },
    "poids": 4.0,
    "desc": "A magnificent Damascene Hammer passed down by your ancestors. Increases the power of Weapon Skills.",
@@ -71544,7 +73908,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "feu": 72.5
+    }
    },
    "poids": 4.0,
    "desc": "A glowing Obsidian Hammer passed down by your ancestors. Inflicts Holy Blaze on burning foes.",
@@ -71620,7 +73988,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 80.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -71696,7 +74067,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0
+    }
    },
    "poids": 3.0,
    "desc": "Essential tool to harvest mineral deposits.",
@@ -71769,7 +74143,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 42.5,
+     "feu": 42.5
+    }
    },
    "poids": 5.0,
    "desc": "Inflicts Burning on enemies.",
@@ -71845,7 +74223,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0,
+     "eclair": 25.0
+    }
    },
    "poids": 6.0,
    "desc": "",
@@ -71916,7 +74298,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 161.0,
+     "eclair": 69.0
+    }
    },
    "poids": 12.0,
    "desc": "Artifact greathammer of an executioner who guarded the Spire of Light, crushing the bones of invaders before feeding on them.",
@@ -71989,7 +74375,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 86.25,
+     "feu": 28.75
+    }
    },
    "poids": 6.0,
    "desc": "Inflicts Confusion on enemies.",
@@ -72065,7 +74455,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -72139,7 +74532,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 135.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Blaze on Burning foes.",
@@ -72215,7 +74611,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 60.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -72289,7 +74688,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 320.0
+    }
    },
    "poids": 11.0,
    "desc": "",
@@ -72360,7 +74762,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 150.0
+    }
    },
    "poids": 4.0,
    "desc": "Inflicts Blood Leech",
@@ -72436,7 +74841,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 4.0,
    "desc": "A bloody Militia Hammer passed down by your ancestors.",
@@ -72514,7 +74922,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 3.0,
    "desc": "A pure piece of gear, designed to receive enchantments.",
@@ -72587,7 +74998,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 4.0,
    "desc": "A Pole Mace taken from a surprisingly competent ancient Troglodyte, passed down by your ancestors. Inflicts Confusion.",
@@ -72663,7 +75077,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 120.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -72737,7 +75154,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 96.0,
+     "eclair": 64.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -72808,7 +75229,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "decomposition": 17.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -72883,7 +75308,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -72957,7 +75385,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 59.5,
+     "eclair": 25.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -73028,7 +75460,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.25,
+     "ethere": 18.75
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -73102,7 +75538,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 82.5,
+     "eclair": 27.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -73176,7 +75616,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -73247,7 +75690,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "decomposition": 17.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -73323,7 +75770,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -73394,7 +75844,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 100.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -73465,7 +75918,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 37.5,
+     "ethere": 37.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -73536,7 +75993,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -73610,7 +76070,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 90.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -73681,7 +76144,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 77.5,
+     "froid": 77.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -73752,7 +76219,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 93.0,
+     "eclair": 62.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -73823,7 +76294,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "decomposition": 16.25
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -73898,7 +76373,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 104.0,
+     "ethere": 26.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -73978,7 +76457,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -74052,7 +76534,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -74126,7 +76611,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 56.0,
+     "eclair": 24.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -74197,7 +76686,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 47.5,
+     "froid": 47.5
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -74271,7 +76764,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 52.5,
+     "ethere": 17.5
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -74345,7 +76842,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -74419,7 +76919,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 55.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -74493,7 +76996,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 160.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -74573,7 +77079,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -74647,7 +77156,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 72.5,
+     "ethere": 72.5
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -74725,7 +77238,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 9.0,
    "desc": "",
@@ -74796,7 +77312,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 78.75,
+     "eclair": 26.25
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -74870,7 +77390,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 95.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -74941,7 +77464,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 77.5,
+     "froid": 77.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75016,7 +77543,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 116.25,
+     "decomposition": 38.75
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75090,7 +77621,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 45.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75161,7 +77695,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 48.75,
+     "decomposition": 16.25
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75237,7 +77775,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75311,7 +77852,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 65.0,
+     "decomposition": 65.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -75385,7 +77930,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 10.0,
    "desc": "",
@@ -75459,7 +78007,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 175.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75533,7 +78084,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 67.5,
+     "feu": 67.5
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75607,7 +78162,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75683,7 +78241,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 40.0,
+     "feu": 40.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75757,7 +78319,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 70.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -75828,7 +78393,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 71.25,
+     "eclair": 23.75
+    }
    },
    "poids": 7.0,
    "desc": "",
@@ -75899,7 +78468,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "ethere": 95.0
+    }
    },
    "poids": 0.0,
    "desc": "",
@@ -75970,7 +78542,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -76044,7 +78619,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 130.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -76118,7 +78696,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 35.0,
+     "ethere": 35.0
+    }
    },
    "poids": 2.5,
    "desc": "",
@@ -76189,7 +78771,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 15.0,
+     "ethere": 15.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -76265,7 +78851,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 315.0
+    }
    },
    "poids": 12.0,
    "desc": "",
@@ -76336,7 +78925,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 110.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -76410,7 +79002,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 145.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -76484,7 +79079,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 155.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -76560,7 +79158,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 3.0,
    "desc": "",
@@ -76631,7 +79232,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 100.0
+    }
    },
    "poids": 4.0,
    "desc": "",
@@ -76705,7 +79309,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 115.0
+    }
    },
    "poids": 5.0,
    "desc": "",
@@ -76779,7 +79386,10 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 85.0
+    }
    },
    "poids": 8.0,
    "desc": "",
@@ -76850,7 +79460,11 @@
     "modsParade": [
      "Force",
      "Force"
-    ]
+    ],
+    "degatsParType": {
+     "physique": 75.0,
+     "froid": 75.0
+    }
    },
    "poids": 4.0,
    "desc": "",

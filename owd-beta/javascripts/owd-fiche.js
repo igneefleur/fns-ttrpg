@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.37.8b";
+  var RELEASE = "4.38.0b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -653,6 +653,10 @@
     ["attaque", "degats", "parade", "reduction", "type", "mult", "trajet", "garde", "touche", "passage"].forEach(function (k) {
       out[k] = String(a[k] == null ? "" : a[k]);
     });
+    if (a.degatsParType && typeof a.degatsParType === "object" && !Array.isArray(a.degatsParType))
+      actualiseDegatsArme(out, baseDegatsArme(a));
+    else if (a.repartition && typeof a.repartition === "object")
+      out.repartition = JSON.parse(JSON.stringify(a.repartition));
     out.modsDegats = normModsArme(a.modsDegats); out.modsParade = normModsArme(a.modsParade);
     out.comp = a.comp && comps[a.comp] ? String(a.comp) : "";
     out.mains = 1;
@@ -829,7 +833,7 @@
       modificateursDefense: combatAffichage.modificateursDefense !== false
     };
     var cm = s.combatModifiers || {};
-    s.combatModifiers = { attaques: {}, protections: {}, resistances: {} };
+    s.combatModifiers = { attaques: {}, attaquesPrimaires: {}, attaquesMultiplicateurs: {}, tauxDegats: {}, protections: {}, resistances: {} };
     var legacyPhysique=cm.legacyPhysique && typeof cm.legacyPhysique==="object" ? JSON.parse(JSON.stringify(cm.legacyPhysique)) : {};
     ["attaques","protections","resistances"].forEach(function(k){
       if(cm[k] && ["contondant","perforant","tranchant"].some(function(t){return snum(cm[k][t])!==0;}))legacyPhysique[k]={contondant:snum(cm[k].contondant),perforant:snum(cm[k].perforant),tranchant:snum(cm[k].tranchant)};
@@ -843,6 +847,12 @@
       // Archives uniquement : conserver les anciennes clés sans les réutiliser
       // dans les calculs Physique ni dans les champs visibles.
       ["contondant","perforant","tranchant"].forEach(function(t){var v=cm[k]&&cm[k][t];if(v===undefined && legacyPhysique[k])v=legacyPhysique[k][t];if(v!==undefined && isFinite(Number(v)))s.combatModifiers[k][t]=Number(v);});
+    });
+    ["attaquesPrimaires", "attaquesMultiplicateurs", "tauxDegats"].forEach(function (k) {
+      combatTypes().forEach(function (t) {
+        var v = cm[k] && cm[k][t], n = Number(v);
+        if (v != null && isFinite(n)) s.combatModifiers[k][t] = k === "attaquesPrimaires" ? n : Math.max(0, n);
+      });
     });
     // ---- attaques ----
     // La référence d'arme est validée APRÈS l'inventaire, parce que les anciens
@@ -6101,7 +6111,11 @@
     b.type = "button"; b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function () { data[cle] = !data[cle]; refresh(); }); return b;
   }
-  function combatMod(k, t) { return snum(state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t]); }
+  function combatMod(k, t, defaut) {
+    var valeur = state.combatModifiers && state.combatModifiers[k] && state.combatModifiers[k][t];
+    if (valeur == null) return defaut == null ? 0 : defaut;
+    return k === "protections" || k === "resistances" ? snum(valeur) : (Number(valeur) || 0);
+  }
   // État de dépliage purement visuel, comme les cartes d'attaque et de défense.
   // Aucun nouvel attribut de personnage n'est nécessaire.
   var combatModVue = { attaque: false, defense: false };
@@ -6125,21 +6139,25 @@
     // les alignements, la typographie et l'espacement de leurs tableaux.
     var detail = el("div", "pc-attaque-detail pc-defense-detail pc-combat-mod-detail");
     var table = el("table", "pc-defense-valeurs pc-combat-mod-table"), head = el("tr");
-    (attaque ? ["Type", "Dégâts"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
+    (attaque ? ["Type", "Prim.", "Mult.", "Sec.", "Perso %"] : ["Type", "Protection", "Résistance"]).forEach(function (s) {
       head.appendChild(el("th", null, s));
     });
     table.appendChild(head);
     combatTypes().forEach(function (t) {
       var row = el("tr"); row.dataset.damageType = t;
       row.appendChild(el("td", null, combatLibType(t)));
-      (attaque ? ["attaques"] : ["protections", "resistances"]).forEach(function (k) {
+      (attaque ? [["attaquesPrimaires", "Bonus primaire", 0], ["attaquesMultiplicateurs", "Multiplicateur du type", 1],
+        ["attaques", "Bonus secondaire", 0], ["tauxDegats", "Taux du personnage", 100]] :
+        [["protections", "Protection", 0], ["resistances", "Résistance", 0]]).forEach(function (colonne) {
+        var k = colonne[0];
         var td = el("td"), valeur = el("span", "pc-combat-mod-cell");
         var i = el("input", "pc-num");
-        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t);
-        i.setAttribute("aria-label", (k === "attaques" ? "Dégâts" : k === "protections" ? "Protection" : "Résistance") + " " + combatLibType(t));
+        champNombreSigne(i); i.step = "any"; i.value = combatMod(k, t, colonne[2]);
+        i.setAttribute("aria-label", colonne[1] + " " + combatLibType(t));
         i.addEventListener("input", function () {
-          var n = Number(i.value);
-          if (isFinite(n)) { state.combatModifiers[k][t] = n; save(); }
+          var n = i.value.trim() ? litNombreSigne(i.value) : colonne[2];
+          if (!isFinite(n) || (k === "attaquesMultiplicateurs" || k === "tauxDegats") && n < 0) return;
+          state.combatModifiers[k][t] = n; save();
         });
         i.addEventListener("change", function () { refresh(); });
         valeur.appendChild(i);
@@ -6439,11 +6457,6 @@
       var id = state.combatOptions.attaques.impregnation;
       return (D().impregnations || []).find(function (d) { return d.id === id; }) || null;
     }
-    function bonusImpregnation() {
-      var d = impregnationSelectionnee();
-      return d ? snum(d.pct) / 100 : 0;
-    }
-
     function armesInventaire() {
       var objets = state.inv && Array.isArray(state.inv.objets) ? state.inv.objets : [];
       return objets.filter(function (o) { return o && o.arme; });
@@ -6477,11 +6490,6 @@
       });
       return total;
     }
-    function degatsArme(it) {
-      if (!it || !it.arme) return 0;
-      var total = brutArme(it);
-      return Math.floor(total / (state.combatOptions.attaques.lente ? 2 : 1) + 1e-9);
-    }
     function typesCoup(coup, def) {
       var types = coup && Array.isArray(coup.types) ? coup.types :
         (def && Array.isArray(def.types) ? def.types : []);
@@ -6492,62 +6500,75 @@
       var n = Number(coup && coup.mult);
       return isFinite(n) && n > 0 ? n : 1;
     }
-    function degatsCoup(it, coup) {
-      var mult = multiplicateurCoup(coup);
-      // Équilibrage : le multiplicateur du coup ne porte QUE sur les dégâts
-      // de base de l'arme. Les MOD sont ajoutés ensuite, chacun valant
-      // floor(CARAC / 5). Le passage vaut la moitié du résultat final.
-      // L'epsilon évite uniquement les imprécisions binaires de 0.8/1.2/1.4.
-      var touche = brutCoup(it, coup);
-      if (state.combatOptions.attaques.lente) touche = Math.floor(touche / 2);
-      return {
-        mult: mult,
-        touche: touche,
-        passage: Math.floor(touche / 2)
-      };
+    function formatDegats(valeurs) {
+      return valeurs.map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
     }
-    function degatsTypes(base, type, passage, it, entree) {
-      return chiffresDegats(base, type, passage, it, entree).map(function (x) { return fmtP(x.valeur) + " " + x.type; }).join(" + ");
-    }
-    function chiffresDegats(base, type, passage, it, entree) {
-      var valeurs = {}, primary = combatTypes().indexOf(type) >= 0 ? type : type || "—";
-      primary = /^(tranchant|contondant|perforant)$/.test(primary) ? "physique" : primary;
-      if (combatTypes().indexOf(primary) < 0) primary = "physique";
-      var rep=it && it.arme && it.arme.repartition, somme=0;
-      if(rep)Object.keys(rep).forEach(function(k){somme+=pnum(rep[k]);});
-      if(somme>0)Object.keys(rep).forEach(function(k){if(rep[k]>0)valeurs[k]=base*rep[k]/somme;});else valeurs[primary] = base;
-      var ammo=entree&&munitionSelectionnee(entree,typeArme(it&&it.arme&&it.arme.type)),ms=ammo&&ammo.munitionStats;
-      if(ms&&ms.degats)combatTypes().forEach(function(k){var q=snum(ms.repartition&&ms.repartition[k]);if(q)valeurs[k]=(valeurs[k]||0)+snum(ms.degats)*q/100;});
-      // Une seule imprégnation : le choix commun remplace, dans ce module,
-      // l'imprégnation ciblée de l'arme. Sans choix, l'effet ciblé reste actif.
-      var impregnation = impregnationSelectionnee();
-      if (!impregnation) effetsSources().forEach(function(x){var op=x.d.ops.impregnation;if(op && it && x.e.cible===it.ref && op.type)valeurs[op.type]=(valeurs[op.type]||0)+snum(it.arme.degats)*op.pct/100+op.flat;});
-      // L'imprégnation commune crée des dégâts de son propre élément : son
-      // pourcentage porte uniquement sur la base de l'arme, jamais sur le
-      // multiplicateur du coup ni sur les MOD, et ne change pas la répartition.
-      // Ce supplément précède les bonus de dégâts par type. Le fixe, lui,
-      // conserve sa place après ces bonus (voir le calcul final ci-dessous).
-      if (impregnation && impregnation.type) {
-        var elementaire = snum(it && it.arme && it.arme.degats) * bonusImpregnation();
-        if (elementaire || snum(impregnation.flat))
-          valeurs[impregnation.type] = (valeurs[impregnation.type] || 0) + elementaire;
+    function detailDegats(it, entree, coup, type) {
+      var types = combatTypes();
+      if (/^(tranchant|contondant|perforant)$/.test(type) || types.indexOf(type) < 0) type = "physique";
+      var bases = baseDegatsArme(it.arme, type);
+      var total = totalDegatsBase(bases), mods = modsDegatsArme(it);
+      var ammo = munitionSelectionnee(entree, typeArme(it.arme.type));
+      var munitions = ammo && pnum(ammo.qte) && ammo.munitionStats ? baseDegatsArme(ammo.munitionStats, undefined, true) : {};
+      var commune = impregnationSelectionnee(), impregnation = commune && commune.type ? commune : null;
+      if (!commune) {
+        var source = effetsSources().find(function (x) {
+          return it.ref && x.e.cible === it.ref && x.d.ops.impregnation && x.d.ops.impregnation.type;
+        });
+        if (source) impregnation = source.d.ops.impregnation;
       }
-      combatTypes().forEach(function (t) { var n = combatMod("attaques", t); if (n) valeurs[t] = (valeurs[t] || 0) + n; });
-      return Object.keys(valeurs).map(function (t) {
-        var fixe = impregnation && impregnation.type === t ? snum(impregnation.flat) : 0;
-        var n = Math.floor(valeurs[t]*(1+effetBonus("degats",t)/100)+fixe+1e-9); if (state.combatOptions.attaques.lente) n = Math.floor(n / 2); if (passage) n = Math.floor(n / 2);
-        return { type: t, valeur: Math.max(0, n) };
-      }).filter(function (x) { return x.valeur || x.type === primary; });
+      var multCoup = multiplicateurCoup(coup);
+      return types.map(function (t) {
+        var base = bases[t] || 0;
+        var primaire = combatMod("attaquesPrimaires", t) + (munitions[t] || 0);
+        var secondaire = combatMod("attaques", t);
+        if (impregnation && impregnation.type === t) {
+          primaire += total * nombreDegats(impregnation.pct) / 100;
+          secondaire += nombreDegats(impregnation.flat);
+        }
+        if (!base && !primaire && !secondaire && t !== type) return null;
+        return {
+          type: t, base: base, mods: total ? mods * base / total : 0,
+          primaire: primaire, secondaire: secondaire,
+          multCoup: multCoup, multType: Math.max(0, combatMod("attaquesMultiplicateurs", t, 1)),
+          taux: Math.max(0, combatMod("tauxDegats", t, 100) + effetBonus("degats", t))
+        };
+      }).filter(Boolean);
     }
-    function brutArme(it) { return Math.round((snum(it.arme.degats) + modsDegatsArme(it)) * 1000) / 1000; }
-    function brutCoup(it, coup) {
-      // Le multiplicateur du coup s'applique aux seuls dégâts de base de
-      // l'arme ; chaque MOD s'ajoute ensuite. L'imprégnation est calculée
-      // séparément, par élément, dans chiffresDegats().
-      return Math.floor(snum(it.arme.degats) * multiplicateurCoup(coup) + 1e-9) + modsDegatsArme(it);
+    function chiffresDegats(coup, type, passage, it, entree) {
+      var diviseur = (state.combatOptions.attaques.lente ? 2 : 1) * (passage ? 2 : 1);
+      var valeurs = detailDegats(it, entree, coup, type).map(function (x) {
+        var total = ((x.base + x.mods + x.primaire) * x.multCoup * x.multType + x.secondaire) * x.taux / 100;
+        return { type: x.type, valeur: Math.max(0, Math.floor(total / diviseur + 1e-9)) };
+      });
+      var positifs = valeurs.filter(function (x) { return x.valeur > 0; });
+      return positifs.length ? positifs : valeurs.slice(0, 1);
+    }
+    function degatsTypes(coup, type, passage, it, entree) {
+      return formatDegats(chiffresDegats(coup, type, passage, it, entree));
+    }
+    function tableauDegats(it, entree, type) {
+      var table = el("table", "pc-defense-valeurs pc-attaque-detail-degats");
+      var entete = el("tr");
+      [["Type", "Type de dégâts"], ["Base", "Dégâts de base"], ["MODs", "MODs répartis"],
+        ["Prim.", "Bonus primaires"], ["Mult.", "Multiplicateur propre au type"],
+        ["Sec.", "Bonus secondaires"], ["Perso %", "Taux final du personnage"]].forEach(function (colonne) {
+        var th = el("th", null, colonne[0]); th.title = colonne[1]; entete.appendChild(th);
+      });
+      table.appendChild(entete);
+      detailDegats(it, entree, null, type).forEach(function (x) {
+        var row = el("tr");
+        row.dataset.damageType = x.type;
+        [combatLibType(x.type), fmtP(x.base), fmtP(x.mods), fmtP(x.primaire),
+          fmtMult(x.multType), fmtP(x.secondaire), fmtP(x.taux) + " %"].forEach(function (texte) {
+          row.appendChild(el("td", null, texte));
+        });
+        table.appendChild(row);
+      });
+      return table;
     }
     function fmtMult(n) {
-      return "×" + Number(n || 1).toFixed(1);
+      return "×" + fmtP(n == null ? 1 : n);
     }
 
     // ---------- ressources consommées par une attaque ----------
@@ -6620,8 +6641,6 @@
         flash("Cette arme nécessite deux mains pour être utilisée. Déposez-la sur « 2 Mains ».");
         return;
       }
-      var rep=it.arme&&it.arme.repartition,sum=0;
-      if(rep){Object.keys(rep).forEach(function(k){sum+=pnum(rep[k]);});if(Math.abs(sum-100)>0.001){flash("La répartition des dégâts doit totaliser 100 %.");return;}}
       var r = prepareRessources(entree, it, def);
       if (!r) return;
       // Les dégâts utilisent encore toutes les propriétés du projectile tiré.
@@ -6635,21 +6654,23 @@
       if(effetBonus("paradeAdverse"))sayChat("Effets de l’attaque",[["Parade adverse",sign(effetBonus("paradeAdverse"))],["Esquive adverse","Inchangée"]]);
       refresh();
     }
+    function messageDegats(titre, it, entree, coup, types) {
+      var hit = chiffresDegats(coup, types.touche, false, it, entree);
+      var pass = chiffresDegats(coup, types.passage, true, it, entree);
+      return { titre: titre, combat: { kind: "attack", hit: hit, pass: pass }, champs: [
+        ["Case de touche", formatDegats(hit)], ["Case de passage", formatDegats(pass)]
+      ] };
+    }
     function envoieCoup(entree, it, coup, def) {
       executeAttaque(entree, it, def, function () {
-        var types = typesCoup(coup, def);
-        return { combat: { kind: "attack", hit: chiffresDegats(brutCoup(it, coup), types.touche, false, it, entree), pass: chiffresDegats(brutCoup(it, coup), types.passage, true, it, entree) }, titre: (coup && coup.nom ? coup.nom : "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"), champs: [
-          ["Case de touche", degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)],
-          ["Case de passage", degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)]
-        ] };
+        return messageDegats((coup && coup.nom || "Attaque") + " — " + (it.nom || (def && def.nom) || "Arme"),
+          it, entree, coup, typesCoup(coup, def));
       });
     }
     function envoieAttaqueSimple(entree, it, def) {
       executeAttaque(entree, it, def, function () {
-        var types = def && Array.isArray(def.types) ? def.types : [], type = types[0] || "—";
-        return { combat: { kind: "attack", hit: chiffresDegats(brutArme(it), type, false, it, entree), pass: chiffresDegats(brutArme(it), type, true, it, entree) }, titre: "Attaque — " + (it.nom || (def && def.nom) || "Arme"), champs: [
-          ["Case de touche", degatsTypes(brutArme(it), type, false, it, entree)], ["Case de passage", degatsTypes(brutArme(it), type, true, it, entree)]
-        ] };
+        return messageDegats("Attaque — " + (it.nom || (def && def.nom) || "Arme"),
+          it, entree, null, typesCoup(null, def));
       });
     }
 
@@ -6807,7 +6828,7 @@
     }
 
     function carteCoup(entree, it, coup, def) {
-      var dg = degatsCoup(it, coup), types = typesCoup(coup, def);
+      var types = typesCoup(coup, def);
       var miroir = !!miroirs[entree.id];
       var btn = el("button", "pc-attaque-coup");
       btn.type = "button";
@@ -6826,11 +6847,11 @@
       var texte = el("div", "pc-attaque-coup-texte");
       var nom = el("div", "pc-attaque-coup-nom");
       nom.appendChild(document.createTextNode(coup.nom || "Attaque"));
-      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(dg.mult)));
+      nom.appendChild(el("span", "pc-attaque-mult", fmtMult(multiplicateurCoup(coup))));
       texte.appendChild(nom);
       var chiffres = el("div", "pc-attaque-coup-degats");
-      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(brutCoup(it, coup), types.touche, false, it, entree)));
-      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(brutCoup(it, coup), types.passage, true, it, entree)));
+      chiffres.appendChild(el("span", "touche", "Touche " + degatsTypes(coup, types.touche, false, it, entree)));
+      chiffres.appendChild(el("span", "passage", "Passage " + degatsTypes(coup, types.passage, true, it, entree)));
       texte.appendChild(chiffres);
       bas.appendChild(texte);
       var garde = gardeSvg(coup.garde, miroir);
@@ -6915,7 +6936,7 @@
       if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
-        meta.push("Dégâts " + fmtP(degatsArme(it)));
+        meta.push("Dégâts " + formatDegats(chiffresDegats(null, typesCoup(null, def).touche, false, it, entree)));
       }
       combatCarteTete(card, it ? it.nom || "Arme sans nom" : "Nouvelle attaque", meta.join(" · "), ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
@@ -6993,6 +7014,9 @@
         detail.appendChild(munBox);
       }
 
+      var detailTypes = el("div", "pc-attaque-detail-degats-wrap");
+      detailTypes.appendChild(tableauDegats(it, entree, typesCoup(coups[0], def).touche));
+      detail.appendChild(detailTypes);
       // Les armes de mêlée du livre ont six trajets. Les armes à distance,
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
@@ -7001,7 +7025,7 @@
         simple.type = "button";
         var stypes = def && Array.isArray(def.types) ? def.types : [];
         simple.appendChild(el("strong", null, "Attaquer"));
-        simple.appendChild(el("span", null, degatsTypes(brutArme(it), stypes[0] || "—", false, it, entree)));
+        simple.appendChild(el("span", null, degatsTypes(null, stypes[0] || "—", false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
         detail.appendChild(simple);
         card.appendChild(detail);
@@ -10099,6 +10123,34 @@
     return fld(libelle, i);
   }
 
+  function champsDegatsParType(a, type, projectile) {
+    var bases = baseDegatsArme(a, type, projectile);
+    var rep = el("div", "pc-arme-repartition");
+    var totalInput = el("div", "pc-edit-field pc-arme-total");
+    totalInput.setAttribute("role", "status");
+    totalInput.setAttribute("aria-label", "Total des dégâts de base");
+    function total() { totalInput.textContent = fmtP(totalDegatsBase(bases)); }
+    combatTypes().forEach(function (k) {
+      var input = champNombreSigne(el("input", "pc-edit-field"));
+      input.value = bases[k] == null ? "" : String(bases[k]);
+      input.placeholder = "0";
+      input.setAttribute("aria-label", "Dégâts de base " + combatLibType(k));
+      input.addEventListener("input", function () {
+        var v = input.value.trim() ? litNombreSigne(input.value) : 0;
+        if (!isFinite(v) || v < 0) return;
+        if (v) bases[k] = v; else delete bases[k];
+        actualiseDegatsArme(a, bases);
+        save();
+        total();
+      });
+      input.addEventListener("change", refresh);
+      rep.appendChild(fld(combatLibType(k), input));
+    });
+    rep.appendChild(fld("Total", totalInput));
+    total();
+    return rep;
+  }
+
   function carteArme(it, attaqueLibre, sousTypeHost) {
     // L’inventaire passe historiquement un callback en second argument.
     // Seul le booléen explicite des attaques libres masque la parade.
@@ -10212,9 +10264,8 @@
     l0.appendChild(fld("Compétence", selComp()));
     card.appendChild(l0);
 
-    var l1 = ligne("pc-arme-2");
+    var l1 = ligne("pc-arme-1");
     l1.appendChild(champArme("Attaque", a, "attaque", "Difficulté du jet d'attaque."));
-    l1.appendChild(champArme("Dégâts", a, "degats", "Dégâts de base de l'arme, avant ses MOD."));
     card.appendChild(l1);
 
     var l2 = ligne("pc-arme-3");
@@ -10236,38 +10287,9 @@
       else { var lType = ligne("pc-arme-1"); lType.appendChild(typeField); card.appendChild(lType); }
     }
 
-    if (!attaqueLibre) {
-      if (!a.repartition) a.repartition = {physique:100};
-      var rep = el("div", "pc-arme-repartition");
-      // Une sortie calculée, ni champ éditable, ni texte sélectionnable.
-      var totalInput = el("div", "pc-edit-field pc-arme-total");
-      totalInput.setAttribute("role", "status");
-      totalInput.setAttribute("aria-label", "Total des types de dégâts (%)");
-      totalInput.title = "Somme calculée automatiquement, non modifiable";
-      function total() {
-        var n = 0;
-        combatTypes().forEach(function (k) { n += pnum(a.repartition[k]); });
-        totalInput.textContent = fmtP(n) + " %";
-        totalInput.classList.toggle("pc-invalid", Math.abs(n-100) > 0.001);
-      }
-      // 4 rangées × 2, avec Brut / Total pour la dernière.
-      ["physique", "ethere", "feu", "froid", "eclair", "decomposition", "brut"].forEach(function (k) {
-        var input = el("input", "pc-edit-field");
-        input.type = "text";
-        input.inputMode = "decimal";
-        input.value = pnum(a.repartition[k]);
-        input.setAttribute("aria-label", "Dégâts " + combatLibType(k) + " (%)");
-        input.addEventListener("input", function () {
-          var v = litNombreSigne(input.value);
-          if (isFinite(v) && v >= 0) { a.repartition[k] = v; save(); total(); }
-        });
-        input.addEventListener("change", refresh);
-        rep.appendChild(fld(combatLibType(k) + " (%)", input));
-      });
-      rep.appendChild(fld("Total", totalInput));
-      total();
-      card.appendChild(rep);
+    card.appendChild(champsDegatsParType(a, attaqueLibre ? a.touche : undefined));
 
+    if (!attaqueLibre) {
       // Les prérequis sont tous prévus, y compris ceux encore peu utilisés.
       [["for", "FOR"], ["dex", "DEX"], ["vig", "VIG"], ["end", "END"],
        ["res", "RES"], ["fer", "FER"], ["int", "INT"], ["cha", "CHA"]].forEach(function (x, i) {
@@ -10340,6 +10362,43 @@
     var id=catalogueIndex.ids[o.catalogueId||o.id],name=catalogueIndex.names[o.nom],i=id===undefined?name:name===undefined?id:Math.min(id,name);
     return i===undefined?undefined:catalogueIndex.all[i];
   }
+  function nombreDegats(valeur) {
+    var n = Number(String(valeur == null ? "" : valeur).replace(",", "."));
+    return isFinite(n) ? n : 0;
+  }
+
+  function degatsPositifs(valeur) { return Math.max(0, nombreDegats(valeur)); }
+
+  function baseDegatsArme(arme, type, projectile) {
+    var bases = {}, source = arme.degatsParType;
+    if (source && typeof source === "object" && !Array.isArray(source)) {
+      combatTypes().forEach(function (k) { if (degatsPositifs(source[k])) bases[k] = degatsPositifs(source[k]); });
+      return bases;
+    }
+    var repartition = arme.repartition || {}, somme = 0;
+    combatTypes().forEach(function (k) { somme += degatsPositifs(repartition[k]); });
+    var total = degatsPositifs(arme.degats);
+    if (projectile) somme = 100;
+    if (somme > 0) combatTypes().forEach(function (k) {
+      if (degatsPositifs(repartition[k]) && total) bases[k] = total * degatsPositifs(repartition[k]) / somme;
+    });
+    else if (total) bases[combatTypes().indexOf(type) >= 0 ? type : "physique"] = total;
+    return bases;
+  }
+
+  function totalDegatsBase(bases) {
+    return Object.keys(bases).reduce(function (total, k) { return total + bases[k]; }, 0);
+  }
+
+  function actualiseDegatsArme(arme, bases) {
+    var total = totalDegatsBase(bases);
+    arme.degatsParType = bases;
+    // Les anciennes fiches et les lecteurs de transfert gardent une projection.
+    arme.degats = String(total);
+    arme.repartition = total ? {} : { physique: 100 };
+    if (total) Object.keys(bases).forEach(function (k) { arme.repartition[k] = 100 * bases[k] / total; });
+  }
+
   function enrichitObjet(n,o) {
     var modele=modeleCatalogue(o);
     // Les anciens achats de Boutique ne transportaient aucun champ technique.
@@ -10401,7 +10460,22 @@
     delete n.proprietes.accrochable;
     n.munitionStats=o.munitionStats&&typeof o.munitionStats==="object"?JSON.parse(JSON.stringify(o.munitionStats)):{degats:0,repartition:{physique:100}};
     ["prot","res"].forEach(function(k){n[k+"_physique"]=o[k+"_physique"]===undefined?(modele&&modele[k+"_physique"]!==undefined?snum(modele[k+"_physique"]):Math.max(snum(o[k+"_contondant"]),snum(o[k+"_perforant"]),snum(o[k+"_tranchant"]))):snum(o[k+"_physique"]);});
-    if(n.arme){var rep=o.arme&&o.arme.repartition || modele&&modele.arme&&modele.arme.repartition || {physique:100};n.arme.repartition={};combatTypes().forEach(function(k){if(isFinite(Number(rep[k])))n.arme.repartition[k]=pnum(rep[k]);});if(!Object.keys(n.arme.repartition).length)n.arme.repartition={physique:100};n.arme.hits=Math.max(1,Math.floor(pnum(o.arme&&o.arme.hits)||1));["for","dex","vig","end","res","fer","int","cha"].forEach(function(k){n.arme[k]=pnum(o.arme&&o.arme[k]);});}
+    if (n.arme) {
+      var armeSource = o.arme || {};
+      var rep = armeSource.repartition || (modele && modele.arme && modele.arme.repartition) || { physique: 100 };
+      n.arme.repartition = {};
+      combatTypes().forEach(function (k) {
+        if (isFinite(Number(rep[k]))) n.arme.repartition[k] = degatsPositifs(rep[k]);
+      });
+      if (!Object.keys(n.arme.repartition).length) n.arme.repartition = { physique: 100 };
+      if (armeSource.degatsParType || String(armeSource.degats == null ? "" : armeSource.degats).trim() !== "") {
+        actualiseDegatsArme(n.arme, baseDegatsArme({
+          degatsParType: armeSource.degatsParType, degats: armeSource.degats, repartition: n.arme.repartition
+        }));
+      }
+      n.arme.hits = Math.max(1, Math.floor(pnum(armeSource.hits) || 1));
+      ["for", "dex", "vig", "end", "res", "fer", "int", "cha"].forEach(function (k) { n.arme[k] = pnum(armeSource[k]); });
+    }
     if(n.typeObjet==="munition"){n.sousType={fleche:"fleches",carreau:"carreaux",balle:"balles",pierre:"pierres"}[n.sousType]||n.sousType;n.contenu=n.sousType;}
     return n;
   }
@@ -10516,9 +10590,10 @@
     }
     if(invType(it)==="munition"){
       if(!it.munitionStats)it.munitionStats={degats:0,repartition:{physique:100}};
-      var mun=el("div","pc-arme");mun.appendChild(champArme("Dégâts supplémentaires",it.munitionStats,"degats"));
-      if(!it.munitionStats.repartition)it.munitionStats.repartition={physique:100};
-      combatTypes().forEach(function(k){mun.appendChild(champArme(combatLibType(k)+" (%)",it.munitionStats.repartition,k));});body.appendChild(mun);
+      var mun = el("div", "pc-arme");
+      mun.appendChild(el("div", "lbl", "Bonus primaires de la munition"));
+      mun.appendChild(champsDegatsParType(it.munitionStats, undefined, true));
+      body.appendChild(mun);
     }
     if(invAvecEffets(it)){
       var rs=el("div","pc-arme pc-obj-restauration");
@@ -10623,7 +10698,9 @@
       ["Volume", it.encombre===null?"Non renseigné":fmtP(it.encombre || 0) + " L"],
       ["Achat", prixObjetTexte(it,false)], ["Vente", prixObjetTexte(it,true)]];
     function add(k,v){if(v!=null && String(v).trim()!=="")fields.push([k,String(v)]);}
-    if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);add("Dégâts",a.degats);
+    if(it.arme){var a=it.arme;add("Type",a.type || "Arme");add("Attaque",a.attaque);var bases = baseDegatsArme(a);
+      add("Dégâts", fmtP(totalDegatsBase(bases)));
+      Object.keys(bases).forEach(function (t) { add("Dégâts — " + combatLibType(t), fmtP(bases[t])); });
       add("Mods dégâts",(a.modsDegats||[]).filter(Boolean).join(" · "));add("Parade",a.parade);add("Réduction",a.reduction);
       add("Mods parade",(a.modsParade||[]).filter(Boolean).join(" · "));
       var comp=(state.comps||[]).filter(function(c){return c.id===a.comp;})[0];if(comp)add("Compétence",comp.nom);
