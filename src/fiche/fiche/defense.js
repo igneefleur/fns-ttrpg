@@ -11,16 +11,8 @@
   function combatLibType(t) {
     return { eclair: "Éclair", decomposition: "Décomposition", ethere: "Éthéré" }[t] || capFirst(t);
   }
-  function combatType(data, key) {
-    var s = el("select", "pc-select pc-edit-field");
-    combatTypes().forEach(function (t) { var o = el("option", null, combatLibType(t)); o.value = t;
-      o.selected = t === data[key]; s.appendChild(o); });
-    if (!data[key]) { var empty = el("option", null, "Choisir"); empty.value = ""; empty.selected = true; s.insertBefore(empty, s.firstChild); }
-    s.addEventListener("change", function () { data[key] = s.value; refresh(); });
-    return s;
-  }
-  function combatComp(data) {
-    var s = el("select", "pc-select pc-edit-field"), vide = el("option", null, "Choisir une compétence"); vide.value = ""; s.appendChild(vide);
+  function combatComp(data, libelleVide) {
+    var s = el("select", "pc-select pc-edit-field"), vide = el("option", null, libelleVide || "Choisir une compétence"); vide.value = ""; s.appendChild(vide);
     state.comps.forEach(function (c) { var o = el("option", null, c.nom || "Sans nom"); o.value = c.id; o.selected = c.id === data.comp; s.appendChild(o); });
     s.addEventListener("change", function () { data.comp = s.value; refresh(); }); return s;
   }

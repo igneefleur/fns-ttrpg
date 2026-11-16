@@ -338,12 +338,25 @@ test('cumul additif : +0,4 général, puis +0,2 ou −0,2 feu',()=>{
  a.secondaires={feu:7};
  assert.equal(w.ctx.degatsTypes(null,'physique',false,it,entree),'70 physique + 7 feu');
 });
-test('portée personnalisée : origine conservée en mêlée, masquée à distance et avec un arc',()=>{
+test('une ancienne attaque personnalisée garde le même type sur touche et passage',()=>{
+ const w=attackContext([]);
+ const perso={sousType:'distance',degats:20,touche:'feu',passage:'froid'};
+ w.ctx.envoieAttaqueSimple({personnalisee:perso},{arme:perso},{types:['physique','froid']});
+ assert.equal(w.chats[0].champs[0][1],'20 feu');
+ assert.equal(w.chats[0].champs[1][1],'10 feu');
+});
+test('portée personnalisée : origine sélectionnable à distance et discrète sur l’aperçu vide',()=>{
  const w=attackContext([]);
  vm.runInContext(attack.slice(attack.indexOf('    var HX_NS'),attack.indexOf('    // ---------- carré de garde')),w.ctx);
  const trajet='soi:frappe>1:passe>3:frappe';
- assert.deepEqual(Array.from(w.ctx.etapesPortee(trajet,0,false,false),e=>e.r),[0,-1,-3]);
- assert.deepEqual(Array.from(w.ctx.etapesPortee(trajet,0,false,true),e=>e.r),[-1,-3]);
+ function svg() {
+  return {attrs:{},children:[],setAttribute(k,v){this.attrs[k]=String(v);},appendChild(n){this.children.push(n);}};
+ }
+ w.ctx.document={createElementNS:svg};
+ const centre = carte => carte.children.find(n=>n.attrs['data-q']==='0'&&n.attrs['data-r']==='0');
+ assert.ok(centre(w.ctx.carteHex('',0,false,1,true,true)));
+ assert.equal(centre(w.ctx.carteHex('',0,false,1,true)),undefined);
+ assert.equal(centre(w.ctx.carteHex(trajet,0,false,3,true)).attrs.class,'hx-frappe');
  const entree={personnalisee:{sousType:'arme'}};
  assert.equal(w.ctx.attaqueADistance(entree,{categorie:'Armes à rechargement à une main'}),true);
  assert.equal(w.ctx.attaqueADistance(entree,{categorie:'Armes à 1 case'}),false);

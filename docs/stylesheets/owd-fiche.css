@@ -2222,17 +2222,28 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-grille-degats td {
   min-width: 1.35rem; padding: .25rem .1rem; border: 1px solid var(--hair); text-align: center; vertical-align: middle;
 }
-.perso-fiche .pc-attaque-grille-degats th { background: var(--stripe); }
+.perso-fiche [data-module="attaque"] {
+  --attaque-lecture: var(--pc-segs-info-bg);
+  --attaque-saisie: color-mix(in srgb, var(--pc-segs-info-bg) 52%, #000);
+  --attaque-saisie-encre: #fff;
+}
+.perso-fiche .pc-attaque-edit .pc-attaque-choix .pc-edit-field,
+.perso-fiche .pc-attaque-grille-degats td:has(> .pc-num) {
+  background: var(--attaque-saisie); color: var(--attaque-saisie-encre);
+}
+.perso-fiche .pc-attaque-edit .pc-attaque-choix .pc-edit-field::placeholder { color: inherit; opacity: .74; }
+.perso-fiche .pc-attaque-grille-degats th,
+.perso-fiche .pc-attaque-grille-degats td { background: var(--attaque-lecture); }
 .perso-fiche .pc-attaque-grille-degats th:first-child { width: 4.5rem; padding-inline: .3rem; text-align: left; }
 .perso-fiche .pc-attaque-grille-degats .pc-num {
   display: block; width: 100%; max-width: 4.5rem; min-width: 0; margin: 0 auto;
   box-sizing: border-box; border: 0; box-shadow: none; color: inherit; font-size: var(--fs-body);
 }
+.perso-fiche .pc-attaque-grille-degats .pc-num::placeholder { color: inherit; opacity: .74; }
 .perso-fiche .pc-attaque-grille-degats td:focus-within { background: #ffd77f; color: #221608; }
-.perso-fiche .pc-attaque-grille-degats td:focus-within .pc-num::placeholder { color: #5c471f; }
 .perso-fiche .pc-combat-consommation-icone { gap: .25rem; }
 .perso-fiche .pc-attaque-calcul > summary { cursor: pointer; font-size: var(--fs-meta); margin-bottom: .3rem; }
-.perso-fiche .pc-attaque-grille-total td { background: var(--stripe); font-weight: 700; }
+.perso-fiche .pc-attaque-grille-total td { font-weight: 700; }
 
 /* Lisibilité et alignement des cartes de combat. */
 .perso-fiche .pc-combat-tete { min-height:1.85rem; display:flex; align-items:center; }
