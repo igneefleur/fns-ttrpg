@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.2b";
+  var RELEASE = "4.38.3b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6191,12 +6191,18 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatOptionsPaires(data, premiere, seconde, manaActif) {
+  function combatOptionsPaires(data, premiere, seconde, manaActif, iconePe) {
     var options = el("div", "pc-combat-ressources");
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
-    bas.appendChild(combatRessource(data, "utiliseEndurance", "Consommation PE"));
+    var endurance = combatRessource(data, "utiliseEndurance", iconePe ? "Consommation" : "Consommation PE");
+    if (iconePe) {
+      endurance.classList.add("pc-combat-consommation-icone");
+      endurance.setAttribute("aria-label", "Consommation endurance");
+      endurance.appendChild(iconePe);
+    }
+    bas.appendChild(endurance);
     var mana = manaActif ? combatRessource(data, "utiliseMana", "Consommation PM") :
       el("button", "c pc-info", "Consommation PM");
     if (!manaActif) {
@@ -6951,11 +6957,17 @@
       var box = el("div", "pc-attaque-editor"), path = hxEtapes(entree.personnalisee.trajet, 0, false);
       var rayon = Math.max(3, attaqueVue.portees[entree.id] || 3, path.reduce(function (n, e) { return Math.max(n, hxDistance(e.q, e.r)); }, 0));
       var brush = attaqueVue.pinceaux[entree.id] || "frappe";
-      var tools = el("div", "pc-attaque-editor-tools pc-attaque-editor-paint");
-      [["frappe", "Touche"], ["passe", "Passage"]].forEach(function (v) {
-        var bt = miniBtn(v[1], null, function () { attaqueVue.pinceaux[entree.id] = v[0]; rendre(); }, brush === v[0] ? "on" : "");
-        bt.setAttribute("aria-pressed", String(brush === v[0])); tools.appendChild(bt);
-      });
+      function boutonPinceau(mode, libelle) {
+        var actif = brush === mode;
+        var bouton = el("button", "c pc-toggle" + (actif ? " on" : ""), libelle);
+        bouton.type = "button";
+        bouton.setAttribute("aria-pressed", String(actif));
+        bouton.addEventListener("click", function () { attaqueVue.pinceaux[entree.id] = mode; rendre(); });
+        return bouton;
+      }
+      var tools = el("div", "pc-segs pc-attaque-editor-paint");
+      tools.appendChild(boutonPinceau("frappe", "Touche"));
+      tools.appendChild(boutonPinceau("passe", "Passage"));
       box.appendChild(tools);
       var svg = carteHex(entree.personnalisee.trajet, 0, false, rayon, distance);
       function ecrit() {
@@ -6985,10 +6997,11 @@
         cell.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); peint(); } });
       });
       box.appendChild(svg);
-      var efface = el("div", "pc-attaque-editor-tools pc-attaque-editor-erase");
-      var gomme = miniBtn("Effacer", null, function () { attaqueVue.pinceaux[entree.id] = "efface"; rendre(); }, brush === "efface" ? "on" : "");
-      gomme.setAttribute("aria-pressed", String(brush === "efface")); efface.appendChild(gomme);
-      efface.appendChild(miniBtn("Tout Effacer", null, function () { path = []; ecrit(); }));
+      var efface = el("div", "pc-segs pc-attaque-editor-erase");
+      efface.appendChild(boutonPinceau("efface", "Effacer"));
+      var toutEffacer = boutonAction("Tout effacer");
+      toutEffacer.addEventListener("click", function () { path = []; ecrit(); });
+      efface.appendChild(toutEffacer);
       box.insertBefore(efface, svg);
       var pieds = el("div", "pc-attaque-editor-tools pc-attaque-editor-range pc-step");
       pieds.appendChild(stepBtn("−", "Réduire la grille", function () { attaqueVue.portees[entree.id] = Math.max(3, rayon - 1); rendre(); }));
@@ -7014,7 +7027,17 @@
         cell.addEventListener("click", dessine);
         cell.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dessine(); } });
       });
-      box.appendChild(svg); box.appendChild(miniBtn("Effacer la garde", null, function () { entree.personnalisee.garde = ""; delete attaqueVue.gardes[entree.id]; refresh(); })); return box;
+      box.appendChild(svg);
+      var commandes = el("div", "pc-segs");
+      var effacer = boutonAction("Effacer la garde");
+      effacer.addEventListener("click", function () {
+        entree.personnalisee.garde = "";
+        delete attaqueVue.gardes[entree.id];
+        refresh();
+      });
+      commandes.appendChild(effacer);
+      box.appendChild(commandes);
+      return box;
     }
 
     function iconeDegats(type) {
@@ -7025,9 +7048,23 @@
       return img;
     }
 
+    function iconeOutward(chemin, libelle, repli) {
+      var img = el("img", "pc-attaque-icone-degats");
+      img.alt = img.title = libelle;
+      img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
+      img.src = "https://static.wikia.nocookie.net/outward_gamepedia/images/" + chemin;
+      return img;
+    }
+
+    function iconeEndurance() {
+      return iconeOutward("8/8d/Stamina.png/revision/latest?cb=20190408075056", "Endurance", "PE");
+    }
+
     function bilanDegats(valeurs, libelle) {
       var bilan = el("span", "pc-attaque-bilan");
-      if (libelle) bilan.appendChild(el("span", "pc-attaque-bilan-label", libelle));
+      if (libelle) {
+        bilan.appendChild(typeof libelle === "string" ? el("span", "pc-attaque-bilan-label", libelle) : libelle);
+      }
       valeurs.forEach(function (x) {
         var valeur = el("span", "pc-attaque-bilan-type");
         valeur.appendChild(iconeDegats(x.type));
@@ -7069,11 +7106,7 @@
       var head = el("tr");
       head.appendChild(el("th", null, "Dégâts"));
       var general = el("th");
-      var icone = el("img", "pc-attaque-icone-degats");
-      icone.alt = icone.title = "Général";
-      icone.addEventListener("error", function () { general.textContent = icone.alt; });
-      icone.src = "https://static.wikia.nocookie.net/outward_gamepedia/images/b/b5/BarrierStat.png/revision/latest/scale-to-width-down/14?cb=20201220130627";
-      general.appendChild(icone);
+      general.appendChild(iconeOutward("6/6e/Attack_Speed.png/revision/latest/scale-to-width-down/22?cb=20190408075010", "Général", "Gén."));
       head.appendChild(general);
       colonnes.forEach(function (t) {
         var th = el("th");
@@ -7204,7 +7237,9 @@
       comp.setAttribute("aria-label", "Compétence");
       choix.appendChild(fld("Compétence", comp));
       choix.appendChild(fld("Difficulté d’Attaque", nombreAttaque(a, "attaque", "Difficulté d’Attaque", "", true)));
-      choix.appendChild(fld("Coût PE", nombreAttaque(a, "coutPe", "Coût PE", fmtP(coutEndurance(it, a)), true)));
+      var cout = fld("Coût ", nombreAttaque(a, "coutPe", "Coût en endurance", fmtP(coutEndurance(it, a)), true));
+      cout.firstChild.appendChild(iconeEndurance());
+      choix.appendChild(cout);
       choix.appendChild(fld("Coût PM", nombreAttaque(a, "coutPm", "Coût PM", "0", true)));
 
       if (a.sousType !== "arme") {
@@ -7251,6 +7286,7 @@
       var it = a && !liee ? { nom: entree.nom || "Attaque personnalisée", arme: a } : objetArme(entree.arme);
       var def = it && typeArme(it.arme.type);
       var ouvert = !!ouverts[entree.id], meta = [];
+      var couts = el("span", "pc-attaque-bilan");
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (a) {
         var typesArme = typesCoup(null, def);
@@ -7261,8 +7297,12 @@
           nom: entree.nom || "Attaque personnalisée", trajet: a.trajet, garde: a.garde, types: def.types
         }] : [];
         var coutPe = coutEndurance(it, a);
-        if (coutPe) meta.push(fmtP(coutPe) + " PE");
-        if (a.coutPm) meta.push(fmtP(a.coutPm) + " PM");
+        if (coutPe) {
+          var endurance = el("span", "pc-attaque-bilan-type", fmtP(coutPe));
+          endurance.appendChild(iconeEndurance());
+          couts.appendChild(endurance);
+        }
+        if (a.coutPm) couts.appendChild(el("span", null, fmtP(a.coutPm) + " PM"));
       } else if (it) {
         if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
         if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
@@ -7270,7 +7310,7 @@
       }
       var types = typesCoup(coups[0], def);
       var nom = a ? entree.nom || "Attaque personnalisée" : it ? it.nom || "Arme sans nom" : "Nouvelle attaque";
-      var resume = a ? bilanDegats(it ? chiffresDegats(null, types.touche, false, it, entree) : [], meta.join(" · ")) : meta.join(" · ");
+      var resume = a ? bilanDegats(it ? chiffresDegats(null, types.touche, false, it, entree) : [], couts.firstChild ? couts : null) : meta.join(" · ");
       combatCarteTete(card, nom, resume, ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
       if (!ouvert) return card;
@@ -7419,7 +7459,7 @@
       var options = state.combatOptions.attaques;
       box.appendChild(combatOptionsPaires(options,
         combatRessource(options, "lente", "Attaque Lente"),
-        combatRessource(options, "utiliseMunition", "Consommation Munition"), true));
+        combatRessource(options, "utiliseMunition", "Consommation Munition"), true, iconeEndurance()));
       state.attaques.forEach(function (a) { box.appendChild(carte(a)); });
       if (!state.attaques.length) box.appendChild(el("div", "pc-empty", "Aucune attaque."));
       box.appendChild(miniBtn("+ Ajouter une attaque", null, function () {

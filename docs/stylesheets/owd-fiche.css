@@ -2158,7 +2158,6 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-custom-layout { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:10px; align-items:start; }
 .perso-fiche .pc-attaque-custom-layout .pc-arme { width:100%; box-sizing:border-box; grid-column:auto; }
 .perso-fiche .pc-attaque-editor-tools { display:flex; align-items:center; flex-wrap:wrap; gap:4px; margin-bottom:6px; }
-.perso-fiche .pc-attaque-editor-tools .on { background:var(--accent-deep); color:var(--paper); }
 .perso-fiche .pc-attaque-editor svg polygon[role="button"] { cursor:pointer; }
 .perso-fiche .pc-attaque-editor svg polygon[role="button"]:focus { outline:none; stroke:var(--accent); stroke-width:1.8px; }
 .perso-fiche .pc-attaque-editor .hx-rang, .perso-fiche .pc-attaque-editor .hx-soi, .perso-fiche .pc-attaque-editor .hx-visee { pointer-events:none; }
@@ -2173,8 +2172,6 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-edit { grid-template-columns:minmax(0,1fr); }
 .perso-fiche .pc-attaque-choix { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto; gap:6px; align-items:end; min-width:0; }
 .perso-fiche .pc-attaque-choix select, .perso-fiche .pc-attaque-choix input { width:100%; min-width:0; box-sizing:border-box; }
-.perso-fiche .pc-attaque-editor-paint, .perso-fiche .pc-attaque-editor-erase { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; }
-.perso-fiche .pc-attaque-editor-paint button, .perso-fiche .pc-attaque-editor-erase button { width:100%; min-width:0; }
 .perso-fiche .pc-attaque-editor-range { justify-content:center; }
 .perso-fiche .pc-attaque-custom-info { min-width:0; }
 .perso-fiche .pc-attaque-custom-info .pc-arme-1 { grid-template-columns:minmax(0,1fr); }
@@ -2216,19 +2213,21 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-attaque-icone-degats { width: 1rem; height: 1rem; object-fit: contain; vertical-align: middle; }
 .perso-fiche .pc-attaque-grille-wrap { width: 100%; min-width: 0; overflow-x: auto; margin-bottom: .35rem; }
 .perso-fiche .pc-attaque-grille-degats {
-  width: 100%; min-width: 16.7rem; border-collapse: collapse; color: var(--ink); font-size: var(--fs-meta);
+  width: 100%; min-width: 16.7rem; table-layout: fixed; border-collapse: collapse; color: var(--ink); font-size: var(--fs-meta);
 }
 .perso-fiche .pc-attaque-grille-degats th,
 .perso-fiche .pc-attaque-grille-degats td {
   min-width: 1.35rem; padding: .25rem .1rem; border: 1px solid var(--hair); text-align: center; vertical-align: middle;
 }
 .perso-fiche .pc-attaque-grille-degats th { background: var(--stripe); }
-.perso-fiche .pc-attaque-grille-degats th:first-child { padding-inline: .3rem; text-align: left; }
-.perso-fiche .pc-attaque-grille-degats tr > :nth-child(2) { width: 2.65rem; }
+.perso-fiche .pc-attaque-grille-degats th:first-child { width: 4.5rem; padding-inline: .3rem; text-align: left; }
 .perso-fiche .pc-attaque-grille-degats .pc-num {
   display: block; width: 100%; max-width: 4.5rem; min-width: 0; margin: 0 auto;
-  box-sizing: border-box; font-size: var(--fs-body);
+  box-sizing: border-box; border: 0; box-shadow: none; color: inherit; font-size: var(--fs-body);
 }
+.perso-fiche .pc-attaque-grille-degats td:focus-within { background: #ffd77f; color: #221608; }
+.perso-fiche .pc-attaque-grille-degats td:focus-within .pc-num::placeholder { color: #5c471f; }
+.perso-fiche .pc-combat-consommation-icone { gap: .25rem; }
 .perso-fiche .pc-attaque-calcul > summary { cursor: pointer; font-size: var(--fs-meta); margin-bottom: .3rem; }
 .perso-fiche .pc-attaque-grille-total td { background: var(--stripe); font-weight: 700; }
 
@@ -2238,12 +2237,11 @@ html.night .pc-attaque-carte .hx-vide { fill-opacity: .12; }
 .perso-fiche .pc-combat-tete .pc-attaque-nom { font-size:.68rem; line-height:1.15; }
 .perso-fiche .pc-combat-tete .pc-attaque-meta { font-size:.56rem; }
 
-.perso-fiche .pc-attaque-editor { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px; grid-template-rows:repeat(2,minmax(2rem,1fr)) auto auto; }
-.perso-fiche .pc-attaque-editor-paint,.perso-fiche .pc-attaque-editor-erase { display:contents; }
-.perso-fiche .pc-attaque-editor-paint button,.perso-fiche .pc-attaque-editor-erase button { height:100%; min-height:2rem; align-self:stretch; padding:.25rem; box-sizing:border-box; }
-.perso-fiche .pc-attaque-editor-paint button { grid-row:1; }
-.perso-fiche .pc-attaque-editor-erase button { grid-row:2; }
-.perso-fiche .pc-attaque-editor .pc-attaque-carte,.perso-fiche .pc-attaque-editor-range { grid-column:1 / -1; }
+.perso-fiche .pc-attaque-editor { display:grid; grid-template-columns:minmax(0,1fr); gap:4px; }
+.perso-fiche .pc-attaque-editor > .pc-segs { margin:0; }
+.perso-fiche .pc-attaque-editor > .pc-segs > .c, .perso-fiche .pc-garde-editor > .pc-segs > .c {
+  min-height:1.5rem; white-space:normal; padding:.2rem .25rem;
+}
 .perso-fiche .pc-attaque-editor-range { margin-top:4px; }
 .perso-fiche .pc-defense-valeurs th,.perso-fiche .pc-defense-valeurs td { text-align:center; vertical-align:middle; }
 .perso-fiche .pc-defense-valeurs td:not(:first-child) { text-align:center; }
