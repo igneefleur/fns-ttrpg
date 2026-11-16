@@ -567,19 +567,9 @@
       return img;
     }
 
-    function iconeCombat(fichier, libelle, repli) {
-      var img = el("img", "pc-attaque-icone-degats");
-      img.alt = img.title = libelle;
-      img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
-      img.src = siteBase() + "assets/owd/combat/" + fichier + ".png";
-      return img;
-    }
-
     function bilanDegats(valeurs, libelle) {
       var bilan = el("span", "pc-attaque-bilan");
-      if (libelle) {
-        bilan.appendChild(typeof libelle === "string" ? el("span", "pc-attaque-bilan-label", libelle) : libelle);
-      }
+      if (libelle) bilan.appendChild(el("span", "pc-attaque-bilan-label", libelle));
       valeurs.forEach(function (x) {
         var valeur = el("span", "pc-attaque-bilan-type");
         valeur.appendChild(iconeDegats(x.type));
@@ -810,34 +800,23 @@
       var a = entree.personnalisee, liee = a && a.sousType === "arme";
       var it = a && !liee ? { nom: entree.nom || "Personnalisé", arme: a } : objetArme(entree.arme);
       var def = it && typeArme(it.arme.type);
-      var ouvert = !!ouverts[entree.id], meta = [];
+      var ouvert = !!ouverts[entree.id];
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (a) {
         if (a.trajet || !a.type || liee) coups = a.trajet ? [{
           nom: entree.nom || "Personnalisé", trajet: a.trajet, garde: a.garde
         }] : [];
-      } else if (it) {
-        if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
-        meta.push("Dégâts " + formatDegats(chiffresDegats(null, typesCoup(null, def, entree).touche, false, it, entree)));
       }
       var types = typesCoup(coups[0], def, entree);
       var nom = a ? entree.nom || "Personnalisé" : it ? it.nom || "Arme sans nom" : "Nouvelle attaque";
-      var resume = meta.join(" · ");
-      if (it && (a || !ouvert)) {
-        var couts = el("span", "pc-attaque-bilan");
-        [[a && a.coutPv, "pv", "Vie", "PV"], [coutEnduranceAttaque(it, a), "pe", "Endurance", "PE"],
-          [a && a.coutPm, "pm", "Mana", "PM"]].forEach(function (cout) {
-          if (!cout[0]) return;
-          var valeur = el("span", "pc-attaque-bilan-type");
-          valeur.appendChild(iconeCombat(cout[1], cout[2], cout[3]));
-          valeur.appendChild(el("span", null, fmtP(cout[0])));
-          couts.appendChild(valeur);
-        });
-        resume = el("span", "pc-attaque-resume");
-        resume.appendChild(couts);
-        resume.appendChild(bilanDegats(chiffresDegats(null, types.touche, false, it, entree)));
-      }
+      var baseAttaque = a ? a.attaque : it && it.arme.attaque;
+      var difficulte = baseAttaque == null || String(baseAttaque).trim() === "" ? null :
+        Math.max(0, nombreDegats(baseAttaque) + effetBonus("attaque"));
+      var resume = resumeCombat(difficulte, [
+        ["pv", a && degatsPositifs(a.coutPv), "Vie", "PV"],
+        ["pe", coutEnduranceAttaque(it, a), "Endurance", "PE"],
+        ["pm", a && degatsPositifs(a.coutPm), "Mana", "PM"]
+      ]);
       combatCarteTete(card, nom, resume, ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
       if (!ouvert) return card;
@@ -885,13 +864,15 @@
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
       if (!coups.length) {
-        var simple = el("button", "pc-attaque-simple");
+        var commandes = el("div", "pc-segs pc-combat-action");
+        var simple = el("button", "c pc-action pc-attaque-simple");
         simple.type = "button";
         simple.appendChild(el("strong", null, "Attaquer"));
         simple.appendChild(a ? bilanDegats(chiffresDegats(null, types.touche, false, it, entree)) :
           el("span", null, degatsTypes(null, types.touche, false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
-        detail.appendChild(simple);
+        commandes.appendChild(simple);
+        detail.appendChild(commandes);
         card.appendChild(detail);
         supprimer(); return card;
       }

@@ -221,6 +221,26 @@
     }
     return svg;
   }
+  function iconeCombat(fichier, libelle, repli) {
+    var img = el("img", "pc-attaque-icone-degats");
+    img.alt = img.title = libelle;
+    img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
+    img.src = siteBase() + "assets/owd/combat/" + fichier + ".png";
+    return img;
+  }
+
+  function resumeCombat(difficulte, couts) {
+    var resume = el("span", "pc-attaque-resume");
+    var valeurs = [["vitesse-attaque", difficulte, "Difficulté", "Diff."]].concat(couts);
+    valeurs.forEach(function (v, index) {
+      if (index === 0 ? v[1] == null : !(v[1] > 0)) return;
+      var groupe = el("span", "pc-attaque-bilan-type");
+      groupe.appendChild(iconeCombat(v[0], v[2], v[3]));
+      groupe.appendChild(el("span", null, fmtP(v[1])));
+      resume.appendChild(groupe);
+    });
+    return resume.firstChild ? resume : "";
+  }
   function combatCarteTete(card, nom, resume, ouvert, module, id, toggle, liste, visibilite) {
     var ligne = el("div", "pc-combat-tete");
     var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
@@ -241,10 +261,7 @@
         combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
       });
       drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); });
-      if (module === "attaque") {
-        ligne.classList.add("pc-combat-tete-attaque");
-        ligne.insertBefore(drag, tete);
-      } else outils.appendChild(drag);
+      ligne.insertBefore(drag, tete);
       card.addEventListener("dragover", function (ev) {
         if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
         ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
@@ -278,16 +295,21 @@
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
     function bouton(nom, mode, entree) {
-      var btn = el("button", "pc-attaque-simple pc-defense-bouton"); btn.type = "button";
-      btn.appendChild(el("strong", null, "Se défendre"));
-      btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
+      var commandes = el("div", "pc-segs pc-combat-action");
+      var btn = el("button", "c pc-action pc-attaque-simple pc-defense-bouton", "Se défendre");
+      btn.type = "button";
+      btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); });
+      commandes.appendChild(btn);
+      return commandes;
     }
     function details(card, nom, mode, entree, id) {
       var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree);
-      var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
+      var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var difficulte = mode === "esquive" ? Math.max(1, 8 - effetAlerte()) : mode === "sans" ? null : v.difficulte;
+      var resume = resumeCombat(difficulte, [["pe", state.combatOptions.defenses.lente ? 0 : cout, "Endurance", "PE"]]);
       var cleVisibilite = mode === "sans" ? "defenseSans" : mode === "esquive" ? "defenseEsquive" : "";
       var visible = !cleVisibilite || state.combatAffichage[cleVisibilite] !== false;
-      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté "+Math.max(1,8-effetAlerte()) : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
+      combatCarteTete(card, nom, resume, ouvert, "defense", id,
         function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null,
         cleVisibilite ? { visible: visible, basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); } } : null);
       if (!ouvert) return;
