@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.38.6b";
+  var RELEASE = "4.38.7b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -6321,6 +6321,26 @@
     }
     return svg;
   }
+  function iconeCombat(fichier, libelle, repli) {
+    var img = el("img", "pc-attaque-icone-degats");
+    img.alt = img.title = libelle;
+    img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
+    img.src = siteBase() + "assets/owd/combat/" + fichier + ".png";
+    return img;
+  }
+
+  function resumeCombat(difficulte, couts) {
+    var resume = el("span", "pc-attaque-resume");
+    var valeurs = [["vitesse-attaque", difficulte, "Difficulté", "Diff."]].concat(couts);
+    valeurs.forEach(function (v, index) {
+      if (index === 0 ? v[1] == null : !(v[1] > 0)) return;
+      var groupe = el("span", "pc-attaque-bilan-type");
+      groupe.appendChild(iconeCombat(v[0], v[2], v[3]));
+      groupe.appendChild(el("span", null, fmtP(v[1])));
+      resume.appendChild(groupe);
+    });
+    return resume.firstChild ? resume : "";
+  }
   function combatCarteTete(card, nom, resume, ouvert, module, id, toggle, liste, visibilite) {
     var ligne = el("div", "pc-combat-tete");
     var tete = el("button", "pc-attaque-tete" + (module === "defense" ? " pc-defense-tete" : "")); tete.type = "button";
@@ -6341,10 +6361,7 @@
         combatDrag = { module: module, id: id }; ev.dataTransfer.setData("text/plain", id); ev.dataTransfer.effectAllowed = "move"; card.classList.add("pc-combat-pris");
       });
       drag.addEventListener("dragend", function () { combatDrag = null; card.classList.remove("pc-combat-pris"); });
-      if (module === "attaque") {
-        ligne.classList.add("pc-combat-tete-attaque");
-        ligne.insertBefore(drag, tete);
-      } else outils.appendChild(drag);
+      ligne.insertBefore(drag, tete);
       card.addEventListener("dragover", function (ev) {
         if (!isEdit(module) || !combatDrag || combatDrag.module !== module || combatDrag.id === id) return;
         ev.preventDefault(); ev.dataTransfer.dropEffect = "move";
@@ -6378,16 +6395,21 @@
   function buildDefense() {
     var b = block("Défenses", null, "defense", rendre), box = el("div", "pc-attaques pc-defenses"); b.appendChild(box);
     function bouton(nom, mode, entree) {
-      var btn = el("button", "pc-attaque-simple pc-defense-bouton"); btn.type = "button";
-      btn.appendChild(el("strong", null, "Se défendre"));
-      btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); }); return btn;
+      var commandes = el("div", "pc-segs pc-combat-action");
+      var btn = el("button", "c pc-action pc-attaque-simple pc-defense-bouton", "Se défendre");
+      btn.type = "button";
+      btn.addEventListener("click", function () { defensePrompt(nom, mode, entree); });
+      commandes.appendChild(btn);
+      return commandes;
     }
     function details(card, nom, mode, entree, id) {
       var ouvert = !!defenseVue.ouverts[id], v = defenseValeurs(entree);
-      var valeur = state.combatOptions.defenses.lente ? Math.floor(v.protection / 2) : v.protection;
+      var cout = mode === "esquive" ? 8 : mode === "sans" ? 0 : v.difficulte;
+      var difficulte = mode === "esquive" ? Math.max(1, 8 - effetAlerte()) : mode === "sans" ? null : v.difficulte;
+      var resume = resumeCombat(difficulte, [["pe", state.combatOptions.defenses.lente ? 0 : cout, "Endurance", "PE"]]);
       var cleVisibilite = mode === "sans" ? "defenseSans" : mode === "esquive" ? "defenseEsquive" : "";
       var visible = !cleVisibilite || state.combatAffichage[cleVisibilite] !== false;
-      combatCarteTete(card, nom, mode === "sans" ? "" : mode === "esquive" ? "Difficulté "+Math.max(1,8-effetAlerte()) : "Difficulté " + fmtP(v.difficulte) + " · Protection " + sign(valeur), ouvert, "defense", id,
+      combatCarteTete(card, nom, resume, ouvert, "defense", id,
         function () { defenseVue.ouverts[id] = !defenseVue.ouverts[id]; rendre(); }, mode === "parade" ? function () { return state.defenses.entrees; } : null,
         cleVisibilite ? { visible: visible, basculer: function () { state.combatAffichage[cleVisibilite] = !visible; refresh(); } } : null);
       if (!ouvert) return;
@@ -7030,19 +7052,9 @@
       return img;
     }
 
-    function iconeCombat(fichier, libelle, repli) {
-      var img = el("img", "pc-attaque-icone-degats");
-      img.alt = img.title = libelle;
-      img.addEventListener("error", function () { img.replaceWith(el("span", null, repli)); });
-      img.src = siteBase() + "assets/owd/combat/" + fichier + ".png";
-      return img;
-    }
-
     function bilanDegats(valeurs, libelle) {
       var bilan = el("span", "pc-attaque-bilan");
-      if (libelle) {
-        bilan.appendChild(typeof libelle === "string" ? el("span", "pc-attaque-bilan-label", libelle) : libelle);
-      }
+      if (libelle) bilan.appendChild(el("span", "pc-attaque-bilan-label", libelle));
       valeurs.forEach(function (x) {
         var valeur = el("span", "pc-attaque-bilan-type");
         valeur.appendChild(iconeDegats(x.type));
@@ -7273,34 +7285,23 @@
       var a = entree.personnalisee, liee = a && a.sousType === "arme";
       var it = a && !liee ? { nom: entree.nom || "Personnalisé", arme: a } : objetArme(entree.arme);
       var def = it && typeArme(it.arme.type);
-      var ouvert = !!ouverts[entree.id], meta = [];
+      var ouvert = !!ouverts[entree.id];
       var coups = def && Array.isArray(def.attaques) ? def.attaques : [];
       if (a) {
         if (a.trajet || !a.type || liee) coups = a.trajet ? [{
           nom: entree.nom || "Personnalisé", trajet: a.trajet, garde: a.garde
         }] : [];
-      } else if (it) {
-        if (it.arme.type) meta.push((def && def.nom) || it.arme.type);
-        if (String(it.arme.attaque || "").trim()) meta.push("Attaque " + Math.max(0,snum(it.arme.attaque)+effetBonus("attaque")));
-        meta.push("Dégâts " + formatDegats(chiffresDegats(null, typesCoup(null, def, entree).touche, false, it, entree)));
       }
       var types = typesCoup(coups[0], def, entree);
       var nom = a ? entree.nom || "Personnalisé" : it ? it.nom || "Arme sans nom" : "Nouvelle attaque";
-      var resume = meta.join(" · ");
-      if (it && (a || !ouvert)) {
-        var couts = el("span", "pc-attaque-bilan");
-        [[a && a.coutPv, "pv", "Vie", "PV"], [coutEnduranceAttaque(it, a), "pe", "Endurance", "PE"],
-          [a && a.coutPm, "pm", "Mana", "PM"]].forEach(function (cout) {
-          if (!cout[0]) return;
-          var valeur = el("span", "pc-attaque-bilan-type");
-          valeur.appendChild(iconeCombat(cout[1], cout[2], cout[3]));
-          valeur.appendChild(el("span", null, fmtP(cout[0])));
-          couts.appendChild(valeur);
-        });
-        resume = el("span", "pc-attaque-resume");
-        resume.appendChild(couts);
-        resume.appendChild(bilanDegats(chiffresDegats(null, types.touche, false, it, entree)));
-      }
+      var baseAttaque = a ? a.attaque : it && it.arme.attaque;
+      var difficulte = baseAttaque == null || String(baseAttaque).trim() === "" ? null :
+        Math.max(0, nombreDegats(baseAttaque) + effetBonus("attaque"));
+      var resume = resumeCombat(difficulte, [
+        ["pv", a && degatsPositifs(a.coutPv), "Vie", "PV"],
+        ["pe", coutEnduranceAttaque(it, a), "Endurance", "PE"],
+        ["pm", a && degatsPositifs(a.coutPm), "Mana", "PM"]
+      ]);
       combatCarteTete(card, nom, resume, ouvert, "attaque", entree.id,
         function () { ouverts[entree.id] = !ouverts[entree.id]; rendre(); }, function () { return state.attaques; });
       if (!ouvert) return card;
@@ -7348,13 +7349,15 @@
       // boucliers et armes de jet sans trajet gardent néanmoins un vrai bouton
       // d'attaque : il envoie simplement leurs dégâts de base + MOD et leur type.
       if (!coups.length) {
-        var simple = el("button", "pc-attaque-simple");
+        var commandes = el("div", "pc-segs pc-combat-action");
+        var simple = el("button", "c pc-action pc-attaque-simple");
         simple.type = "button";
         simple.appendChild(el("strong", null, "Attaquer"));
         simple.appendChild(a ? bilanDegats(chiffresDegats(null, types.touche, false, it, entree)) :
           el("span", null, degatsTypes(null, types.touche, false, it, entree)));
         simple.addEventListener("click", function () { envoieAttaqueSimple(entree, it, def); });
-        detail.appendChild(simple);
+        commandes.appendChild(simple);
+        detail.appendChild(commandes);
         card.appendChild(detail);
         supprimer(); return card;
       }
