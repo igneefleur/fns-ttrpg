@@ -83,26 +83,12 @@
     });
     detail.appendChild(table); card.appendChild(detail); return card;
   }
-  function combatOptionsPaires(data, premiere, seconde, manaActif, iconePe) {
+  function combatOptionsPaires(data, premiere, seconde) {
     var options = el("div", "pc-combat-ressources");
     var haut = el("div", "pc-segs"), bas = el("div", "pc-segs");
     haut.appendChild(premiere);
     haut.appendChild(seconde);
-    var endurance = combatRessource(data, "utiliseEndurance", iconePe ? "Consommation" : "Consommation PE");
-    if (iconePe) {
-      endurance.classList.add("pc-combat-consommation-icone");
-      endurance.setAttribute("aria-label", "Consommation endurance");
-      endurance.appendChild(iconePe);
-    }
-    bas.appendChild(endurance);
-    var mana = manaActif ? combatRessource(data, "utiliseMana", "Consommation PM") :
-      el("button", "c pc-info", "Consommation PM");
-    if (!manaActif) {
-      mana.type = "button";
-      mana.disabled = true;
-      mana.title = "Aucun coût en mana n’est défini pour ces actions.";
-    }
-    bas.appendChild(mana);
+    bas.appendChild(combatRessource(data, "utiliseRessources", "Consommation Ressource"));
     options.appendChild(haut);
     options.appendChild(bas);
     return options;
@@ -179,7 +165,7 @@
       if (mode !== "sans") {
         champs.push(["Difficulté", fmtP(difficulte)]);
         if (comp) champs.push(["Compétence", comp.nom || "Compétence"]);
-        if (state.combatOptions.defenses.utiliseEndurance && !state.combatOptions.defenses.lente) {
+        if (state.combatOptions.defenses.utiliseRessources && !state.combatOptions.defenses.lente) {
           state.etat.pe = (courant("pe") - effetCout("pe",cout));
           champs.push(["Endurance", "−" + fmtP(effetCout("pe",cout))]);
         }

@@ -239,8 +239,8 @@
     if (s.taille === "enorme") s.taille = "tres-grande";
     if (!TAILLES_PERSONNAGE.some(function (taille) { return taille[0] === s.taille; })) s.taille = "moyenne";
     var options = s.combatOptions || {}, attaqueOptions = options.attaques || {}, defenseOptions = options.defenses || {};
-    s.combatOptions = { attaques: { utiliseEndurance: !!attaqueOptions.utiliseEndurance, utiliseMana: !!attaqueOptions.utiliseMana, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
-      defenses: { utiliseEndurance: !!defenseOptions.utiliseEndurance, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
+    s.combatOptions = { attaques: { utiliseRessources: attaqueOptions.utiliseRessources == null ? !!(attaqueOptions.utiliseEndurance || attaqueOptions.utiliseMana) : !!attaqueOptions.utiliseRessources, utiliseMunition: !!attaqueOptions.utiliseMunition, lente: !!attaqueOptions.lente, impregnation: typeof attaqueOptions.impregnation === "string" ? attaqueOptions.impregnation : "" },
+      defenses: { utiliseRessources: defenseOptions.utiliseRessources == null ? !!defenseOptions.utiliseEndurance : !!defenseOptions.utiliseRessources, lente: !!defenseOptions.lente, degatsAuto: !!defenseOptions.degatsAuto } };
     var combatAffichage = s.combatAffichage || {};
     s.combatAffichage = {
       modificateursAttaque: combatAffichage.modificateursAttaque !== false,

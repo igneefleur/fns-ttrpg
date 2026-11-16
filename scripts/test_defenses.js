@@ -77,7 +77,7 @@ ctx.fld=(label,input)=>({label,input});ctx.fmtP=String;ctx.capFirst=s=>s;ctx.com
 ctx.dialogue=(title,body,validate)=>{ctx.form=body;ctx.validate=validate;};ctx.sayChat=(title,fields)=>{ctx.chat=fields;};ctx.refresh=()=>{ctx.persisted=JSON.parse(JSON.stringify(ctx.state));};
 ctx.courant=k=>ctx.state.etat[k]==null?100:ctx.state.etat[k];ctx.effetBonus=()=>0;ctx.effetAlerte=()=>0;
 function prompt({auto=true,pv=100,damage='30',mode='sans',slow=false,protection=6,resistance=9,endurance=false}={}){
- ctx.state={inv:{objets:[{ref:'armor',qte:1,ou:'haut',prot_physique:protection,res_physique:resistance}]},etat:{pv,pe:100},combatOptions:{defenses:{degatsAuto:auto,lente:slow,utiliseEndurance:endurance}}};ctx.error='';ctx.chat=null;ctx.persisted=null;
+ ctx.state={inv:{objets:[{ref:'armor',qte:1,ou:'haut',prot_physique:protection,res_physique:resistance}]},etat:{pv,pe:100},combatOptions:{defenses:{degatsAuto:auto,lente:slow,utiliseRessources:endurance}}};ctx.error='';ctx.chat=null;ctx.persisted=null;
  ctx.defensePrompt('Défense',mode,{personnalisee:{parade:8,reduction:10,modsParade:[]}});ctx.form.children[0].input.value=damage;return ctx.validate();
 }
 prompt();assert.equal(ctx.state.etat.pv,79);assert.equal(ctx.persisted.etat.pv,79);assert.equal(ctx.chat.find(x=>x[0]==='Dégâts subis')[1],'21');

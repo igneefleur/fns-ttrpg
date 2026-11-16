@@ -4,7 +4,7 @@ const root=path.resolve(__dirname,'..')+'/',I=require('../docs/javascripts/owd-i
 let n=0;function test(label,fn){fn();console.log('OK '+label);n++;}
 const attack=fs.readFileSync(root+'src/fiche/fiche/attaque.js','utf8');
 function part(name,next){return attack.slice(attack.indexOf('    function '+name+'('),attack.indexOf('    function '+next+'('));}
-function attackContext(items){const chats=[],errors=[];const ctx={state:{inv:{objets:items},etat:{pe:100},combatOptions:{attaques:{utiliseMunition:true,utiliseEndurance:true,lente:false}}},D:()=>({impregnations:JSON.parse(fs.readFileSync(root+'docs/data/owd-boutique.json')).impregnations||[]}),window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,caracTotal:()=>20,fmtP:String,combatTypes:()=>['physique','feu','froid','eclair','decomposition','ethere','brut'],combatMod:(_k,_t,d=0)=>d,effetsSources:()=>[],effetBonus:()=>0,effetCout:(_,v)=>v,armesData:()=>[{cle:'test',types:['physique'],munition:{cle:'balle'}}],flash:m=>errors.push(m),sayChat:(titre,champs)=>chats.push({titre,champs}),refresh(){I.normalizeSlots(items);},courant:k=>ctx.state.etat[k]};vm.createContext(ctx);
+function attackContext(items){const chats=[],errors=[];const ctx={state:{inv:{objets:items},etat:{pe:100},combatOptions:{attaques:{utiliseMunition:true,utiliseRessources:true,lente:false}}},D:()=>({impregnations:JSON.parse(fs.readFileSync(root+'docs/data/owd-boutique.json')).impregnations||[]}),window:{OwdInventoryData:I},pnum:v=>Math.max(0,Number(v)||0),snum:v=>Number(v)||0,caracTotal:()=>20,fmtP:String,combatTypes:()=>['physique','feu','froid','eclair','decomposition','ethere','brut'],combatMod:(_k,_t,d=0)=>d,effetsSources:()=>[],effetBonus:()=>0,effetCout:(_,v)=>v,armesData:()=>[{cle:'test',types:['physique'],munition:{cle:'balle'}}],flash:m=>errors.push(m),sayChat:(titre,champs)=>chats.push({titre,champs}),refresh(){I.normalizeSlots(items);},courant:k=>ctx.state.etat[k]};vm.createContext(ctx);
 const inv=fs.readFileSync(root+'src/fiche/equipement/inv-nouveaux.js','utf8');
 vm.runInContext(inv.slice(inv.indexOf('  function nombreDegats('),inv.indexOf('  function enrichitObjet(')),ctx);
 for(const [a,b] of [['impregnationSelectionnee','armesInventaire'],['typeArme','fmtMult'],['objetInventaire','coutEndurance'],['coutEndurance','categorieMunition'],['categorieMunition','munitionsCompatibles'],['munitionSelectionnee','retireUneMunition'],['retireUneMunition','prepareRessources']])vm.runInContext(part(a,b),ctx);
@@ -311,7 +311,7 @@ test('attaque personnalisée liée : base et MODs de l’arme, multiplicateurs, 
   sousType:'arme',attaque:8,coutPv:4,coutPe:3,coutPm:2,degatsParType:{froid:999},
   primaire:8,primaires:{feu:4},mult:1.5,multiplicateurs:{feu:2},secondaire:4,secondaires:{feu:5}
  }};
- w.ctx.state.etat.pv=20;w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseMana=true;
+ w.ctx.state.etat.pv=20;w.ctx.state.etat.pm=10;w.ctx.state.combatOptions.attaques.utiliseRessources=true;
  w.ctx.combatMod=(k,t,d=0)=>k==='tauxDegats'&&t==='feu'?120:d;
  assert.equal(w.ctx.degatsTypes(null,'feu',false,it,entree),'61 physique + 79 feu');
  w.ctx.envoieAttaqueSimple(entree,it,def());
@@ -338,6 +338,19 @@ test('cumul additif : +0,4 général, puis +0,2 ou −0,2 feu',()=>{
  a.secondaires={feu:7};
  assert.equal(w.ctx.degatsTypes(null,'physique',false,it,entree),'70 physique + 7 feu');
 });
+test('attaque lente personnalisée : les coûts PV, PE et PM suivent le bouton commun',()=>{
+ const w=attackContext([]);
+ const perso={sousType:'contact',coutPv:2,coutPe:6,coutPm:3};
+ const entree={personnalisee:perso}, it={arme:perso}, def={types:['physique']};
+ w.ctx.state.etat.pv=20;w.ctx.state.etat.pm=10;
+ const opts=w.ctx.state.combatOptions.attaques;
+ opts.lente=true;opts.utiliseRessources=false;
+ w.ctx.envoieAttaqueSimple(entree,it,def);
+ assert.deepEqual(w.ctx.state.etat,{pv:20,pe:100,pm:10});
+ opts.utiliseRessources=true;
+ w.ctx.envoieAttaqueSimple(entree,it,def);
+ assert.deepEqual(w.ctx.state.etat,{pv:18,pe:94,pm:7});
+});
 test('une ancienne attaque personnalisée garde le même type sur touche et passage',()=>{
  const w=attackContext([]);
  const perso={sousType:'distance',degats:20,touche:'feu',passage:'froid'};
@@ -363,11 +376,11 @@ test('portée personnalisée : origine sélectionnable à distance et discrète 
 });
 test('les réglages par attaque transitent dans le bloc de synchronisation existant',()=>{
  const source=M.blank();
- source.combatOptions.attaques.utiliseMana=true;
+ source.combatOptions.attaques.utiliseRessources=true;
  source.attaques=[{id:'a',arme:'arc',personnalisee:{sousType:'arme',coutPv:2,coutPe:0,coutPm:4,
   primaire:-2,primaires:{feu:1.25},mult:0,multiplicateurs:{eclair:1.2},secondaire:3,secondaires:{froid:2}}}];
  const copie=C.Compact.read(C.Compact.encode(source)).state;
- assert.deepEqual(copie.attaques,source.attaques);assert.equal(copie.combatOptions.attaques.utiliseMana,true);
+ assert.deepEqual(copie.attaques,source.attaques);assert.equal(copie.combatOptions.attaques.utiliseRessources,true);
 });
 test('imprégnation : synchronisée dans le bloc combat existant',()=>{const before=M.blank(),after=C.copy(before);after.combatOptions.attaques.impregnation='infuse-mana';const attrs=C.Compact.encode(after),saved=C.Compact.read(attrs).state;assert.equal(saved.combatOptions.attaques.impregnation,'infuse-mana');assert.equal(Object.keys(attrs).length,Object.keys(C.Compact.encode(before)).length);});
 console.log(n+' scénarios Techniques, consommation et munitions validés.');
