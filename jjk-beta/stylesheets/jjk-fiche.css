@@ -296,8 +296,8 @@ html.jjk-consultation .pc-global-edit-field::placeholder { color: transparent; }
 .pc-crow { display: flex; flex-direction: column; gap: .1rem; padding: .18rem .1rem .24rem; border-bottom: 1px solid var(--hair); }
 .pc-crow:last-child { border-bottom: none; }
 .pc-crow-top { display: flex; align-items: center; gap: .35rem; }
-.pc-crow-top .pc-abbr { flex: 1 1 auto; min-width: 0; text-align: left; }
-.pc-crow-top .pc-cval { flex: 0 0 auto; margin-left: auto; min-width: 2.6rem; text-align: right; }
+.pc-crow-top .pc-abbr { flex: 0 0 3.4rem; width: 3.4rem; min-width: 0; text-align: center; }
+.pc-crow-top .pc-cval { flex: 0 0 3.2rem; width: 3.2rem; min-width: 0; box-sizing: border-box; margin-left: auto; text-align: center; }
 .pc-abbr { display: inline-block; box-sizing: border-box; min-width: 2.6rem; background: var(--accent-deep); color: #E4ECEC; font-weight: 700; font-size: .58rem; letter-spacing: .01em; padding: .14rem .3rem; border-radius: 4px; text-align: center; white-space: nowrap; }
 .pc-crow-top .nm { flex: 1 1 auto; min-width: 0; font-size: var(--fs-meta); color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pc-cval {

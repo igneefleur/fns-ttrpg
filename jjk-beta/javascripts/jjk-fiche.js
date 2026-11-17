@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.5b";
+  var RELEASE = "4.6.6b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -101,30 +101,43 @@
   // rouge sur un échec critique, sans que la fiche ait à le calculer.
   var DE_DEFAUT = "1d100cs>96cf<5";
   // ---------- outils ----------
-  // Les zones de texte s'ouvrent à la hauteur de leur contenu, quel que soit
-  // le module ou le mode. Une hauteur choisie à la souris devient un plancher :
-  // le texte peut les agrandir, mais ne leur retire jamais la place choisie.
+  // Ajustement au contenu par défaut, hauteur libre après un resize manuel.
+  function textareaEditable(area) {
+    var module = area.closest(".pc-editable");
+    return ficheModifiable() && !area.disabled && !area.readOnly &&
+      (!module || module.classList.contains("editing"));
+  }
   function ajusteHauteurTextarea(area) {
     if (!area || area.tagName !== "TEXTAREA" || area.__jjkHauteurEnCours) return;
     area.__jjkHauteurEnCours = true;
     var frame = window.requestAnimationFrame || function (fn) { return window.setTimeout(fn, 0); };
     frame(function () {
       area.__jjkHauteurEnCours = false;
-      if (!area.isConnected) return;
-      var plancher = parseFloat(area.dataset.jjkHauteurManuelle) || 0;
+      if (!area.isConnected || !area.getClientRects().length || area.__jjkResizeEnCours) return;
+      var editable = textareaEditable(area);
+      var hauteurManuelle = parseFloat(area.dataset.jjkHauteurManuelle);
+      area.style.resize = editable ? "vertical" : "none";
+      area.style.overflowY = editable && isFinite(hauteurManuelle) ? "auto" : "hidden";
+      if (editable && isFinite(hauteurManuelle)) {
+        area.style.height = hauteurManuelle + "px";
+        return;
+      }
       var rows = area.rows;
       area.style.height = "auto";
       area.rows = 1;
-      var contenu = area.scrollHeight || 0;
+      var style = window.getComputedStyle(area);
+      var bordures = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+      var contenu = area.scrollHeight;
       area.rows = rows;
-      area.style.height = Math.ceil(Math.max(contenu, plancher)) + "px";
+      area.style.height = Math.ceil(contenu + (bordures || 0)) + "px";
     });
   }
   function brancheTextarea(area) {
     if (!area || area.tagName !== "TEXTAREA" || area.__jjkAutoHauteur) return;
     area.__jjkAutoHauteur = true;
-    area.style.resize = "vertical";
-    area.style.overflowY = "hidden";
+    area.style.boxSizing = "border-box";
+    area.style.minHeight = "0";
+    area.style.maxHeight = "none";
     area.addEventListener("input", function () { ajusteHauteurTextarea(area); });
     area.addEventListener("change", function () { ajusteHauteurTextarea(area); });
     try {
@@ -132,24 +145,54 @@
       if (valeur && valeur.get && valeur.set) Object.defineProperty(area, "value", {
         configurable: true, enumerable: valeur.enumerable,
         get: function () { return valeur.get.call(this); },
-        set: function (v) { valeur.set.call(this, v); ajusteHauteurTextarea(this); }
+        set: function (v) {
+          var avant = valeur.get.call(this);
+          valeur.set.call(this, v);
+          if (valeur.get.call(this) !== avant) ajusteHauteurTextarea(this);
+        }
       });
     } catch (e) {}
+    var termineResize = null;
     area.addEventListener("pointerdown", function (ev) {
+      if (!textareaEditable(area)) return;
       var r = area.getBoundingClientRect();
       if (ev.clientX < r.right - 22 || ev.clientY < r.bottom - 22) return;
-      var avant = r.height;
-      function termine() {
-        document.removeEventListener("pointerup", termine, true);
-        document.removeEventListener("pointercancel", termine, true);
-        var apres = area.getBoundingClientRect().height;
-        if (Math.abs(apres - avant) > 2) area.dataset.jjkHauteurManuelle = String(Math.round(apres));
+      if (termineResize) termineResize();
+      area.__jjkResizeEnCours = true;
+      area.style.overflowY = "auto";
+      termineResize = function () {
+        document.removeEventListener("pointerup", termineResize, true);
+        document.removeEventListener("pointercancel", termineResize, true);
+        area.dataset.jjkHauteurManuelle = String(area.getBoundingClientRect().height);
+        area.__jjkResizeEnCours = false;
+        termineResize = null;
+      };
+      document.addEventListener("pointerup", termineResize, true);
+      document.addEventListener("pointercancel", termineResize, true);
+    });
+    // Une zone créée dans un onglet masqué se mesure à sa première apparition.
+    var largeur = 0;
+    var observateur = window.ResizeObserver ? new ResizeObserver(function (entries) {
+      var nouvelleLargeur = entries[0].contentRect.width;
+      if (nouvelleLargeur !== largeur) {
+        largeur = nouvelleLargeur;
         ajusteHauteurTextarea(area);
       }
-      document.addEventListener("pointerup", termine, true);
-      document.addEventListener("pointercancel", termine, true);
+    }) : null;
+    if (observateur) observateur.observe(area);
+    remontageNettoyage.push(function () {
+      if (observateur) observateur.disconnect();
+      if (termineResize) termineResize();
     });
     ajusteHauteurTextarea(area);
+  }
+  function synchroniseTaillesTextarea(surface) {
+    Array.prototype.forEach.call(surface.querySelectorAll("textarea"), function (area) {
+      var editable = textareaEditable(area);
+      if (area.__jjkDerniereEdition === editable) return;
+      area.__jjkDerniereEdition = editable;
+      ajusteHauteurTextarea(area);
+    });
   }
   function el(tag, cls, txt) {
     var e = document.createElement(tag);
@@ -2265,6 +2308,7 @@
     Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable:not([data-jjk-column-edit])"), function (b) { applyEdit(b, b.dataset.module || ""); });
     // L'identité et les commandes hors module partagent le verrou global.
     appliqueChampsHorsModule(surface);
+    synchroniseTaillesTextarea(surface);
     if (surface === document || surface.id === "perso-atelier") window.dispatchEvent(new Event("jjk-column-mode"));
   };
   // Toutes les interactions de CONSTRUCTION repassent par le même garde.
@@ -3450,6 +3494,7 @@
       Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-only") : [], function (control) {
         if ("disabled" in control) control.disabled = !actif;
       });
+      synchroniseTaillesTextarea(pane);
       var gear = pane.querySelector ? pane.querySelector(".pc-tech-pane-gear") : null;
       if (gear) {
         var disponible = colonne === "groupes" || (colonne === "elements" ? !!groupeDe(selectionGroupe) : !!elementDe(groupeDe(selectionGroupe), selectionElement));
