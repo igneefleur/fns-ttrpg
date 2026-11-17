@@ -73,6 +73,7 @@
       Array.prototype.forEach.call(pane.querySelectorAll ? pane.querySelectorAll(".pc-edit-only") : [], function (control) {
         if ("disabled" in control) control.disabled = !actif;
       });
+      synchroniseTaillesTextarea(pane);
       var gear = pane.querySelector ? pane.querySelector(".pc-tech-pane-gear") : null;
       if (gear) {
         var disponible = colonne === "groupes" || (colonne === "elements" ? !!groupeDe(selectionGroupe) : !!elementDe(groupeDe(selectionGroupe), selectionElement));

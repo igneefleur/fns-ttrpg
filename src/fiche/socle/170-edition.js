@@ -110,6 +110,7 @@
     Array.prototype.forEach.call(surface.querySelectorAll(".pc-editable:not([data-jjk-column-edit])"), function (b) { applyEdit(b, b.dataset.module || ""); });
     // L'identité et les commandes hors module partagent le verrou global.
     appliqueChampsHorsModule(surface);
+    synchroniseTaillesTextarea(surface);
     if (surface === document || surface.id === "perso-atelier") window.dispatchEvent(new Event("jjk-column-mode"));
   };
   // Toutes les interactions de CONSTRUCTION repassent par le même garde.
