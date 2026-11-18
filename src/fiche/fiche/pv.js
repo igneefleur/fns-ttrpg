@@ -101,7 +101,7 @@
       updateMaximum: function (node) {
         var d = modSum(state.divers.eoMax);
         node.classList.toggle("adj", d !== 0);
-        node.title = "Réserve EO : base " + state.emBarreMax +
+        node.title = "Réserve EO : base " + state.emMax +
           (d ? " · modificateurs " + sign(d) : "");
       }
     });

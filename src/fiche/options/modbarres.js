@@ -1,5 +1,4 @@
-  // Deux jauges indépendantes : PV calculés sur Body et réserve EO,
-  // dont le maximum est propre au module et non au budget de l'en-tête.
+  // PV calculés sur Body et réserve EO liée au total de l’en-tête.
   function buildModBarres() {
     var b = block("Modificateur de Barre");
     var wrap = el("div", "pc-optcomp-wrap");
@@ -40,14 +39,14 @@
     var eoBase = el("input", "force pc-barre-base");
     eoBase.type = "number"; eoBase.min = "0"; eoBase.max = "9999"; eoBase.step = "1";
     eoBase.setAttribute("aria-label", "Maximum de base de la réserve EO");
-    eoBase.title = "Maximum de la réserve EO sur la fiche, indépendant du total EO de l'en-tête.";
+    eoBase.title = "Total EO partagé avec l’en-tête, avant les modificateurs de maximum.";
     eoBase.addEventListener("input", function () {
       var n = parseFloat(eoBase.value);
-      state.emBarreMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
+      state.emMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
       refresh();
     });
     hooks.push(function () {
-      if (document.activeElement !== eoBase) eoBase.value = state.emBarreMax;
+      if (document.activeElement !== eoBase) eoBase.value = state.emMax;
     });
     eo.appendChild(eoBase);
     eo.appendChild(multiMod(state.divers, "eoMax"));
@@ -57,7 +56,7 @@
       var d = modSum(state.divers.eoMax), max = emReserveMax();
       eoTotal.textContent = fmtP(max);
       eoTotal.classList.toggle("adj", d !== 0);
-      eoTotal.title = "Réserve EO : base " + state.emBarreMax +
+      eoTotal.title = "Réserve EO : base " + state.emMax +
         (d ? " · modificateurs " + sign(d) : "");
       eo.classList.toggle("on", d !== 0);
     });

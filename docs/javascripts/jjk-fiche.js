@@ -79,7 +79,7 @@
   // site il est. Il ne change PAS le rang : « 3.6.0b » et « 3.6.0 » sont de
   // même version, parce que la beta est ce que le site stable recevra à la
   // fusion (JjkMods.compareVersions tient cette règle).
-  var RELEASE = "4.6.6b";
+  var RELEASE = "4.6.7b";
   var SCHEMA = 4;
 
   var XP_CREATION = 500;      // xp de départ (le total reste modifiable)
@@ -1292,10 +1292,9 @@
     var v = pvMaxBrut();
     return aFiltre("pvMax") ? applique("pvMax", v, {}) : v;
   }
-  // Maximum de la réserve EO sur la fiche, distinct du budget EO dépensable
-  // dans l'en-tête par les techniques occultes.
+  // Le total EO de l’en-tête est aussi la base du maximum de la réserve.
   function emReserveMax() {
-    return Math.max(0, Math.floor((Number(state.emBarreMax) || 0) + modSum(state.divers.eoMax)));
+    return Math.max(0, Math.floor((Number(state.emMax) || 0) + modSum(state.divers.eoMax)));
   }
   function pvCourant() { return state.pv === null ? pvMax() : state.pv; }
   function regenAuto() { return Math.max(0, Math.floor(caracTotal("Body") / 10) + modSum(state.divers.regen)); }
@@ -1990,6 +1989,8 @@
     initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
     tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
     pv: ["pv", "pvMaxOverride", "divers"],
+    em: ["em", "emMax", "divers"],
+    modbarres: ["emMax", "pvMaxOverride", "divers", "caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce"],
     armescomp: ["artsOrganises", "armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
     comps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
     // Arts dépend de la liste des compétences et de leurs investissements, pas
@@ -4745,7 +4746,7 @@
       updateMaximum: function (node) {
         var d = modSum(state.divers.eoMax);
         node.classList.toggle("adj", d !== 0);
-        node.title = "Réserve EO : base " + state.emBarreMax +
+        node.title = "Réserve EO : base " + state.emMax +
           (d ? " · modificateurs " + sign(d) : "");
       }
     });
@@ -6649,8 +6650,7 @@
     return bM;
   }
 
-  // Deux jauges indépendantes : PV calculés sur Body et réserve EO,
-  // dont le maximum est propre au module et non au budget de l'en-tête.
+  // PV calculés sur Body et réserve EO liée au total de l’en-tête.
   function buildModBarres() {
     var b = block("Modificateur de Barre");
     var wrap = el("div", "pc-optcomp-wrap");
@@ -6691,14 +6691,14 @@
     var eoBase = el("input", "force pc-barre-base");
     eoBase.type = "number"; eoBase.min = "0"; eoBase.max = "9999"; eoBase.step = "1";
     eoBase.setAttribute("aria-label", "Maximum de base de la réserve EO");
-    eoBase.title = "Maximum de la réserve EO sur la fiche, indépendant du total EO de l'en-tête.";
+    eoBase.title = "Total EO partagé avec l’en-tête, avant les modificateurs de maximum.";
     eoBase.addEventListener("input", function () {
       var n = parseFloat(eoBase.value);
-      state.emBarreMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
+      state.emMax = isFinite(n) ? clamp(Math.floor(n), 0, 9999) : 0;
       refresh();
     });
     hooks.push(function () {
-      if (document.activeElement !== eoBase) eoBase.value = state.emBarreMax;
+      if (document.activeElement !== eoBase) eoBase.value = state.emMax;
     });
     eo.appendChild(eoBase);
     eo.appendChild(multiMod(state.divers, "eoMax"));
@@ -6708,7 +6708,7 @@
       var d = modSum(state.divers.eoMax), max = emReserveMax();
       eoTotal.textContent = fmtP(max);
       eoTotal.classList.toggle("adj", d !== 0);
-      eoTotal.title = "Réserve EO : base " + state.emBarreMax +
+      eoTotal.title = "Réserve EO : base " + state.emMax +
         (d ? " · modificateurs " + sign(d) : "");
       eo.classList.toggle("on", d !== 0);
     });

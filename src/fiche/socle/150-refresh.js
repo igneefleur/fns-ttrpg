@@ -71,6 +71,8 @@
     initiative: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "comps", "compsMod", "compsMod2", "compsForce", "armesComps", "inv", "inventaire"],
     tuiles: ["caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce", "divers", "vitesseOverride", "regenOverride", "inv", "inventaire"],
     pv: ["pv", "pvMaxOverride", "divers"],
+    em: ["em", "emMax", "divers"],
+    modbarres: ["emMax", "pvMaxOverride", "divers", "caracsBase", "caracsXp", "caracsMod", "caracsMod2", "caracsForce"],
     armescomp: ["artsOrganises", "armesComps", "comps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod"],
     comps: ["artsOrganises", "comps", "customComps", "compsMod", "compsMod2", "compsXpMod2", "compsForce", "compsXpForce", "compsXpMod", "langues", "armesComps"],
     // Arts dépend de la liste des compétences et de leurs investissements, pas
