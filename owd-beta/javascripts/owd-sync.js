@@ -262,6 +262,16 @@
           if(incomplete){delete ids[op.id];return;}op.changes=op.changes.concat(extra);
         }
         if(incomplete){delete ids[op.id];return;}
+        if(op.history&&op.reversible){
+          var actual=legacy.flatten(legacy.rebuild(f));
+          if(Object.keys(op.reversible.before).some(function(k){
+            var value=actual[k]===undefined?null:actual[k];
+            return stable(value)!==stable(op.reversible.before[k]);
+          })){
+            conflicts.push({id:op.id,reason:"Annulation impossible : une valeur concernée a changé.",rejected:true});
+            return;
+          }
+        }
         var accelerations=op.recupAccelerations||(op.recupAccelere?[op.recupAccelere]:[]);
         var digestion=f['[["k","etat"],["k","contenance"]]'];
         if(op.digestionAcceleree!==undefined&&(!digestion||digestion[1]!==op.digestionAcceleree)||
@@ -327,7 +337,7 @@
       while(collision(name))name=base+'__create_'+encodeURIComponent(session.id)+'_'+(session.counter+1)+'_'+(++serial);
       return name;
     }
-    Session.prototype.capture=function(state,intent){var parts=captureParts(this,state),next=parts.next,diff=parts.diff,changes=[],self=this;Object.keys(diff).forEach(function(k){var p=JSON.parse(k),n=diff[k],b=self.local[k],c={k:k,n:n};if(b!==undefined)c.before=b;
+    Session.prototype.capture=function(state,intent){var previousFlat=this.local,parts=captureParts(this,state),next=parts.next,diff=parts.diff,changes=[],self=this;Object.keys(diff).forEach(function(k){var p=JSON.parse(k),n=diff[k],b=self.local[k],c={k:k,n:n};if(b!==undefined)c.before=b;
         if(numeric(p)&&!(intent&&intent.absolute&&intent.absolute[k])&&n[0]==='v'&&typeof n[1]==='number'&&b&&b[0]==='v') {var old=b[1];if(old==null&&p[0][1]==='etat')old=self.maxima[p[1][1]];if(typeof old==='number'&&Number.isFinite(old)){c.delta=Math.round((n[1]-old)*1000000)/1000000;c.anchor=old;}}
         if(p.length===1&&/^horloge(?:Digestion|Exposition|Alcool)?$/.test(p[0][1])&&b&&b[0]==='v'&&n[0]==='v'&&b[1]&&n[1]&&b[1].regime===n[1].regime){var seconds=function(h){return Number(h.jours)*86400+Number(h.heures)*3600+Number(h.minutes)*60+Number(h.secondes);};var d=seconds(n[1])-seconds(b[1]);if(Number.isSafeInteger(d))c.clockDelta=d;}
         changes.push(c);});if(changes.length){var creates={},refs={};changes.forEach(function(c){var p=JSON.parse(c.k);if(invPath(p)&&p.length===3&&c.n[0]==='o'&&!self.local[c.k])refs[p[2][1]]=true;});
@@ -336,8 +346,21 @@
         var modules={};changes.forEach(function(c){var p=JSON.parse(c.k);if(p.length===2&&p[0][1]==='modData'&&c.n[0]==='o'&&!self.local[c.k]){var id=p[1][1],name=BLOCK+'module_'+encodeURIComponent(id);if(!self.attrs[name]){var raw=attr(state.modData[id]);self.payloads[name]=raw;modules[id]={attribute:name,hash:hash(raw.current)};}}});
         changes=changes.filter(function(c){var p=JSON.parse(c.k);return !(p.length>2&&p[0][1]==='modData'&&modules[p[1][1]]);});
         var lastId=Object.keys(this.pending).slice(-1)[0],last=lastId&&this.pending[lastId];
-        if(last&&stable(last.actor||null)===stable(this.actor||null)&&!this.published[lastId]&&!last.creates&&!last.modules&&last.changes.length===changes.length&&changes.every(function(c,i){var old=last.changes[i];return old.k===c.k&&old.n[0]==='v'&&c.n[0]==='v'&&old.delta===undefined&&c.delta===undefined&&old.clockDelta===undefined&&c.clockDelta===undefined&&!invPath(JSON.parse(c.k));})){changes.forEach(function(c,i){if(last.changes[i].before!==undefined)c.before=last.changes[i].before;else delete c.before;});delete this.pending[lastId];}
-        var op={id:this.id+':'+(++this.counter),clock:++this.clock,at:this.now(),changes:changes};if(this.actor)op.actor=legacy.copy(this.actor);
+        if(!(intent&&intent.history)&&last&&!last.history&&stable(last.actor||null)===stable(this.actor||null)&&!this.published[lastId]&&!last.creates&&!last.modules&&last.changes.length===changes.length&&changes.every(function(c,i){var old=last.changes[i];return old.k===c.k&&old.n[0]==='v'&&c.n[0]==='v'&&old.delta===undefined&&c.delta===undefined&&old.clockDelta===undefined&&c.clockDelta===undefined&&!invPath(JSON.parse(c.k));})){changes.forEach(function(c,i){if(last.changes[i].before!==undefined)c.before=last.changes[i].before;else delete c.before;});delete this.pending[lastId];}
+        var reversible={before:{},after:{}};
+        Object.keys(Object.assign({},previousFlat,next)).forEach(function(k){
+          var before=previousFlat[k],after=next[k];
+          before=before===undefined||before[0]==="d"?null:before;
+          after=after===undefined||after[0]==="d"?null:after;
+          if(stable(before)===stable(after))return;
+          reversible.before[k]=legacy.copy(before);
+          reversible.after[k]=legacy.copy(after);
+        });
+        if(last&&!this.pending[lastId]&&last.reversible){
+          Object.keys(last.reversible.before).forEach(function(k){reversible.before[k]=last.reversible.before[k];});
+        }
+        var op={id:this.id+':'+(++this.counter),clock:++this.clock,at:this.now(),changes:changes,reversible:reversible};
+        if(intent&&intent.history)op.history=legacy.copy(intent.history);if(this.actor)op.actor=legacy.copy(this.actor);
         if(intent&&intent.recupAccelere)op.recupAccelere=legacy.copy(intent.recupAccelere);
         if(intent&&intent.recupAccelerations){
           op.recupAccelere=legacy.copy(intent.recupAccelerations[0]);
@@ -347,11 +370,49 @@
         var labels={};changes.forEach(function(c){var p=JSON.parse(c.k);p.forEach(function(seg,i){if(seg[0]!=="e")return;var prefix=p.slice(0,i+1),key=JSON.stringify(prefix.concat([["k","nom"]])),v=next[key]||self.local[key];if(!v){key=JSON.stringify(prefix.concat([["k","name"]]));v=next[key]||self.local[key];}if(v&&v[0]==="v"&&typeof v[1]==="string")labels[seg[1]]=v[1];});});if(Object.keys(labels).length)op.labels=labels;if(Object.keys(creates).length)op.creates=creates;if(Object.keys(modules).length)op.modules=modules;this.pending[op.id]=op;this.pendingAt[op.id]=this.now();}
 this.local=next;};
     Session.prototype.outgoing=function(){if(!this.hasBase)return this.migration;var out={},self=this;Object.keys(this.pending).forEach(function(id){out[id]=self.pending[id];self.published[id]=true;});return out;};
-    Session.prototype.tokenMax=function(k,value,remote){var s=legacy.rebuild(this.local);s.capsLeviers=s.capsLeviers||{};s.capsLeviers.max=s.capsLeviers.max||{};s.capsLeviers.max.force=s.capsLeviers.max.force||{};s.capsLeviers.max.force[k]=value;var f=legacy.flatten(s),diff=legacy.difference(this.local,f),changes=[];Object.keys(diff).forEach(function(path){var c={k:path,n:diff[path]};if(remote.flat[path]!==undefined)c.before=remote.flat[path];changes.push(c);});if(!changes.length)return;var id='token-max:'+this.epoch+':'+k+':'+hash(stable({value:value,heads:remote.ops.map(function(o){return o.id;})}));if(remote.ids[id]||this.pending[id])return;this.pending[id]={id:id,clock:remote.clock+1,at:0,changes:changes};this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,remote.clock+1);this.local=f;};
+    Session.prototype.tokenMax=function(k,value,remote){var s=legacy.rebuild(this.local);s.capsLeviers=s.capsLeviers||{};s.capsLeviers.max=s.capsLeviers.max||{};s.capsLeviers.max.force=s.capsLeviers.max.force||{};s.capsLeviers.max.force[k]=value;var f=legacy.flatten(s),diff=legacy.difference(this.local,f),changes=[];Object.keys(diff).forEach(function(path){var c={k:path,n:diff[path]};if(remote.flat[path]!==undefined)c.before=remote.flat[path];changes.push(c);});if(!changes.length)return;var id='token-max:'+this.epoch+':'+k+':'+hash(stable({value:value,heads:remote.ops.map(function(o){return o.id;})}));if(remote.ids[id]||this.pending[id])return;this.pending[id]={id:id,clock:remote.clock+1,at:this.now(),changes:changes,reversible:{before:{},after:{}}};
+      if(this.actor)this.pending[id].actor=legacy.copy(this.actor);
+      var undo=this.pending[id].reversible;
+      changes.forEach(function(c){undo.before[c.k]=c.before===undefined?null:legacy.copy(c.before);undo.after[c.k]=legacy.copy(c.n);});
+this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,remote.clock+1);this.local=f;};
     Session.prototype.token=function(k,value,remote){var p=JSON.stringify([['k','etat'],['k',k]]),before=remote.flat[p],id='token:'+this.epoch+':'+k+':'+hash(stable({value:value,heads:remote.ops.map(function(o){return o.id;})}));
-      if(remote.ids[id]||this.pending[id])return;var op={id:id,clock:remote.clock+1,at:0,changes:[{k:p,n:['v',value],before:before}]};this.pending[id]=op;this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,op.clock);var f=legacy.copy(this.local);f[p]=['v',value];this.local=f;};
+      if(remote.ids[id]||this.pending[id])return;var op={id:id,clock:remote.clock+1,at:this.now(),changes:[{k:p,n:['v',value],before:before}],reversible:{before:{},after:{}}};
+      op.reversible.before[p]=before===undefined?null:legacy.copy(before);
+      op.reversible.after[p]=['v',value];
+      if(this.actor)op.actor=legacy.copy(this.actor);this.pending[id]=op;this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,op.clock);var f=legacy.copy(this.local);f[p]=['v',value];this.local=f;};
     Session.prototype.receive=function(attrs,verified){var r;try{r=verified||this.reader.read(attrs);}catch(e){if(!this.hasBase)return null;throw e;}if(!r)return null;if(this.hasBase&&this.epoch!==r.meta.epoch&&Object.keys(this.pending).length)throw Error('La fiche a changé de format avec des opérations locales en attente ; exportez avant de recharger.');this.hasBase=true;this.attrs=attrs;this.epoch=r.meta.epoch;this.clock=Math.max(this.clock,r.clock);var self=this,lost=false;Object.keys(this.pending).forEach(function(id){if(r.ids[id]){delete self.pending[id];delete self.published[id];delete self.pendingAt[id];}});Object.keys(this.payloads).forEach(function(k){if(attrs[k]&&val(attrs[k])===val(self.payloads[k]))delete self.payloads[k];});var temp=Object.assign({},attrs);temp[OPS+'pending']=attr({epoch:this.epoch,ops:Object.keys(this.pending).map(function(id){return self.pending[id];})});Object.keys(this.payloads).forEach(function(k){if(!temp[k])temp[k]=self.payloads[k];});var merged=r;if(Object.keys(this.pending).length||Object.keys(this.payloads).length){var pendingReader=new Reader();pendingReader.previous=this.reader.previous;pendingReader.boxes=Object.assign(Object.create(null),this.reader.boxes);merged=pendingReader.read(temp);}this.local=merged.flat;return {state:merged.state,lost:Object.keys(this.pending).some(function(id){return self.now()-(self.pendingAt[id]||self.pending[id].at||self.now())>10000;}),conflict:r.conflicts.length>0,incomplete:r.incomplete,conflicts:r.conflicts};};
-    return {BASE:META,PREFIX:OPS,BLOCK:BLOCK,STACK:STACK,format:FORMAT,Reader:Reader,encode:encode,snapshot:snapshot,read:read,hash:hash,stable:stable,flatten:legacy.flatten,rebuild:legacy.rebuild,copy:legacy.copy,Session:Session};
+    function historyPlan(state,ops,actorId,redo,conflicts){
+      var rejected={};(conflicts||[]).forEach(function(c){rejected[c.id]=true;});
+      var ordered=ops.filter(function(o){return !rejected[o.id];}).slice().sort(function(a,b){return a.clock-b.clock||(a.id<b.id?-1:1);});
+      var undone={},redoStack=[];
+      ordered.forEach(function(o){
+        if(!o.actor||o.actor.id!==actorId)return;
+        if(o.history){
+          undone[o.history.target]=o.history.action==="undo";
+          if(o.history.action==="undo")redoStack.push(o.history.target);
+          else redoStack=redoStack.filter(function(id){return id!==o.history.target;});
+        }else if(o.reversible)redoStack=[];
+      });
+      var target=redo?ordered.find(function(o){return o.id===redoStack[redoStack.length-1];}):
+        ordered.slice().reverse().find(function(o){return o.actor&&o.actor.id===actorId&&!o.history&&o.reversible&&!undone[o.id];});
+      if(!target)throw Error(redo?"Aucune modification à rétablir.":"Aucune modification réversible à annuler.");
+      var expected=redo?target.reversible.before:target.reversible.after;
+      var desired=redo?target.reversible.after:target.reversible.before;
+      var flat=legacy.flatten(state);
+      if(Object.keys(expected).some(function(k){return stable(flat[k]===undefined?null:flat[k])!==stable(expected[k]);}))
+        throw Error("Une valeur concernée a changé depuis : cette modification ne peut pas être annulée automatiquement.");
+      Object.keys(desired).forEach(function(k){
+        if(desired[k]!==null)return;
+        var path=JSON.parse(k);
+        if(Object.keys(flat).some(function(child){
+          var p=JSON.parse(child);
+          return p.length>path.length&&stable(p.slice(0,path.length))===stable(path)&&!Object.prototype.hasOwnProperty.call(expected,child);
+        }))throw Error("Cet élément contient de nouvelles modifications : annulation refusée.");
+      });
+      Object.keys(desired).forEach(function(k){if(desired[k]===null)delete flat[k];else flat[k]=legacy.copy(desired[k]);});
+      return {state:legacy.rebuild(flat),history:{action:redo?"redo":"undo",target:target.id}};
+    }
+    return {BASE:META,PREFIX:OPS,BLOCK:BLOCK,STACK:STACK,format:FORMAT,Reader:Reader,encode:encode,snapshot:snapshot,read:read,hash:hash,stable:stable,flatten:legacy.flatten,rebuild:legacy.rebuild,copy:legacy.copy,Session:Session,historyPlan:historyPlan};
   }
 
   var api = create();
