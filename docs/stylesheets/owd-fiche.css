@@ -2485,16 +2485,19 @@ html.night .t-pi { --palier-plein: #30343b; }
 .pc-notes-seul .pc-notes-chat { min-height:0; max-height:none; }
 
 /* Journal : cinquante événements par page, détails chargés à l'ouverture. */
-.pc-journal-info { margin: .5rem 0; font-size: .8em; opacity: .8; }
-.pc-journal-list { max-height: 38rem; overflow-y: auto; overflow-wrap: anywhere; }
-.pc-journal-entry { border-bottom: 1px solid currentColor; padding: .65rem 0; }
-.pc-journal-entry > summary { cursor: pointer; }
-.pc-journal-head { display: flex; flex-wrap: wrap; gap: .35rem .7rem; font-size: .85em; }
-.pc-journal-summary { margin-top: .25rem; }
-.pc-journal-status { font-style: italic; }
-.pc-journal-details { padding: .5rem; }
-.pc-journal-change { margin: .5rem 0; }
-.pc-journal-change pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 16rem; overflow: auto; margin: .2rem 0; font: inherit; }
+.pc-journal-info { margin:.25rem 0; font-size:var(--fs-meta); color:var(--ink-3); }
+.pc-journal-list { max-height:32rem; overflow:auto; overflow-wrap:anywhere; }
+.pc-journal-entry { margin:.12rem 0; border-radius:4px; background:var(--card); }
+.pc-journal-entry:nth-child(even) { background:var(--stripe); }
+.pc-journal-entry > summary { cursor:pointer; padding:.18rem .25rem; font-size:var(--fs-body); }
+.pc-journal-head { display:inline-flex; flex-wrap:wrap; gap:.18rem .45rem; align-items:center; }
+.pc-journal-head time { font-size:var(--fs-meta); color:var(--ink-3); }
+.pc-journal-summary { margin:.1rem 0 0; font-size:var(--fs-meta); color:var(--ink-2); }
+.pc-journal-status { font-size:var(--fs-meta); color:var(--accent-deep); }
+.pc-journal-details { padding:.25rem; border-top:1px solid var(--hair); }
+.pc-journal-change { margin:.25rem 0; font-size:var(--fs-meta); }
+.pc-journal-change pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:12rem; overflow:auto; margin:.15rem 0; font:inherit; }
+#owd-history-notice { position:fixed; bottom:1rem; left:50%; transform:translateX(-50%); z-index:10000; padding:.5rem .8rem; background:#252525; color:#ffd77f; border:1px solid #ffd77f; border-radius:4px; font-size:.8rem; }
 .pc-journal-pages { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; }
 
 /* Effets réellement appliqués et horloge d'alcool. */

@@ -109,6 +109,34 @@
     return {ops:ops, pending:pending, conflicts:remote ? remote.conflicts : [], identity:!!journalPlayer,
       payload:function(name){var a=collaboration&&collaboration.payloads[name]||lastAttrs[name];try{return a?JSON.parse(a.current):null;}catch(e){return null;}}};
   };
+  function historyNotice(message){
+    var notice=document.getElementById("owd-history-notice");
+    if(!notice){notice=document.createElement("div");notice.id="owd-history-notice";notice.setAttribute("role","status");notice.setAttribute("aria-live","polite");document.body.appendChild(notice);}
+    notice.textContent=message;notice.hidden=false;
+    clearTimeout(historyNotice.timer);historyNotice.timer=setTimeout(function(){notice.hidden=true;},3500);
+  }
+  window.__owdHistoryAction=function(redo){
+    try{
+      if(!ready||gele||versionBloquee||!window.__owdCanEdit()||!collaboration||!window.Owd)throw Error("Passez en édition pour modifier le personnage.");
+      if(!journalPlayer)throw Error("Le joueur doit être identifié pour annuler ses modifications.");
+      var data=window.__owdJournal();
+      var plan=C.historyPlan(JSON.parse(mem["owd-perso"]),data.ops,journalPlayer.id,!!redo,data.conflicts);
+      storageIntent={absolute:{},history:plan.history};
+      Object.keys(C.flatten(plan.state)).forEach(function(k){storageIntent.absolute[k]=true;});
+      window.__owdLocalStorage.setItem("owd-perso",JSON.stringify(plan.state));
+      collaborationApplique=true;
+      try{window.Owd.__recoitEtat(plan.state);}finally{collaborationApplique=false;}
+      historyNotice(redo?"Modification rétablie — Ctrl-Y":"Modification annulée — Ctrl-Z");
+    }catch(e){historyNotice(e.message||String(e));}
+  };
+  document.addEventListener("keydown",function(ev){
+    if(!(ev.ctrlKey||ev.metaKey)||ev.altKey)return;
+    var key=ev.key.toLowerCase(),redo=key==="y"||key==="z"&&ev.shiftKey;
+    if(key!=="z"&&key!=="y")return;
+    if(ev.isComposing)return;
+    ev.preventDefault();ev.stopImmediatePropagation();
+    window.__owdHistoryAction(redo);
+  },true);
   var saveTimer = null;
   var askTimer = null;          // relance de la demande d'hydratation
   var gardeArmee = false;       // le chien de garde ne se lance qu'une fois par session

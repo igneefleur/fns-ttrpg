@@ -34,13 +34,20 @@
     }).join(" · ");
   }
   function buildJournal() {
-    var b=block("Journal"), search=el("input","pc-input"), info=el("div","pc-journal-info"), list=el("div","pc-journal-list"), pages=el("div","pc-journal-pages");
-    search.type="search";search.placeholder="Rechercher un changement ou un joueur…";search.setAttribute("aria-label","Rechercher dans le journal");search.value=journalVue.query;
+    var b=block("Modifications"), search=el("input","pc-input"), info=el("div","pc-journal-info"), list=el("div","pc-journal-list"), pages=el("div","pc-journal-pages");
+    search.type="search";search.placeholder="Rechercher un changement ou un joueur…";search.setAttribute("aria-label","Rechercher dans les modifications");search.value=journalVue.query;
+    var commandes=el("div","pc-segs");
+    [["Annuler · Ctrl-Z",false],["Rétablir · Ctrl-Y",true]].forEach(function(action){
+      var bouton=el("button","c pc-action",action[0]);bouton.type="button";
+      bouton.addEventListener("click",function(){if(window.__owdHistoryAction)window.__owdHistoryAction(action[1]);});
+      commandes.appendChild(bouton);
+    });
+    b.appendChild(commandes);
     b.appendChild(search);b.appendChild(info);b.appendChild(list);b.appendChild(pages);
     var previous="",dead=false,timer=null;
     function render(force) {
       if(dead || (!force && (window.__owdViewVisible===false||!b.getClientRects().length)))return;
-      if(typeof window.__owdJournal!=="function") {info.textContent="Le journal des changements est disponible dans Roll20.";return;}
+      if(typeof window.__owdJournal!=="function") {info.textContent="L’historique des modifications est disponible dans Roll20.";return;}
       var data=window.__owdJournal(), rows=data.ops.filter(function(op){return op.changes&&op.changes.length;});
       var signature=rows.map(function(op){return op.id;}).join("|")+"/"+Object.keys(data.pending).join("|")+"/"+data.conflicts.length+"/"+data.identity;
       if(!force&&signature===previous)return;previous=signature;
@@ -58,6 +65,8 @@
         row.dataset.id=op.id;
         if(op.at>0&&isFinite(date.getTime())){time.dateTime=date.toISOString();time.textContent=date.toLocaleString("fr-FR",{dateStyle:"short",timeStyle:"medium"});}else time.textContent="Date non enregistrée";
         head.appendChild(time);
+        if(op.history)head.appendChild(el("span","pc-journal-status",op.history.action==="undo"?"Annulation":"Rétablissement"));
+        else if(!op.reversible)head.appendChild(el("span","pc-journal-status","Ancienne modification"));
         head.appendChild(el("strong",null,op.actor&&op.actor.name ? op.actor.name : /^token(?:-max)?:/.test(op.id)?"Token · joueur non identifié":"Joueur non identifié"));
         if(conflicts[op.id])head.appendChild(el("span","pc-journal-status","Conflit détecté"));
         else if(data.pending[op.id])head.appendChild(el("span","pc-journal-status","En attente de sauvegarde"));
@@ -65,7 +74,9 @@
         var groups=[];op.changes.forEach(function(c){var path;try{path=JSON.parse(c.k);var name=path.length?journalLib(path[0][1]):"Fiche";if(groups.indexOf(name)<0)groups.push(name);}catch(e){}});
         summary.appendChild(el("div","pc-journal-summary",groups.join(" · ")+" ("+op.changes.length+")"));row.appendChild(summary);
         var content=el("div","pc-journal-details"),loaded=false;row.appendChild(content);
-        function detail(){if(loaded)return;loaded=true;op.changes.forEach(function(c){var line=el("div","pc-journal-change");line.appendChild(el("strong",null,journalChemin(c,op)));
+        function detail(){if(loaded)return;loaded=true;
+          var changes=op.reversible?Object.keys(op.reversible.before).map(function(k){return {k:k,before:op.reversible.before[k],n:op.reversible.after[k]};}):op.changes;
+          changes.forEach(function(c){var line=el("div","pc-journal-change");line.appendChild(el("strong",null,journalChemin(c,op)));
           line.appendChild(el("pre",null,journalValeur(c.before)+" → "+journalValeur(c.n)));
           if(c.delta!==undefined)line.appendChild(el("small",null,"Variation : "+(c.delta>0?"+":"")+c.delta));content.appendChild(line);});
           [op.creates||{},op.modules||{}].forEach(function(map){Object.keys(map).forEach(function(id){var value=data.payload&&data.payload(map[id].attribute);if(value){var line=el("div","pc-journal-change");line.appendChild(el("strong",null,"Création · "+((op.labels||{})[id]||id)));line.appendChild(el("pre",null,JSON.stringify(value,null,2)));content.appendChild(line);}});});}

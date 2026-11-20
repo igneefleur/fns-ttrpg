@@ -16,3 +16,42 @@ console.log('OK Journal : date/auteur immuables, frappes coalescées, noms conse
 
 // Les placements hérités et les modules externes suivent la colonne unique.
 const layout={state:{modules:{place:{inv:{onglet:"equipement",colonne:"droite"}}}},modules:[{id:"inv",onglet:"equipement",colonne:"bas"},{id:"custom",onglet:"equipement",colonne:"gauche"}],SQUELETTES:{equipement:p=>({milieu:p})},el:()=>({}),aClef:(o,k)=>Object.hasOwn(o,k),rangModule:id=>layout.modules.findIndex(m=>m.id===id),ordonne(){}};vm.createContext(layout);vm.runInContext(fs.readFileSync('src/fiche/socle/290-disposition.js','utf8'),layout);layout.appliqueDisposition();assert.equal(layout.modules[0].colonne,'milieu');assert.equal(layout.modules[1].colonne,'milieu');console.log('OK Equipement : anciennes dispositions et modules externes normalisés sans mutation des données.');
+
+// Historique réversible après publication et réouverture.
+{
+ const initial=M.blank();initial.inv.objets=[{ref:'arme',nom:'Dague',qte:1,arme:{degatsParType:{physique:30},modsDegats:['Force']}}];
+ initial.etat.pe=100;
+ let attrs=C.encode(initial), state=C.copy(initial), session=new C.Session(attrs,state,()=>1700000002000,{id:'undo',actor:{id:'p1',name:'Alice'}});
+ function publish(){attrs.owd_ops_undo={current:JSON.stringify({epoch:session.epoch,ops:[...(C.read(attrs).ops),...Object.values(session.outgoing())]})};const result=C.read(attrs);session.receive(attrs);state=result.state;return result;}
+ state.inv.objets=[];state.etat.pe=94;session.capture(state);let result=publish();
+ const original=result.ops[0];
+ assert.ok(Object.keys(original.reversible.before).some(k=>k.includes('degatsParType')));
+ let plan=C.historyPlan(state,result.ops,'p1',false,result.conflicts);
+ assert.equal(plan.state.inv.objets[0].arme.degatsParType.physique,30);
+ assert.equal(plan.state.etat.pe,100);
+ session.capture(plan.state,{history:plan.history,absolute:Object.fromEntries(Object.keys(C.flatten(plan.state)).map(k=>[k,true]))});
+ result=publish();
+ assert.deepEqual(result.state.inv.objets,initial.inv.objets);
+ plan=C.historyPlan(state,result.ops,'p1',true,result.conflicts);
+ session.capture(plan.state,{history:plan.history,absolute:Object.fromEntries(Object.keys(C.flatten(plan.state)).map(k=>[k,true]))});
+ result=publish();
+ assert.equal(result.state.inv.objets.length,0);assert.equal(result.state.etat.pe,94);
+ session=new C.Session(attrs,state,()=>1700000003000,{id:'reopen',actor:{id:'p1',name:'Alice'}});
+ plan=C.historyPlan(state,result.ops,'p1',false,result.conflicts);
+ assert.equal(plan.state.inv.objets[0].nom,'Dague');
+ const changed=C.copy(state);changed.etat.pe=80;
+ assert.throws(()=>C.historyPlan(changed,result.ops,'p1',false,result.conflicts),/valeur concernée/);
+ console.log('OK annuler/rétablir : suppression complète, action multiple, publication, réouverture et conflit');
+}
+{
+ const initial=M.blank();initial.etat.pe=100;
+ const attrs=C.encode(initial),s=new C.Session(attrs,initial,()=>1700000004000,{id:'local',actor:{id:'p1',name:'Alice'}});
+ let next=C.copy(initial);next.name='A';s.capture(next);next.name='AB';s.capture(next);
+ let ops=Object.values(s.pending);assert.equal(ops.length,1);
+ let plan=C.historyPlan(next,ops,'p1',false,[]);assert.equal(plan.state.name,initial.name);
+ const peer=new C.Session(attrs,initial,()=>1700000005000,{id:'peer',actor:{id:'p2',name:'Bob'}});
+ const changed=C.copy(next);changed.age='33';
+ // Un champ différent est conservé.
+ plan=C.historyPlan(changed,ops,'p1',false,[]);assert.equal(plan.state.age,'33');
+ console.log('OK annulation des saisies regroupées et conservation des champs indépendants');
+}
