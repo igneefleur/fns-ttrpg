@@ -20,9 +20,37 @@ for(const annuel of ['brut','progressif'])for(const region of Object.keys(D.regi
  assert.equal(Math.max(...values),values[16]);assert.equal(Math.min(...values),values[f]);
  assert.equal(values.filter(v=>v===values[16]).length,1);assert.equal(values.filter(v=>v===values[f]).length,1);
  assert.ok(values[17]<values[16]);assert.ok(values[f+1]>values[f]);
+ for(const h of [12,13,14,18])assert.equal(values[h],D.arrondi(c.jour));
+ assert.equal(values[15],D.arrondi(c.jour+1));assert.equal(values[17],D.arrondi(c.jour+1));
  for(let h=f+1;h<=16;h++)assert.ok(values[h]>=values[h-1]);
  assert.equal(D.soleil(at(s,c.lever)).position,'Lever du soleil');assert.equal(D.soleil(at(s,14)).position,'Soleil au plus haut');assert.equal(D.soleil(at(s,c.coucher)).position,'Coucher du soleil');
 }
+// Profils de référence approuvés, y compris la descente nocturne après minuit.
+const profils=[
+ [8,8,8,8,8,8,7,6,8,10,12,14,16,16,16,17,18,17,16,16,16,14,12,10],
+ [26,24,22,20,18,17,16,19,21,24,27,29,32,32,32,33,34,33,32,32,32,32,30,28],
+ [8,8,8,8,8,8,7,6,8,10,12,14,16,16,16,17,18,17,16,16,16,14,12,10],
+ [-6,-6,-6,-6,-6,-6,-6,-7,-8,-6,-4,-2,0,0,0,1,2,1,0,0,-2,-4,-6,-6]
+];
+for(let saison=0;saison<4;saison++){
+ const s=state(saison*84+19);
+ assert.deepEqual(Array.from({length:24},(_,h)=>D.temperatureMonde(at(s,h))),profils[saison]);
+}
+// En progression saisonnière, la cible du soir est bien la nuit du lendemain.
+let ciblesDistinctes=0;
+for(let day=0;day<336;day++){
+ const s=state(day),c=D.climat(s),n=D.climatJour(s,day+1);
+ const duree=Math.max(1,Math.min(Math.ceil(Math.abs(c.jour-n.nuit)/2),24+n.lever-3-c.coucher));
+ const fin=c.coucher+duree;
+ if(fin<24){
+  assert.equal(D.temperatureMonde(at(s,fin)),D.arrondi(n.nuit));
+  if(D.arrondi(n.nuit)!==D.arrondi(c.nuit))ciblesDistinctes++;
+ }else{
+  const lendemain=state((day+1)%336);
+  assert.equal(D.temperatureMonde(at(lendemain,fin-24)),D.arrondi(n.nuit));
+ }
+}
+assert.ok(ciblesDistinctes>0,'la cible du lendemain diffère réellement de celle du jour dans les transitions');
 for(const [saison,pair] of refs.entries()){
  const peak=[],plateau=[];
  for(let j=1;j<=84;j++){

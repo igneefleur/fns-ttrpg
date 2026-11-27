@@ -79,16 +79,30 @@
     var jour=jourAnnee(s),c=climatJour(s,jour),h=s.horloge.heures;
     // Une seule valeur entière pour tout le créneau horaire.
     if(s.temperatureMode!=='progressif')return arrondi(h>=c.lever&&h<c.coucher?c.jour:c.nuit);
-    var min=c.nuit-2,max=c.jour+2,f=c.lever-1,a,b,u;
-    if(h<f){var veille=climatJour(s,jour-1);a=veille.jour+2;b=min;u=(h+8)/(f+8);}
-    else if(h<=16){a=min;b=max;u=(h-f)/(16-f);}
-    else{var demain=climatJour(s,jour+1);a=max;b=demain.nuit-2;u=(h-16)/(8+demain.lever-1);}
-    var v=a+(b-a)*(1-Math.cos(Math.PI*u))/2,bas=arrondi(min),haut=arrondi(max);
+    var min=c.nuit-2,max=c.jour+2,f=c.lever-1,v;
+    function nuit(depart,arrivee,heure){
+      // Retrouver le profil validé : 4 h à l'équinoxe, 7 h en été,
+      // 3 h en hiver. Adapter la durée pendant les transitions saisonnières.
+      var duree=Math.max(1,Math.ceil(Math.abs(depart.jour-arrivee.nuit)/2));
+      // La référence nocturne doit être atteinte avant l'approche du minimum.
+      duree=Math.min(duree,24+arrivee.lever-3-depart.coucher);
+      var u=Math.max(0,Math.min(1,(heure-depart.coucher)/duree));
+      return depart.jour+(arrivee.nuit-depart.jour)*u;
+    }
+    if(h<f-1)v=nuit(climatJour(s,jour-1),c,h+24);
+    else if(h===f-1)v=c.nuit-1;
+    else if(h<=12)v=min+(c.jour-min)*(h-f)/(12-f);
+    else if(h<=14)v=c.jour;
+    else if(h<=17)v=c.jour+(h===16?2:1);
+    else if(h<=c.coucher)v=c.jour;
+    else v=nuit(c,climatJour(s,jour+1),h);
+    var bas=arrondi(min),haut=arrondi(max);
     if(h===f)return bas;
     if(h===16)return haut;
-    // L'arrondi ne doit pas prolonger un pic sur les heures voisines.
+    // Une seule tranche pour chaque extrême, même après l'arrondi final.
     return Math.max(bas+1,Math.min(haut-1,arrondi(v)));
   }
+
   function advance(h,seconds){
     h=clock(h);var n=Number(seconds);
     if(!Number.isSafeInteger(n))throw new Error('Durée invalide');
@@ -113,6 +127,6 @@
     return {v:1,horloge:h,temperature:t};
   }
   function read(attrs){var r=sync.read(attrs);return r?validate(r.state):fromLegacy(attrs||{});}
-  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy,regions:REGIONS,temperatureMonde:temperatureMonde,climat:climat,climatJour:climatJour,soleil:soleil,arrondi:arrondi};
+  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy,regions:REGIONS,climatVersion:3,temperatureMonde:temperatureMonde,climat:climat,climatJour:climatJour,soleil:soleil,arrondi:arrondi};
   root.OwdMondeData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

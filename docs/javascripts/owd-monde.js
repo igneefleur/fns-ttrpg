@@ -120,7 +120,7 @@
       if(!d.charId){if(d.pret!==false)message('Créer un personnage Roll20 nommé « Monde » et le partager avec les joueurs.');rights=false;rendu();return;}
       // Une frame reste liée au premier personnage pour toute sa vie.
       if(charId&&charId!==d.charId){stop('Le personnage Monde a changé : rouvrir le panneau.');return;}
-      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1&&d.climat===2;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
+      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1&&d.climat>=3;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
     }else if(d.type==='hydrate'&&d.charId===charId){
       if(d.collaboration!==1||d.resync!==true){capable=false;message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}
       if(d.fresh!==true||d.sur!==true||frozen)return;

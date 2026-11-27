@@ -19,7 +19,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   const page=await ctx.newPage();page.on('pageerror',e=>errors.push(e.message));await page.goto(url+'/harness');const f=page.frameLocator('iframe');
   const temp=f.getByRole('spinbutton',{name:'Température en °C',exact:true});await f.locator('input[aria-label="Température en °C"]:enabled').waitFor();await f.getByLabel('Gestion',{exact:true}).locator('option[value="auto"]:enabled').waitFor({state:'attached'});
   assert.equal(await temp.inputValue(),'18');await f.getByLabel('Gestion',{exact:true}).selectOption('auto');await f.getByLabel('Journée',{exact:true}).selectOption('progressif');
-  assert.equal(await temp.isDisabled(),true);assert.equal(await temp.inputValue(),'28');
+  assert.equal(await temp.isDisabled(),true);assert.equal(await temp.inputValue(),'32');
   assert.match(await f.locator('.om-sun-times').textContent(),/Lever : 7 h · Au plus haut : 14 h · Coucher : 21 h/);
   await f.locator('.om-hourly summary').click();assert.equal(await f.locator('tbody tr').count(),24);assert.match(await f.locator('tbody tr').nth(16).textContent(),/34 °C/);
   assert.match(await f.locator('tbody tr').nth(7).textContent(),/Lever du soleil/);assert.match(await f.locator('tbody tr').nth(14).textContent(),/Soleil au plus haut/);
@@ -32,7 +32,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   await f.getByLabel('Journée',{exact:true}).selectOption('brut');assert.equal(await temp.inputValue(),'-6');await heures.fill('9');await heures.blur();assert.equal(await temp.inputValue(),'0');assert.equal(await f.locator('.om-sun-position').textContent(),'Lever du soleil');
   await f.getByLabel('Gestion',{exact:true}).selectOption('manuel');assert.equal(await temp.inputValue(),'18');assert.equal(await temp.isEnabled(),true);
   await f.getByLabel('Gestion',{exact:true}).selectOption('auto');await f.getByLabel('Journée',{exact:true}).selectOption('progressif');
-  assert.equal(await temp.inputValue(),'-7');
+  assert.equal(await temp.inputValue(),'-6');
   await f.getByLabel('Saisons',{exact:true}).selectOption('progressif');
   await mois.fill('4');await mois.blur();
   const jours=f.getByRole('spinbutton',{name:'Jour de campagne',exact:true});await jours.fill('42');await jours.blur();
@@ -40,7 +40,7 @@ const server=http.createServer((req,res)=>{const u=new URL(req.url,'http://local
   await heures.fill('17');await heures.blur();assert.equal(await temp.inputValue(),'37');
   await minutes.fill('59');await minutes.blur();assert.equal(await temp.inputValue(),'37');
   await heures.fill('6');await heures.blur();assert.equal(await temp.inputValue(),'20');
-  await heures.fill('7');await heures.blur();assert.equal(await temp.inputValue(),'21');
+  await heures.fill('7');await heures.blur();assert.equal(await temp.inputValue(),'23');
   await heures.fill('16');await heures.blur();assert.equal(await temp.inputValue(),'38');
   await new Promise(r=>setTimeout(r,1800));assert.equal(D.read(attrs).temperature,17.5);assert.equal(D.read(attrs).temperatureRegion,'enmerkar');
   await page.reload();await f.getByLabel('Gestion',{exact:true}).waitFor();await f.locator('.om-sun-position').filter({hasText:'Soleil descendant'}).waitFor();assert.equal(await f.getByLabel('Gestion',{exact:true}).inputValue(),'auto');assert.equal(await f.getByLabel('Journée',{exact:true}).inputValue(),'progressif');assert.equal(await f.getByLabel('Saisons',{exact:true}).inputValue(),'progressif');assert.equal(await temp.inputValue(),'38');
