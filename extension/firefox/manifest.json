@@ -37,7 +37,8 @@
     "icons/damage-ethere.png",
     "icons/damage-physique.png",
     "icons/damage-brut.png",
-    "sync-engine.js"
+    "sync-engine.js",
+    "monde-data.js"
   ],
   "icons": {
     "48": "icons/icon.svg",

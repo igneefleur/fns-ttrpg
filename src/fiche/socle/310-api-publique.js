@@ -41,6 +41,10 @@
       });
     });
     journalTemps=[];
+    // L'état reçu contient déjà les conséquences de l'effondrement. La
+    // mémoire de la vue précédente ne doit pas les appliquer une seconde fois,
+    // notamment quand Ctrl-Z restaure un ancien niveau et ses réserves.
+    effVu=null;effMaxVu={};
     if(partial){
       changes.forEach(function(k){if(s[k]===undefined)delete state[k];else if(k==='etat'){Object.keys(state.etat).forEach(function(r){if(!(r in s.etat))delete state.etat[r];});Object.assign(state.etat,s.etat);}else state[k]=s[k];});
       reconstruitModules(targets);refresh();

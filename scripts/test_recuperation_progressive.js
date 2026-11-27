@@ -180,4 +180,37 @@ test('la digestion accélérée libère la contenance et applique seulement les 
  assert.equal(w.ctx.horlogeVersSecondes(),0);
  assert.equal(w.ctx.accelereDigestion(),false);
 });
+
+
+// La vraie relecture de la fiche doit garder les valeurs journalisées, sans
+// tronquer les réserves ni les fractions de seconde atteintes par le solveur.
+test('Ctrl-Z/Ctrl-Y du temps après normalisation, puis publication',()=>{
+ const w=setup(true);w.state.etat.pc=null;w.state.etat.rupture=null;
+ w.ctx.recupSynchroniseSuivi();w.ctx.suitEffondrement();
+ const initial=C.copy(w.state),attrs=C.encode(initial),session=new C.Session(attrs,initial,Date.now,{id:'temps',actor:{id:'p1'}});
+ w.advance(3);const after=C.copy(w.state);session.capture(after);
+ const normalization=fs.readFileSync('src/fiche/socle/060-etat-normalise.js','utf8');
+ const h=normalization.slice(normalization.indexOf('    function normaliseHorloge('),normalization.indexOf('    s.argent ='));
+ const r=normalization.slice(normalization.indexOf('    ["pv", "pe", "pm", "pi", "pr", "ps", "ph", "pc", "rupture"].forEach'),normalization.indexOf('    // expo et contenance'));
+ const reloaded=C.copy(after);vm.runInNewContext(h+r,{s:reloaded,clamp:(n,a,b)=>Math.max(a,Math.min(b,n))});
+ assert.deepEqual(C.copy(reloaded),after);
+ const fraction=C.copy(after);fraction.horloge.secondes=3.125;fraction.horlogeExposition.secondes=0.75;
+ vm.runInNewContext(h,{s:fraction});assert.equal(fraction.horloge.secondes,3.125);assert.equal(fraction.horlogeExposition.secondes,0.75);
+ function publish(){attrs[C.PREFIX+'temps']={current:JSON.stringify({epoch:session.epoch,ops:C.read(attrs).ops.concat(Object.values(session.outgoing()))})};const result=C.read(attrs);session.receive(attrs);return result;}
+ let result=publish(),plan=C.historyPlan(reloaded,result.ops,'p1',false,result.conflicts);
+ assert.deepEqual(plan.state,initial);
+ const intent=p=>({history:p.history,absolute:Object.fromEntries(Object.keys(C.flatten(p.state)).map(k=>[k,true]))});
+ session.capture(plan.state,intent(plan));result=publish();assert.deepEqual(result.conflicts,[]);
+ plan=C.historyPlan(result.state,result.ops,'p1',true,result.conflicts);session.capture(plan.state,intent(plan));result=publish();assert.deepEqual(result.state,after);
+});
+test('la relecture des effets et récupérations garde durées et facteurs fractionnaires',()=>{
+ const w=setup();w.ctx.num=(v,d)=>{const n=parseInt(v,10);return Number.isNaN(n)?d:n;};
+ w.effect('Récupération (Eau) PE I',0.5);const e=w.state.effetsActifs[0];e.facteur=0.25;
+ const before=C.copy(e);w.ctx.effetsNormalise(w.state);
+ assert.equal(w.state.effetsActifs[0].reste,0.5);assert.equal(w.state.effetsActifs[0].facteur,0.25);
+ assert.equal(before.facteur,0.25);
+ const custom=w.add(4);custom.type='heure';custom.temps=0.125;
+ w.ctx.recupNormaliseAjoutModule(custom);assert.equal(custom.temps,0.125);
+});
+
 console.log(count+' scénarios de récupération progressive validés.');

@@ -1,0 +1,93 @@
+/* Données de Monde et conversion de l'ancien Camp. Aucune règle de personnage. */
+(function(root){
+  'use strict';
+  var C=root.OwdSync||(typeof module==='object'&&module.exports?require('./owd-sync.js'):null);
+  var sync=C.create({base:'owd_monde_base',prefix:'owd_monde_p_'});
+  function value(a){return String(a&&typeof a==='object'?(a.current==null?'':a.current):(a==null?'':a));}
+  function entier(n){n=Number(n);if(!Number.isFinite(n)||n<0)throw new Error('Horloge invalide');return Math.floor(n);}
+  function clock(h){
+    if(!h||typeof h!=='object'||Array.isArray(h))throw new Error('Horloge invalide');
+    var s=entier(h.secondes),m=entier(h.minutes)+Math.floor(s/60),he=entier(h.heures)+Math.floor(m/60),j=entier(h.jours)+Math.floor(he/24);
+    if(!Number.isSafeInteger(j)||j>999999999)throw new Error('Horloge hors limites');
+    return {jours:j,heures:he%24,minutes:m%60,secondes:s%60};
+  }
+  var DEPART={annee:412,mois:2,jour:3};
+  function dateDepart(d){
+    if(d===undefined)return {annee:DEPART.annee,mois:DEPART.mois,jour:DEPART.jour};
+    if(!d||typeof d!=='object'||Array.isArray(d)||!Number.isSafeInteger(d.annee)||d.annee<1||d.annee>1000000000||!Number.isInteger(d.mois)||d.mois<1||d.mois>12||!Number.isInteger(d.jour)||d.jour<1||d.jour>28)throw new Error('Date de départ invalide');
+    return {annee:d.annee,mois:d.mois,jour:d.jour};
+  }
+  function dateMonde(h,depart){
+    h=clock(h);depart=dateDepart(depart);
+    var jours=(depart.annee-1)*336+(depart.mois-1)*28+depart.jour-1+h.jours-1;
+    var annee=Math.floor(jours/336)+1,reste=jours-(annee-1)*336,mois=Math.floor(reste/28)+1,jour=reste%28+1;
+    return {annee:annee,mois:mois,jour:jour,saison:['Printemps','Été','Automne','Hiver'][Math.floor((mois-1)/3)]};
+  }
+  function validate(s){
+    if(!s||s.v!==1)throw new Error('Version de Monde incompatible');
+    var h=clock(s.horloge),t=s.temperature;dateDepart(s.dateDepart);
+    if(t!==null&&(typeof t!=='number'||!Number.isFinite(t)||Math.abs(t)>999))throw new Error('Température invalide');
+    if(s.temperatureAuto!==undefined&&typeof s.temperatureAuto!=='boolean')throw new Error('Mode automatique invalide');
+    if(s.temperatureMode!==undefined&&['brut','progressif'].indexOf(s.temperatureMode)<0)throw new Error('Mode de température invalide');
+    if(s.temperatureRegion!==undefined&&!Object.prototype.hasOwnProperty.call(REGIONS,s.temperatureRegion))throw new Error('Région inconnue');
+    // Une base mal formée n'est jamais réécrite après une lecture partielle.
+    if(Object.keys(h).some(function(k){return h[k]!==s.horloge[k];}))throw new Error('Horloge distante non normalisée');
+    return s;
+  }
+  var REGIONS={chersonese:'Chersonèse',enmerkar:'Enmerkar','plateau-antique':'Plateau antique'};
+  var SAISONS={
+    'Printemps':{lever:8,pic:14,coucher:20,jour:16,nuit:8},
+    'Été':{lever:7,pic:14,coucher:21,jour:32,nuit:18},
+    'Automne':{lever:8,pic:14,coucher:20,jour:16,nuit:8},
+    'Hiver':{lever:9,pic:14,coucher:19,jour:0,nuit:-6}
+  };
+  function climat(s){return SAISONS[dateMonde(s.horloge,s.dateDepart).saison];}
+  function heure(h){return h.heures+h.minutes/60+h.secondes/3600;}
+  function soleil(s){
+    var c=climat(s),h=heure(s.horloge),position='Nuit';
+    if(h===c.lever)position='Lever du soleil';
+    else if(h===c.coucher)position='Coucher du soleil';
+    else if(h===c.pic)position='Soleil au plus haut';
+    else if(h>c.lever&&h<c.pic)position='Soleil montant';
+    else if(h>c.pic&&h<c.coucher)position='Soleil descendant';
+    return {lever:c.lever,pic:c.pic,coucher:c.coucher,position:position,jour:h>=c.lever&&h<c.coucher};
+  }
+  function arrondi(n){return Math.sign(n)*Math.floor(Math.abs(n)+0.5+1e-10)||0;}
+  function temperatureMonde(s){
+    validate(s);
+    if(s.temperatureAuto!==true)return s.temperature;
+    var c=climat(s),h=heure(s.horloge);
+    // Base commune aux trois régions ; aucun modificateur météo.
+    if(s.temperatureMode!=='progressif')return h>=c.lever&&h<c.coucher?c.jour:c.nuit;
+    var min=c.nuit-2,max=c.jour+2,froid=c.lever-1,chaud=16;
+    var m=(max+min)/2,a=(max-min)/2;
+    if(h>=froid&&h<chaud)return m-a*Math.cos(Math.PI*(h-froid)/(chaud-froid));
+    return m+a*Math.cos(Math.PI*(h>=chaud?h-chaud:h+24-chaud)/(24-chaud+froid));
+  }
+  function advance(h,seconds){
+    h=clock(h);var n=Number(seconds);
+    if(!Number.isSafeInteger(n))throw new Error('Durée invalide');
+    var total=Math.max(0,h.jours*86400+h.heures*3600+h.minutes*60+h.secondes+n);
+    return clock({jours:Math.floor(total/86400),heures:Math.floor(total%86400/3600),minutes:Math.floor(total%3600/60),secondes:total%60});
+  }
+  function fromLegacy(attrs){
+    var h={jours:1,heures:8,minutes:0,secondes:0},raw=value(attrs.owd_camp_h),c={},t=null;
+    if(raw){
+      var m=/^(\d+),(\d+)$/.exec(raw);if(!m)throw new Error('Ancienne horloge Camp illisible');
+      h=clock({jours:Number(m[1]),heures:0,minutes:Number(m[2]),secondes:0});
+    }
+    raw=value(attrs.owd_camp_conf);
+    if(raw){c=JSON.parse(raw);if(!c||typeof c!=='object'||Array.isArray(c)||Number(c.v||1)>1)throw new Error('Ancienne configuration Camp incompatible');}
+    if(c.degres!=null){t=Number(c.degres);if(!Number.isFinite(t)||Math.abs(t)>999)throw new Error('Ancienne température illisible');}
+    else if(c.milieu){
+      // Table historique, utilisée UNIQUEMENT pour conserver la température
+      // affichée à la conversion. Monde n'offre plus de milieu ni de calcul.
+      var anciens={'souterrain':[12,12],'toundra':[-10,-25],'montagne':[-5,-15],'foret-hiver':[3,-3],'plateau':[12,0],'cote':[20,14],'foret-ete':[22,12],'marais':[28,22],'tropicale':[30,24],'volcanique':[40,32],'desert':[42,18]};
+      var paire=anciens[c.milieu];if(paire)t=paire[h.heures>=5&&h.heures<22?0:1];
+    }
+    return {v:1,horloge:h,temperature:t};
+  }
+  function read(attrs){var r=sync.read(attrs);return r?validate(r.state):fromLegacy(attrs||{});}
+  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy,regions:REGIONS,temperatureMonde:temperatureMonde,climat:climat,soleil:soleil,arrondi:arrondi};
+  root.OwdMondeData=api;if(typeof module==='object'&&module.exports)module.exports=api;
+})(typeof window!=='undefined'?window:globalThis);

@@ -55,3 +55,29 @@ const layout={state:{modules:{place:{inv:{onglet:"equipement",colonne:"droite"}}
  plan=C.historyPlan(changed,ops,'p1',false,[]);assert.equal(plan.state.age,'33');
  console.log('OK annulation des saisies regroupées et conservation des champs indépendants');
 }
+
+// Le dernier ajout de récupération disparaît côté fiche ; le transport garde
+// sa liste et ses parents vides pour protéger les ajouts des autres joueurs.
+{
+ const initial=M.blank();initial.modData.recuperation={ajouts:[{id:'temp',nom:'Soin',actif:true,resteSecondes:60}]};
+ const attrs=C.encode(initial),session=new C.Session(attrs,initial,Date.now,{id:'cleanup',actor:{id:'p1'}});
+ const clean=C.copy(initial);delete clean.modData.recuperation;
+ session.capture(clean);
+ function publish(){attrs[C.PREFIX+'cleanup']={current:JSON.stringify({epoch:session.epoch,ops:C.read(attrs).ops.concat(Object.values(session.outgoing()))})};Object.assign(attrs,session.payloads);const result=C.read(attrs);session.receive(attrs);return result;}
+ let result=publish();assert.deepEqual(result.state.modData.recuperation,{ajouts:[]});
+ // La normalisation du module vide ne doit pas invalider ses snapshots.
+ session.local=C.flatten(clean);
+ let plan=C.historyPlan(clean,result.ops,'p1',false,result.conflicts);
+ assert.equal(plan.state.modData.recuperation.ajouts[0].resteSecondes,60);
+ session.capture(plan.state,{history:plan.history});result=publish();
+ assert.deepEqual(result.conflicts,[],'le lecteur accepte la même annulation que la fiche');
+ assert.equal(result.state.modData.recuperation.ajouts[0].nom,'Soin');
+ plan=C.historyPlan(result.state,result.ops,'p1',true,result.conflicts);
+ session.capture(plan.state,{history:plan.history});result=publish();
+ assert.deepEqual(result.conflicts,[]);assert.equal(result.state.modData.recuperation.ajouts.length,0);
+ const changed=C.copy(clean);changed.modData.recuperation={ajouts:[{id:'peer',nom:'Nouvelle récupération'}]};
+ // Un nouveau contenu sous le parent vide constitue toujours un vrai changement.
+ const original=result.ops.find(o=>!o.history);
+ assert.throws(()=>C.historyPlan(changed,[original],'p1',false,[]),/valeur concernée/);
+ console.log('OK annuler/rétablir après nettoyage des récupérations et protection des nouveaux ajouts');
+}

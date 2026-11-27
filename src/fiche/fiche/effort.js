@@ -232,7 +232,7 @@
       temperature.readOnly = liee;
       if (liee) {
         if (document.activeElement !== temperature || temperature.readOnly)
-          temperature.value = temperatureMondeDisponible ? String(temperatureMondeValeur) : "";
+          temperature.value = temperatureMondeDisponible ? String(Math.sign(temperatureMondeValeur) * Math.floor(Math.abs(temperatureMondeValeur) + 0.5 + 1e-10) || 0) : "";
         temperature.placeholder = temperatureMondeDisponible ? "" : "—";
         temperature.title = temperatureMondeDisponible
           ? "Température actuelle du personnage Monde"

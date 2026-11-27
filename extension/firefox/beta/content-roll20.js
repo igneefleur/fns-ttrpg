@@ -205,7 +205,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try{s.setAttribute('data-owd-version',browser.runtime.getManifest().version);s.setAttribute('data-owd-mode',MODE);s.setAttribute('data-owd-browser',browser.runtime.getManifest().manifest_version===3?'chrome':'firefox');}catch(e){}
     s.src = browser.runtime.getURL("beta/roll20-page.js");     // propre à cette copie
     s.onload = function () { this.remove(); var a=document.createElement("script");a.src=browser.runtime.getURL("beta/attack-map.js");a.onload=function(){this.remove();};(document.head||root).appendChild(a); };   // propre à cette copie
-    var codec=document.createElement('script');codec.src=browser.runtime.getURL("sync-engine.js");codec.onload=function(){this.remove();(document.head||root).appendChild(s);};codec.onerror=function(){root.removeAttribute('data-owd-bridge');this.remove();};(document.head||root).appendChild(codec);
+    var codec=document.createElement('script');codec.src=browser.runtime.getURL("sync-engine.js");codec.onload=function(){this.remove();var monde=document.createElement("script");monde.src=browser.runtime.getURL("monde-data.js");monde.onload=function(){this.remove();(document.head||root).appendChild(s);};monde.onerror=function(){root.removeAttribute("data-owd-bridge");this.remove();};(document.head||root).appendChild(monde);};codec.onerror=function(){root.removeAttribute('data-owd-bridge');this.remove();};(document.head||root).appendChild(codec);
   }
 
   // ---------- pont léger vers le page-script (has-sheet) ----------

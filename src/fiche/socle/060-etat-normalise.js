@@ -154,7 +154,9 @@
     // Exposition utilisent exactement la même forme que l'horloge du monde.
     function normaliseHorloge(v, gardeRegime) {
       var h = (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
-      var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
+      // Le solveur peut atteindre une frontière à une fraction de seconde.
+      // Relire l'état ne doit pas modifier les valeurs gardées par l'historique.
+      var hs = Math.max(0, Number(h.secondes) || 0);
       var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
       var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
       var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
@@ -205,7 +207,8 @@
       var v = s.etat[k];
       if (v === null || v === undefined || v === "") { s.etat[k] = null; return; }
       var n = parseFloat(v);
-      s.etat[k] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -99999, 99999) : null;
+      // Même précision que le calcul et la sauvegarde du passage du temps.
+      s.etat[k] = isFinite(n) ? clamp(Math.round(n * 1e6) / 1e6, -99999, 99999) : null;
     });
     // expo et contenance ne sont PAS nullables : 0 y est une vraie valeur
     s.etat.expo = clamp(snum(s.etat.expo), -99999, 99999);

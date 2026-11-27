@@ -27,9 +27,42 @@
     if(!s||s.v!==1)throw new Error('Version de Monde incompatible');
     var h=clock(s.horloge),t=s.temperature;dateDepart(s.dateDepart);
     if(t!==null&&(typeof t!=='number'||!Number.isFinite(t)||Math.abs(t)>999))throw new Error('Température invalide');
+    if(s.temperatureAuto!==undefined&&typeof s.temperatureAuto!=='boolean')throw new Error('Mode automatique invalide');
+    if(s.temperatureMode!==undefined&&['brut','progressif'].indexOf(s.temperatureMode)<0)throw new Error('Mode de température invalide');
+    if(s.temperatureRegion!==undefined&&!Object.prototype.hasOwnProperty.call(REGIONS,s.temperatureRegion))throw new Error('Région inconnue');
     // Une base mal formée n'est jamais réécrite après une lecture partielle.
     if(Object.keys(h).some(function(k){return h[k]!==s.horloge[k];}))throw new Error('Horloge distante non normalisée');
     return s;
+  }
+  var REGIONS={chersonese:'Chersonèse',enmerkar:'Enmerkar','plateau-antique':'Plateau antique'};
+  var SAISONS={
+    'Printemps':{lever:8,pic:14,coucher:20,jour:16,nuit:8},
+    'Été':{lever:7,pic:14,coucher:21,jour:32,nuit:18},
+    'Automne':{lever:8,pic:14,coucher:20,jour:16,nuit:8},
+    'Hiver':{lever:9,pic:14,coucher:19,jour:0,nuit:-6}
+  };
+  function climat(s){return SAISONS[dateMonde(s.horloge,s.dateDepart).saison];}
+  function heure(h){return h.heures+h.minutes/60+h.secondes/3600;}
+  function soleil(s){
+    var c=climat(s),h=heure(s.horloge),position='Nuit';
+    if(h===c.lever)position='Lever du soleil';
+    else if(h===c.coucher)position='Coucher du soleil';
+    else if(h===c.pic)position='Soleil au plus haut';
+    else if(h>c.lever&&h<c.pic)position='Soleil montant';
+    else if(h>c.pic&&h<c.coucher)position='Soleil descendant';
+    return {lever:c.lever,pic:c.pic,coucher:c.coucher,position:position,jour:h>=c.lever&&h<c.coucher};
+  }
+  function arrondi(n){return Math.sign(n)*Math.floor(Math.abs(n)+0.5+1e-10)||0;}
+  function temperatureMonde(s){
+    validate(s);
+    if(s.temperatureAuto!==true)return s.temperature;
+    var c=climat(s),h=heure(s.horloge);
+    // Base commune aux trois régions ; aucun modificateur météo.
+    if(s.temperatureMode!=='progressif')return h>=c.lever&&h<c.coucher?c.jour:c.nuit;
+    var min=c.nuit-2,max=c.jour+2,froid=c.lever-1,chaud=16;
+    var m=(max+min)/2,a=(max-min)/2;
+    if(h>=froid&&h<chaud)return m-a*Math.cos(Math.PI*(h-froid)/(chaud-froid));
+    return m+a*Math.cos(Math.PI*(h>=chaud?h-chaud:h+24-chaud)/(24-chaud+froid));
   }
   function advance(h,seconds){
     h=clock(h);var n=Number(seconds);
@@ -55,6 +88,6 @@
     return {v:1,horloge:h,temperature:t};
   }
   function read(attrs){var r=sync.read(attrs);return r?validate(r.state):fromLegacy(attrs||{});}
-  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy};
+  var api={sync:sync,clock:clock,advance:advance,dateDepart:dateDepart,dateMonde:dateMonde,validate:validate,read:read,fromLegacy:fromLegacy,regions:REGIONS,temperatureMonde:temperatureMonde,climat:climat,soleil:soleil,arrondi:arrondi};
   root.OwdMondeData=api;if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

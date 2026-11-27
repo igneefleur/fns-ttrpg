@@ -32,7 +32,8 @@
         "icons/damage-ethere.png",
         "icons/damage-physique.png",
         "icons/damage-brut.png",
-        "sync-engine.js"
+        "sync-engine.js",
+        "monde-data.js"
       ],
       "matches": [
         "https://app.roll20.net/*"

@@ -1,5 +1,8 @@
   // Les définitions et les propriétés des objets sont celles de la Boutique.
   function effetsDefinitions() { return D().effets || []; }
+  // Durées et facteurs alimentaires peuvent être fractionnaires. `num`
+  // est réservé aux entiers et tronquerait ces valeurs à chaque relecture.
+  function effetDecimal(v, defaut) { var n = Number(v); return v == null || v === "" || !Number.isFinite(n) ? defaut : n; }
   var effetsCacheListe=null,effetsCache={};
   function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
   function effetNutrition(it, reserve, total) {
@@ -15,15 +18,15 @@
     s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
       var id = String(e.id || uid("eff")); if (ids[id]) id = uid("eff"); ids[id] = true;
       return { categorie: e.categorie === "digestive" ? "digestive" : "speciale", id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
-        actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
-        duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
-        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4), facteur: Math.max(0, num(e.facteur, 1)) };
+        actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, effetDecimal(e.reste, 0)),
+        duree: e.duree == null ? null : Math.max(0, effetDecimal(e.duree, 0)), suivi: Math.max(0, effetDecimal(e.suivi, 0)),
+        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4), facteur: Math.max(0, effetDecimal(e.facteur, 1)) };
     }).filter(function (e) { return e.reste === null || e.reste > 0; });
     var alcool = 0, progression = 0;
     s.effetsActifs = s.effetsActifs.filter(function (e) {
       var d = effetDefinition(e.effet); if (!d || !d.ops.alcool || !e.actif) return true;
       alcool += Math.max(0, num(d.ops.alcool, 0));
-      progression = Math.max(progression, Math.max(0, num(e.duree, 7200) - num(e.reste, 7200)));
+      progression = Math.max(progression, Math.max(0, effetDecimal(e.duree, 7200) - effetDecimal(e.reste, 7200)));
       return false;
     });
     if (alcool) {
@@ -148,7 +151,7 @@
       var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
     } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
     meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
-    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;if(d.nutrition)meme.facteur=Math.max(0,num(facteur,1));return true;
+    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;meme.facteur=d.nutrition?Math.max(0,effetDecimal(facteur,1)):1;return true;
   }
   function effetsAvance(secondes, debitsDejaAppliques) {
     var efficaces=Object.create(null),deltas={};effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});

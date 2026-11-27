@@ -731,6 +731,12 @@
   // personnage vivent dans des iframes distinctes : la fiche ne peut donc pas
   // lire elle-même les Attributes du personnage partagé.
   function temperatureMondeDepuisAttrs(attrs) {
+    // Même calcul que le panneau, depuis les registres actuels : fonctionne
+    // aussi quand Monde est fermé, sans écrire une température dérivée.
+    if (typeof window !== "undefined" && window.OwdMondeData) {
+      try { return window.OwdMondeData.temperatureMonde(window.OwdMondeData.read(attrs)); }
+      catch (e) { return null; }
+    }
     function valeur(n) {
       var a = attrs && attrs[n];
       return String(a && typeof a === "object" ? (a.current == null ? "" : a.current) : (a == null ? "" : a));
@@ -1315,7 +1321,7 @@
         // deux, et annoncer l'absence ferait afficher un écran d'erreur pour
         // rien (même prudence que has-sheet, qui répond exists:null).
         var nc = campChar();
-        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, pret: !!campaign(), charId: null, nom: "" };
+        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, temperatureAuto: window.OwdMondeData ? 1 : 0, pret: !!campaign(), charId: null, nom: "" };
         if (nc) {
           rep.charId = nc.id;
           rep.nom = String((nc.get ? nc.get("name") : "") || "");

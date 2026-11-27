@@ -91,7 +91,7 @@
     var ancien = Object.prototype.hasOwnProperty.call(RECUP_DUREES_ANCIENNES, r.type) && RECUP_DUREES_ANCIENNES[r.type];
     d = recupDureeDef(ancien ? ancien.cle : r.type);
     r.type = d.cle;
-    r.temps = Math.max(0, num(r.temps, 0)) * (ancien ? ancien.facteur : 1);
+    r.temps = Math.max(0, Number.isFinite(Number(r.temps)) ? Number(r.temps) : 0) * (ancien ? ancien.facteur : 1);
     if (r.resteSecondes == null || !isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
     r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0));
     return r;

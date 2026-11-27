@@ -9,3 +9,19 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--om-accent);outl
 .om-date-actuelle{font-weight:700;margin:0 0 8px;line-height:1.4}
 .om-date-depart summary{cursor:pointer;color:var(--om-accent);font-size:12px}
 .om-start-fields{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:8px}
+.om-choice{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;font-size:12px}
+.om-select{font:inherit;font-size:14px;color:var(--om-fg);background:var(--om-input);border:1px solid var(--om-line);border-radius:3px;min-height:32px;width:100%;min-width:0;padding:3px}
+.om-select:focus-visible{outline:2px solid var(--om-accent);outline-offset:2px}
+.om-auto-fields{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:8px}
+.om-auto-fields[hidden],.om-auto-notice[hidden]{display:none}
+.om-auto-notice{font-size:12px;line-height:1.4;margin:0 0 8px}
+
+.om-auto-fields>.om-auto-notice{grid-column:1/-1}
+.om-sun-position{font-weight:700;margin:0 0 5px;color:var(--om-accent)}
+.om-sun-position[data-jour="0"]{color:var(--om-fg)}
+.om-sun-times{font-size:12px;line-height:1.6;margin:0 0 8px}
+.om-hourly summary{cursor:pointer;color:var(--om-accent);font-size:12px}
+.om-hourly-table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}
+.om-hourly-table th,.om-hourly-table td{padding:6px 3px;text-align:left;border-bottom:1px solid var(--om-line)}
+.om-hourly-table th:nth-child(2),.om-hourly-table td:nth-child(2){text-align:right;padding-right:10px}
+.om-current-hour{background:var(--om-input);color:var(--om-accent)}

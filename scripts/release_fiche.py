@@ -388,6 +388,8 @@ def main():
     # Concurrence et migration : arrêt avant toute écriture de version.
     if not lancer("Monde collaboratif", ["node", "scripts/test_monde.js"], racine):
         return 1
+    if not lancer("climat et soleil de Monde", ["node", "scripts/test_monde_climat.js"], racine):
+        return 1
     if not lancer("lecture de la température Monde par le pont Roll20", ["node", "scripts/test_temperature_monde_bridge.js"], racine):
         return 1
     if not lancer("caches et transport", ["node", "scripts/test_performance_sync.js"], racine):

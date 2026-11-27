@@ -1,10 +1,10 @@
-/* Monde : seulement l'horloge et la température. Session OwdSync identique à
+/* Monde : calendrier, horloge et température. Session OwdSync identique à
  * celle de la fiche, écritures par registre, confirmation serveur et reprise. */
 (function(){
   'use strict';
   var D=window.OwdMondeData,C=D&&D.sync,root=document.getElementById('monde-panneau')||document.getElementById('camp-panneau');
   if(!root)return;
-  var charId=null,session=null,state=null,rights=false,capable=false,frozen=false,lastRead=0,timer=null,composing=false,tick=0;
+  var charId=null,session=null,state=null,rights=false,capable=false,autoCapable=false,frozen=false,lastRead=0,timer=null,composing=false,tick=0;
   function post(m){m.ns='owd';if(charId)m.charId=charId;window.top.postMessage(m,'*');}
   function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
   var notice=el('p','om-notice'),clockFields={},dateFields={},controls=[],worldDate;
@@ -18,7 +18,22 @@
     var depart=D.dateDepart(state.dateDepart),date=D.dateMonde(state.horloge,depart);
     Object.keys(dateFields).forEach(function(k){var n=dateFields[k];if(force||document.activeElement!==n)n.value=depart[k];});
     worldDate.textContent='Jour '+date.jour+' · Mois '+date.mois+' · Année '+date.annee+' · '+date.saison;
-    if(force||document.activeElement!==temperature)temperature.value=state.temperature==null?'':state.temperature;
+    var automatique=state.temperatureAuto===true,t=D.temperatureMonde(state);
+    source.value=automatique?'auto':'manuel';region.value=state.temperatureRegion||'chersonese';mode.value=state.temperatureMode||'brut';
+    autoOption.disabled=!autoCapable;autoFields.hidden=!automatique;
+    var soleil=D.soleil(state),climat=D.climat(state);
+    modeInfo.textContent=mode.value==='brut'?'Jour : '+soleil.lever+' h–'+soleil.coucher+' h · '+climat.jour+' °C / '+climat.nuit+' °C':'Minimum : '+(climat.nuit-2)+' °C à '+(soleil.lever-1)+' h · Maximum : '+(climat.jour+2)+' °C à 16 h';
+    autoNotice.hidden=autoCapable;autoNotice.textContent='Mettre à jour l’extension et recharger Roll20 pour activer la température automatique.';
+    tempControls.forEach(function(n){n.disabled=!enabled()||automatique;});
+    if(force||automatique||document.activeElement!==temperature)temperature.value=t==null?'':D.arrondi(t);
+    sunPosition.textContent=soleil.position;
+    sunTimes.textContent='Lever : '+soleil.lever+' h · Au plus haut : '+soleil.pic+' h · Coucher : '+soleil.coucher+' h';
+    sunPosition.dataset.jour=soleil.jour?'1':'0';
+    hourlyRows.forEach(function(r,h){
+      var s=C.copy(state);s.horloge={jours:state.horloge.jours,heures:h,minutes:0,secondes:0};
+      var temp=D.temperatureMonde(s);r.temperature.textContent=temp==null?'—':D.arrondi(temp)+' °C';r.position.textContent=D.soleil(s).position;
+      r.row.classList.toggle('om-current-hour',h===state.horloge.heures);
+    });
   }
   function stop(err){frozen=true;message(err.message||String(err));rendu();}
   function transmit(){
@@ -60,12 +75,38 @@
     cmd.appendChild(button('+','Avancer de 1 '+a[0].toLowerCase(),function(){edit(function(){state.horloge=D.advance(state.horloge,a[1]);});}));clockBox.appendChild(cmd);
   });root.appendChild(clockBox);
   var tempBox=el('section','om-temperature');tempBox.appendChild(el('h2','','Température'));
+  function choix(label,options){
+    var l=el('label','om-choice'),s=el('select','om-select');s.setAttribute('aria-label',label);l.appendChild(el('span','',label));
+    options.forEach(function(o){var option=el('option','',o[1]);option.value=o[0];s.appendChild(option);});l.appendChild(s);controls.push(s);return {label:l,input:s};
+  }
+  var sourceChoix=choix('Gestion',[['manuel','Manuelle'],['auto','Automatique']]),source=sourceChoix.input,autoOption=source.options[1];tempBox.appendChild(sourceChoix.label);
+  var autoFields=el('div','om-auto-fields'),regionChoix=choix('Région',Object.keys(D.regions).map(function(k){return [k,D.regions[k]];})),region=regionChoix.input;
+  var modeChoix=choix('Mode',[['brut','Brut'],['progressif','Progressif']]),mode=modeChoix.input;
+  autoFields.appendChild(regionChoix.label);autoFields.appendChild(modeChoix.label);tempBox.appendChild(autoFields);
+  var autoNotice=el('p','om-auto-notice');tempBox.appendChild(autoNotice);
+  var modeInfo=el('p','om-auto-notice');autoFields.appendChild(modeInfo);
+  source.addEventListener('change',function(){edit(function(){state.temperatureAuto=source.value==='auto';});});
+  region.addEventListener('change',function(){edit(function(){state.temperatureRegion=region.value;});});
+  mode.addEventListener('change',function(){edit(function(){state.temperatureMode=mode.value;});});
+  var tempControls=[];
   var tempRow=el('div','om-temperature-row'),temperature=el('input','om-number');temperature.type='number';temperature.step='0.1';temperature.min='-999';temperature.max='999';temperature.placeholder='—';temperature.setAttribute('aria-label','Température en °C');controls.push(temperature);
   temperature.addEventListener('input',function(){var n=Number(temperature.value);if(temperature.value!==''&&(!Number.isFinite(n)||Math.abs(n)>999))return;
+    if(!state||state.temperatureAuto===true)return;
     edit(function(){state.temperature=temperature.value===''?null:Math.round(n*10)/10;});});
   temperature.addEventListener('blur',function(){rendu();});
-  function addTemp(n){edit(function(){state.temperature=Math.max(-999,Math.min(999,Math.round(((state.temperature||0)+n)*10)/10));});}
-  tempRow.appendChild(button('−','Réduire la température de 1 °C',function(){addTemp(-1);}));tempRow.appendChild(temperature);tempRow.appendChild(el('span','','°C'));tempRow.appendChild(button('+','Augmenter la température de 1 °C',function(){addTemp(1);}));tempBox.appendChild(tempRow);root.appendChild(tempBox);
+  function addTemp(n){if(!state||state.temperatureAuto===true)return;edit(function(){state.temperature=Math.max(-999,Math.min(999,Math.round(((state.temperature||0)+n)*10)/10));});}
+  var moins=button('−','Réduire la température de 1 °C',function(){addTemp(-1);}),plus=button('+','Augmenter la température de 1 °C',function(){addTemp(1);});tempControls.push(moins,temperature,plus);
+  tempRow.appendChild(moins);tempRow.appendChild(temperature);tempRow.appendChild(el('span','','°C'));tempRow.appendChild(plus);tempBox.appendChild(tempRow);root.appendChild(tempBox);
+  var sunBox=el('section','om-sun');sunBox.appendChild(el('h2','','Soleil'));
+  var sunPosition=el('p','om-sun-position'),sunTimes=el('p','om-sun-times');sunBox.appendChild(sunPosition);sunBox.appendChild(sunTimes);
+  var hourly=el('details','om-hourly');hourly.appendChild(el('summary','','Prévisions par heure'));
+  var table=el('table','om-hourly-table'),head=el('thead'),headRow=el('tr');
+  ['Heure','Température','Soleil'].forEach(function(t){var th=el('th','',t);th.scope='col';headRow.appendChild(th);});head.appendChild(headRow);table.appendChild(head);
+  var body=el('tbody'),hourlyRows=[];
+  for(var hour=0;hour<24;hour++){
+    var tr=el('tr'),th=el('th','',String(hour).padStart(2,'0')+' h'),tdTemp=el('td'),tdSun=el('td');th.scope='row';tr.appendChild(th);tr.appendChild(tdTemp);tr.appendChild(tdSun);body.appendChild(tr);hourlyRows.push({row:tr,temperature:tdTemp,position:tdSun});
+  }
+  table.appendChild(body);hourly.appendChild(table);sunBox.appendChild(hourly);root.appendChild(sunBox);
   document.addEventListener('compositionstart',function(){composing=true;});document.addEventListener('compositionend',function(){composing=false;rendu();});
   function load(){if(charId)post({type:'load',resync:true});}
   function discovery(){post({type:'need-bridge'});post({type:'monde-char'});}
@@ -77,7 +118,7 @@
       if(!d.charId){if(d.pret!==false)message('Créer un personnage Roll20 nommé « Monde » et le partager avec les joueurs.');rights=false;rendu();return;}
       // Une frame reste liée au premier personnage pour toute sa vie.
       if(charId&&charId!==d.charId){stop('Le personnage Monde a changé : rouvrir le panneau.');return;}
-      charId=d.charId;rights=juge(d);capable=d.monde===1;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
+      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
     }else if(d.type==='hydrate'&&d.charId===charId){
       if(d.collaboration!==1||d.resync!==true){capable=false;message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}
       if(d.fresh!==true||d.sur!==true||frozen)return;
@@ -91,6 +132,6 @@
       }catch(e){stop(e);}
     }
   });
-  message('Lecture de Monde…');rendu();post({type:'panneau',titre:'Monde',nuit:document.documentElement.classList.contains('night'),w:360,h:350});discovery();
+  message('Lecture de Monde…');rendu();post({type:'panneau',titre:'Monde',nuit:document.documentElement.classList.contains('night'),w:360,h:650});discovery();
   setInterval(function(){if(!charId||++tick%10===0)discovery();load();transmit();if(lastRead&&Date.now()-lastRead>12000)message('La synchronisation ne répond plus. Les modifications locales restent en attente.');},1200);
 })();
