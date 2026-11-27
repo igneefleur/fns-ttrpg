@@ -264,10 +264,7 @@
         if(incomplete){delete ids[op.id];return;}
         if(op.history&&op.reversible){
           var actual=legacy.flatten(legacy.rebuild(f));
-          if(Object.keys(op.reversible.before).some(function(k){
-            var value=actual[k]===undefined?null:actual[k];
-            return stable(value)!==stable(op.reversible.before[k]);
-          })){
+          if(!historyMatches(actual,op.reversible.before)){
             conflicts.push({id:op.id,reason:"Annulation impossible : une valeur concernée a changé.",rejected:true});
             return;
           }
@@ -381,6 +378,27 @@ this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,remote.clock+1);thi
       op.reversible.after[p]=['v',value];
       if(this.actor)op.actor=legacy.copy(this.actor);this.pending[id]=op;this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,op.clock);var f=legacy.copy(this.local);f[p]=['v',value];this.local=f;};
     Session.prototype.receive=function(attrs,verified){var r;try{r=verified||this.reader.read(attrs);}catch(e){if(!this.hasBase)return null;throw e;}if(!r)return null;if(this.hasBase&&this.epoch!==r.meta.epoch&&Object.keys(this.pending).length)throw Error('La fiche a changé de format avec des opérations locales en attente ; exportez avant de recharger.');this.hasBase=true;this.attrs=attrs;this.epoch=r.meta.epoch;this.clock=Math.max(this.clock,r.clock);var self=this,lost=false;Object.keys(this.pending).forEach(function(id){if(r.ids[id]){delete self.pending[id];delete self.published[id];delete self.pendingAt[id];}});Object.keys(this.payloads).forEach(function(k){if(attrs[k]&&val(attrs[k])===val(self.payloads[k]))delete self.payloads[k];});var temp=Object.assign({},attrs);temp[OPS+'pending']=attr({epoch:this.epoch,ops:Object.keys(this.pending).map(function(id){return self.pending[id];})});Object.keys(this.payloads).forEach(function(k){if(!temp[k])temp[k]=self.payloads[k];});var merged=r;if(Object.keys(this.pending).length||Object.keys(this.payloads).length){var pendingReader=new Reader();pendingReader.previous=this.reader.previous;pendingReader.boxes=Object.assign(Object.create(null),this.reader.boxes);merged=pendingReader.read(temp);}this.local=merged.flat;return {state:merged.state,lost:Object.keys(this.pending).some(function(id){return self.now()-(self.pendingAt[id]||self.pending[id].at||self.now())>10000;}),conflict:r.conflicts.length>0,incomplete:r.incomplete,conflicts:r.conflicts};};
+    // Le transport conserve les parents des tables éparses et la liste des
+    // récupérations après suppression du dernier ajout. La fiche, elle, nettoie
+    // ces conteneurs vides. Leur présence seule n'est pas une autre édition.
+    function historyEmpty(flat,k){
+      var node=flat[k];if(node==null)return true;
+      var path=JSON.parse(k);
+      if(!(node[0]==='o'&&path.length&&path[path.length-1][0]!=='e')&&
+          !(node[0]==='l'&&k==='[["k","modData"],["k","recuperation"],["k","ajouts"]]'))return false;
+      return !Object.keys(flat).some(function(child){
+        var p=JSON.parse(child),n=flat[child];
+        if(p.length<=path.length||stable(p.slice(0,path.length))!==stable(path)||n==null||n[0]==='d')return false;
+        return !(n[0]==='o'&&p[p.length-1][0]!=='e')&&
+          !(n[0]==='l'&&child==='[["k","modData"],["k","recuperation"],["k","ajouts"]]');
+      });
+    }
+    function historyMatches(flat,expected){
+      return Object.keys(expected).every(function(k){
+        var value=flat[k]===undefined?null:flat[k],wanted=expected[k];
+        return stable(value)===stable(wanted)||wanted===null&&historyEmpty(flat,k)||value===null&&historyEmpty(expected,k);
+      });
+    }
     function historyPlan(state,ops,actorId,redo,conflicts){
       var rejected={};(conflicts||[]).forEach(function(c){rejected[c.id]=true;});
       var ordered=ops.filter(function(o){return !rejected[o.id];}).slice().sort(function(a,b){return a.clock-b.clock||(a.id<b.id?-1:1);});
@@ -399,7 +417,7 @@ this.pendingAt[id]=this.now();this.clock=Math.max(this.clock,remote.clock+1);thi
       var expected=redo?target.reversible.before:target.reversible.after;
       var desired=redo?target.reversible.after:target.reversible.before;
       var flat=legacy.flatten(state);
-      if(Object.keys(expected).some(function(k){return stable(flat[k]===undefined?null:flat[k])!==stable(expected[k]);}))
+      if(!historyMatches(flat,expected))
         throw Error("Une valeur concernée a changé depuis : cette modification ne peut pas être annulée automatiquement.");
       Object.keys(desired).forEach(function(k){
         if(desired[k]!==null)return;

@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.39.1b";
+  var RELEASE = "4.40.0b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -756,7 +756,9 @@
     // Exposition utilisent exactement la même forme que l'horloge du monde.
     function normaliseHorloge(v, gardeRegime) {
       var h = (v && typeof v === "object" && !Array.isArray(v)) ? v : {};
-      var hs = Math.max(0, Math.floor(Number(h.secondes) || 0));
+      // Le solveur peut atteindre une frontière à une fraction de seconde.
+      // Relire l'état ne doit pas modifier les valeurs gardées par l'historique.
+      var hs = Math.max(0, Number(h.secondes) || 0);
       var hm = Math.max(0, Math.floor(Number(h.minutes) || 0)) + Math.floor(hs / 60); hs %= 60;
       var hh = Math.max(0, Math.floor(Number(h.heures) || 0)) + Math.floor(hm / 60); hm %= 60;
       var hj = Math.max(0, Math.floor(Number(h.jours) || 0)) + Math.floor(hh / 24); hh %= 24;
@@ -807,7 +809,8 @@
       var v = s.etat[k];
       if (v === null || v === undefined || v === "") { s.etat[k] = null; return; }
       var n = parseFloat(v);
-      s.etat[k] = isFinite(n) ? clamp(Math.round(n * 100) / 100, -99999, 99999) : null;
+      // Même précision que le calcul et la sauvegarde du passage du temps.
+      s.etat[k] = isFinite(n) ? clamp(Math.round(n * 1e6) / 1e6, -99999, 99999) : null;
     });
     // expo et contenance ne sont PAS nullables : 0 y est une vraie valeur
     s.etat.expo = clamp(snum(s.etat.expo), -99999, 99999);
@@ -4810,7 +4813,7 @@
     var ancien = Object.prototype.hasOwnProperty.call(RECUP_DUREES_ANCIENNES, r.type) && RECUP_DUREES_ANCIENNES[r.type];
     d = recupDureeDef(ancien ? ancien.cle : r.type);
     r.type = d.cle;
-    r.temps = Math.max(0, num(r.temps, 0)) * (ancien ? ancien.facteur : 1);
+    r.temps = Math.max(0, Number.isFinite(Number(r.temps)) ? Number(r.temps) : 0) * (ancien ? ancien.facteur : 1);
     if (r.resteSecondes == null || !isFinite(Number(r.resteSecondes))) r.resteSecondes = r.temps * d.secondes;
     r.resteSecondes = Math.max(0, (Number(r.resteSecondes) || 0));
     return r;
@@ -5322,6 +5325,9 @@
   }
   // Les définitions et les propriétés des objets sont celles de la Boutique.
   function effetsDefinitions() { return D().effets || []; }
+  // Durées et facteurs alimentaires peuvent être fractionnaires. `num`
+  // est réservé aux entiers et tronquerait ces valeurs à chaque relecture.
+  function effetDecimal(v, defaut) { var n = Number(v); return v == null || v === "" || !Number.isFinite(n) ? defaut : n; }
   var effetsCacheListe=null,effetsCache={};
   function effetDefinition(id) { var liste=effetsDefinitions();if(liste!==effetsCacheListe){effetsCacheListe=liste;effetsCache=Object.create(null);liste.forEach(function(d){effetsCache[d.id]=d;});}return effetsCache[id] || null; }
   function effetNutrition(it, reserve, total) {
@@ -5337,15 +5343,15 @@
     s.effetsActifs = (Array.isArray(s.effetsActifs) ? s.effetsActifs : []).filter(function (e) { return e && typeof e === "object" && e.effet; }).map(function (e) {
       var id = String(e.id || uid("eff")); if (ids[id]) id = uid("eff"); ids[id] = true;
       return { categorie: e.categorie === "digestive" ? "digestive" : "speciale", id: id, effet: String(e.effet), source: String(e.source || ""), cible: String(e.cible || ""),
-        actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, num(e.reste, 0)),
-        duree: e.duree == null ? null : Math.max(0, num(e.duree, 0)), suivi: Math.max(0, num(e.suivi, 0)),
-        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4), facteur: Math.max(0, num(e.facteur, 1)) };
+        actif: e.actif !== false, reste: e.reste == null ? null : Math.max(0, effetDecimal(e.reste, 0)),
+        duree: e.duree == null ? null : Math.max(0, effetDecimal(e.duree, 0)), suivi: Math.max(0, effetDecimal(e.suivi, 0)),
+        niveau: clamp(Math.floor(num(e.niveau, 1)), 1, 4), facteur: Math.max(0, effetDecimal(e.facteur, 1)) };
     }).filter(function (e) { return e.reste === null || e.reste > 0; });
     var alcool = 0, progression = 0;
     s.effetsActifs = s.effetsActifs.filter(function (e) {
       var d = effetDefinition(e.effet); if (!d || !d.ops.alcool || !e.actif) return true;
       alcool += Math.max(0, num(d.ops.alcool, 0));
-      progression = Math.max(progression, Math.max(0, num(e.duree, 7200) - num(e.reste, 7200)));
+      progression = Math.max(progression, Math.max(0, effetDecimal(e.duree, 7200) - effetDecimal(e.reste, 7200)));
       return false;
     });
     if (alcool) {
@@ -5470,7 +5476,7 @@
       var previous=effetDefinition(meme.effet);if(previous && num(previous.rang,0)>num(d.rang,0))return true;
     } else { meme={id:uid("eff"),niveau:1};actifs.push(meme); }
     meme.categorie=categorie === "digestive" ? "digestive" : "speciale";meme.effet=id;meme.source=String(source||"");meme.cible=String(cible||"");meme.actif=true;
-    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;if(d.nutrition)meme.facteur=Math.max(0,num(facteur,1));return true;
+    meme.reste=seconds;meme.duree=seconds;meme.suivi=0;meme.facteur=d.nutrition?Math.max(0,effetDecimal(facteur,1)):1;return true;
   }
   function effetsAvance(secondes, debitsDejaAppliques) {
     var efficaces=Object.create(null),deltas={};effetsSources().forEach(function(x){if(x.e.id)efficaces[x.e.id]=true;});
@@ -5769,7 +5775,7 @@
       temperature.readOnly = liee;
       if (liee) {
         if (document.activeElement !== temperature || temperature.readOnly)
-          temperature.value = temperatureMondeDisponible ? String(temperatureMondeValeur) : "";
+          temperature.value = temperatureMondeDisponible ? String(Math.sign(temperatureMondeValeur) * Math.floor(Math.abs(temperatureMondeValeur) + 0.5 + 1e-10) || 0) : "";
         temperature.placeholder = temperatureMondeDisponible ? "" : "—";
         temperature.title = temperatureMondeDisponible
           ? "Température actuelle du personnage Monde"
@@ -14086,6 +14092,10 @@
       });
     });
     journalTemps=[];
+    // L'état reçu contient déjà les conséquences de l'effondrement. La
+    // mémoire de la vue précédente ne doit pas les appliquer une seconde fois,
+    // notamment quand Ctrl-Z restaure un ancien niveau et ses réserves.
+    effVu=null;effMaxVu={};
     if(partial){
       changes.forEach(function(k){if(s[k]===undefined)delete state[k];else if(k==='etat'){Object.keys(state.etat).forEach(function(r){if(!(r in s.etat))delete state.etat[r];});Object.assign(state.etat,s.etat);}else state[k]=s[k];});
       reconstruitModules(targets);refresh();
