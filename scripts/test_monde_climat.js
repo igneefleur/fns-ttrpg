@@ -1,45 +1,59 @@
 'use strict';
 const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const D=require('../docs/javascripts/owd-monde-data.js'),C=D.sync;
-const state=(mois,h=0,m=0,s=0)=>({v:1,temperature:17.5,temperatureAuto:true,temperatureMode:'progressif',temperatureRegion:'chersonese',dateDepart:{annee:412,mois,jour:1},horloge:{jours:1,heures:h,minutes:m,secondes:s}});
+const state=(day,h=0,m=0,sec=0)=>({v:1,temperature:17.5,temperatureAuto:true,temperatureMode:'progressif',temperatureSaisonMode:'progressif',temperatureRegion:'chersonese',dateDepart:{annee:412,mois:1,jour:1},horloge:{jours:day+1,heures:h,minutes:m,secondes:sec}});
 const at=(s,h,m=0,sec=0)=>({...s,horloge:{...s.horloge,heures:h,minutes:m,secondes:sec}});
 const proche=(a,b)=>assert.ok(Math.abs(a-b)<1e-9,`${a} != ${b}`);
-for(const [mois,lever,coucher,nuit,jour] of [[1,8,20,8,16],[4,7,21,18,32],[7,8,20,8,16],[10,9,19,-6,0]]){
- const s=state(mois);assert.deepEqual(D.soleil(at(s,14)),{lever,pic:14,coucher,position:'Soleil au plus haut',jour:true});
- assert.equal(D.soleil(at(s,lever)).position,'Lever du soleil');assert.equal(D.soleil(at(s,coucher)).position,'Coucher du soleil');
- assert.equal(D.soleil(at(s,lever,1)).position,'Soleil montant');assert.equal(D.soleil(at(s,16)).position,'Soleil descendant');
- assert.equal(D.soleil(at(s,0)).position,'Nuit');
- const brut={...s,temperatureMode:'brut'};
- assert.equal(D.temperatureMonde(at(brut,lever-1,59,59)),nuit);assert.equal(D.temperatureMonde(at(brut,lever)),jour);
- assert.equal(D.temperatureMonde(at(brut,coucher-1,59,59)),jour);assert.equal(D.temperatureMonde(at(brut,coucher)),nuit);
- for(const region of Object.keys(D.regions)){
-  const r={...s,temperatureRegion:region};proche(D.temperatureMonde(at(r,lever-1)),nuit-2);proche(D.temperatureMonde(at(r,16)),jour+2);
-  let prev=null;
-  for(let minutes=0;minutes<1440;minutes++){
-   const t=D.temperatureMonde(at(r,Math.floor(minutes/60),minutes%60));assert.ok(t>=nuit-2-1e-9&&t<=jour+2+1e-9);
-   if(prev!==null){if(minutes>(lever-1)*60&&minutes<=16*60)assert.ok(t>=prev-1e-9);else assert.ok(t<=prev+1e-9);}prev=t;
-  }
-  assert.ok(Math.abs(D.temperatureMonde(at(r,23,59,59))-D.temperatureMonde(at(r,0)))<0.001);
+const refs=[[16,8],[32,18],[16,8],[0,-6]],sun=[[8,20],[7,21],[8,20],[9,19]];
+let checked=0;
+for(const annuel of ['brut','progressif'])for(const region of Object.keys(D.regions))for(let day=0;day<336;day++){
+ const s={...state(day),temperatureSaisonMode:annuel,temperatureRegion:region},c=D.climat(s),f=c.lever-1,values=[];
+ assert.equal(c.pic,14);assert.equal(c.lever+c.coucher,28);
+ assert.equal(c.jourSaison,day%84+1);
+ if(annuel==='brut'){assert.equal(c.jour,refs[Math.floor(day/84)][0]);assert.equal(c.nuit,refs[Math.floor(day/84)][1]);assert.equal(c.lever,sun[Math.floor(day/84)][0]);assert.equal(c.coucher,sun[Math.floor(day/84)][1]);}
+ for(let h=0;h<24;h++){
+  const v=D.temperatureMonde(at(s,h));assert.ok(Number.isInteger(v));assert.equal(D.temperatureMonde(at(s,h,59,59)),v);values.push(v);checked++;
+  const brut={...at(s,h),temperatureMode:'brut'};assert.equal(D.temperatureMonde(brut),D.arrondi(h>=c.lever&&h<c.coucher?c.jour:c.nuit));
+  assert.equal(D.soleil(at(s,h,59,59)).position,D.soleil(at(s,h)).position);
  }
+ assert.equal(values[16],D.arrondi(c.jour+2));assert.equal(values[f],D.arrondi(c.nuit-2));
+ assert.equal(Math.max(...values),values[16]);assert.equal(Math.min(...values),values[f]);
+ assert.equal(values.filter(v=>v===values[16]).length,1);assert.equal(values.filter(v=>v===values[f]).length,1);
+ assert.ok(values[17]<values[16]);assert.ok(values[f+1]>values[f]);
+ for(let h=f+1;h<=16;h++)assert.ok(values[h]>=values[h-1]);
+ assert.equal(D.soleil(at(s,c.lever)).position,'Lever du soleil');assert.equal(D.soleil(at(s,14)).position,'Soleil au plus haut');assert.equal(D.soleil(at(s,c.coucher)).position,'Coucher du soleil');
 }
-const ete=state(4);assert.equal(D.arrondi(D.temperatureMonde(at(ete,0))),23);assert.equal(D.arrondi(D.temperatureMonde(at(ete,12))),28);
-assert.notEqual(D.temperatureMonde(at(ete,12)),D.arrondi(D.temperatureMonde(at(ete,12))));
-assert.notEqual(D.temperatureMonde(at(ete,12,30)),D.temperatureMonde(at(ete,12,30,3)));
+for(const [saison,pair] of refs.entries()){
+ const peak=[],plateau=[];
+ for(let j=1;j<=84;j++){
+  const c=D.climat(state(saison*84+j-1));
+  if(c.jour===pair[0]&&c.nuit===pair[1])plateau.push(j);
+  if((saison===1&&D.temperatureMonde(state(84+j-1,16))===38)||(saison===3&&D.temperatureMonde(state(252+j-1,c.lever-1))===-12))peak.push(j);
+ }
+ if(saison===1||saison===3){assert.deepEqual(peak,[42,43]);assert.equal(plateau.length,56);}else assert.equal(plateau.length,56);
+}
+// Transitions de 21 jours : les deux extrémités d'une saison se rejoignent.
+const summerStart=D.climat(state(84));proche(summerStart.jour,16+16*14.5/21);proche(summerStart.nuit,8+10*14.5/21);
+const winterStart=D.climat(state(252));proche(winterStart.jour,16-16*14.5/21);proche(winterStart.nuit,8-14*14.5/21);
+for(const day of [0,83,84,167,168,251,252,335]){
+ const s=state(day),c=D.climat(s),n=D.climat(state((day+1)%336));assert.ok(Math.abs(c.jour-n.jour)<1);assert.ok(Math.abs(c.nuit-n.nuit)<1);
+ assert.equal(D.temperatureMonde(at(s,23,59,59)),D.temperatureMonde(at(s,23)));
+ const next={...s,horloge:D.advance(at(s,23,59,59).horloge,1)};assert.equal(D.temperatureMonde(next),D.temperatureMonde(state((day+1)%336)));
+}
+assert.notEqual(summerStart.jour,D.arrondi(summerStart.jour),'les références intermédiaires gardent leurs décimales');
 for(const n of [-7.5,-0.5,0,0.5,7.5])assert.equal(D.arrondi(n),Math.sign(n)*Math.ceil(Math.abs(n))||0);
-assert.equal(D.temperatureMonde({...ete,temperatureAuto:false}),17.5);assert.equal(D.temperatureMonde({...ete,temperatureAuto:false,temperature:null}),null);
-for(const invalid of [{temperatureAuto:1},{temperatureMode:'x'},{temperatureRegion:'__proto__'}])assert.throws(()=>D.validate({...ete,...invalid}));
-// Une modification d'horloge et un changement de mode simultanés convergent.
-const store={[C.BASE]:{current:JSON.stringify({format:1,state:ete})}},a=new C.Session(store,ete),b=new C.Session(store,ete);
-a.capture(at(ete,16));b.capture({...ete,temperatureMode:'brut',temperatureRegion:'enmerkar'});Object.assign(store,a.outgoing(),b.outgoing());
-const merged=D.read(store);assert.equal(merged.horloge.heures,16);assert.equal(merged.temperatureMode,'brut');assert.equal(D.temperatureMonde(merged),32);assert.equal(merged.temperature,17.5);
-// Le calendrier recalcule le climat au changement de saison et d'année.
-let fin={...state(3,23,59,59),dateDepart:{annee:412,mois:3,jour:28}};
-fin.horloge=D.advance(fin.horloge,1);assert.equal(D.soleil(fin).lever,7);assert.equal(D.climat(fin).jour,32);
-fin={...state(12),dateDepart:{annee:412,mois:12,jour:28}};fin.horloge=D.advance(fin.horloge,86400);assert.equal(D.climat(fin).jour,16);
-// Le pont lit les mêmes calculs, sans panneau ouvert ni température dérivée écrite.
+assert.equal(D.temperatureMonde({...state(0),temperatureAuto:false}),18);assert.equal(D.temperatureMonde({...state(0),temperatureAuto:false,temperature:null}),null);
+for(const invalid of [{temperatureAuto:1},{temperatureMode:'x'},{temperatureSaisonMode:'x'},{temperatureRegion:'__proto__'}])assert.throws(()=>D.validate({...state(0),...invalid}));
+// Compatibilité 4.40.0 : les réglages absents gardent les saisons brutes.
+const legacy=state(84);delete legacy.temperatureSaisonMode;assert.equal(D.climat(legacy).jour,32);
+// Concurrence : horloge, mode journalier et mode saisonnier indépendants.
+const initial=state(0),store={[C.BASE]:{current:JSON.stringify({format:1,state:initial})}},a=new C.Session(store,initial),b=new C.Session(store,initial);
+a.capture(at(initial,16));b.capture({...initial,temperatureMode:'brut',temperatureSaisonMode:'brut',temperatureRegion:'enmerkar'});Object.assign(store,a.outgoing(),b.outgoing());
+const merged=D.read(store);assert.equal(merged.horloge.heures,16);assert.equal(merged.temperatureMode,'brut');assert.equal(merged.temperatureSaisonMode,'brut');assert.equal(D.temperatureMonde(merged),16);assert.equal(merged.temperature,17.5);
+// Pont réel : entier identique au panneau, même quand ce dernier est fermé.
 assert.equal(fs.readFileSync('extension/firefox/monde-data.js','utf8'),fs.readFileSync('docs/javascripts/owd-monde-data.js','utf8'));
 const bridge=fs.readFileSync('extension/firefox/beta/roll20-page.js','utf8'),start=bridge.indexOf('  function temperatureMondeDepuisAttrs(attrs) {'),end=bridge.indexOf('\n\n  // ---------- le camp ----------',start);
 const lire=vm.runInNewContext('('+bridge.slice(start,end).trim()+')',{window:{OwdMondeData:D}});
-assert.equal(lire(store),32);const c=new C.Session(store,D.read(store));c.capture({...D.read(store),temperatureMode:'progressif',horloge:at(ete,12,30).horloge});Object.assign(store,c.outgoing());proche(lire(store),D.temperatureMonde(D.read(store)));
+assert.equal(lire(store),16);const c=new C.Session(store,D.read(store));c.capture({...D.read(store),temperatureMode:'progressif',temperatureSaisonMode:'progressif',horloge:state(125,16,30).horloge});Object.assign(store,c.outgoing());assert.equal(lire(store),38);assert.ok(Number.isInteger(lire(store)));
 assert.equal(lire({owd_monde_base:{current:'cassé'}}),null);
-console.log('OK climat : 4 saisons, 3 régions, transitions jour/nuit, extrema, courbes minute par minute, précision, calendrier, synchronisation et pont Roll20.');
+console.log(`OK climat : ${checked} créneaux, 336 jours, 3 régions, 4 combinaisons Brut/Progressif, pics horaires et saisonniers uniques, sorties entières, décimales intermédiaires, calendrier et pont.`);

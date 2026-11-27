@@ -19,10 +19,10 @@
     Object.keys(dateFields).forEach(function(k){var n=dateFields[k];if(force||document.activeElement!==n)n.value=depart[k];});
     worldDate.textContent='Jour '+date.jour+' · Mois '+date.mois+' · Année '+date.annee+' · '+date.saison;
     var automatique=state.temperatureAuto===true,t=D.temperatureMonde(state);
-    source.value=automatique?'auto':'manuel';region.value=state.temperatureRegion||'chersonese';mode.value=state.temperatureMode||'brut';
+    source.value=automatique?'auto':'manuel';region.value=state.temperatureRegion||'chersonese';mode.value=state.temperatureMode||'brut';saisonMode.value=state.temperatureSaisonMode||'brut';
     autoOption.disabled=!autoCapable;autoFields.hidden=!automatique;
     var soleil=D.soleil(state),climat=D.climat(state);
-    modeInfo.textContent=mode.value==='brut'?'Jour : '+soleil.lever+' h–'+soleil.coucher+' h · '+climat.jour+' °C / '+climat.nuit+' °C':'Minimum : '+(climat.nuit-2)+' °C à '+(soleil.lever-1)+' h · Maximum : '+(climat.jour+2)+' °C à 16 h';
+    modeInfo.textContent=mode.value==='brut'?'Jour : '+soleil.lever+' h–'+soleil.coucher+' h · '+D.arrondi(climat.jour)+' °C / '+D.arrondi(climat.nuit)+' °C':'Minimum : '+D.arrondi(climat.nuit-2)+' °C à '+(soleil.lever-1)+' h · Maximum : '+D.arrondi(climat.jour+2)+' °C à 16 h';
     autoNotice.hidden=autoCapable;autoNotice.textContent='Mettre à jour l’extension et recharger Roll20 pour activer la température automatique.';
     tempControls.forEach(function(n){n.disabled=!enabled()||automatique;});
     if(force||automatique||document.activeElement!==temperature)temperature.value=t==null?'':D.arrondi(t);
@@ -81,20 +81,22 @@
   }
   var sourceChoix=choix('Gestion',[['manuel','Manuelle'],['auto','Automatique']]),source=sourceChoix.input,autoOption=source.options[1];tempBox.appendChild(sourceChoix.label);
   var autoFields=el('div','om-auto-fields'),regionChoix=choix('Région',Object.keys(D.regions).map(function(k){return [k,D.regions[k]];})),region=regionChoix.input;
-  var modeChoix=choix('Mode',[['brut','Brut'],['progressif','Progressif']]),mode=modeChoix.input;
-  autoFields.appendChild(regionChoix.label);autoFields.appendChild(modeChoix.label);tempBox.appendChild(autoFields);
+  var modeChoix=choix('Journée',[['brut','Brut'],['progressif','Progressif']]),mode=modeChoix.input;
+  var saisonChoix=choix('Saisons',[['brut','Brut'],['progressif','Progressif']]),saisonMode=saisonChoix.input;
+  autoFields.appendChild(regionChoix.label);autoFields.appendChild(modeChoix.label);autoFields.appendChild(saisonChoix.label);tempBox.appendChild(autoFields);
   var autoNotice=el('p','om-auto-notice');tempBox.appendChild(autoNotice);
   var modeInfo=el('p','om-auto-notice');autoFields.appendChild(modeInfo);
   source.addEventListener('change',function(){edit(function(){state.temperatureAuto=source.value==='auto';});});
   region.addEventListener('change',function(){edit(function(){state.temperatureRegion=region.value;});});
   mode.addEventListener('change',function(){edit(function(){state.temperatureMode=mode.value;});});
+  saisonMode.addEventListener('change',function(){edit(function(){state.temperatureSaisonMode=saisonMode.value;});});
   var tempControls=[];
-  var tempRow=el('div','om-temperature-row'),temperature=el('input','om-number');temperature.type='number';temperature.step='0.1';temperature.min='-999';temperature.max='999';temperature.placeholder='—';temperature.setAttribute('aria-label','Température en °C');controls.push(temperature);
+  var tempRow=el('div','om-temperature-row'),temperature=el('input','om-number');temperature.type='number';temperature.step='1';temperature.min='-999';temperature.max='999';temperature.placeholder='—';temperature.setAttribute('aria-label','Température en °C');controls.push(temperature);
   temperature.addEventListener('input',function(){var n=Number(temperature.value);if(temperature.value!==''&&(!Number.isFinite(n)||Math.abs(n)>999))return;
     if(!state||state.temperatureAuto===true)return;
-    edit(function(){state.temperature=temperature.value===''?null:Math.round(n*10)/10;});});
+    edit(function(){state.temperature=temperature.value===''?null:D.arrondi(n);});});
   temperature.addEventListener('blur',function(){rendu();});
-  function addTemp(n){if(!state||state.temperatureAuto===true)return;edit(function(){state.temperature=Math.max(-999,Math.min(999,Math.round(((state.temperature||0)+n)*10)/10));});}
+  function addTemp(n){if(!state||state.temperatureAuto===true)return;edit(function(){state.temperature=Math.max(-999,Math.min(999,D.arrondi((state.temperature||0)+n)));});}
   var moins=button('−','Réduire la température de 1 °C',function(){addTemp(-1);}),plus=button('+','Augmenter la température de 1 °C',function(){addTemp(1);});tempControls.push(moins,temperature,plus);
   tempRow.appendChild(moins);tempRow.appendChild(temperature);tempRow.appendChild(el('span','','°C'));tempRow.appendChild(plus);tempBox.appendChild(tempRow);root.appendChild(tempBox);
   var sunBox=el('section','om-sun');sunBox.appendChild(el('h2','','Soleil'));
@@ -118,7 +120,7 @@
       if(!d.charId){if(d.pret!==false)message('Créer un personnage Roll20 nommé « Monde » et le partager avec les joueurs.');rights=false;rendu();return;}
       // Une frame reste liée au premier personnage pour toute sa vie.
       if(charId&&charId!==d.charId){stop('Le personnage Monde a changé : rouvrir le panneau.');return;}
-      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
+      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1&&d.climat===2;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
     }else if(d.type==='hydrate'&&d.charId===charId){
       if(d.collaboration!==1||d.resync!==true){capable=false;message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}
       if(d.fresh!==true||d.sur!==true||frozen)return;

@@ -1321,7 +1321,7 @@
         // deux, et annoncer l'absence ferait afficher un écran d'erreur pour
         // rien (même prudence que has-sheet, qui répond exists:null).
         var nc = campChar();
-        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, temperatureAuto: window.OwdMondeData ? 1 : 0, pret: !!campaign(), charId: null, nom: "" };
+        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, temperatureAuto: window.OwdMondeData ? 1 : 0, climat: window.OwdMondeData && window.OwdMondeData.climatJour ? 2 : 0, pret: !!campaign(), charId: null, nom: "" };
         if (nc) {
           rep.charId = nc.id;
           rep.nom = String((nc.get ? nc.get("name") : "") || "");
