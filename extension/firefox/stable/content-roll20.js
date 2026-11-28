@@ -205,7 +205,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
     try{s.setAttribute('data-owd-version',browser.runtime.getManifest().version);s.setAttribute('data-owd-mode',MODE);s.setAttribute('data-owd-browser',browser.runtime.getManifest().manifest_version===3?'chrome':'firefox');}catch(e){}
     s.src = browser.runtime.getURL("stable/roll20-page.js");   // propre à cette copie
     s.onload = function () { this.remove(); var a=document.createElement("script");a.src=browser.runtime.getURL("stable/attack-map.js");a.onload=function(){this.remove();};(document.head||root).appendChild(a); };   // propre à cette copie
-    var codec=document.createElement('script');codec.src=browser.runtime.getURL("sync-engine.js");codec.onload=function(){this.remove();var monde=document.createElement("script");monde.src=browser.runtime.getURL("monde-data.js");monde.onload=function(){this.remove();(document.head||root).appendChild(s);};monde.onerror=function(){root.removeAttribute("data-owd-bridge");this.remove();};(document.head||root).appendChild(monde);};codec.onerror=function(){root.removeAttribute('data-owd-bridge');this.remove();};(document.head||root).appendChild(codec);
+    var codec=document.createElement('script');codec.src=browser.runtime.getURL("sync-engine.js");codec.onload=function(){this.remove();(document.head||root).appendChild(s);};codec.onerror=function(){root.removeAttribute('data-owd-bridge');this.remove();};(document.head||root).appendChild(codec);
   }
 
   // ---------- pont léger vers le page-script (has-sheet) ----------
@@ -1368,7 +1368,7 @@ if (typeof browser === "undefined") { var browser = chrome; }
   var IS_EDITEUR = IS_TOP && !IS_POPOUT && /^\/editor(\/|$)/.test(location.pathname);
   var outils = {}, barreObs = null, panelFront = 100020;
   var OUTILS = [
-    {id:'monde',titre:'Monde',page:'roll20-camp.html',cle:'owdPanneau:roll20-camp.html',w:360,h:350,minW:280,minH:320},
+    {id:'monde',titre:'Monde',page:'roll20-monde.html',cle:'owdPanneau:roll20-camp.html',w:360,h:350,minW:280,minH:320},
     {id:'inventaire',titre:'Inventaire',page:'roll20-inventaire.html',cle:'owdPanneau:roll20-inventaire.html',w:850,h:650,minW:340,minH:320},
     {id:'attaques',titre:'Attaques',page:'roll20-attaques.html',cle:'owdPanneau:roll20-attaques.html',w:620,h:650,minW:340,minH:320},
     {id:'defenses',titre:'Défenses',page:'roll20-defenses.html',cle:'owdPanneau:roll20-defenses.html',w:620,h:650,minW:340,minH:320},

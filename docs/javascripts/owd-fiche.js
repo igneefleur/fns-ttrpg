@@ -82,7 +82,7 @@
   // « 1.0.0 » sont de même version, la beta étant ce que le site public
   // recevra à la fusion. Les TROIS porteurs du numéro montent ensemble :
   // docs/owd-manifeste.json, RELEASE ici, RELEASE_DEFAUT de owd-attr-map.js.
-  var RELEASE = "4.40.2b";
+  var RELEASE = "4.40.3b";
   var SCHEMA = 20;
 
   // Les modificateurs d'Outward se règlent de 1 en 1 : l'échelle des
@@ -5555,10 +5555,16 @@
     if (ev.source !== window.top) return;
     var d = ev.data;
     if (!d || d.ns !== "owd" || d.type !== "monde-temperature-result") return;
-    var valeur = d.available === true && typeof d.temperature === "number" &&
-      Number.isFinite(d.temperature) && Math.abs(d.temperature) <= 999 ? d.temperature : null;
+    var valeur = null, echec = false;
+    if (d.mondeData === 1 && d.ready === true) {
+      try {
+        if (!window.OwdMondeData) throw new Error("Moteur Monde du site indisponible");
+        valeur = window.OwdMondeData.temperatureMonde(window.OwdMondeData.read(d.attrs || {}));
+      } catch (e) { echec = true; }
+    } else if (d.available === true) valeur = d.temperature;
+    if (typeof valeur !== "number" || !Number.isFinite(valeur) || Math.abs(valeur) > 999) valeur = null;
     var disponible = valeur !== null;
-    var etat = !d.found ? "absent" : d.status === "echec" ? "echec" :
+    var etat = !d.found ? "absent" : echec || d.status === "echec" ? "echec" :
       d.status !== "sur" ? "attente" : disponible ? "disponible" : "sans-valeur";
     if (temperatureMondeValeur === valeur && temperatureMondeDisponible === disponible && temperatureMondeEtat === etat) return;
     temperatureMondeValeur = valeur;

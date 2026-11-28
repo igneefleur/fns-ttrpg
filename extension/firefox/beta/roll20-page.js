@@ -727,55 +727,15 @@
     return out;
   }
 
-  // Lecture seule de la température partagée. Le panneau Monde et la fiche
-  // personnage vivent dans des iframes distinctes : la fiche ne peut donc pas
-  // lire elle-même les Attributes du personnage partagé.
-  function temperatureMondeDepuisAttrs(attrs) {
-    // Même calcul que le panneau, depuis les registres actuels : fonctionne
-    // aussi quand Monde est fermé, sans écrire une température dérivée.
-    if (typeof window !== "undefined" && window.OwdMondeData) {
-      try { return window.OwdMondeData.temperatureMonde(window.OwdMondeData.read(attrs)); }
-      catch (e) { return null; }
-    }
-    function valeur(n) {
-      var a = attrs && attrs[n];
-      return String(a && typeof a === "object" ? (a.current == null ? "" : a.current) : (a == null ? "" : a));
-    }
-    var trouve = false, temperature = null, brut = valeur("owd_monde_base");
-    if (brut) {
-      try {
-        var base = JSON.parse(brut);
-        if (base && base.format === 1 && base.state && Object.prototype.hasOwnProperty.call(base.state, "temperature")) {
-          temperature = base.state.temperature;
-          trouve = true;
-        }
-      } catch (e) {}
-    }
+  // Transport seul : Monde et les fiches calculent côté site.
+  // Le contrat reste indépendant des règles et des versions du climat.
+  function donneesMondeDepuisAttrs(attrs) {
+    var out = {};
     Object.keys(attrs || {}).forEach(function (nom) {
-      if (nom.indexOf("owd_monde_p_") !== 0) return;
-      try {
-        var r = JSON.parse(valeur(nom));
-        if (r && Array.isArray(r.p) && r.p.length === 1 && r.p[0][0] === "k" && r.p[0][1] === "temperature" && Array.isArray(r.n)) {
-          temperature = r.n[0] === "v" ? r.n[1] : null;
-          trouve = true;
-        }
-      } catch (e) {}
+      if (nom === "owd_monde_base" || nom.indexOf("owd_monde_p_") === 0 ||
+          nom === "owd_camp_h" || nom === "owd_camp_conf") out[nom] = attrs[nom];
     });
-    if (!trouve) {
-      // Repli de lecture pour les anciennes fiches Camp, avant OwdSync.
-      try {
-        var cRaw = valeur("owd_camp_conf"), c = cRaw ? JSON.parse(cRaw) : {};
-        if (c && c.degres != null) { temperature = Number(c.degres); trouve = true; }
-        else if (c && c.milieu) {
-          var hRaw = valeur("owd_camp_h"), m = /^(\d+),(\d+)$/.exec(hRaw);
-          var minutes = m ? Number(m[2]) : 0, heure = Math.floor(minutes / 60) % 24;
-          var table = {"souterrain":[12,12],"toundra":[-10,-25],"montagne":[-5,-15],"foret-hiver":[3,-3],"plateau":[12,0],"cote":[20,14],"foret-ete":[22,12],"marais":[28,22],"tropicale":[30,24],"volcanique":[40,32],"desert":[42,18]};
-          if (table[c.milieu]) { temperature = table[c.milieu][heure >= 5 && heure < 22 ? 0 : 1]; trouve = true; }
-        }
-      } catch (e) {}
-    }
-    return trouve && typeof temperature === "number" && Number.isFinite(temperature) && Math.abs(temperature) <= 999
-      ? temperature : null;
+    return out;
   }
 
   // ---------- le camp ----------
@@ -1321,7 +1281,7 @@
         // deux, et annoncer l'absence ferait afficher un écran d'erreur pour
         // rien (même prudence que has-sheet, qui répond exists:null).
         var nc = campChar();
-        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, temperatureAuto: window.OwdMondeData ? 1 : 0, climat: window.OwdMondeData ? (window.OwdMondeData.climatVersion || 2) : 0, pret: !!campaign(), charId: null, nom: "" };
+        var rep = { type: d.type === "monde-char" ? "monde-char-result" : "camp-char-result", monde: 1, mondeData: 1, pret: !!campaign(), charId: null, nom: "" };
         if (nc) {
           rep.charId = nc.id;
           rep.nom = String((nc.get ? nc.get("name") : "") || "");
@@ -1344,16 +1304,13 @@
       if (d.type === "monde-temperature") {
         var monde = campChar();
         var temperatureRep = { type: "monde-temperature-result", found: !!monde, ready: false,
-          available: false, temperature: null, status: monde ? "attente" : "absent" };
+          available: false, temperature: null, mondeData: 1, status: monde ? "attente" : "absent" };
         if (monde) {
           var etatMonde = etatAttributs(monde);
           temperatureRep.status = etatMonde;
           temperatureRep.ready = etatMonde === "sur";
           if (temperatureRep.ready) {
-            var temperatureLue = temperatureMondeDepuisAttrs(readAll(monde.id));
-            temperatureRep.available = temperatureLue !== null;
-            temperatureRep.temperature = temperatureLue;
-            if (!temperatureRep.available) temperatureRep.status = "sans-valeur";
+            temperatureRep.attrs = donneesMondeDepuisAttrs(readAll(monde.id));
           }
         }
         reply(ev, temperatureRep);

@@ -23,7 +23,12 @@ input:focus-visible,button:focus-visible{outline:2px solid var(--om-accent);outl
 .om-hourly summary{cursor:pointer;color:var(--om-accent);font-size:12px}
 .om-hourly-table{border-collapse:collapse;width:100%;font-size:12px;margin-top:8px}
 .om-hourly-table th,.om-hourly-table td{padding:6px 3px;text-align:left;border-bottom:1px solid var(--om-line)}
-.om-hourly-table th:nth-child(2),.om-hourly-table td:nth-child(2){text-align:right;padding-right:10px}
+.om-hourly-table th:nth-child(3),.om-hourly-table td:nth-child(3){text-align:right;padding-right:10px}
 .om-current-hour{background:var(--om-input);color:var(--om-accent)}
 
 .om-auto-fields>.om-choice:first-child{grid-column:1/-1}
+
+.om-hourly-table{font-size:11px}
+.om-hour-range{white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:400}
+.om-phase{white-space:nowrap}
+.om-phase[data-jour="1"]{color:var(--om-accent)}

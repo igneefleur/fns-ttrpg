@@ -78,10 +78,9 @@ const legacy=state(84);delete legacy.temperatureSaisonMode;assert.equal(D.climat
 const initial=state(0),store={[C.BASE]:{current:JSON.stringify({format:1,state:initial})}},a=new C.Session(store,initial),b=new C.Session(store,initial);
 a.capture(at(initial,16));b.capture({...initial,temperatureMode:'brut',temperatureSaisonMode:'brut',temperatureRegion:'enmerkar'});Object.assign(store,a.outgoing(),b.outgoing());
 const merged=D.read(store);assert.equal(merged.horloge.heures,16);assert.equal(merged.temperatureMode,'brut');assert.equal(merged.temperatureSaisonMode,'brut');assert.equal(D.temperatureMonde(merged),16);assert.equal(merged.temperature,17.5);
-// Pont réel : entier identique au panneau, même quand ce dernier est fermé.
-assert.equal(fs.readFileSync('extension/firefox/monde-data.js','utf8'),fs.readFileSync('docs/javascripts/owd-monde-data.js','utf8'));
-const bridge=fs.readFileSync('extension/firefox/beta/roll20-page.js','utf8'),start=bridge.indexOf('  function temperatureMondeDepuisAttrs(attrs) {'),end=bridge.indexOf('\n\n  // ---------- le camp ----------',start);
-const lire=vm.runInNewContext('('+bridge.slice(start,end).trim()+')',{window:{OwdMondeData:D}});
-assert.equal(lire(store),16);const c=new C.Session(store,D.read(store));c.capture({...D.read(store),temperatureMode:'progressif',temperatureSaisonMode:'progressif',horloge:state(125,16,30).horloge});Object.assign(store,c.outgoing());assert.equal(lire(store),38);assert.ok(Number.isInteger(lire(store)));
-assert.equal(lire({owd_monde_base:{current:'cassé'}}),null);
-console.log(`OK climat : ${checked} créneaux, 336 jours, 3 régions, 4 combinaisons Brut/Progressif, pics horaires et saisonniers uniques, sorties entières, décimales intermédiaires, calendrier et pont.`);
+// Le moteur de climat vit seulement côté site ; le pont transporte les données.
+const bridge=fs.readFileSync('extension/firefox/beta/roll20-page.js','utf8');
+assert.ok(bridge.includes('donneesMondeDepuisAttrs'));
+assert.ok(!bridge.includes('OwdMondeData'));
+assert.ok(!fs.readFileSync('extension/firefox/monde-data.js','utf8').includes('function'));
+console.log(`OK climat : ${checked} créneaux, 336 jours, 3 régions, 4 combinaisons Brut/Progressif, pics horaires et saisonniers uniques, sorties entières et calculs côté site.`);

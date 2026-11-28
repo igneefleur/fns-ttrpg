@@ -68,6 +68,7 @@ NOM_CHROME = "owd-roll20-chrome.zip"
 # Les deux parties. Les fichiers qui dépendent du mode existent une fois par
 # dossier, sous le MÊME nom : c'est ce qui permet de les comparer.
 PARTIES = ("stable", "beta")
+OBSOLETES = {"monde-data.js"}  # Ancien calcul désormais servi uniquement par le site.
 # La ligne qui appartient à une copie et à elle seule le dit en bout de ligne.
 # C'est le seul moyen de distinguer une divergence VOULUE d'une dérive, et
 # c'est ce mot, écrit en toutes lettres, que la comparaison ci-dessous cherche.
@@ -342,7 +343,7 @@ def verifie():
     if not ok:
         return False
 
-    presents = {p.relative_to(FF).as_posix() for p in FF.rglob("*") if p.is_file()}
+    presents = {p.relative_to(FF).as_posix() for p in FF.rglob("*") if p.is_file()} - OBSOLETES
 
     intrus = sorted(p.name for p in CHROME.rglob("*") if p.is_file() and p.name != "manifest.json")
     if intrus:
@@ -500,7 +501,8 @@ def _write(out, files):
 def build(sortie=None):
     dossier = Path(sortie) if sortie else DL
     # Firefox : tout extension/firefox/ tel quel, sous-dossiers compris.
-    ff_files = [(p, p.relative_to(FF).as_posix()) for p in FF.rglob("*") if p.is_file()]
+    ff_files = [(p, p.relative_to(FF).as_posix()) for p in FF.rglob("*")
+                if p.is_file() and p.relative_to(FF).as_posix() not in OBSOLETES]
     _write(dossier / NOM_FF, ff_files)
 
     # Chrome : manifest V3 + tous les fichiers partagés de firefox/ SAUF son manifest.json.

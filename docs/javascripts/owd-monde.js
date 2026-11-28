@@ -31,7 +31,7 @@
     sunPosition.dataset.jour=soleil.jour?'1':'0';
     hourlyRows.forEach(function(r,h){
       var s=C.copy(state);s.horloge={jours:state.horloge.jours,heures:h,minutes:0,secondes:0};
-      var temp=D.temperatureMonde(s);r.temperature.textContent=temp==null?'—':D.arrondi(temp)+' °C';r.position.textContent=D.soleil(s).position;
+      var temp=D.temperatureMonde(s),sun=D.soleil(s);r.temperature.textContent=temp==null?'—':D.arrondi(temp)+' °C';r.position.textContent=sun.position;r.phase.textContent=sun.jour?'☀ Jour':'☾ Nuit';r.phase.dataset.jour=sun.jour?'1':'0';
       r.row.classList.toggle('om-current-hour',h===state.horloge.heures);
     });
   }
@@ -103,10 +103,10 @@
   var sunPosition=el('p','om-sun-position'),sunTimes=el('p','om-sun-times');sunBox.appendChild(sunPosition);sunBox.appendChild(sunTimes);
   var hourly=el('details','om-hourly');hourly.appendChild(el('summary','','Prévisions par heure'));
   var table=el('table','om-hourly-table'),head=el('thead'),headRow=el('tr');
-  ['Heure','Température','Soleil'].forEach(function(t){var th=el('th','',t);th.scope='col';headRow.appendChild(th);});head.appendChild(headRow);table.appendChild(head);
+  ['Jour / nuit','Créneau','Température','Soleil'].forEach(function(t){var th=el('th','',t);th.scope='col';headRow.appendChild(th);});head.appendChild(headRow);table.appendChild(head);
   var body=el('tbody'),hourlyRows=[];
   for(var hour=0;hour<24;hour++){
-    var tr=el('tr'),th=el('th','',String(hour).padStart(2,'0')+' h'),tdTemp=el('td'),tdSun=el('td');th.scope='row';tr.appendChild(th);tr.appendChild(tdTemp);tr.appendChild(tdSun);body.appendChild(tr);hourlyRows.push({row:tr,temperature:tdTemp,position:tdSun});
+    var tr=el('tr'),phase=el('td','om-phase'),hh=String(hour).padStart(2,'0'),th=el('th','om-hour-range',hh+'h00 - '+hh+'h59'),tdTemp=el('td'),tdSun=el('td');th.scope='row';tr.appendChild(phase);tr.appendChild(th);tr.appendChild(tdTemp);tr.appendChild(tdSun);body.appendChild(tr);hourlyRows.push({row:tr,phase:phase,temperature:tdTemp,position:tdSun});
   }
   table.appendChild(body);hourly.appendChild(table);sunBox.appendChild(hourly);root.appendChild(sunBox);
   document.addEventListener('compositionstart',function(){composing=true;});document.addEventListener('compositionend',function(){composing=false;rendu();});
@@ -120,7 +120,7 @@
       if(!d.charId){if(d.pret!==false)message('Créer un personnage Roll20 nommé « Monde » et le partager avec les joueurs.');rights=false;rendu();return;}
       // Une frame reste liée au premier personnage pour toute sa vie.
       if(charId&&charId!==d.charId){stop('Le personnage Monde a changé : rouvrir le panneau.');return;}
-      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.temperatureAuto===1&&d.climat>=3;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
+      charId=d.charId;rights=juge(d);capable=d.monde===1;autoCapable=d.mondeData===1;if(!capable){message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}load();
     }else if(d.type==='hydrate'&&d.charId===charId){
       if(d.collaboration!==1||d.resync!==true){capable=false;message('Mettre à jour l’extension et recharger Roll20.');rendu();return;}
       if(d.fresh!==true||d.sur!==true||frozen)return;
